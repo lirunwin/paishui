@@ -1,0 +1,272 @@
+body {
+  height: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  // font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+}
+
+.planMakeLoading {
+  font-size: 24px;
+  i.el-icon-loading {
+    color: rgb(16, 67, 157);
+    font-size: 30px;
+  }
+  p.el-loading-text {
+    color: rgb(16, 67, 157);
+    font-size: 20px;
+  }
+}
+// label {
+//   // font-weight: 700;
+// }
+
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#app {
+  height: 100%;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+a:focus,
+a:active {
+  outline: none;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+
+div:focus {
+  outline: none;
+}
+
+.clearfix {
+  &:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+  }
+}
+
+// main-container global css
+.app-container {
+  padding: 20px;
+}
+.d-flex {
+  display: flex;
+}
+
+.flex1 {
+  flex: 1;
+}
+
+// 坐标类
+.space-between {
+  justify-content: space-between;
+}
+
+.space-around {
+  justify-content: space-around;
+}
+
+.space-center {
+  justify-content: center;
+}
+.flex-center {
+  justify-content: center;
+  align-items: center;
+}
+
+.align-item-center {
+  align-items: center;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mr-10 {
+  margin-right: 10px;
+}
+
+.fiexed-bar {
+  position: fixed;
+}
+
+.posa {
+  position: absolute;
+}
+
+.posr {
+  position: relative;
+}
+
+.posf {
+  position: fixed;
+}
+
+// 宽高类
+.w100 {
+  width: 100%;
+}
+
+.h100 {
+  height: 100%;
+}
+
+.mh100 {
+  min-height: 100%;
+}
+
+// 文字类
+.text-center {
+  text-align: center;
+}
+
+.text-danger {
+  color: #e64340 !important;
+}
+
+.bg-white {
+  background: #fff;
+}
+
+@mixin font-style($fontSize, $lineHeight, $height) {
+  font-size: $fontSize;
+  line-height: $lineHeight;
+  height: $height;
+}
+
+.border-top-1px,
+.border-right-1px,
+.border-bottom-1px,
+.border-left-1px {
+  position: relative;
+}
+
+.border-top-1px::before,
+.border-right-1px::before,
+.border-bottom-1px::before,
+.border-left-1px::before,
+.border-top-1px::after,
+.border-right-1px::after,
+.border-bottom-1px::after,
+.border-left-1px::after {
+  content: "";
+  display: block;
+  position: absolute;
+  -webkit-transform-origin: 0 0;
+  transform-origin: 0 0;
+}
+
+.border-top-1px::before {
+  border-top: 1px solid #ebebeb;
+  left: 0;
+  top: 0;
+  width: 100%;
+  -webkit-transform-origin: 0 top;
+  transform-origin: 0 top;
+}
+
+.border-right-1px::after {
+  border-right: 1px solid #f5f5f5;
+  top: 0;
+  right: 0;
+  height: 100%;
+  -webkit-transform-origin: right 0;
+  transform-origin: right 0;
+}
+
+.border-bottom-1px::after {
+  border-bottom: 1px solid #ebebeb;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  -webkit-transform-origin: 0 bottom;
+  transform-origin: 0 bottom;
+}
+
+.border-left-1px::before {
+  border-left: 1px solid #f5f5f5;
+  top: 0;
+  left: 0;
+  height: 100%;
+  -webkit-transform-origin: left 0;
+  transform-origin: left 0;
+}
+
+.el-select-dropdown.is-multiple .el-select-dropdown__item {
+  display: flex;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+  .border-top-1px::before {
+    width: 200%;
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+  }
+  .border-right-1px::after {
+    height: 200%;
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+  }
+  .border-bottom-1px::after {
+    width: 200%;
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+  }
+  .border-left-1px::before {
+    height: 200%;
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 3dppx) {
+  .border-top-1px::before {
+    width: 300%;
+    -webkit-transform: scale(0.333);
+    transform: scale(0.333);
+  }
+  .border-right-1px::after {
+    height: 300%;
+    -webkit-transform: scale(0.333);
+    transform: scale(0.333);
+  }
+  .border-bottom-1px::after {
+    width: 300%;
+    -webkit-transform: scale(0.333);
+    transform: scale(0.333);
+  }
+  .border-left-1px::before {
+    height: 300%;
+    -webkit-transform: scale(0.333);
+    transform: scale(0.333);
+  }
+}
+
+// .el-upload {
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+// }

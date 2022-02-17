@@ -1,0 +1,74 @@
+<template>
+  <!-- 弹出框 -->
+  <div>
+    <div
+      v-drag
+      class="content"
+    >
+      <div class="hander">
+        <span>{{ title }}</span>
+        <span class="close" @click="handelClose(item)">
+          <i class="el-icon-close" />
+        </span>
+      </div>
+      <slot />
+    </div>
+  </div>
+
+</template>
+
+<script>
+export default {
+  name: 'Panel',
+  components: { },
+  props: {
+    item: {
+      type: Object,
+      default: () => {}
+    },
+    title: {
+      type: String,
+      default: ''
+    }
+  },
+  data() {
+    return {
+
+    }
+  },
+  created() {
+  },
+  methods: {
+    handelClose(data) {
+      console.log('----', data)
+      this.$store.dispatch('map/handelClose', data)
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.content{
+  width: 350px;
+  border: 3px solid #2D74E7;
+  min-height: 100px;
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  z-index: 1;
+  .hander{
+    color: #fff;
+    height: 34px;
+    line-height: 34px;
+    background: #2D74E7;
+    padding: 0 5px;
+    position: relative;
+    .close{
+      position: absolute;
+      right: 5px;
+      cursor: pointer;
+    }
+  }
+
+}
+</style>
