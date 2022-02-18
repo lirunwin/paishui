@@ -11,6 +11,7 @@ declare module '*.jpeg'
 declare module '*.gif'
 declare module '*.bmp'
 declare module '*.tiff'
+declare module '*.scss'
 //vue.config.js中指定staticPub为 Public文件目录
 declare module 'staticPub/config' {
   /**

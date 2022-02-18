@@ -5,31 +5,26 @@
   </div>
 </template>
 
-<script>
-import { isExternal } from '@/utils/validate'
+<script lang='ts'>
+import { Vue, Component, Prop } from "vue-property-decorator";
+import { isExternal } from "@/utils/validate";
+@Component
+export default class Link extends Vue {
+  @Prop({ required: true }) to: string;
 
-export default {
-  props: {
-    to: {
-      type: String,
-      required: true
-    }
-  },
-  methods: {
-    linkProps(url) {
-      if (isExternal(url)) {
-        return {
-          is: 'a',
-          href: url,
-          target: '_blank',
-          rel: 'noopener'
-        }
-      }
+  linkProps(url) {
+    if (isExternal(url)) {
       return {
-        is: 'router-link',
-        to: url
-      }
+        is: "a",
+        href: url,
+        target: "_blank",
+        rel: "noopener",
+      };
     }
+    return {
+      is: "router-link",
+      to: url,
+    };
   }
 }
 </script>

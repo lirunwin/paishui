@@ -1,3 +1,5 @@
+<!--vue文件模板-->
+
 <template>
   <div class="app-container">
     <div class="hander_car">
@@ -11,18 +13,16 @@
 </template>
 
 <script>
-export default {
-  name: 'Car',
-  components: { },
-  data() {
-    return {
-
-    }
-  },
+import {Vue,Component,Prop,Watch} from 'vue-property-decorator'
+@Component({
+  name:'Car',
+  components:{}
+})
+export default class template extends Vue {
+  mounted() {
+    
+  }
   created() {
-  },
-  methods: {
-
   }
 }
 </script>

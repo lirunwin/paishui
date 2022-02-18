@@ -30,67 +30,53 @@
   </div>
 </template>
 
-<script>
-import Comps from './loadComps'
+<script lang='ts'>
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import Comps from "./loadComps";
+@Component({
+  name: "FullPanels",
+})
+export default class FullPanels extends Vue {
+  @Prop({ default: [] }) panels: any[];
+  @Prop({ default: null }) data: any;
+  @Prop() panelVisible: boolean;
+  @Prop() halfpanelVisible: boolean;
+  @Prop() footerHeight: string;
+  Comps = Comps;
 
-export default {
-  name: 'FullPanels',
-  components: {},
-  props: {
-    panels: {
-      type: Array,
-      default: () => []
-    },
-    data: null,
-    panelVisible: Boolean,
-    halfpanelVisible: Boolean,
-    footerHeight: String
-  },
-  data() {
-    return {
-      Comps
-      // editableTabsValue: ''
-    }
-  },
-  computed: {
-    editableTabsValue() {
-      return this.$store.state.map.fullP_editableTabsValue
-    }
-  },
-  watch: {
-    panels() {
-      if (this.panels.length > 0) {
-        if (this.panelVisible) return
-        this.$emit('update:panelVisible', true)
-        this.$emit('update:footerHeight', '100%')
-      } else {
-        if (!this.panelVisible) return
-        this.$emit('update:panelVisible', false)
-        if (this.halfpanelVisible == false) {
-          this.$emit('update:footerHeight', '0%')
-        }
+  get editableTabsValue() {
+    return this.$store.state.map.fullP_editableTabsValue;
+  }
+  @Watch("panels")
+  panelsChange() {
+    if (this.panels.length > 0) {
+      if (this.panelVisible) return;
+      this.$emit("update:panelVisible", true);
+      this.$emit("update:footerHeight", "100%");
+    } else {
+      if (!this.panelVisible) return;
+      this.$emit("update:panelVisible", false);
+      if (this.halfpanelVisible == false) {
+        this.$emit("update:footerHeight", "0%");
       }
-    },
-    // panelVisible() {
-    //   if (this.panelVisible == true) {
-    //     this.$store.dispatch('map/delAllHalf')
-    //   }
-    // }
-  },
-  created() {},
-  methods: {
-    handelClose() {
-      // this.$store.dispatch('map/handelClose', data)
-      this.$store.dispatch('map/delAllFull')
-      this.$emit('handelClose')
-    },
-    removeTab(targetName) {
-      // console.log('333', targetName)
-      this.$store.dispatch('map/delFullPanels', targetName)
-    },
-    clickTab(targetName) {
-      this.data.activeModel = targetName.name
     }
+  }
+  // panelVisible() {
+  //   if (this.panelVisible == true) {
+  //     this.$store.dispatch('map/delAllHalf')
+  //   }
+  // }
+  handelClose() {
+    // this.$store.dispatch('map/handelClose', data)
+    this.$store.dispatch("map/delAllFull");
+    this.$emit("handelClose");
+  }
+  removeTab(targetName) {
+    // console.log('333', targetName)
+    this.$store.dispatch("map/delFullPanels", targetName);
+  }
+  clickTab(targetName) {
+    this.data.activeModel = targetName.name;
   }
 }
 </script>
@@ -154,7 +140,7 @@ export default {
     position: absolute;
     top: 10px;
     right: 11px;
-    color: rgb(115,131,158);
+    color: rgb(115, 131, 158);
     z-index: 10;
     cursor: pointer;
   }

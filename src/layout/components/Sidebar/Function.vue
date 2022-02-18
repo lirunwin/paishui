@@ -1,11 +1,15 @@
 <template>
   <div class="sidebar-logo-container">
     <transition name="sidebarLogoFade">
-      <span key="expand" class="sidebar-logo-link" :class="{ close: !sidebar.opened }">
+      <span
+        key="expand"
+        class="sidebar-logo-link"
+        :class="{ close: !sidebar.opened }"
+      >
         <hamburger
           :is-active="sidebar.opened"
           class="hamburger-container"
-          :style="{paddingLeft: sidebar.opened ? '20px' : '0px'}"
+          :style="{ paddingLeft: sidebar.opened ? '20px' : '0px' }"
           @toggleClick="toggleSideBar"
         />
         <div class="sidebar-title">功能菜单</div>
@@ -14,37 +18,37 @@
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
-import Hamburger from '@/components/Hamburger'
-
-export default {
-  name: 'SidebarLogo',
+<script lang='ts'>
+import { Vue, Component } from "vue-property-decorator";
+import { mapGetters } from "vuex";
+import Hamburger from "@/components/Hamburger/index.vue";
+@Component({
+  name: "SidebarLogo",
   components: { Hamburger },
-  computed: {
-    ...mapGetters(['sidebar'])
-  },
-  methods: {
-    // 打开或关闭左侧菜单
-    toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar')
-    }
+})
+export default class FunctionVue extends Vue {
+  get sidebar() {
+    return this.$store.getters.sidebar;
+  }
+  // 打开或关闭左侧菜单
+  toggleSideBar() {
+    this.$store.dispatch("app/toggleSideBar");
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .hamburger-container {
-    float: left;
-    color: rgb(235, 240, 254);
-    cursor: pointer;
-    transition: background 0.3s;
-    -webkit-tap-highlight-color: transparent;
-    &:hover {
-      // background-color: #82adff;
-      background: rgba(0, 0, 0, 0.025);
-    }
+  float: left;
+  color: rgb(235, 240, 254);
+  cursor: pointer;
+  transition: background 0.3s;
+  -webkit-tap-highlight-color: transparent;
+  &:hover {
+    // background-color: #82adff;
+    background: rgba(0, 0, 0, 0.025);
   }
+}
 .sidebarLogoFade-enter-active {
   transition: opacity 1.5s;
 }

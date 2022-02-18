@@ -3,7 +3,12 @@
     <el-tab-pane label="样式">
       换个颜色，换种心情～
       <ul>
-        <li v-for="(item,idx) in menu" :key="idx" :class="idx == index ? 'active' : ''" @click="son(item,idx)">
+        <li
+          v-for="(item, idx) in menu"
+          :key="idx"
+          :class="idx == index ? 'active' : ''"
+          @click="son(item, idx)"
+        >
           <div :class="item.style">
             <i class="current-theme" />
           </div>
@@ -16,51 +21,46 @@
   </el-tabs>
 </template>
 
-<script>
-export default {
-  name: 'Configure',
-  components: { },
-  data() {
-    return {
-      tabPosition: 'left',
-      menu: [
-        {
-          name: '墨蓝',
-          type: 'inkBlueTheme',
-          style: 'blue-ink'
-        },
-        {
-          name: '宝蓝',
-          type: 'royalBlueTheme',
-          style: 'blue-square'
-        }
-      ],
-      index: 0
-    }
-  },
-  created() {
-  },
-  methods: {
-    son(item, idx) {
-      this.index = idx
-      //  设置主题
-      // this.$store.dispatch('settings/setThem', item.type)
-    }
+<script lang='ts'>
+import { Vue, Component } from "vue-property-decorator";
+@Component({
+  name: "Configure",
+})
+export default class Configure extends Vue {
+  tabPosition = "left";
+  menu = [
+    {
+      name: "墨蓝",
+      type: "inkBlueTheme",
+      style: "blue-ink",
+    },
+    {
+      name: "宝蓝",
+      type: "royalBlueTheme",
+      style: "blue-square",
+    },
+  ];
+  index = 0;
+  created() {}
+  son(item, idx) {
+    this.index = idx;
+    //  设置主题
+    // this.$store.dispatch('settings/setThem', item.type)
   }
 }
 </script>
 
 <style lang="scss" scoped>
-ul{
+ul {
   list-style: none;
   // height: 400px;
   padding-left: 0;
-  li{
+  li {
     cursor: pointer;
     float: left;
     margin: 0 10px;
     border: 1px solid #fff;
-    div{
+    div {
       width: 64px;
       height: 64px;
       display: block;
@@ -70,7 +70,7 @@ ul{
       box-shadow: none;
       position: relative;
     }
-    span{
+    span {
       display: inline-block;
       text-align: center;
       width: 88px;
@@ -79,18 +79,36 @@ ul{
     }
   }
 }
-.blue-square{
-  background:linear-gradient(180deg,#327ed3,#327ed3 0,#8ab6e6 100%,#8ab6e6 0)
+.blue-square {
+  background: linear-gradient(
+    180deg,
+    #327ed3,
+    #327ed3 0,
+    #8ab6e6 100%,
+    #8ab6e6 0
+  );
 }
-.blue-ink{
- background:linear-gradient(180deg,#2f4254,#2f4254 0,#7595b3 100%,#7595b3 0)
+.blue-ink {
+  background: linear-gradient(
+    180deg,
+    #2f4254,
+    #2f4254 0,
+    #7595b3 100%,
+    #7595b3 0
+  );
 }
-.obsidian{
-  background:linear-gradient(180deg,#383838,#383838 0,#8b8b8b 100%,#8b8b8b 0)
+.obsidian {
+  background: linear-gradient(
+    180deg,
+    #383838,
+    #383838 0,
+    #8b8b8b 100%,
+    #8b8b8b 0
+  );
 }
-.active{
+.active {
   border: 1px solid #e4e4e4;
-  .current-theme{
+  .current-theme {
     position: absolute;
     width: 16px;
     height: 16px;
@@ -98,7 +116,7 @@ ul{
     left: 56px;
     background-color: #409eff;
     border-radius: 8px;
-    &::after{
+    &::after {
       transform: rotate(45deg) scaleY(1);
       box-sizing: content-box;
       content: "";
@@ -111,7 +129,7 @@ ul{
       top: 3px;
       // transform: rotate(45deg) scaleY(0);
       width: 3px;
-      transition: transform .15s ease-in .05s;
+      transition: transform 0.15s ease-in 0.05s;
       transform-origin: center;
     }
   }

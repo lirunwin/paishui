@@ -1,20 +1,37 @@
 <template>
   <div class="navbarBox">
     <div class="navbar">
-      <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+      <hamburger
+        :is-active="sidebar.opened"
+        class="hamburger-container"
+        @toggleClick="toggleSideBar"
+      />
 
       <breadcrumb class="breadcrumb-container" />
 
       <div class="right-menu">
-        <template v-if="device!=='mobile'" class="right-menu-btn">
-          <el-button v-if="systemSettingsBtn" type="primary" icon="el-icon-s-tools" class="right-menu-item" circle @click="setConfig" />
-          <el-button v-if="systemSwitchingBtn" type="success" icon="el-icon-crop" class="right-menu-item" circle @click="sysSwitch" />
+        <template v-if="device !== 'mobile'" class="right-menu-btn">
+          <el-button
+            v-if="systemSettingsBtn"
+            type="primary"
+            icon="el-icon-s-tools"
+            class="right-menu-item"
+            circle
+            @click="setConfig"
+          />
+          <el-button
+            v-if="systemSwitchingBtn"
+            type="success"
+            icon="el-icon-crop"
+            class="right-menu-item"
+            circle
+            @click="sysSwitch"
+          />
         </template>
         <span class="username">{{ username }}</span>
         <el-dropdown class="avatar-container" trigger="click">
-
           <div class="avatar-wrapper">
-            <img :src="avatar || headPortrait" class="user-avatar">
+            <img :src="avatar || headPortrait" class="user-avatar" />
             <i class="el-icon-caret-bottom" />
           </div>
           <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -25,17 +42,13 @@
               修改密码
             </el-dropdown-item>
             <el-dropdown-item divided @click.native="logout">
-              <span style="display:block;">退出登录</span>
+              <span style="display: block">退出登录</span>
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
     </div>
-    <el-dialog
-      title="个人中心"
-      :visible.sync="ispersonalCenter"
-      width="300px"
-    >
+    <el-dialog title="个人中心" :visible.sync="ispersonalCenter" width="300px">
       <div class="content">
         <div class="imgBox">
           <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="imgStyle"> -->
@@ -48,11 +61,7 @@
         <div class="marginTop">所属单位： 成都</div>
       </div>
     </el-dialog>
-    <el-dialog
-      title="修改密码"
-      :visible.sync="passWord"
-      width="400px"
-    >
+    <el-dialog title="修改密码" :visible.sync="passWord" width="400px">
       <!-- <span>修改密码</span> -->
       <input-item
         type="password"
@@ -92,7 +101,9 @@
       />
       <span slot="footer" class="dialog-footer">
         <el-button @click="passWord = false">取 消</el-button>
-        <el-button type="primary" @click="confirmModifyPassWord">确 定</el-button>
+        <el-button type="primary" @click="confirmModifyPassWord"
+          >确 定</el-button
+        >
       </span>
     </el-dialog>
     <el-dialog
@@ -116,130 +127,128 @@
       <el-divider />
       <Configure />
     </el-dialog>
-    <el-dialog
-      title="系统切换"
-      :visible.sync="dialogSwitch"
-      width="500px"
-    >
+    <el-dialog title="系统切换" :visible.sync="dialogSwitch" width="500px">
       <span>系统切换</span>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
-import { changePassword } from '@/api/base'
-import Breadcrumb from '@/components/Breadcrumb'
-import Hamburger from '@/components/Hamburger'
-import InputItem from '@/components/FormItem/Input'
-import { verification } from '@/utils/index'
-import { geteSessionStorage } from '@/utils/auth'
-import headPortrait from '@/assets/login/headPortrait.gif'
-import Configure from './Configure/index'
+<script lang='ts'>
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import { mapGetters } from "vuex";
+import { changePassword } from "@/api/base";
+import Breadcrumb from "@/components/Breadcrumb/index.vue";
+import Hamburger from "@/components/Hamburger/index.vue";
+import InputItem from "@/components/FormItem/Input/index.vue";
+import { verification } from "@/utils/index";
+import { geteSessionStorage } from "@/utils/auth";
+import headPortrait from "@/assets/login/headPortrait.gif";
+import Configure from "./Configure/index.vue";
 
-const sha1Hex = require('sha1-hex')
-
-export default {
-  name: 'Navbar',
+const sha1Hex = require("sha1-hex");
+@Component({
+  name: "Navbar",
   components: {
     Breadcrumb,
     Hamburger,
     InputItem,
-    Configure
+    Configure,
   },
-  data() {
-    return {
-      headPortrait,
-      ispersonalCenter: false,
-      passWord: false,
-      originalPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-      dialogPassword: false,
-      dialogConfig: false,
-      dialogSwitch: false
+})
+export default class Navbar extends Vue {
+  headPortrait = headPortrait;
+  ispersonalCenter = false;
+  passWord = false;
+  originalPassword = "";
+  newPassword = "";
+  confirmPassword = "";
+  dialogPassword = false;
+  dialogConfig = false;
+  dialogSwitch = false;
+
+  get sidebar() {
+    return this.$store.getters.sidebar;
+  }
+  get device() {
+    return this.$store.getters.device;
+  }
+  get avatar() {
+    return this.$store.state.user.avatar || geteSessionStorage("avatar");
+  }
+  get username() {
+    return geteSessionStorage("username");
+  }
+  get systemSettingsBtn() {
+    return this.$store.state.settings.systemSettingsBtn;
+  }
+  get systemSwitchingBtn() {
+    return this.$store.state.settings.systemSwitchingBtn;
+  }
+  // 打开或关闭左侧菜单
+  toggleSideBar() {
+    this.$store.dispatch("app/toggleSideBar");
+  }
+  // 退出登录
+  async logout() {
+    await this.$store.dispatch("user/logout");
+    this.$router.push(`/login?redirect=${this.$route.fullPath}`);
+  }
+  // 个人中心
+  personalCenter() {
+    console.log("个人中心");
+    this.ispersonalCenter = true;
+  }
+  // 修改密码
+  changePassword() {
+    console.log("修改密码");
+    this.passWord = true;
+    this.originalPassword = "";
+    this.newPassword = "";
+    this.confirmPassword = "";
+  }
+  /**
+   * 输入框组件数据绑定方法事件
+   * @param {*} key
+   * @param {*} event
+   */
+  onInput(key, event) {
+    this[key] = event;
+  }
+  // 确定修改密码
+  confirmModifyPassWord() {
+    const verificationPwd = verification([
+      { condition: !this.originalPassword, errmsg: "请输入原密码" },
+      { condition: !this.newPassword, errmsg: "请输入新密码" },
+      {
+        condition: this.confirmPassword !== this.newPassword,
+        errmsg: "请确认密码",
+      },
+      {
+        condition: this.originalPassword === this.newPassword,
+        errmsg: "新密码和原始密码一样",
+      },
+    ]);
+    if (!verificationPwd.success) {
+      this.$message.error(verificationPwd.errmsg[0]);
+      return false;
     }
-  },
-  computed: {
-    ...mapGetters([
-      'sidebar',
-      'device'
-    ]),
-    avatar() {
-      return this.$store.state.user.avatar || geteSessionStorage('avatar')
-    },
-    username() {
-      return geteSessionStorage('username')
-    },
-    systemSettingsBtn() {
-      return this.$store.state.settings.systemSettingsBtn
-    },
-    systemSwitchingBtn() {
-      return this.$store.state.settings.systemSwitchingBtn
-    }
-  },
-  methods: {
-    // 打开或关闭左侧菜单
-    toggleSideBar() {
-      this.$store.dispatch('app/toggleSideBar')
-    },
-    // 退出登录
-    async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
-    },
-    // 个人中心
-    personalCenter() {
-      console.log('个人中心')
-      this.ispersonalCenter = true
-    },
-    // 修改密码
-    changePassword() {
-      console.log('修改密码')
-      this.passWord = true
-      this.originalPassword = ''
-      this.newPassword = ''
-      this.confirmPassword = ''
-    },
-    /**
-     * 输入框组件数据绑定方法事件
-     * @param {*} key
-     * @param {*} event
-     */
-    onInput(key, event) {
-      this[key] = event
-    },
-    // 确定修改密码
-    confirmModifyPassWord() {
-      const verificationPwd = verification([
-        { condition: !this.originalPassword, errmsg: '请输入原密码' },
-        { condition: !this.newPassword, errmsg: '请输入新密码' },
-        { condition: this.confirmPassword !== this.newPassword, errmsg: '请确认密码' },
-        { condition: this.originalPassword === this.newPassword, errmsg: '新密码和原始密码一样' }
-      ]
-      )
-      if (!verificationPwd.success) {
-        this.$message.error(verificationPwd.errmsg[0])
-        return false
-      }
-      changePassword({
-        password: sha1Hex(this.newPassword)
-      }).then(res => {
-        this.passWord = false
-        this.dialogPassword = true
-      })
-    },
-    confirmOut() {
-      this.logout()
-    },
-    // 设置
-    setConfig() {
-      this.dialogConfig = true
-    },
-    // 切换
-    sysSwitch() {
-      this.dialogSwitch = true
-    }
+    changePassword({
+      password: sha1Hex(this.newPassword),
+    }).then((res) => {
+      this.passWord = false;
+      this.dialogPassword = true;
+    });
+  }
+  confirmOut() {
+    this.logout();
+  }
+  // 设置
+  setConfig() {
+    this.dialogConfig = true;
+  }
+  // 切换
+  sysSwitch() {
+    this.dialogSwitch = true;
   }
 }
 </script>
@@ -250,18 +259,18 @@ export default {
   overflow: hidden;
   position: relative;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
   .hamburger-container {
     line-height: 46px;
     height: 100%;
     float: left;
     cursor: pointer;
-    transition: background .3s;
-    -webkit-tap-highlight-color:transparent;
+    transition: background 0.3s;
+    -webkit-tap-highlight-color: transparent;
 
     &:hover {
-      background: rgba(0, 0, 0, .025)
+      background: rgba(0, 0, 0, 0.025);
     }
   }
 
@@ -277,9 +286,9 @@ export default {
     &:focus {
       outline: none;
     }
-    .right-menu-btn{
+    .right-menu-btn {
       display: flex;
-    align-items: center;
+      align-items: center;
     }
     .right-menu-item {
       display: inline-block;
@@ -295,11 +304,11 @@ export default {
         // transition: background .3s;
 
         &:hover {
-          background: rgba(0, 0, 0, .025)
+          background: rgba(0, 0, 0, 0.025);
         }
       }
     }
-    .username{
+    .username {
       display: inline-block;
       height: 50px;
       line-height: 50px;
@@ -322,7 +331,7 @@ export default {
           width: 40px;
           height: 40px;
           border-radius: 10px;
-          margin-bottom: 4px
+          margin-bottom: 4px;
         }
 
         .el-icon-caret-bottom {
@@ -336,30 +345,30 @@ export default {
     }
   }
 }
-.marginTop{
+.marginTop {
   margin-top: 10px;
 }
-.imgBox{
+.imgBox {
   width: 100%;
-  text-align:center;
-  .imgStyle{
+  text-align: center;
+  .imgStyle {
     border-radius: 10px;
   }
 }
-.content{
+.content {
   width: 80%;
   margin: 0 auto;
 }
 </style>
 <style lang="scss">
-.config{
-  .el-dialog__body{
+.config {
+  .el-dialog__body {
     padding: 0 20px 30px;
-    .el-tabs--left{
+    .el-tabs--left {
       height: 200px !important;
     }
   }
-  .el-divider--horizontal{
+  .el-divider--horizontal {
     margin: 0 0 10px 0;
   }
 }

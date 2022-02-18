@@ -1,9 +1,7 @@
 <template>
   <!-- 弹出框 -->
   <div>
-    <div
-      class="content"
-    >
+    <div class="content">
       <div class="hander">
         <span>{{ title }}</span>
         <span class="close" @click="handelClose(item)">
@@ -13,59 +11,43 @@
       <slot />
     </div>
   </div>
-
 </template>
 
-<script>
-export default {
-  name: 'HalfPanel',
-  components: { },
-  props: {
-    item: {
-      type: Object,
-      default: () => {}
-    },
-    title: {
-      type: String,
-      default: ''
-    }
-  },
-  data() {
-    return {
+<script lang='ts'>
+import { Vue, Component, Prop } from "vue-property-decorator";
+@Component({
+  name: "HalfPanel",
+})
+export default class HalfPanel extends Vue {
+  @Prop({ default: {} }) item: object;
+  @Prop({ default: "" }) title: string;
 
-    }
-  },
-  created() {
-  },
-  methods: {
-    handelClose(data) {
-      this.$store.dispatch('map/handelClose', data)
-    }
+  handelClose(data) {
+    this.$store.dispatch("map/handelClose", data);
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.content{
+.content {
   width: 100%;
   min-height: 200px;
   position: absolute;
   bottom: 0;
   top: 55%;
   z-index: 2;
-  .hander{
+  .hander {
     color: #fff;
     height: 34px;
     line-height: 34px;
-    background: #2D74E7;
+    background: #2d74e7;
     padding: 0 5px;
     position: relative;
-    .close{
+    .close {
       position: absolute;
       right: 5px;
       cursor: pointer;
     }
   }
-
 }
 </style>

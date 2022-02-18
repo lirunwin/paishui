@@ -14,56 +14,35 @@
   </div>
 </template>
 
-<script>
+<script lang='ts'>
+import { Vue, Component, Prop } from "vue-property-decorator";
 import Comps from "./loadComps";
-
-export default {
+@Component({
   name: "FloatPanels",
-  components: {},
-  props: {
-    panels: {
-      type: Array,
-      default: () => [],
-    },
-    data: null,
-  },
-  data() {
-    return {
-      Comps,
-      // editableTabsValue: ''
-    };
-  },
-  computed: {
-    editableTabsValue() {
-      return this.$store.state.map.floatP_editableTabsValue;
-    },
-  },
-  watch: {
-    // data() {
-    //   if (this.data.length > 0) {
-    //     this.editableTabsValue = this.data[this.data.length - 1].com || ''
-    //   }
-    // }
-  },
-  created() {
-  },
-  methods: {
-    handelClose() {
-      // this.$store.dispatch('map/handelClose', data)
-      this.$store.dispatch("map/delAllFloat");
-      this.$emit("handelClose");
-    },
-    removeTab(targetName) {
-      // console.log('333', targetName)
-      this.$store.dispatch("map/delFloatPanels", targetName);
-    },
-  },
-};
+})
+export default class FloatPanels extends Vue {
+  @Prop() panels: any[];
+  @Prop({ default: null }) data: any;
+  Comps=Comps;
+
+  get editableTabsValue() {
+    return this.$store.state.map.floatP_editableTabsValue;
+  }
+  handelClose() {
+    // this.$store.dispatch('map/handelClose', data)
+    this.$store.dispatch("map/delAllFloat");
+    this.$emit("handelClose");
+  }
+  removeTab(targetName) {
+    // console.log('333', targetName)
+    this.$store.dispatch("map/delFloatPanels", targetName);
+  }
+}
 </script>
 
 <style lang="scss" scoped>
 .el-tabs__header {
-  background: #2D74E7;
+  background: #2d74e7;
   color: black;
 }
 .el-tabs__item.is-active {
