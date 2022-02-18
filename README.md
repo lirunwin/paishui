@@ -1,3 +1,6 @@
+# 克隆
+git clone -b dev http://192.168.2.241:3000/wanghai/psgwxt_bz.git
+
 # 安装依赖
 npm install
 
