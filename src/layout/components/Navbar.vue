@@ -135,7 +135,6 @@
 
 <script lang='ts'>
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import { mapGetters } from "vuex";
 import { changePassword } from "@/api/base";
 import Breadcrumb from "@/components/Breadcrumb/index.vue";
 import Hamburger from "@/components/Hamburger/index.vue";

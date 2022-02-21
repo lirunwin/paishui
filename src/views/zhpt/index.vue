@@ -279,6 +279,7 @@ export default class BaseMap extends Vue {
     async initMap() {
       var config = esriConfig;
       var aconfig = appconfig;
+      
       var url =
         "https://iserver.supermap.io/iserver/services/map-world/rest/maps/World";
       var map = new Map({
@@ -304,6 +305,7 @@ export default class BaseMap extends Vue {
       map.addLayer(layer);
       this.panels.mapView = this.view = map
       this.loading=false
+      
        //沱源项目 arcgis 地图部分
        /*
       loadModules(
