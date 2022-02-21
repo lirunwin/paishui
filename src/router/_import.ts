@@ -8,14 +8,14 @@ const map = {
   currentSystem: () => import('@/views/currentSystem/index.vue'), // 当前系统的路由
   Map: () => import('@/views/zhpt/index.vue'),
   // funMap: () => import('@/views/currentSystem/map/funCom/index'),
-  // // 系统权限
-  // userManage: () => import('@/views/currentSystem/authorityManagement/userRights/index'), // 用户管理
-  // roleManage: () => import('@/views/currentSystem/authorityManagement/rolePermission/index'), // 角色管理
-  // journalManage: () => import('@/views/currentSystem/authorityManagement/journal/index'), // 日志管理
-  // appManage: () => import('@/views/currentSystem/authorityManagement/APPV/index'), // APP管理
-  // ModulesManage: () => import('@/views/currentSystem/authorityManagement/modulesManage/index'), // 模块管理
-  // departmentManage: () => import('@/views/currentSystem/authorityManagement/section/index'), // 单位管理
-  // serviceManage: () => import('@/views/currentSystem/authorityManagement/serviceConfig/index'), // 服务配置
+  // 系统权限
+  userManage: () => import('@/views/currentSystem/authorityManagement/userRights/index.vue'), // 用户管理
+  roleManage: () => import('@/views/currentSystem/authorityManagement/rolePermission/index.vue'), // 角色管理
+  journalManage: () => import('@/views/currentSystem/authorityManagement/journal/index.vue'), // 日志管理
+  appManage: () => import('@/views/currentSystem/authorityManagement/APPV/index.vue'), // APP管理
+  ModulesManage: () => import('@/views/currentSystem/authorityManagement/modulesManage/index.vue'), // 模块管理
+  departmentManage: () => import('@/views/currentSystem/authorityManagement/section/index.vue'), // 单位管理
+  serviceManage: () => import('@/views/currentSystem/authorityManagement/serviceConfig/index.vue'), // 服务配置
 
   // // 营销业务管理系统
   // register: () => import('@/views/currentSystem/work/order/register/index'), // 工单登记
