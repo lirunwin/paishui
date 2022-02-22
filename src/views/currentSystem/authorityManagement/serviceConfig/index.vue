@@ -11,7 +11,12 @@
                   <span>名称:</span>
                 </el-col>
                 <el-col :span="16">
-                  <el-input size="small" v-model="serviceName" placeholder="请输入内容" clearable/>
+                  <el-input
+                    size="small"
+                    v-model="serviceName"
+                    placeholder="请输入内容"
+                    clearable
+                  />
                 </el-col>
               </el-row>
             </div>
@@ -23,19 +28,46 @@
                   <span>编码:</span>
                 </el-col>
                 <el-col :span="16">
-                  <el-input v-model="serviceCode" placeholder="请输入内容" size="small" clearable/>
+                  <el-input
+                    v-model="serviceCode"
+                    placeholder="请输入内容"
+                    size="small"
+                    clearable
+                  />
                 </el-col>
               </el-row>
             </div>
           </el-col>
           <el-col :span="10">
-            <el-button type="primary" size="small" @click="handleBtnClick('query', 'service')">查询</el-button>
-            <el-button type="primary" size="small" @click="handleBtnClick('add', 'service')">新增</el-button>
-            <el-button type="primary" size="small" @click="handleBtnClick('edit', 'service')" :disabled="serviceChoosing.length !== 1">修改</el-button>
-            <el-button type="primary" size="small" @click="handleBtnClick('delete', 'service')" :disabled="serviceChoosing.length === 0">删除</el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleBtnClick('query', 'service')"
+              >查询</el-button
+            >
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleBtnClick('add', 'service')"
+              >新增</el-button
+            >
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleBtnClick('edit', 'service')"
+              :disabled="serviceChoosing.length !== 1"
+              >修改</el-button
+            >
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleBtnClick('delete', 'service')"
+              :disabled="serviceChoosing.length === 0"
+              >删除</el-button
+            >
           </el-col>
         </el-row>
-        <div style="margin-top:20px">
+        <div style="margin-top: 20px">
           <table-item
             :table-data="list"
             :column="column"
@@ -66,7 +98,12 @@
                   <span>名称:</span>
                 </el-col>
                 <el-col :span="15">
-                  <el-input size="small" v-model="sourceName" placeholder="请输入内容" clearable />
+                  <el-input
+                    size="small"
+                    v-model="sourceName"
+                    placeholder="请输入内容"
+                    clearable
+                  />
                 </el-col>
               </el-row>
             </div>
@@ -78,19 +115,47 @@
                   <span>资源值:</span>
                 </el-col>
                 <el-col :span="15">
-                  <el-input size="small" v-model="sourceValue" placeholder="请输入内容" clearable />
+                  <el-input
+                    size="small"
+                    v-model="sourceValue"
+                    placeholder="请输入内容"
+                    clearable
+                  />
                 </el-col>
               </el-row>
             </div>
           </el-col>
           <el-col :span="10">
-            <el-button type="primary" size="small" @click="handleBtnClick('query', 'source')">查询</el-button>
-            <el-button type="primary" size="small" :disabled="serviceChoosing.length !== 1" @click="handleBtnClick('add', 'source')">新增</el-button>
-            <el-button type="primary" size="small" @click="handleBtnClick('edit', 'source')" :disabled="sourceChoosing.length !== 1">修改</el-button>
-            <el-button type="primary" size="small" @click="handleBtnClick('delete', 'source')" :disabled="sourceChoosing.length === 0">删除</el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleBtnClick('query', 'source')"
+              >查询</el-button
+            >
+            <el-button
+              type="primary"
+              size="small"
+              :disabled="serviceChoosing.length !== 1"
+              @click="handleBtnClick('add', 'source')"
+              >新增</el-button
+            >
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleBtnClick('edit', 'source')"
+              :disabled="sourceChoosing.length !== 1"
+              >修改</el-button
+            >
+            <el-button
+              type="primary"
+              size="small"
+              @click="handleBtnClick('delete', 'source')"
+              :disabled="sourceChoosing.length === 0"
+              >删除</el-button
+            >
           </el-col>
         </el-row>
-        <div style="margin-top:20px">
+        <div style="margin-top: 20px">
           <table-item
             :table-data="list1"
             :column="column2"
@@ -109,55 +174,89 @@
     </el-row>
     <el-dialog :visible.sync="dialogShow" :title="dialogTitle" width="600px">
       <template v-if="currDialog === 'service'">
-        <el-form :model="serviceInfo" label-position="right" label-width="140px">
+        <el-form
+          :model="serviceInfo"
+          label-position="right"
+          label-width="140px"
+        >
           <el-form-item label="服务编码：">
-            <el-input size="small" placeholder="请输入服务编码" v-model="serviceInfo.code" :disabled="currType !== 1"></el-input>
+            <el-input
+              size="small"
+              placeholder="请输入服务编码"
+              v-model="serviceInfo.code"
+              :disabled="currType !== 1"
+            ></el-input>
           </el-form-item>
           <el-form-item label="服务名称：" style="margin: 10px 0">
-            <el-input size="small" placeholder="请输入服务名称" v-model="serviceInfo.name"></el-input>
+            <el-input
+              size="small"
+              placeholder="请输入服务名称"
+              v-model="serviceInfo.name"
+            ></el-input>
           </el-form-item>
           <el-form-item label="服务类型：">
-            <el-input size="small" placeholder="请输入服务类型" v-model="serviceInfo.type"></el-input>
+            <el-input
+              size="small"
+              placeholder="请输入服务类型"
+              v-model="serviceInfo.type"
+            ></el-input>
           </el-form-item>
         </el-form>
       </template>
       <template v-else>
         <el-form :model="sourceInfo" label-position="right" label-width="140px">
-        <el-form-item label="资源编码：">
-          <el-input size="small" placeholder="请输入资源编码" v-model="sourceInfo.ckey"  :disabled="currType !== 1"></el-input>
-        </el-form-item>
-        <el-form-item label="资源名称：" style="margin: 10px 0">
-          <el-input size="small" placeholder="请输入资源名称" v-model="sourceInfo.name"></el-input>
-        </el-form-item>
-        <el-form-item label="资源值：">
-          <el-input size="small" placeholder="请输入资源值" v-model="sourceInfo.cval"></el-input>
-        </el-form-item>
-      </el-form>
+          <el-form-item label="资源编码：">
+            <el-input
+              size="small"
+              placeholder="请输入资源编码"
+              v-model="sourceInfo.ckey"
+              :disabled="currType !== 1"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="资源名称：" style="margin: 10px 0">
+            <el-input
+              size="small"
+              placeholder="请输入资源名称"
+              v-model="sourceInfo.name"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="资源值：">
+            <el-input
+              size="small"
+              placeholder="请输入资源值"
+              v-model="sourceInfo.cval"
+            ></el-input>
+          </el-form-item>
+        </el-form>
       </template>
       <template slot="footer">
         <el-button @click="footerBtnClick('cancel')">取消</el-button>
-        <el-button type="primary" @click="footerBtnClick('confirm')">确定</el-button>
+        <el-button type="primary" @click="footerBtnClick('confirm')"
+          >确定</el-button
+        >
       </template>
     </el-dialog>
   </div>
 </template>
 
-<script>
-import TableItem from '@/components/Table'
-import { serviceAdd, serviceDelete, serviceEdit, serviceList, sourceAdd, sourceDelete, sourceEdit, sourceList, sourceListId} from "@/api/base";
-export default {
+<script lang='ts'>
+import {Vue,Component,Prop,Watch} from 'vue-property-decorator'
+import TableItem from '@/components/Table/index.vue'
+import { serviceAdd, serviceDelete, serviceEdit, serviceList, sourceAdd, sourceDelete, sourceEdit, sourceList} from "@/api/base";
+@Component({
   name: 'ServiceConfig',
-  components: { TableItem },
-  data() {
-    return {
-      serviceName: '',
-      serviceCode: '',
-      sourceName: '',
-      sourceValue: '',
-      pagination: { current: 1, size: 20 }, // 分页参数信息
-      total: 1,
-      list: [],
-      column: [
+  components: { TableItem }
+})
+export default class ServiceConfig extends Vue {
+  
+      serviceName= ''
+      serviceCode= ''
+      sourceName= ''
+      sourceValue= ''
+      pagination= { current: 1, size: 20 } // 分页参数信息
+      total= 1
+      list= []
+      column= [
         {
           label: '服务编码',
           prop: 'code'
@@ -170,9 +269,9 @@ export default {
           label: '类型',
           prop: 'type'
         }
-      ],
-      list1: [],
-      column2: [
+      ]
+      list1= []
+      column2= [
         {
           label: '资源编码',
           prop: 'ckey'
@@ -185,36 +284,36 @@ export default {
           label: '资源值',
           prop: 'cval'
         }
-      ],
-      serviceInfo: { // 服务信息
+      ]
+      serviceInfo= { // 服务信息
         code: undefined,
         name: undefined,
-        type: undefined
-      },
-      dialogShow: false, // 弹窗
-      currType: 1,
-      sourceInfo: { // 资源信息
+        type: undefined,
+        id:undefined
+      }
+      dialogShow= false // 弹窗
+      currType= 1
+      sourceInfo= { // 资源信息
         ckey: undefined,
         name: undefined,
         cval: undefined,
-      },
-      currDialog: 'service', // 弹窗当前为左侧服务
-      serviceChoosing: [],
-      sourceChoosing: [],
-    }
-  },
-  computed: {
-    dialogTitle() {
+        pid:undefined,
+        id:undefined
+      }
+      currDialog= 'service' // 弹窗当前为左侧服务
+      serviceChoosing= []
+      sourceChoosing= []
+  get dialogTitle() {
       return this.currType === 1 ? '新增' : '编辑';
     }
-  },
-  watch: {
-    serviceChoosing() {
+    @Watch('serviceChoosing')
+    serviceChoosingChange() {
       if(this.serviceChoosing.length === 1) {
         this.getSourceList();
       } else this.list1 = [];
-    },
-    dialogShow(val) {
+    }
+    @Watch('dialogShow')
+    dialogShowChange(val) {
       if(!val) {
         this.$nextTick(() => {
           Object.keys(this.serviceInfo).forEach(item => {
@@ -226,8 +325,6 @@ export default {
         })
       }
     }
-  },
-  methods: {
     // 获取服务列
     getServiceList() {
       if(this.serviceName !== '' || this.serviceCode !== '') {
@@ -246,7 +343,7 @@ export default {
         console.log(res.result.total, this.total);
         this.list = res.result.records || [];
       })
-    },
+    }
     // 新增服务
     addService(){
       //新增需要的form数据
@@ -254,7 +351,7 @@ export default {
         // 新增成功 刷新列表数据
         this.closedialogShow();
       })
-    },
+    }
     // 编辑服务
     editService() {
       this.serviceInfo.id = this.serviceChoosing[0].id;
@@ -262,12 +359,12 @@ export default {
         // 编辑完成 关闭弹窗并获取新数据
         this.closedialogShow();
       })
-    },
+    }
     // 新增编辑弹窗关闭公用方法
     closedialogShow() {
       this.dialogShow = false;
       this.currDialog === 'service' ? this.getServiceList() : this.getSourceList();
-    },
+    }
     // 删除服务项
     deleteService() {
       const data = {ids: this.serviceChoosing.map(item => item.id).join(',')};
@@ -277,7 +374,7 @@ export default {
           this.getServiceList();
         }
       })
-    },
+    }
     // 获取资源列
     getSourceList() {
       if(this.serviceChoosing.length === 0 ) {
@@ -297,7 +394,7 @@ export default {
       sourceList(data).then(res => {
         this.list1 = res.result.result || [];
       })
-    },
+    }
     // 新增资源
     addSource(){
       //新增需要的form数据
@@ -306,14 +403,14 @@ export default {
         // 新增成功 刷新列表数据
         this.closedialogShow();
       })
-    },
+    }
     // 编辑资源
     editSource() {
       sourceEdit(this.sourceInfo).then(() => {
         // 编辑完成 关闭弹窗并获取新数据
         this.closedialogShow();
       })
-    },
+    }
     // 删除资源项
     deleteSource() {
       const data = {ids: this.sourceChoosing.map(item => item.id).join(',')};
@@ -323,7 +420,7 @@ export default {
           this.getSourceList();
         }
       })
-    },
+    }
     // 服务侧按钮点击
     handleBtnClick(type, dialog) {
       this.currDialog = dialog;
@@ -338,10 +435,10 @@ export default {
         // 判断是服务还是资源
         if(dialog === 'service') {
           const { code, name, type } = this.serviceChoosing[0];
-          this.serviceInfo = { code, name, type };
+          this.serviceInfo = { code, name, type,id:undefined };
         } else {
           const { ckey, name, cval, id } = this.sourceChoosing[0];
-          this.sourceInfo = { ckey, name, cval, id };
+          this.sourceInfo = { ckey, name, cval, id,pid:undefined };
         }
       } else if(type === 'delete') {
          this.$confirm('是否删除数据？', '提示', {
@@ -354,7 +451,7 @@ export default {
           return false
         })
       }
-    },
+    }
     // 弹窗footer按钮点击
     footerBtnClick(type) {
       if(type === 'cancel') {
@@ -373,25 +470,25 @@ export default {
         }
         this.dialogShow = false;
       }
-    },
+    }
     //  页码
     handleCurrentChange(currentPage) {
       this.pagination.current = currentPage;
       this.getServiceList();
-    },
+    }
     // 条数
     handleSizeChange(pagesize) {
       this.pagination.size = pagesize;
       this.getServiceList();
-    },
+    }
     // 服务列表选择
     serviceSelection(value) {
       this.serviceChoosing = value;
-    },
+    }
     // 资源列表选择
     sourceSelection(value) {
       this.sourceChoosing = value;
-    },
+    }
 
     //双击查看
     handleServiceDbclick(data) {
@@ -400,7 +497,7 @@ export default {
       that.serviceChoosing.push(data)
       // console.log('双击查看'+JSON.stringify(data))
       that.handleBtnClick('edit', 'service')
-    },
+    }
 
     //双击查看
     handleSourceDbclick(data) {
@@ -410,8 +507,6 @@ export default {
       // console.log('双击查看'+JSON.stringify(data))
       that.handleBtnClick('edit', 'source')
     }
-
-  },
   mounted() {
     this.getServiceList();
   }
@@ -420,6 +515,6 @@ export default {
 
 <style lang="scss" scoped>
 /deep/ .el-table {
-    height: 680px;
-  }
+  height: 680px;
+}
 </style>
