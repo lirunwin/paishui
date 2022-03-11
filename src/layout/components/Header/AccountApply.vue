@@ -459,6 +459,7 @@ export default class AccountApply extends Vue {
     }
   }
   mounted() {
+    this.columns=columns;
     this.historyList();
     this.getdepartmentId();
     this.getAuditors();

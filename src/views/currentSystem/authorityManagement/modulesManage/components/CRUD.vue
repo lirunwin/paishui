@@ -1,5 +1,5 @@
 <template>
-  <div class="CRUD-component">
+  <div class="CRUD-component" style="height:100%;width:100%">
     <el-row style="margin-bottom: 20px">
       <el-col :span="20">
         <!-- <el-button type="primary" size="small" @click="handleBtnClick('query')" v-if="componentKey === 'system'">查询</el-button> -->
@@ -28,7 +28,7 @@
     <table-item
       :table-data="source"
       :column="columns"
-      :tableheight="700"
+      :tableheight="'calc(100% - 54px)'"
       :pagination="false"
       :isSelect="false"
       border
@@ -38,6 +38,7 @@
       @rowDblclick="handleDbclick"
     />
     <el-dialog
+      v-dialogDrag
       :visible.sync="dialogShow"
       :title="currTitle"
       width="650px"
@@ -58,8 +59,8 @@
             :prop="item.prop"
             style="margin-bottom: 20px"
           >
-            <el-input v-if="item.type === 'input'" v-model="form[item.prop]" />
-            <el-select v-else v-model="form[item.prop]">
+            <el-input size='small' v-if="item.type === 'input'" v-model="form[item.prop]" />
+            <el-select size='small' v-else v-model="form[item.prop]">
               <el-option
                 v-for="option in item.options"
                 :key="option.id"
@@ -110,7 +111,8 @@ export default class CRUDComponent extends Vue {
   dialogShow = false;
   selections = [];
   get currTitle() {
-    return this.currType === 1 ? "新增" : "编辑";
+    const title=(this.componentKey=='system'?'子系统':'菜单')
+    return (this.currType === 1 ? "新增" : "修改")+title;
   }
   @Watch("notiMenu")
   notiMenuChange(val) {
@@ -143,7 +145,8 @@ export default class CRUDComponent extends Vue {
         type: this.componentKey,
       });
     } else if (type === "delete") {
-      this.$confirm("是否要删除？", "提示", {
+      const title=(this.componentKey=='system'?'子系统?':'菜单?')
+      this.$confirm('确定删除选中的'+this.selections.length+'个'+title, "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning",

@@ -18,7 +18,9 @@ declare module 'axios'{
   }
 }
 // 创建axios实例
-export const IP = 'http://192.168.2.231:1111'
+// export const IP = 'http://192.168.2.231:1111'
+export const IP = 'http://192.168.2.103:1111'
+// export const IP = 'http://127.0.0.1:1111'
 //export const NewIp = 'http://58.17.241.6:1212'
 // export const NewIp = 'http://192.168.15.5:8095'
 // export const IP = 'http://192.168.100.204:1111'

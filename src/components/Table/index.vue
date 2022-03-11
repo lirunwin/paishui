@@ -1,14 +1,14 @@
 <template>
   <!-- 表格组件 -->
-  <div>
+  <div :style="'height:'+tableheightSet(tableheight)">
     <el-table
       ref="multipleTable"
       :v-loading="loading"
       :data="tableData"
       tooltip-effect="dark"
       :style="{width: '100%'}"
-      :height="tableheight + 'px'"
-      :max-height="tableheight"
+      :height="'calc(100% - 45px)'"
+      :max-height="'calc(100% - 45px)'"
       :border="border"
       :show-summary="summary"
       :cell-style="cellStyleF"
@@ -61,7 +61,7 @@
           </template>
           <template v-else>
             <span v-if="row[item.prop]||String(row[item.prop])==='0'||String(row[item.prop])==='00'">{{ row[item.prop] }}</span>
-            <span v-else>--</span>
+            <span v-else>-</span>
           </template>
         </template>
       </el-table-column>
@@ -236,15 +236,15 @@ export default {
     },
     pagesize: {
       type: Number,
-      default: 0
+      default: 30
     },
     currentpage: {
       type: Number,
       default: 0
     },
     tableheight: {
-      type: Number,
-      default: 435
+      type: String,
+      default: '435px'
     },
     // 单选高亮
     // highlight: {
@@ -361,6 +361,14 @@ export default {
     }
   },
   methods: {
+    tableheightSet(val){
+      const valType= typeof val;
+      if(valType=='number'){
+        return val+'px';
+      }else{
+        return val
+      }
+    },
     filterTag(value, row, column) {
       return row[column.property] === value
     },

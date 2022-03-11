@@ -1,7 +1,7 @@
 <template>
-  <div class="modules-manage">
-    <el-row type="flex" :gutter="20" style="height: 100%">
-      <el-col :span="12">
+  <div class="modules-manage" style="height:calc(100% - 40px);width:100%;position: absolute;overflow-y: auto;overflow-x: hidden;">
+    <el-row :gutter="20" style="height: 100%;width:100%;">
+      <el-col style="padding-right: 20px;width:calc(50% - 1px);position: relative;float: left;height:100%">
         <CRUD
           title="子系统管理"
           :columns="systemCols"
@@ -20,7 +20,7 @@
         />
       </el-col>
       <el-divider direction="vertical" class="divider" />
-      <el-col :span="12">
+      <el-col  style="padding-left: 20px;width:calc(50% - 1px);position: relative;float: left;height:100%">
         <CRUD
           title="菜单管理"
           :columns="menuCols"
@@ -85,7 +85,7 @@ const menuCols = [
   {
     label: "显示顺序",
     prop: "sort",
-    width: 60,
+    width: 100,
   },
   {
     label: "跳转用名称",
@@ -110,6 +110,7 @@ const menuCols = [
   },
   {
     label: "启用/禁用",
+    width:100,
     prop: "statusFlag",
     formatter: (row, col, cellVal, index) => {
       if (cellVal === "0") return "禁用";
@@ -340,6 +341,9 @@ export default class ModulesManage extends Vue {
   padding: 20px;
   .divider {
     height: 100%;
+    position: relative;
+    float: left;
+    margin: 0px;
   }
 }
 </style>

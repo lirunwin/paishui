@@ -1,8 +1,8 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" style="position: absolute;height:calc(100% - 40px);width:100%;overflow-y: auto;overflow-x: hidden;">
     <!-- 服务配置 -->
-    <el-row type="flex" :gutter="10" style="line-height: 54px">
-      <el-col :span="12">
+    <el-row type="flex" :gutter="10" style="line-height: 54px;height:100%">
+      <el-col style="height:100%;width:50%;padding-right:10px">
         <el-row type="flex" class="row-bg" justify="center">
           <el-col :span="7">
             <div class="demo-input-suffix">
@@ -67,14 +67,14 @@
             >
           </el-col>
         </el-row>
-        <div style="margin-top: 20px">
+        <div style="margin-top: 20px;height:100%;width:100%">
           <table-item
             :table-data="list"
             :column="column"
             :pagination="true"
             :pagesize="pagination.size"
             :currentpage="pagination.current"
-            :tableheight="660"
+            :tableheight="'calc(100% - 75px)'"
             :border="true"
             :multiple="true"
             :total="total"
@@ -89,7 +89,7 @@
           />
         </div>
       </el-col>
-      <el-col :span="12">
+      <el-col  style="height:100%;width:50%;padding-left:10px">
         <el-row type="flex">
           <el-col :span="7">
             <div class="demo-input-suffix">
@@ -155,12 +155,12 @@
             >
           </el-col>
         </el-row>
-        <div style="margin-top: 20px">
+        <div style="margin-top: 20px;height:100%;width:100%">
           <table-item
             :table-data="list1"
             :column="column2"
             :pagination="false"
-            :tableheight="660"
+            :tableheight="'calc(100% - 75px)'"
             :border="true"
             :multiple="true"
             :fixed="false"
@@ -172,14 +172,16 @@
         </div>
       </el-col>
     </el-row>
-    <el-dialog :visible.sync="dialogShow" :title="dialogTitle" width="600px">
+    <el-dialog :visible.sync="dialogShow" v-if='dialogShow'  v-dialogDrag :title="dialogTitle" @close='closedialogShow' width="600px">
       <template v-if="currDialog === 'service'">
         <el-form
           :model="serviceInfo"
+          :rules="serviceInfoRule"
           label-position="right"
           label-width="140px"
+          ref="serviceInfoForm"
         >
-          <el-form-item label="服务编码：">
+          <el-form-item label="服务编码：" prop="code">
             <el-input
               size="small"
               placeholder="请输入服务编码"
@@ -187,14 +189,14 @@
               :disabled="currType !== 1"
             ></el-input>
           </el-form-item>
-          <el-form-item label="服务名称：" style="margin: 10px 0">
+          <el-form-item label="服务名称：" prop="name" >
             <el-input
               size="small"
               placeholder="请输入服务名称"
               v-model="serviceInfo.name"
             ></el-input>
           </el-form-item>
-          <el-form-item label="服务类型：">
+          <el-form-item label="服务类型：" prop="type">
             <el-input
               size="small"
               placeholder="请输入服务类型"
@@ -204,8 +206,8 @@
         </el-form>
       </template>
       <template v-else>
-        <el-form :model="sourceInfo" label-position="right" label-width="140px">
-          <el-form-item label="资源编码：">
+        <el-form  :model="sourceInfo" :rules="sourceInfoRule" ref="sourceInfoForm" label-position="right" label-width="140px">
+          <el-form-item label="资源编码：" prop="ckey">
             <el-input
               size="small"
               placeholder="请输入资源编码"
@@ -213,14 +215,14 @@
               :disabled="currType !== 1"
             ></el-input>
           </el-form-item>
-          <el-form-item label="资源名称：" style="margin: 10px 0">
+          <el-form-item label="资源名称：" prop="name">
             <el-input
               size="small"
               placeholder="请输入资源名称"
               v-model="sourceInfo.name"
             ></el-input>
           </el-form-item>
-          <el-form-item label="资源值：">
+          <el-form-item prop="cval" label="资源值：">
             <el-input
               size="small"
               placeholder="请输入资源值"
@@ -253,7 +255,7 @@ export default class ServiceConfig extends Vue {
       serviceCode= ''
       sourceName= ''
       sourceValue= ''
-      pagination= { current: 1, size: 20 } // 分页参数信息
+      pagination= { current: 1, size: 30 } // 分页参数信息
       total= 1
       list= []
       column= [
@@ -291,6 +293,18 @@ export default class ServiceConfig extends Vue {
         type: undefined,
         id:undefined
       }
+      serviceInfoRule={
+        code:[{ required: true,  message: "服务编码是必填项！", trigger: "blur" }]
+        ,
+        name:[{ required: true,  message: "服务名称是必填项！", trigger: "blur" }],
+        type:[{ required: true,  message: "服务类型是必填项！", trigger: "blur" }]
+      };
+      sourceInfoRule={
+        ckey:[{ required: true,  message: "资源编码是必填项！", trigger: "blur" }]
+        ,
+        name:[{ required: true,  message: "资源名称是必填项！", trigger: "blur" }],
+        cval:[{ required: true,  message: "资源值是必填项！", trigger: "blur" }]
+      };
       dialogShow= false // 弹窗
       currType= 1
       sourceInfo= { // 资源信息
@@ -304,7 +318,8 @@ export default class ServiceConfig extends Vue {
       serviceChoosing= []
       sourceChoosing= []
   get dialogTitle() {
-      return this.currType === 1 ? '新增' : '编辑';
+      const title=(this.currDialog === 'service'?'服务':'资源')
+      return (this.currType === 1 ? '新增' : '修改')+title;
     }
     @Watch('serviceChoosing')
     serviceChoosingChange() {
@@ -364,6 +379,12 @@ export default class ServiceConfig extends Vue {
     closedialogShow() {
       this.dialogShow = false;
       this.currDialog === 'service' ? this.getServiceList() : this.getSourceList();
+      if(this.$refs.serviceInfoForm){
+        this.$refs.serviceInfoForm['resetFields']()
+      }
+      if(this.$refs.sourceInfoForm){
+        this.$refs.sourceInfoForm['resetFields']()
+      }
     }
     // 删除服务项
     deleteService() {
@@ -441,7 +462,9 @@ export default class ServiceConfig extends Vue {
           this.sourceInfo = { ckey, name, cval, id,pid:undefined };
         }
       } else if(type === 'delete') {
-         this.$confirm('是否删除数据？', '提示', {
+          const deleteList=(dialog === 'service'?this.serviceChoosing:this.sourceChoosing);
+          const title=(dialog === 'service'?'服务信息?':'资源信息?');
+          this.$confirm('确定删除选中的'+deleteList.length+'条'+title, '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -455,20 +478,38 @@ export default class ServiceConfig extends Vue {
     // 弹窗footer按钮点击
     footerBtnClick(type) {
       if(type === 'cancel') {
-        this.dialogShow = false;
+        // this.dialogShow = false;
+        this.closedialogShow();
       } else if(type === 'confirm') {
         // 点击确定判断是服务还是资源
         if(this.currDialog === 'service') {
-          // 再判断是新增还是编辑
-          if(this.currType === 1) {
-            this.addService();
-          } else this.editService();
+          this.$refs.serviceInfoForm['validate']((valid)=>{
+            if(valid){
+              // 再判断是新增还是编辑
+              if(this.currType === 1) {
+                this.addService();
+              } else  {
+                this.editService();
+              }
+              // this.dialogShow = false;
+            }else{
+              return false;
+            }
+          })
         } else {
-          if(this.currType === 1) {
-           this.addSource();
-          } else this.editSource();
+          this.$refs.sourceInfoForm['validate']((valid)=>{
+            if(valid){
+              if(this.currType === 1) {
+                this.addSource();
+              } else{
+                this.editSource();
+              } 
+              // this.dialogShow = false;
+            }else{
+              return false;
+            }
+          })
         }
-        this.dialogShow = false;
       }
     }
     //  页码
@@ -494,7 +535,7 @@ export default class ServiceConfig extends Vue {
     handleServiceDbclick(data) {
       const that = this 
       that.serviceChoosing = [];
-      that.serviceChoosing.push(data)
+      that.serviceChoosing.push(data);
       // console.log('双击查看'+JSON.stringify(data))
       that.handleBtnClick('edit', 'service')
     }

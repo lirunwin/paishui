@@ -1,13 +1,14 @@
 <template>
   <div class="tree_item" :style="customStyle">
-    <div class="title_box">
+    <div class="title_box" :style="titleBoxCustomStyle">
       <span v-if="required" class="required-class">*</span>
       <span>{{ title }}</span>
     </div>
-    <div class="tree_box">
+    <div class="tree_box" :style="treeBoxCustomStyle">
       <el-tree
         ref="tree"
         :data="value"
+        
         show-checkbox
         :node-key="nodeKey"
         :default-expand-all="defaultExpandAll"
@@ -39,6 +40,14 @@ export default {
       required: true
     },
     customStyle: {// 自定义样式
+      type: String,
+      default: ''
+    },
+    titleBoxCustomStyle:{// 提示标签自定义样式
+      type: String,
+      default: ''
+    },
+    treeBoxCustomStyle: {// 树状图自定义样式
       type: String,
       default: ''
     },

@@ -16,7 +16,37 @@ const map = {
   ModulesManage: () => import('@/views/currentSystem/authorityManagement/modulesManage/index.vue'), // 模块管理
   departmentManage: () => import('@/views/currentSystem/authorityManagement/section/index.vue'), // 单位管理
   serviceManage: () => import('@/views/currentSystem/authorityManagement/serviceConfig/index.vue'), // 服务配置
+  paramSetting: () => import('@/views/currentSystem/authorityManagement/paramSetting/index.vue'), // 参数配置
+  dictManagement: () => import('@/views/currentSystem/authorityManagement/dictManagement/index.vue'), // 字典管理
+  coveringSpecification: () => import('@/views/currentSystem/authorityManagement/coveringSpecification/index.vue'), // 覆土规范
 
+  //综合展示-工具栏
+  leftTopTool: () => import('@/views/zhpt/tongyonggongju/leftTopTool/widget.vue'), // 左侧顶部工具栏
+  searchTool: () => import('@/views/zhpt/tongyonggongju/leftTopTool/searchTool/widget.vue'), // 搜索工具
+  upOrDownView: () => import('@/views/zhpt/tongyonggongju/leftTopTool/upOrDownView/widget.vue'), // 上下视图
+
+  leftBottomTool: () => import('@/views/zhpt/tongyonggongju/leftBottomTool/widget.vue'), // 左侧底部工具栏
+  propScale: () => import('@/views/zhpt/tongyonggongju/leftBottomTool/propScale/widget.vue'), // 比例尺
+  showLoaction: () => import('@/views/zhpt/tongyonggongju/leftBottomTool/showLoaction/widget.vue'), // 坐标展示
+
+  rightTopTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/widget.vue'), // 右侧顶部工具栏
+  measureTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/widget.vue'), //测量工具
+  distanceTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/distanceTool.vue'), //距离测量
+  areaTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/areaTool.vue'), //面积测量
+  angleTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/angleTool.vue'), //角度测量
+  coordinateTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/coordinateTool.vue'), //坐标
+  clearMeasureTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/clearMeasureTool.vue'), //清除测量
+
+
+  rightBottomTool: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/widget.vue'), // 右侧底部工具栏
+  overView: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/overView/widget.vue'), // 鹰眼
+  regionZoomIn: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/regionZoomIn/widget.vue'), // 缩小
+  regionZoomOut: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/regionZoomOut/widget.vue'), // 放大
+  initExtent: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/initExtent/widget.vue'), // 初始范围
+  viewSwitch: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/viewSwitch/widget.vue'), // 视图切换
+  mapCompass: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/mapCompass/widget.vue'), // 指北针
+
+  
   // // 营销业务管理系统
   // register: () => import('@/views/currentSystem/work/order/register/index'), // 工单登记
   // WorkList: () => import('@/views/currentSystem/work/WorkList/work/index'), // 工单汇总

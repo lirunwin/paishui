@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" style="height:calc(100% - 40px);width:100%;position: absolute;overflow-y: auto;overflow-x: hidden;">
     <div class="hander_journal">
       <!-- 操作日志管理 -->
       <select-item
@@ -17,15 +17,6 @@
         @changeSelectValue="changeSelectValue"
       />
       时间：
-      <!-- <el-date-picker
-        v-model="value1"
-        size="small"
-        type="daterange"
-        range-separator="至"
-        start-placeholder="开始日期"
-        end-placeholder="结束日期"
-        value-format="yyyy-MM-dd"
-      /> -->
       <el-date-picker
         v-model="problems.startTime"
         style="width: 140px"
@@ -45,8 +36,6 @@
         :picker-options="endOptions"
         value-format="yyyy-MM-dd"
       />
-
-      <!-- @focus="getCopyDeptUserList"  -->
       <span v-if="!btnFlag">人员：</span>
       <el-select
         v-if="!btnFlag"
@@ -71,53 +60,10 @@
         <el-button v-if="!btnFlag" type="primary" size="small" @click="retreat"
           >返回</el-button
         >
-        <!-- <el-button type="primary" size="small" @click="queryAll">查询全部</el-button> -->
       </div>
     </div>
-    <div>
-      <div v-if="btnFlag" style="width: 100%">
-        <!-- <el-table
-        :data="deptList"
-        :pagination="false"
-        :height="tableheight + 'px'"
-        :max-height="tableheight"    
-        :highlight-current-row="true"
-        :stripe="true"
-        :border="true"
-        :multiple="false"
-        :fixed="false"
-        :isdelete="false"
-        :show-summary="true"
-        :summary-method="getSummaries"
-        @cell-dblclick="cellDblclick" 
-        style="width: 100%">
-        <el-table-column
-          prop="order"
-          label="序号"
-          width="60">
-        </el-table-column>
-
-        <el-table-column
-          prop="deptname"
-          label="部门名称">
-        </el-table-column>
-
-        <el-table-column
-          prop="errornum"
-          label="错误日志">
-        </el-table-column>
-
-        <el-table-column
-          prop="datanum"
-          label="数据操作日志">
-        </el-table-column>
-
-        <el-table-column
-          prop="lognum"
-          label="登录日志">
-        </el-table-column>
-      </el-table> -->
-
+    <div class="journalTable" style="height:calc(100% - 57px);width:100%">
+      <div v-if="btnFlag" style="width: 100%;height:100%">
         <table-item
           :key="new Date().getTime()"
           :table-data="deptList"
@@ -133,26 +79,8 @@
           :get-summaries="getSummaries"
           @cellDblclick="cellDblclick"
         />
-
-        <!-- <table-item
-          :table-data="deptList"
-          :column="deptColumn"
-          :pagination="false"
-          :pagesize="pagination.size"
-          :currentpage="pagination.current"
-          :tableheight="640"
-          :border="true"
-          :multiple="false"
-          :total="total"
-          :fixed="false"
-          :isdelete="true"
-          :cell-style="cellStyle"
-          :summary="true"
-          :get-summaries="getSummaries"
-          @cellDblclick="cellDblclick"
-        /> -->
       </div>
-      <div v-if="!btnFlag">
+      <div v-if="!btnFlag" style="height:100%;width:100%">
         <table-item
           :table-data="list"
           :column="column"
@@ -160,7 +88,7 @@
           :pagination="true"
           :pagesize="pagination.size"
           :currentpage="pagination.current"
-          :tableheight="700"
+          :tableheight="'100%'"
           :border="true"
           :multiple="false"
           :total="total"
@@ -212,7 +140,6 @@ export default class Journal extends Vue {
     },
   ];
   journal = "";
-  // value1: '',
   // 筛选条件
   problems = {
     startTime: null,
@@ -245,23 +172,13 @@ export default class Journal extends Vue {
     columnLabel: "", //选中的类型
     deptId: "" //选中的部门
   };
-  pagination = { current: 1, size: 20 }; // 分页参数信息
+  pagination = { current: 1, size: 30 }; // 分页参数信息
   total = 0;
   list = [
     {
-      // // userAgent: '客户名',
-      // type: '日志类型',
-      // exception: '异常信息',
-      // remoteAddr: 'ip地址',
-      // updateTime: '2000-11-10 10:10:00'
     },
   ];
   column = [
-    // {
-    //   label: '序号',
-    //   width: 60,
-    //   prop: 'order'
-    // },
     {
       label: "日志类型",
       prop: "type",
@@ -294,15 +211,6 @@ export default class Journal extends Vue {
       slotScoped: "dwonfile",
       acts: [{ emitWay: "detail", operation: "下载", color: "blue" }],
     },
-
-    // {
-    //   label: '附件',
-    //   prop: 'routeIp',
-    //   formatter: (row, col, cellVal, index) => {
-    //     if(cellVal !== "1") return '日志下载'
-    //     else return ""
-    //   }
-    // },
     {
       label: "时间",
       prop: "updateTime",
@@ -314,11 +222,6 @@ export default class Journal extends Vue {
   tableheight = "true";
   deptList = [];
   deptColumn = [
-    // {
-    //   label: '序号',
-    //   width: 60,
-    //   prop: 'order'
-    // },
     {
       label: "部门名称",
       prop: "deptname",
@@ -340,11 +243,6 @@ export default class Journal extends Vue {
 
   created() {
     this.btnFlag = true;
-
-    // let heightStyle = that.$refs.tableDept.offsetHeight
-    //   that.tableheight = heightStyle
-
-    //this.fetchData(this.pagination)
   }
   mounted() {
     this.getInitData();
@@ -357,7 +255,6 @@ export default class Journal extends Vue {
     var that = this;
     var date = new Date();
     // //开始时间
-    // var binDate = new Date(date.getFullYear(), 0, 1)
     //结束时间
     var currentYear = date.getFullYear();
     var currentMonth = date.getMonth();
@@ -373,12 +270,9 @@ export default class Journal extends Vue {
     }
     //开始时间
     var binDate = new Date(currentYear, currentMonth, nextDay);
-
-    // var oneDay=1000*60*60*24
     var endDate = new Date(nextMonthFirstDay);
 
     //赋值
-    // that.value1 = [binDate,endDate]
     that.problems.startTime = binDate;
     that.problems.endTime = endDate;
   }
@@ -387,34 +281,8 @@ export default class Journal extends Vue {
    * @description 计算开始、结束时间
    */
   dateDiff() {
-    //ls 20220221
-    // if (this.arrayIsNull(this.value1)) {
-    //   this.postSearch.startDate = "";
-    //   this.postSearch.endDate = "";
-    //   return;
-    // }
-    // if (this.value1[0])
-    //   if (Array.isArray(this.value1)) {
-    //     var bintime = this.value1[0];
-    //     var bindate =
-    //       bintime.getFullYear() +
-    //       "-" +
-    //       (bintime.getMonth() + 1) +
-    //       "-" +
-    //       bintime.getDate();
-    //     this.postSearch.startDate = bindate + " 00:00:00";
-    //     //处理时间
-    //     var endtime = this.value1[1];
-    //     var enddate =
-    //       endtime.getFullYear() +
-    //       "-" +
-    //       (endtime.getMonth() + 1) +
-    //       "-" +
-    //       endtime.getDate();
-    //     this.postSearch.endDate = enddate + " 23:59:59";
-    //     //图表标题
-    //   }
   }
+  
   /**
    * 获取部门统计报表
    */
@@ -428,17 +296,6 @@ export default class Journal extends Vue {
     getCountLogType(data).then((res) => {
       let resultData = res.result;
       that.deptList = that.arrayGroupDept(resultData);
-      console.log(JSON.stringify(that.deptList));
-
-      // res.result.forEach((item, index) => {
-      //   item.order = index + 1
-      //   item.isdownfile = false
-      //   if (!this.strIsNull(item.routeIp)) {
-      //     // console.log("参数："+item.isdownfile)
-      //     item.isdownfile = true
-      //   }
-      // })
-      // this.list = res.result.records
     });
   }
 
@@ -490,45 +347,31 @@ export default class Journal extends Vue {
         lognum: lognumAry.length > 0 ? lognumAry[0].num : "",
       });
     });
-
     return resNew;
   }
 
   // 获取列表数据
   fetchData(data) {
     let that = this;
-    //this.listLoading = true;
     getJournalList(data).then((res) => {
       res.result.records.forEach((item, index) => {
         item.order =
           (that.pagination.current - 1) * that.pagination.size + index + 1;
         item.isdownfile = false;
         if (!this.strIsNull(item.routeIp)) {
-          // console.log("参数："+item.isdownfile)
           item.isdownfile = true;
         }
       });
       this.list = res.result.records;
-
-      // this.list = res.result.records
-      // this.list.forEach((item, index) => {
-      //   item.order = index + 1;
-      //   item.isdownfile = false;
-      //   if(this.strIsNull(item.routeIp)){
-      //     console.log("参数："+item.isdownfile)
-      //       item.isdownfile = true;
-      //   }
-      // })
       this.total = res.result.total;
-      //this.listLoading = false;
     });
   }
+
   /**
    * 下拉选择组件数据绑定方法事件
    */
   changeSelectValue(key, event) {
     this[key] = event;
-    // console.log('2222', this.roleId)
   }
 
   // 查询
@@ -537,7 +380,6 @@ export default class Journal extends Vue {
       this.getDeptLogType();
     } else {
       this.dateDiff();
-
       const data = {
         type: this.journal,
         startDate: this.postSearch.startDate,
@@ -597,8 +439,6 @@ export default class Journal extends Vue {
   detailsLook(data) {
     var that = this;
     // 测试地址
-    // data.routeIp = "/xrty/excelmb/1306852474582491137.xlsx"
-    // console.log(data)
     if (that.strIsNull(data.routeIp)) {
       that.$message.error("附件路径为空,无法下载");
     } else {
@@ -651,7 +491,6 @@ export default class Journal extends Vue {
         size: 10000000,
       };
       getUserList(data).then((res) => {
-        //console.log(res);
         this.userList = res.result.records;
       });
     }
@@ -721,31 +560,15 @@ export default class Journal extends Vue {
 <style lang="scss" scoped>
 #app-container {
   padding: 20px 30px;
-  //   .hander_journal {
-  //     display: inline-block;
-  //     margin-bottom: 10px;
-  //     border: 1px red solid;
-
-  //     .btn_box{
-  //       display: inline-block;
-  //       margin-left: 20px;
-  //     }
-  //   }
-
-  //   /deep/ .el-table td{
-  //     text-align: center;
-  //   }
-  //   /deep/  .el-table th {
-  //     text-align: center;
 }
-
-// }
 
 .hander_journal {
   display: inline-block;
   line-height: 54px;
 }
-
+/deep/.journalTable td,.journalTable th{
+  text-align: center;;
+}
 .btn_box {
   display: inline-block;
   margin-left: 20px;

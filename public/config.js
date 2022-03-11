@@ -19,7 +19,8 @@ export const appconfig = {
   // 地图初始视角中心
   'initCenter': { 'x': 104.44483, 'y': 30.85523 },
   // 地图初始视角级别
-  'initZoom': 3,
+  'initZoom': 15,
+  // 'initZoom': 3,
   // token
   'usertoken': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJVc2VySUQiOiIiLCJVU0VSTkFNRSI6IiIsIlJFQUxOQU1FIjoiIiwiV0tJRCI6NDU0NCwiUkFOR0UiOiJYUlRZIiwiUkFOR0VGSUVMRCI6bnVsbCwiQ09ERSI6IlhSVFkiLCJDT05ORUNUU1RSIjoiREFUQUJBU0U9b3JjbDtORVROQU1FPTE5Mi4xNjguMi4yNDIvb3JjbDtTRVJWRVI9MTkyLjE2OC4yLjI0MjtVU0VSSUQ9dGZfeHJ0eV9nZW87UEFTU1dPUkQ9dGZfeHJ0eV9nZW87UE9SVD0xNTIxQDUxNTEvdGNwO1ZFUlNJT049c2RlLkRFRkFVTFQiLCJCb3JuVGltZSI6MCwiQXBwSUQiOm51bGx9.bMNoX6nsvNYukk47_UnT9IHGlNIWclbmiXTj3ak1i5KuF5LGexfwV7TwF80nP08GEPaNwScgk7lbJkRHcqtT8w',
   // 地图资源服务
@@ -28,7 +29,8 @@ export const appconfig = {
       'groupname': '天地图在线矢量服务',
       'type': 'webTiled',
       'config': [
-        { 'name': '矢量地图', 'url': 'http://{subDomain}.tianditu.com/DataServer?T=vec_c&x={col}&y={row}&l={level}&tk=' }
+        { 'name': '矢量地图', 'url': 'https://iserver.supermap.io/iserver/services/map-world/rest/maps/World' }
+        // { 'name': '矢量地图', 'url': 'http://{subDomain}.tianditu.com/DataServer?T=vec_c&x={col}&y={row}&l={level}&tk=' }
       ]
     },
     'tian_online_raster': {

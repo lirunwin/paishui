@@ -38,29 +38,32 @@ export function packageRouter(routerlist) {
   }
   const router:any[] = []
   routerlist.forEach(e => {
-    let e_new = {
-      path: e.path || '',
-      name: e.name,
-      id: e.pathId,
-      type: e.type,
-      label: e.label,
-      icon: extractIcon(e.icon),
-      widgetid: e.widgetid || '',
-      component: _import(e.component),
-      meta: e.meta && e.meta !== null && JSON.parse(e.meta)
+    if(e.statusFlag=="1"){
+      let e_new = {
+        path: e.path || '',
+        name: e.name,
+        id: e.pathId,
+        type: e.type,
+        label: e.label,
+        icon: extractIcon(e.icon),
+        widgetid: e.widgetid || '',
+        component: _import(e.component),
+        meta: e.meta && e.meta !== null && JSON.parse(e.meta),
+        parentPathid:e.parentPathid||''
+      }
+      if (e.childrens && e.childrens.length > 0) {
+        e_new = Object.assign({}, e_new, {
+          children: packageRouter(e.childrens)
+        })
+      }
+      if (e.redirect) {
+        e_new = Object.assign({}, e_new, { redirect: e.redirect })
+      }
+      if (e.path === '/map') {
+        e_new = Object.assign({}, e_new, { hidden: true })
+      }
+      router.push(e_new)
     }
-    if (e.childrens && e.childrens.length > 0) {
-      e_new = Object.assign({}, e_new, {
-        children: packageRouter(e.childrens)
-      })
-    }
-    if (e.redirect) {
-      e_new = Object.assign({}, e_new, { redirect: e.redirect })
-    }
-    if (e.path === '/map') {
-      e_new = Object.assign({}, e_new, { hidden: true })
-    }
-    router.push(e_new)
   })
   return router
 }

@@ -73,6 +73,12 @@ const mutations = {
       state.floatPanels.push(data)
     }
   },
+  // SET_NO_BOX: (state:dStore.map.state, data) => {
+  //   state.floatP_editableTabsValue = data.com
+  //   if (!some(state.floatPanels, data.com)) {
+  //     state.floatPanels.push(data)
+  //   }
+  // },
   DEL_FUN: (state:dStore.map.state, data) => {
     state.panels = delOne(state.panels, data)
     if (state.panels.length > 0) { state.P_editableTabsValue = state.panels[0].com }
@@ -148,6 +154,9 @@ const actions = {
     if (value.widgetid === 'FloatPanel') {
       commit('SET_FLOAT', data)
     }
+    // if (!value.widgetid) {
+    //   commit('SET_NO_BOX', data)
+    // }
   },
   // 删除单个
   handelClose({ commit, state }, data) {

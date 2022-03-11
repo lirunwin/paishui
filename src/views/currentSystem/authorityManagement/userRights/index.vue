@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <div class="app-container">
+  <div style="height:100%;width:100%;position: absolute;">
+    <div class="app-container" style="height:calc(100% - 40px);width:100%;overflow-y: auto;overflow-x: hidden;">
       <float-panels title="浮动窗口" />
       <!-- 用户权限管理 -->
       <div class="handerUser">
@@ -88,11 +88,9 @@
           <el-button type="primary" size="small" @click="onSubmitS"
             >查询用户</el-button
           >
-          <!-- <el-button type="primary" size="small" @click="onSubmitAll">全部用户</el-button> -->
           <el-button type="primary" size="small" @click="handleAdded"
             >新增用户</el-button
           >
-          <!-- <el-button type="primary" size="small" @click="handleAddedCopy">复制用户</el-button> -->
           <el-button
             :disabled="disabledEdit"
             type="primary"
@@ -107,11 +105,6 @@
             @click="handleManyUser"
             >删除用户</el-button
           >
-          <!-- <el-button type="primary" size="small" :disabled="disabledEdit" @click="enableSettings">启用设置</el-button> -->
-          <!-- <el-button type="primary" size="small">批量导入</el-button> -->
-          <!-- <el-button type="primary" size="small" :disabled="disabledEdit" :style="disabledEdit ? 'background:#bec5c9;border-color: #bec5c9;' : ''" @click="roleBinding">角色绑定</el-button> -->
-          <!-- <el-button type="primary" size="small" @click="userUnlock">用户解锁</el-button> -->
-          <!-- <el-button type="primary" size="small" :disabled="multipleSelection.length !== 1" @click="roleBinding">角色绑定</el-button> -->
           <el-button
             type="primary"
             size="small"
@@ -126,7 +119,6 @@
             @click="audit"
             >审核</el-button
           >
-          <!-- <el-button type="primary" size="small" @click="batchImport">批量导入</el-button> -->
           <el-button type="primary" size="small" @click="templateDownload"
             >模版下载</el-button
           >
@@ -171,7 +163,6 @@
             @click="handleAuthOperation('unlock')"
             >解锁</el-button
           >
-          <!-- <el-button type="primary" size="small" :disabled="multipleSelection.length === 0" @click="handleAuthOperation('lock')">锁定</el-button> -->
           <input
             id="file"
             ref="files"
@@ -188,7 +179,7 @@
         :pagination="true"
         :pagesize="pagination.size"
         :currentpage="pagination.current"
-        :tableheight="620"
+        :tableheight="'calc(100% - 129px)'"
         :border="true"
         :multiple="true"
         :total="total"
@@ -227,26 +218,6 @@
     </el-dialog>
     <el-dialog
       v-dialogDrag
-      title="删除用户"
-      :visible.sync="dialogDelete"
-      width="500px"
-    >
-      <span>确认是否删除用户？</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogDelete = false">取 消</el-button>
-        <el-button type="primary" @click="confirmDelete">确 定</el-button>
-      </span>
-    </el-dialog>
-    <!-- <el-dialog v-dialogDrag title="启用设置" :visible.sync="enable.enableSetting" width="500px">
-      <input-item type="text" placeholder title="用户名：" custom-style="display: inline-block; width: 80%; line-height: 32px;" :value="enable.enableName" :max-length="50" :disabled="true" :required="false" />
-      <select-item placeholder="请选择" title="是否启用：" nominate="enableFlag" custom-style="display: inline-block; margin-top: 20px;width: 80%;line-height: 32px;" :value="enableFlag" :disabled="false" :required="false" :filterable="true" :options="enable.optionsEnable" @changeSelectValue="changeSelectValue" />
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="enable.enableSetting = false">取 消</el-button>
-        <el-button type="primary" @click="confirmEnable">确 定</el-button>
-      </span>
-    </el-dialog> -->
-    <el-dialog
-      v-dialogDrag
       title="角色权限绑定"
       :visible.sync="role.roleBind"
       width="500px"
@@ -256,30 +227,18 @@
         <input-item
           type="text"
           placeholder
-          title="用户名："
-          custom-style="display: inline-block; width: 80%; line-height: 32px;"
+          title="用户名"
+          custom-style="display: inline-block; width: 80%; line-height: 32px; margin-bottom: 15px"
           :value="role.roleName"
           :max-length="50"
           :disabled="true"
           :required="false"
         />
-        <!-- <select-item
-        placeholder="请选择"
-        title="角色："
-        nominate="roleId"
-        custom-style="display: inline-block; margin-top: 20px;width: 80%;line-height: 32px;"
-        :value="roleId"
-        :disabled="false"
-        :required="false"
-        :filterable="true"
-        :options="role.optionsRole"
-        @changeSelectValue="changeSelectValue"
-      />-->
         <SelectMultiple
           placeholder="请选择"
-          title="角色复制："
+          title="角色复制"
           nominate="copyRole"
-          custom-style="display: inline-block; width: 80%; line-height: 32px;"
+          custom-style="display: inline-block; width: 80%; line-height: 32px;margin-bottom: 15px"
           :value="copyRole"
           :disabled="false"
           :required="false"
@@ -292,9 +251,9 @@
 
         <SelectMultiple
           placeholder="请选择"
-          title="角色："
+          title="角色"
           nominate="roleId"
-          custom-style="display: inline-block; width: 80%; line-height: 32px;"
+          custom-style="display: inline-block; width: 80%; line-height: 32px;margin-bottom: 15px"
           :value="roleId"
           :disabled="false"
           :required="false"
@@ -317,7 +276,7 @@
       width="500px"
     >
       <div class="user-base-info">
-        <span class="audit-title">申请信息：</span>
+        <span class="audit-title">申请信息</span>
         <div>
           <span>登录名：</span><span>{{ multipleSelection[0].username }}</span>
         </div>
@@ -334,11 +293,22 @@
           <span>部门：</span><span>{{ multipleSelection[0].deptName }}</span>
         </div>
         <div>
-          <span>个性签名图片：</span
-          ><img :src="multipleSelection[0].esignature" />
+          <span>个性签名图片：</span>
+          <el-image 
+            style="width: 100px; height: 100px"
+            :src="multipleSelection[0].esignature"
+            :preview-src-list="[multipleSelection[0].esignature]">
+          </el-image>
+          <!-- <img :src="multipleSelection[0].esignature" /> -->
         </div>
         <div>
-          <span>用户头像：</span><img :src="multipleSelection[0].avatar" />
+          <span>用户头像：</span>
+          <el-image 
+            style="width: 100px; height: 100px"
+            :src="multipleSelection[0].avatar"
+            :preview-src-list="[multipleSelection[0].avatar]">
+          </el-image>
+          <!-- <img :src="multipleSelection[0].avatar" /> -->
         </div>
         <div>
           <span>工作岗位：</span><span>{{ multipleSelection[0].job }}</span>
@@ -360,7 +330,7 @@
         </div>
       </div>
       <div class="audit-info">
-        <span class="audit-title">审核信息：</span>
+        <span class="audit-title">审核信息</span>
         <el-form
           ref="auditForm"
           :model="auditInfo"
@@ -425,7 +395,7 @@
         >
       </span>
     </el-dialog>
-    <el-dialog v-if="detailInfo" title="用户详情" :visible.sync="detailDialog" append-to-body>
+    <el-dialog v-if="detailInfo" title="用户详情"  v-dialogDrag :visible.sync="detailDialog" append-to-body>
       <el-collapse v-model="activeNames">
         <el-collapse-item title="基本信息" name="baseInfo">
           <el-row>
@@ -585,15 +555,6 @@ export default class UserRights extends Vue {
   list = [];
   total = 0;
   column = [
-    // {
-    //   label: '序号',
-    //   width: 60,
-    //   prop: 'order',
-    //   // sortable: true
-    //   formatter: (row, column, cellValue, index) => {
-    //     return index + 1
-    //   }
-    // },
     {
       label: "登录名",
       width: 120,
@@ -608,7 +569,6 @@ export default class UserRights extends Vue {
     },
     {
       label: "部门",
-      // width: 120,
       prop: "deptName",
       sortable: true,
     },
@@ -648,7 +608,7 @@ export default class UserRights extends Vue {
     },
     {
       label: "启用状态",
-      width: 120,
+      width: 110,
       prop: "enableFlag",
       formatter: (row, column, cellValue, index) => {
         if (cellValue === "0") return "禁用";
@@ -658,7 +618,7 @@ export default class UserRights extends Vue {
     },
     {
       label: "锁定状态",
-      width: 120,
+      width: 110,
       prop: "lockFlag",
       sortable: true,
       formatter: (row, column, cellValue, index) => {
@@ -678,13 +638,13 @@ export default class UserRights extends Vue {
       },
     },
     {
-      label: "申请/创建时间",
-      width: 140,
+      label: "创建时间",
+      width: 160,
       prop: "createTime",
       sortable: true,
     },
     {
-      label: "申请/创建人",
+      label: "创建人",
       width: 120,
       prop: "createUserName",
       sortable: true,
@@ -751,7 +711,6 @@ export default class UserRights extends Vue {
   dialogVisible = false;
   dialogTitle = "新增用户";
   editData = null;
-  dialogDelete = false; // 删除
   enable = {
     enableSetting: false, // 启用设置
     optionsEnable: [
@@ -786,16 +745,14 @@ export default class UserRights extends Vue {
   files = []; // 上传文件
   roleId = []; // 角色编号集合
   userId = []; // 用户编号集合
-  pagination = { current: 1, size: 20 }; // 分页参数信息
+  pagination = { current: 1, size: 30 }; // 分页参数信息
   disabledEdit = true;
   detailDialog = false;
   detailInfo = null
   activeNames = ["baseInfo"];
-
   copyRole = []; // 选择的复制角色用户
   copyUsers = []; // 用户列表
   roleValidate(rule, value, callback) {
-    console.log(value);
     if (value.length === 0) {
       return callback(new Error("角色不能为空!"));
     } else {
@@ -803,7 +760,6 @@ export default class UserRights extends Vue {
     }
   }
   get canAudit() {
-    console.log("账号：" + this.$store.state.user.username);
     return !(
       this.multipleSelection.length === 1 &&
       this.multipleSelection[0].auditstatus === "1" &&
@@ -858,13 +814,11 @@ export default class UserRights extends Vue {
     this.fetchData(this.pagination);
     this.getCompanyInfo();
     this.getRoleInfo();
-    // const data = param2Obj('https://fz.bajiaohua.cn/?crowdfundId=9')
     this.getCopyDeptUserList();
     
   }
   // 权限操作
   handleAuthOperation(type) {
-    // const ids = {ids: this.multipleSelection.map(item => item.id).join(',')};
     const ids = new FormData();
     ids.append("ids", this.multipleSelection.map((item) => item.id).join(","));
     const success = (resp, message) => {
@@ -875,7 +829,6 @@ export default class UserRights extends Vue {
         });
       }
       this.onSubmit();
-      // this.fetchData(this.pagination)
     };
     switch (type) {
       case "enable":
@@ -894,29 +847,7 @@ export default class UserRights extends Vue {
   }
   // 双击table行
   handleDbclick(data) {
-    console.log("双击查看");
-    this.detailDialog = true;
-    this.detailInfo = data;
-    this.detailInfo.jobduties = "";
-    // 对职责进行处理
-    if (!this.strIsNull(this.detailInfo.note)) {
-      this.detailInfo.jobduties = this.detailInfo.note
-        .replace(/\r\n/g, "<br/>")
-        .replace(/\n/g, "<br/>")
-        .replace(/\s/g, " ");
-    }
-
-    const arr = [this.detailInfo.avatar, this.detailInfo.esignature];
-    arr.forEach((item, index) => {
-      if (item === null) return;
-      imageByName(item).then((res) => {
-        if (res.status === 200) {
-          index === 1
-            ? (this.detailInfo.esignature = res.config.url)
-            : (this.detailInfo.avatar = res.config.url);
-        }
-      });
-    });
+    this.dbClickHandleEdit(data);
   }
   // 审核用户
   audit() {
@@ -928,6 +859,7 @@ export default class UserRights extends Vue {
     ];
     arr.forEach((item, index) => {
       imageByName(item).then((res) => {
+        debugger
         if (res.status === 200) {
           index === 1
             ? (this.multipleSelection[0].esignature = res.config.url)
@@ -942,7 +874,6 @@ export default class UserRights extends Vue {
   // 批量导入
   batchImport(params) {
     const { type } = params.file;
-    console.log(type);
     const types = [
       "application/vnd.ms-excel",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -963,10 +894,8 @@ export default class UserRights extends Vue {
           message: "导入成功!",
           type: "success",
         });
-        // this.fetchData(this.pagination)
         this.onSubmit();
       } else {
-        console.log("导入失败", res.message);
         this.$message({
           message: "导入失败!",
           type: "error",
@@ -1049,7 +978,6 @@ export default class UserRights extends Vue {
                 message: "用户审核成功",
               });
               this.onSubmit();
-              // this.fetchData(this.pagination)
               this.auditVisible = false;
             }
           });
@@ -1061,37 +989,31 @@ export default class UserRights extends Vue {
   }
 
   handleCurrentChange(currentPage) {
-    // console.log('2222111')
     this.pagination.current = currentPage;
     this.onSubmit();
   }
 
   handleSizeChange(pagesize) {
-    // console.log('aaaa')
     this.pagination.size = pagesize;
     this.onSubmit();
   }
 
   handleSelectionChange(value) {
     this.multipleSelection = value;
-    // console.log('1111', value)
   }
 
-  // handleClick(value) {
-  //   console.log('查看', value)
-  // },
-
   handleEdit() {
-    console.log("编辑", this.multipleSelection);
     this.dialogTitle = "修改用户";
     this.dialogVisible = true;
     this.editData = this.multipleSelection[0];
-    // this.$refs.ruleForm.handleEdit(value)
   }
 
-  // handleDelete(value) {
-  //   console.log('删除', value)
-  // },
+  dbClickHandleEdit(row){
+    this.dialogTitle = "修改用户";
+    this.dialogVisible = true;
+    this.editData = row;
+  }
+
   onSubmitS() {
     this.pagination.current = 1;
     this.onSubmit();
@@ -1108,7 +1030,6 @@ export default class UserRights extends Vue {
     };
     data = Object.assign({}, data, this.pagination);
     this.fetchData(data);
-    console.log("submit!");
   }
 
   onSubmitAll() {
@@ -1116,8 +1037,6 @@ export default class UserRights extends Vue {
   }
 
   handleAdded() {
-    console.log("新增");
-    // this.$refs.ruleForm.resetFields()
     this.dialogTitle = "新增用户";
     this.dialogVisible = true;
     this.editData = {};
@@ -1126,12 +1045,9 @@ export default class UserRights extends Vue {
    * @description 赋值新增 用户角色
    */
   handleAddedCopy() {
-    console.log("新增");
-    // this.$refs.ruleForm.resetFields()
     this.dialogTitle = "复制新增用户";
     this.dialogVisible = true;
     const roleIdAry = [];
-    console.log("角色绑定", JSON.stringify(this.multipleSelection));
     const currentUsers = this.multipleSelection;
     if (currentUsers.length !== 0) {
       // 获取选中的角色数据
@@ -1147,23 +1063,32 @@ export default class UserRights extends Vue {
       });
     }
     const roleIds = Array.from(new Set(roleIdAry));
-
     this.editData = {
       roles: roleIds,
     };
   }
 
   handleManyUser() {
-    console.log("批量删除");
     if (this.multipleSelection.length > 0) {
-      this.dialogDelete = true;
+      this.$confirm('确定删除选中的'+this.multipleSelection.length+'名用户?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+          }).then(() => {
+              this.confirmDelete();
+          }).catch(() => {
+              this.$message({
+                  type: 'info',
+                  message: '已取消删除'
+              });          
+          });
     } else {
       this.$message.error("请选择要删除的用户");
     }
   }
+  
   // 确认删除
   confirmDelete() {
-    console.log("2222", this.multipleSelection);
     const ids = [];
     for (let i = 0; i < this.multipleSelection.length; i++) {
       ids.push(this.multipleSelection[i].id);
@@ -1178,11 +1103,9 @@ export default class UserRights extends Vue {
         _this.onSubmit();
       }
     });
-    this.dialogDelete = false;
   }
 
   enableSettings() {
-    console.log("启用设置", this.multipleSelection);
     if (this.multipleSelection.length === 1) {
       this.enable.enableSetting = true;
       this.enable.enableName = this.multipleSelection[0].realName;
@@ -1200,16 +1123,13 @@ export default class UserRights extends Vue {
 
     editUser(data).then((res) => {
       this.$message.success("设置成功");
-      // this.fetchData(this.pagination)
       this.onSubmit();
     });
     this.enable.enableSetting = false;
   }
 
   roleBinding() {
-    console.log("角色绑定", JSON.stringify(this.multipleSelection));
     const currentUsers = this.multipleSelection;
-
     if (currentUsers.length !== 0) {
       this.role.roleBind = true;
       const roleIdAry = [];
@@ -1235,34 +1155,9 @@ export default class UserRights extends Vue {
       this.userId = userIdAry;
       this.roleId = Array.from(new Set(roleIdAry));
       this.copyRole = [];
-      console.log(
-        "角色：" +
-          JSON.stringify(this.roleId) +
-          " 用户：" +
-          JSON.stringify(this.userId) +
-          "  " +
-          this.role.roleName
-      );
-
-      // this.role.roleName = this.multipleSelection[0].realName
-      // console.log('32232', this.multipleSelection)
-      // this.roleId = this.multipleSelection[0].roleIdList
-      //   ? this.multipleSelection[0].roleIdList.split(',')
-      //   : []
     } else {
       this.$message.error("请选择至少一个用户");
     }
-
-    // if (this.multipleSelection.length !== 1) {
-    //   this.role.roleBind = true
-    //   this.role.roleName = this.multipleSelection[0].realName
-    //   console.log('32232', this.multipleSelection)
-    //   this.roleId = this.multipleSelection[0].roleIdList
-    //     ? this.multipleSelection[0].roleIdList.split(',')
-    //     : []
-    // } else {
-    //   this.$message.error('请选择要绑定的一个用户')
-    // }
   }
 
   // 角色绑定
@@ -1271,14 +1166,9 @@ export default class UserRights extends Vue {
       userids: this.userId.toString(),
       roles: this.roleId.toString(),
     };
-
-    console.log("参数：", JSON.stringify(data));
-    // return false
-
     roleBind(data).then((res) => {
       if (res.code !== -1) {
         this.$message.success("绑定成功");
-        // this.fetchData(this.pagination)
         this.onSubmit();
       }
     });
@@ -1286,7 +1176,6 @@ export default class UserRights extends Vue {
   }
 
   userUnlock() {
-    console.log("用户解锁");
     if (this.multipleSelection.length !== 1) {
       this.$message.error("请选择要绑定的一个用户");
     }
@@ -1304,7 +1193,6 @@ export default class UserRights extends Vue {
       templateServiceType: "userService",
     };
     downloadTemplate(params).then((res) => {
-      console.log(res);
       const blob = URL.createObjectURL(
         new Blob([res as any], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1325,7 +1213,6 @@ export default class UserRights extends Vue {
       templateFlag: 1,
       templateServiceType: "userService",
     };
-
     const data = {
       userLevel: "1", // 默认只展示为0的用户
       realName: this.realName,
@@ -1357,9 +1244,7 @@ export default class UserRights extends Vue {
       dto: JSON.stringify(data),
     };
     const exportParams = Object.assign({}, dto, params);
-    console.log(exportParams);
     downloadTemplate(exportParams).then((res) => {
-      console.log(res);
       const blob = URL.createObjectURL(
         new Blob([res as any], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -1386,20 +1271,14 @@ export default class UserRights extends Vue {
    */
   changeSelectValue(key, event) {
     this[key] = key === "departmentId" ? event.toString() : event;
-    // console.log('2222', this.roleId)
   }
 
   changeSelectMultipleValue(key, event) {
-    console.log("222222", key, event);
     this[key] = event;
   }
   // 提交
   submitForm() {
     (this.$refs.ruleForm as MergeUser).submitForm();
-    // if (this.msg === '成功') {
-    //   this.dialogVisible = false
-    //   this.fetchData()
-    // }
   }
 
   // 取消重置表单
@@ -1411,7 +1290,6 @@ export default class UserRights extends Vue {
   // 提示
   remind(data) {
     this.dialogVisible = false;
-    // this.fetchData(this.pagination)
     this.onSubmit();
   }
   // 批量上传
@@ -1432,7 +1310,6 @@ export default class UserRights extends Vue {
     };
     this.copyUsers = [];
     getUserList(data).then((res) => {
-      // console.log(res);
       res.result.records.forEach((item) => {
         this.copyUsers.push({
           id: item.id,
@@ -1447,7 +1324,6 @@ export default class UserRights extends Vue {
    * @description 获取选中用户的角色，并赋值
    */
   copyRoleChange(key, event) {
-    console.log("copyRoleChange：", key, event);
     this[key] = event;
     this.roleId = this.comCopyRole(event);
   }
@@ -1456,7 +1332,6 @@ export default class UserRights extends Vue {
    * @description 获取选中用户的角色，并赋值
    */
   setCopyRoleId(roleAry) {
-    console.log("setCopyRoleId：" + roleAry);
     this.auditInfo.roles = this.comCopyRole(roleAry);
   }
 

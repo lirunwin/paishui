@@ -46,6 +46,7 @@ router.beforeEach(async(to, from, next) => {
       } else {
         try {
           // 获取路由
+          
           const excludeRoutes = ['marketing', 'meterReadingManage', 'businessManage', 'meterServiceManage', 'hotlineManage', 'productionOperations', 'pipeNets']
           let accessRoutes = await store.dispatch('routeSetting/getRouter')
           accessRoutes = accessRoutes.filter(item => {
@@ -61,6 +62,7 @@ router.beforeEach(async(to, from, next) => {
           // console.log('qqqqq', to)
           next({ ...to })
         } catch (error) {
+          debugger
           console.log(error)
           error = { message: '该账号暂无权限，请联系管理员分配权限！' }
           // 移除令牌并转到登录页以重新登录

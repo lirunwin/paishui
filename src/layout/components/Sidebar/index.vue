@@ -40,7 +40,11 @@ export default class Sidebar extends Vue {
     return this.$store.getters.sidebar;
   }
   get routes() {
-    return this.$store.state.routeSetting.routes;
+    //过滤掉综合展示四角的工具栏
+    let temp=this.$store.state.routeSetting.routes.filter(e=>{
+      return e.type!="rightTopTool"&&e.type!="rightBottomTool"&&e.type!="leftTopTool"&&e.type!="leftBottomTool"
+    })
+    return temp 
   }
   get activeMenu() {
     const route = this.$route;

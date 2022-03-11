@@ -92,16 +92,24 @@
                 "
               />
             </div>
+            <!-- 左上角工具栏 -->
+            <leftTopTool :toolList='leftTopTool.children' :map='view' v-if='leftTopTool&&leftTopTool.children&&leftTopTool.children.length>0' ></leftTopTool>
+            <!-- 左下角工具栏 -->
+            <leftBottomTool :toolList='leftBottomTool.children' :map='view' v-if='leftBottomTool&&leftBottomTool.children&&leftBottomTool.children.length>0' ></leftBottomTool>
+            <!-- 右上角工具栏 -->
+            <rightTopTool :toolList='rightTopTool.children' :map='view' v-if='rightTopTool&&rightTopTool.children&&rightTopTool.children.length>0' ></rightTopTool>
+            <!-- 右下角工具栏 -->
+            <rightBottomTool :toolList='rightBottomTool.children' :map='view' v-if='rightBottomTool&&rightBottomTool.children&&rightBottomTool.children.length>0' ></rightBottomTool>
             <!-- 视图工具 -->
             <!-- <WidgetGroup :map-view="view" :that="this" /> -->
             <!-- 测量工具 -->
-            <MeasureTool :map-view="view" />
+            <!-- <MeasureTool :map-view="view" /> -->
             <!-- 查询 -->
-            <QueryTool :map-view="view" :that="this" />
+            <!-- <QueryTool :map-view="view" :that="this" /> -->
             <!-- 鹰眼 -->
-            <OverviewMap :map-view="view" />
+            <!-- <OverviewMap :map-view="view" /> -->
           </div>
-          <div v-show="labelShow" id="mapLabel">
+          <!-- <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
             <span
               id="mapView_close"
@@ -111,11 +119,11 @@
               >▼</span
             >
             <div id="mapView_legend" ref="legend" style="height: 350px" />
-          </div>
+          </div> -->
           <!-- 鼠标位置 -->
-          <MouseLocation :map-view="view" />
+          <!-- <MouseLocation :map-view="view" /> -->
           <!-- 快捷查询 -->
-          <SimpleQueryTool :map-view="view" />
+          <!-- <SimpleQueryTool :map-view="view" /> -->
           <float-panels :panels="FloatPanels" :data="panels" />
           <div id="map-index-floatPanels" ref="floatPanels" />
         </el-main>
@@ -156,6 +164,7 @@
   </div>
 </template>
 <script lang='ts'>
+
 import {Vue,Component,Watch,Prop} from 'vue-property-decorator'
 import "ol/ol.css";
 import Map from "ol/Map";
@@ -183,6 +192,12 @@ import WidgetGroup from "./tongyonggongju/widgetGroup/widget.vue";
 import MeasureTool from "./tongyonggongju/measureTool/widget.vue";
 import QueryTool from "./tongyonggongju/queryTool/widget.vue";
 import SimpleQueryTool from "./tongyonggongju/simpleQueryTool/widget.vue";
+import leftBottomTool from "./tongyonggongju/leftBottomTool/widget.vue";
+import leftTopTool from "./tongyonggongju/leftTopTool/widget.vue";
+import rightBottomTool from "./tongyonggongju/rightBottomTool/widget.vue";
+import rightTopTool from "./tongyonggongju/rightTopTool/widget.vue";
+import { extend } from 'ol/array';
+
 @Component({
 components: {
     HalfPanels,
@@ -197,9 +212,21 @@ components: {
     MeasureTool,
     QueryTool,
     SimpleQueryTool,
+    leftBottomTool,
+    leftTopTool,
+    rightBottomTool,
+    rightTopTool
   }
 })
 export default class BaseMap extends Vue {
+  /**左上角工具栏列表*/
+  leftTopTool=null;
+  /**左下角工具栏列表*/
+  leftBottomTool=null;
+  /**右上角工具栏列表*/
+  rightTopTool=null;//
+  /**右下角工具栏列表*/
+  rightBottomTool=null;
   @Prop(Object) params:object
       view= null
       Comps
@@ -279,158 +306,33 @@ export default class BaseMap extends Vue {
     async initMap() {
       var config = esriConfig;
       var aconfig = appconfig;
-      
-      var url =
-        "https://iserver.supermap.io/iserver/services/map-world/rest/maps/World";
+      var layerInfo =appconfig.gisResource['tian_online_vector'].config[0]
+      layerInfo.url='https://iserver.supermap.io/iserver/services/map-world/rest/maps/World'
       var map = new Map({
         target: "mapView",
-        controls: control
-          .defaults({ attributionOptions: { collapsed: false } })
-          .extend([new Logo()]),
         view: new View({
           center: [0, 0],
           zoom: 2,
           projection: "EPSG:4326",
         }),
       });
+
       var layer = new TileLayer({
+        /**图层名称*/
+        name:layerInfo.name,
         source: new TileSuperMapRest({
-          url: url,
+          url: layerInfo.url,
           wrapX: true,
         }),
         properties:{
-           projection: "EPSG:4326"
+          projection: "EPSG:4326"
         }
-      });
+      } as any);
       map.addLayer(layer);
       this.panels.mapView = this.view = map
-      this.loading=false
-      
-       //沱源项目 arcgis 地图部分
-       /*
-      loadModules(
-        [
-          'esri/Map', 'esri/views/MapView',
-          'esri/layers/WebTileLayer', 'esri/Basemap',
-          'esri/layers/TileLayer', 'esri/layers/MapImageLayer',
-          'esri/layers/support/LOD', 'esri/config'
-        ],
-        { url: esriConfig.baseUrl }
-      ).then(
-        ([
-          Map, MapView, WebTileLayer,
-          Basemap, TileLayer, MapImageLayer, Lod, mapConfig
-        ]) => {
-          mapConfig.fontsUrl = esriConfig.font_url
-          var layerType = { 'webTiled': WebTileLayer, 'dynamic': MapImageLayer, 'tiled': TileLayer }
-          var layersConfig
-          var key = aconfig.isonline ? appconfig.tianMapKey : ''
-          var baselayers
-          // 判断在线/离线 设置天地图底图
-          var tileInfo = aconfig.isonline ? (visible) => {
-            return {
-              visible: visible,
-              subDomains: '01234567'.split('').map(e => 't' + e),
-              tileInfo: {
-                rows: 256, cols: 256, origin: { x: -180, y: 90 }, spatialReference: { wkid: 4490 },
-                lods: Array.from({ length: 19 }, (e, i) => i).map((e, i) => {
-                  return { level: i + 2, levelValue: i + 2, resolution: 0.3515625 / Math.pow(2, i), scale: 147748796.52937502 / Math.pow(2, i) }
-                })
-              }, spatialReference: 4490, fullExtent: { xmin: -180, ymin: -90, xmax: 180, ymax: 90, spatialReference: 4490 }
-            }
-          } : (visible) => { return { visible: visible } }
-          layersConfig = aconfig.isonline ? [
-            [aconfig.gisResource.tian_online_vector.config[0].url, aconfig.gisResource.tian_online_vector.type],
-            [aconfig.gisResource.tian_online_vector_label.config[0].url, aconfig.gisResource.tian_online_vector_label.type],
-            [aconfig.gisResource.tian_online_raster.config[0].url, aconfig.gisResource.tian_online_raster.type],
-            [aconfig.gisResource.tian_online_raster_label.config[0].url, aconfig.gisResource.tian_online_raster_label.type],
-            [aconfig.gisResource.business_map.config[0].url, aconfig.gisResource.business_map.type]
-          ] : [
-            [aconfig.gisResource.tian_offline_vector.config[0].url, aconfig.gisResource.tian_offline_vector.type],
-            [aconfig.gisResource.tian_offline_vector_label.config[0].url, aconfig.gisResource.tian_offline_vector_label.type],
-            [aconfig.gisResource.tian_offline_raster.config[0].url, aconfig.gisResource.tian_offline_raster.type],
-            [aconfig.gisResource.tian_offline_raster_label.config[0].url, aconfig.gisResource.tian_offline_raster_label.type],
-            [aconfig.gisResource.business_map.config[0].url, aconfig.gisResource.business_map.type]
-          ]
-          baselayers = [
-            new layerType[layersConfig[0][1]](layersConfig[0][0] + key, tileInfo(true)),
-            new layerType[layersConfig[1][1]](layersConfig[1][0] + key, tileInfo(true)),
-            new layerType[layersConfig[2][1]](layersConfig[2][0] + key, tileInfo(false)),
-            new layerType[layersConfig[3][1]](layersConfig[3][0] + key, tileInfo(false)),
-            new layerType[layersConfig[4][1]]({ url: layersConfig[4][0] })
-          ]
-          // 底图
-          var basemap = new Basemap({
-            baseLayers: baselayers,
-            title: 'basemap',
-            id: 'basemap'
-          })
-          // 地图视角设置缩放步进级别
-          basemap.baseLayers.items[4].load().then((e) => {
-            mapview.constraints.lods = [125000, 64000, 32000, 16000, 8000, 4000, 2000, 1000, 500, 100].map((s, i) => { return new Lod({ level: i, scale: s }) })
-          })
-          const map = new Map({ basemap: basemap })
-          const mapview = window.TF_mapView = new MapView({
-            container: 'mapView',
-            map: map,
-            spatialReference: { wkid: 4490 },
-            popup: {
-              alignment: 'top-center',
-              actions: [],
-              dockEnabled: true,
-              dockOptions: { buttonEnabled: false }
-            },
-            center:{ x: aconfig.initCenter.x, y: aconfig.initCenter.y, spatialReference:  { wkid: 4490 } },
-            zoom:aconfig.initZoom
-          })
-          mapview.TF_floatPanel = this.$refs.floatPanels
-          mapview.TF_layerInfo = tileInfo
-          // 初始视角
-          this.$nextTick(() => {
-            mapview.center = { x: aconfig.initCenter.x, y: aconfig.initCenter.y, spatialReference: mapview.spatialReference }
-            mapview.zoom = aconfig.initZoom
-          });
-          //图层全部加载完成设置
-          // mapview.on("layerview-create", (event)=>{
-          //   mapview.center = { x: aconfig.initCenter.x, y: aconfig.initCenter.y, spatialReference: mapview.spatialReference }
-          //   mapview.zoom = aconfig.initZoom
-          // });
-          mapview.ui.components = []
-          this.panels.mapView = this.view = mapview
-          if (this.params) {
-            // this.$store.dispatch('map/changeMethod',
-            // { pathId: 'queryResult3', widgetid: 'HalfPanel', label: '查询结果', param: {
-            //   oids: row.featureIds,
-            //   layer: id
-            // } })
-            var str = 1
-          }
-          // 请求图例
-          $.ajax({
-            url: aconfig.gisResource.business_map.config[0].url + '/legend?f=pjson',
-            type: 'GET',
-            success: (data) => {
-              data = JSON.parse(data)
-              if (data.error) {
-                return this.$message.error('图例加载失败:' + data.error.message)
-              }
-              data = data.layers
-              var inStr = ''
-              for (let i = 0, ii = data.length; i < ii; i++) {
-                var label = data[i].layerName
-                for (let j = 0, jl = data[i].legend, jj = jl.length; j < jj; j++) {
-                  inStr += '<div><img src="data:image/png;base64,' + jl[j].imageData + '" alt /><span>' +
-                    (jl[j].label == '' ? label : jl[j].label) + '</span></div>'
-                }
-              }
-              this.$refs.legend.innerHTML = inStr
-            },
-            error: (error) => { console.log(error) }
-          })
-        }, (reason) => { console.log(reason) }
-      )
-      */
-    }
+      this.loading=false;
+      this.$nextTick(this.controlToolDisplay);
+    };
     legendClick() {
       this.legendHide = !this.legendHide;
       var whichP = [
@@ -541,6 +443,41 @@ export default class BaseMap extends Vue {
         );
       } else nextDo();
     }
+
+    /**
+     * 根据权限控制地图四个角的工具栏的展示
+    */
+    controlToolDisplay(){
+      //本功能必须在权限管理-系统管理-模块管理的系统新增中分配leftTopTool,leftBottomTool,rightTopTool,rightBottomTool四个类型
+      //这四个类型分别对应地图工具栏的左上角,左下角,右上角,右下角
+      //这四个工具栏不在左边的功能列表中展示（改设置在src\layout\components\Sidebar\index.vue中）
+      if(this.$store.state&&this.$store.state.routeSetting&&this.$store.state.routeSetting.routes){
+        const allModel=this.$store.state.routeSetting.routes;//获取所有功能
+        /**工具栏识别的字符集合*/
+        const toolBoxList=['leftTopTool','leftBottomTool','rightBottomTool','rightTopTool']
+        const toolcomponentList={leftTopTool,leftBottomTool,rightTopTool,rightBottomTool};
+        //根据模块管理将组件注入
+        allModel.forEach(item=>{
+          let index=toolBoxList.findIndex(val=>{return val==item.type});
+          if(index!=-1){
+            this[item.type]=item||[];
+            let temp=this.getComponents(item.type);
+            temp.forEach(item2=>{
+              toolcomponentList[item.type]['components'][item2.name]=item2.component
+            })
+          }
+        });
+      }
+    }
+
+    /**
+     * 获取指定层级下面的组件
+     * @param typeString 指定层级的名称
+     * */ 
+    getComponents(typeString){
+        let temp=this.$store.state.routeSetting.addRoutes.find(val=>{ return val.name&&val.name==typeString});
+        return temp.children||[]
+    }
 };
 </script>
 <style lang="scss" scoped>
@@ -556,6 +493,12 @@ export default class BaseMap extends Vue {
     position: relative;
     height: 100%;
     width: 100%;
+    /deep/ .ol-zoom{
+      display: none !important;
+    }
+    /deep/ .ol-attribution{
+      display: none !important;
+    }
   }
 }
 .close {

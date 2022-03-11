@@ -12,7 +12,7 @@ import './directives'
 import App from './App.vue'
 import store from './store'
 import router from './router'
-
+import {comMethod} from '@/utils/comMethod'
 import '@/icons'
 import '@/permission' // 权限控制
 
@@ -24,13 +24,14 @@ import '@/assets/iconfont/iconfont.css'
 // Vue.use(htmlToPdf)
 // dialog拖动
 import './utils/dialog'
-
+import '@/assets/font/other_font/iconfont.css'
 // 全局修改默认配置，点击空白处不能关闭弹窗
 //@ts-ignore
 ElementUI.Dialog.props.closeOnClickModal.default = false
 
 import echarts from 'echarts'
 Vue.prototype.$echarts = echarts
+Vue.prototype.$comMethod = comMethod
 import html2pdf from '@/utils/html2pdf'
 Vue.use(html2pdf)
 

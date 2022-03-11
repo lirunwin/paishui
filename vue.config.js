@@ -12,7 +12,8 @@ function resolve(dir) {
 const name = defaultSettings.title || '登录系统' // page title
 //const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.100.204:1111'
 // const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://xrty.vipgz4.idcfengye.com'
-const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.2.231:1111'
+// const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.2.231:1111'
+const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.2.103:1111'
 const port = 8031
 // const port = process.env.port || process.env.npm_config_port || 9528 // dev port
 
@@ -20,7 +21,8 @@ module.exports = {
   /**
    * 如果计划在子路径下部署站点，则需要设置publicPath
    */
-  publicPath: '/',
+  publicPath: './',//发布路径
+  // publicPath: '/',//本地路径
   outputDir: 'dist',
   assetsDir: 'static',
   // lintOnSave: process.env.NODE_ENV === 'development',
@@ -36,7 +38,8 @@ module.exports = {
     },
     proxy: {
       '/backstage': {
-        target: 'http://192.168.2.231:1111', // 修改后台接口地址
+        target: 'http://192.168.2.103:1111', // 修改后台接口地址
+        // target: 'http://192.168.2.231:1111', // 修改后台接口地址
         // target: 'http://xrty.vipgz4.idcfengye.com',
         //target: 'http://192.168.100.204:1111',
         changeOrigin: true,

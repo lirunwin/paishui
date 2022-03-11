@@ -456,7 +456,7 @@ export function recordList(params) {
 export function upLoadFiles(data) {
   return request({
     url: '/base/app/upLoadApp',
-    method: 'put',
+    method: 'post',
     data
   })
 }
@@ -477,11 +477,20 @@ export function deleteRecord(params) {
 //   })
 // }
 
+// // 发布App
+// export function publishRecord(data) {
+//   return request({
+//     url: '/base/app',
+//     method: 'put',
+//     data
+//   })
+// }
+
 // 发布App
 export function publishRecord(data) {
   return request({
-    url: '/base/app',
-    method: 'put',
+    url: '/base//app/appPublish',
+    method: 'post',
     data
   })
 }
@@ -703,5 +712,111 @@ export function getMoreLeakage(params) {
     url: '/gis/waterAnalysis/leakageMore',
     method: 'get',
     params
+  })
+}
+
+export function getDictionaryList(params) {
+  return request({
+    url: '/base/code/page',
+    method: 'get',
+    params
+  })
+}
+
+
+
+/**
+ * 获取字典类型
+*/
+export function getKeyPage(params) {
+  return request({
+    url: '/base/code/keyPage',
+    method: 'get',
+    params
+  })
+}
+
+
+// 新增字典
+export function addDictionary(data) {
+  return request({
+    url: '/base/code',
+    method: 'post',
+    data
+  })
+}
+
+// 修改字典
+export function editDictionary(data) {
+  return request({
+    url: '/base/code',
+    method: 'put',
+    data
+  })
+}
+
+// 删除字典类型
+export function deleteDictionary(data) {
+  return request({
+    url: '/base/code/' + data,
+    method: 'delete',
+    data
+  })
+}
+
+/**
+ * 通过Key获取字典value
+*/
+export function getDicValueByKeys(params) {
+  return request({
+    url: '/base/code/getByKeys',
+    method: 'get',
+    params
+  })
+}
+
+/**
+ * 获取深度覆土规范
+*/
+export function getDeepSpe(params) {
+  return request({
+    url: '/base/minvolumems/list',
+    method: 'get',
+    params
+  })
+}
+
+
+/**
+ * 更新深度覆土规范
+*/
+export function updataDeepSpe(data) {
+  return request({
+    url: '/base/minvolumems',
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 获取深度覆土规范
+*/
+export function getVertSpe(params) {
+  return request({
+    url: '/base/minvolumecz/list',
+    method: 'get',
+    params
+  })
+}
+
+
+/**
+ * 更新深度覆土规范
+*/
+export function updataVertSpe(data) {
+  return request({
+    url: '/base/minvolumecz',
+    method: 'put',
+    data
   })
 }

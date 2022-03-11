@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" style="height:calc(100% - 40px);width:100%;position: absolute;overflow-y: auto;overflow-x: hidden;">
     <!-- 角色权限管理 -->
     <div class="handerRole">
       <div class="data_box">
@@ -21,7 +21,6 @@
         <el-button type="primary" size="small" @click="queryRole"
           >查询角色</el-button
         >
-        <!-- <el-button type="primary" size="small" @click="queryRoleAll">全部角色</el-button> -->
         <el-button type="primary" size="small" @click="handleAdded"
           >新增角色</el-button
         >
@@ -41,9 +40,9 @@
         >
       </div>
     </div>
-    <main>
+    <main style="width: 100%;height: calc(100% - 77px);position: relative;">
       <aside>
-        <div class="table_width">
+        <div class="table_width" style="height:100%">
           <table-item
             :table-data="list"
             :column="column"
@@ -51,7 +50,7 @@
             :pagination="true"
             :pagesize="pagination.size"
             :currentpage="pagination.current"
-            :tableheight="650"
+            :tableheight="'100%'"
             :border="true"
             :multiple="true"
             :total="total"
@@ -70,11 +69,13 @@
       <aside>
         <el-form
           ref="form"
+          :rules="rules"
+          :style="'height:100%'"
           :model="detailed"
           label-width="120px"
           :disabled="disabledEdit"
         >
-          <el-form-item label="角色名称：">
+          <el-form-item label="角色名称" prop="roleName">
             <el-input
               v-model="detailed.roleName"
               style="width: 300px"
@@ -82,7 +83,7 @@
               type="text"
             />
           </el-form-item>
-          <el-form-item label="备注：" style="margin: 20px 0">
+          <el-form-item label="备注" prop="roleDesc" style="margin: 20px 0">
             <el-input
               v-model="detailed.roleDesc"
               style="width: 300px"
@@ -90,7 +91,7 @@
               type="textarea"
             />
           </el-form-item>
-          <el-form-item label="系统功能：">
+          <el-form-item class='treeFormItem' required style="height:calc(100% - 160px)" label="系统功能">
             <div class="sys-list">
               <el-tree
                 ref="outTree"
@@ -110,55 +111,26 @@
 
     <el-dialog
       v-if="dialogVisible"
+      v-dialogDrag
       :title="dialogTitle"
       :visible.sync="dialogVisible"
       width="500px"
       top="10px"
     >
-      <div class="doalog-content">
-        <input-item
-          type="text"
-          placeholder="请输入角色名称"
-          title="角色名称："
-          nominate="roleName"
-          custom-style="display: inline-block; width: 80%; line-height: 32px;"
-          :value="detailed.roleName"
-          :max-length="50"
-          :disabled="false"
-          :required="true"
-          @changeValue="onInput"
-        />
-        <Textarea
-          type="textarea"
-          placeholder="备注说明"
-          title="备注："
-          nominate="roleDesc"
-          custom-style="display: inline-block; width: 80%; margin-top: 20px;"
-          :value="detailed.roleDesc"
-          :maxlength="50"
-          :disabled="false"
-          :required="true"
-          :rows="2"
-          :show="true"
-          @changeValue="onTextarea"
-        />
-        <!-- <select-item
-          placeholder="请输入系统名称"
-          title="系统名称："
-          nominate="sysId"
-          custom-style="display: inline-block; width: 80%; margin-top: 20px;line-height: 32px;"
-          :value="sysId"
-          :disabled="dialogTitle === '修改角色'"
-          :required="true"
-          :filterable="true"
-          :options="options"
-          @changeSelectValue="changeSelectValue"
-        /> -->
-        <Tree
+      <el-form :model="ruleForm" ref='formDiv' :rules="rules" label-width="120px">
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input type="text" size='small' v-model="ruleForm.roleName"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" prop="roleDesc">
+          <el-input type="textarea" small='size' v-model="ruleForm.roleDesc"></el-input>
+        </el-form-item>
+          <Tree
           ref="Tree"
-          title="系统功能："
+          title="系统功能"
           nominate="treeValue"
-          custom-style="width: 80%;margin-top:20px;"
+          custom-style="width: 100%;margin-top:20px;"
+          treeBoxCustomStyle="max-height:500px;width:calc(100% - 120px);border: 1px solid #E4E7ED;"
+          titleBoxCustomStyle="width: 120px;padding-right: 15px;"
           :node-key="'id'"
           :default-expand-all="false"
           :required="true"
@@ -167,22 +139,10 @@
           :default-checked-keys="defaultCheckedKeys"
           @getChangValueTree="getChangValueTree"
         />
-      </div>
+      </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="submitRole">确 定</el-button>
-      </span>
-    </el-dialog>
-    <el-dialog
-      v-dialogDrag
-      title="删除角色"
-      :visible.sync="dialogDelete"
-      width="500px"
-    >
-      <span>确认是否删除角色？</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogDelete = false">取 消</el-button>
-        <el-button type="primary" @click="confirmDelete">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -191,12 +151,10 @@
 <script lang='ts'>
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import InputItem from "@/components/FormItem/Input/index.vue";
-// import SelectItem from '@/components/FormItem/Select'
 import Textarea from "@/components/FormItem/Textarea/index.vue";
 import Tree from "@/components/Tree/index.vue";
 import TableItem from "@/components/Table/index.vue";
 import { verification } from "@/utils/index";
-// import { asyncRoutes } from '@/router/router.config'
 import {
   getRoleList,
   addRole,
@@ -207,8 +165,6 @@ import {
   bindMenus,
 } from "@/api/base";
 import { ElTree } from "element-ui/types/tree";
-// import { getRouter } from '@/api/permission'
-// import { packageRouter } from '@/router/router.config'
 @Component({
   name: "RolePermission",
   components: { InputItem, TableItem, Textarea, Tree },
@@ -222,41 +178,17 @@ export default class RolePermission extends Vue {
   total = 0;
   list = [];
   column = [
-    // {
-    //   label: '序号',
-    //   width: 80,
-    //   prop: 'order',
-    //   sortable: true,
-    //   formatter: (row, col, cellValue, index) => {
-    //     return index + 1
-    //   }
-    // },
     {
       label: "角色名称",
-      // width: 140,
       prop: "roleName",
       sortable: true,
     },
-    // {
-    //   label: '创建人',
-    //   // width: 140,
-    //   prop: 'createUserName',
-    //   sortable: true
-    // },
-    // {
-    //   label: '创建时间',
-    //   // width: 140,
-    //   prop: 'createTime',
-    //   sortable: true
-    // },
     {
       label: "备注",
-      // width: 140,
       prop: "roleDesc",
       sortable: true,
     },
   ];
-  // treeData: [],
   defaultProps = {
     children: "childrens",
     label: "label",
@@ -268,15 +200,10 @@ export default class RolePermission extends Vue {
     id: "",
   };
   treeValue = [];
-  dialogDelete = false;
   defaultCheckedKeys = [];
   deleteId = "";
-  pagination = { current: 1, size: 20 }; // 分页参数信息
+  pagination = { current: 1, size: 30 }; // 分页参数信息
   options = [
-    // {
-    //   id: '1',
-    //   name: '当前系统'
-    // }
   ];
   sysId = "1";
   topActive = false;
@@ -285,6 +212,22 @@ export default class RolePermission extends Vue {
     roleName: undefined,
     roleDesc: undefined,
   };
+  //添加需要填写的信息 
+  ruleForm={
+    roleName:'',//角色名称
+    roleDesc:''//备注
+  };
+  //添加填写时的验证
+  rules={
+          roleName: [
+            { required: true, message: '请输入角色名称', trigger: 'blur' },
+            { min: 1, max: 10, message: '最多输入10个字', trigger: 'blur' }
+          ],
+          roleDesc: [
+            { required: true, message: '请输入备注', trigger: 'blur' },
+            { min: 1, max: 500, message: '最多输入500个字', trigger: 'blur' }
+          ],
+        }
   @Watch("multipleSelection")
   multipleSelectionChange(value) {
     console.log("++++++", value);
@@ -295,9 +238,8 @@ export default class RolePermission extends Vue {
       this.detailed.id = this.multipleSelection[0].id;
       this.lastDetail.roleName = this.multipleSelection[0].roleName;
       this.lastDetail.roleDesc = this.multipleSelection[0].roleDesc;
-      const existMenus = this.multipleSelection[0].treeValue
-        .split(",")(this.$refs.outTree as ElTree<any, any>)
-        .setCheckedKeys([]);
+      const existMenus = this.multipleSelection[0].treeValue.split(',');
+      this.$refs.outTree['setCheckedKeys']([]);
       existMenus.forEach((item) => {
         const node = (this.$refs.outTree as ElTree<any, any>).getNode(item);
         if (node !== null && node.isLeaf) {
@@ -370,6 +312,7 @@ export default class RolePermission extends Vue {
         item.order = index;
       });
       this.total = res.result.total;
+      this.$refs.form['resetFields']();
       this.listLoading = false;
     });
   }
@@ -384,16 +327,9 @@ export default class RolePermission extends Vue {
         });
       });
       this.options = data;
-      // console.log('++++++', data)
     });
   }
-  // 获取系统功能
-  getSystemFunction(data) {
-    // this.treeData = asyncRoutes
-    // getRouter(data).then(res => {
-    //   this.treeData = packageRouter(res.result)
-    // })
-  }
+
   /**
    * 输入框组件数据绑定方法事件
    * @param {*} key
@@ -417,8 +353,6 @@ export default class RolePermission extends Vue {
    */
   changeSelectValue(key, event) {
     this[key] = event;
-    // this.getSystemFunction({ sysId: event })
-    // console.log('2222', this.roleId)
   }
   //  页码
   handleCurrentChange(currentPage) {
@@ -433,11 +367,9 @@ export default class RolePermission extends Vue {
   // 选择
   handleSelectionChange(value) {
     this.multipleSelection = value;
+    this.$refs.form['resetFields']();
     console.log("1111", value);
   }
-  // handleClick(value) {
-  //   console.log('查看', value)
-  // },
   // 修改
   handleEdit() {
     this.dialogTitle = "修改角色";
@@ -449,7 +381,6 @@ export default class RolePermission extends Vue {
     this.defaultCheckedKeys = value.treeValue.split(",");
     this.detailed.id = value.id;
     this.sysId = value.sysId;
-    // this.getSystemFunction({ sysId: value.sysId })
   }
   // 保存修改
   saveEdit() {
@@ -461,7 +392,7 @@ export default class RolePermission extends Vue {
       .getHalfCheckedKeys()
       .map((item) => item);
     this.treeValue = [...selected, ...halfSelected];
-    this.submitRole();
+    this.submitRole('update');
   }
   // 删除
   handleDelete() {
@@ -472,7 +403,18 @@ export default class RolePermission extends Vue {
         ids.push(this.multipleSelection[i].id);
       }
       this.deleteId = ids.toString();
-      this.dialogDelete = true;
+      this.$confirm('确定删除选中的'+ids.length+'名角色?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+        }).then(() => {
+            this.confirmDelete();
+        }).catch(() => {
+            this.$message({
+                type: 'info',
+                message: '已取消删除'
+            });          
+        });
     } else {
       this.$message.error("请选择要删除的数据");
     }
@@ -488,7 +430,6 @@ export default class RolePermission extends Vue {
       .catch((error) => {
         console.log(error);
       });
-    this.dialogDelete = false;
   }
   // 查询
   queryRole() {
@@ -503,7 +444,6 @@ export default class RolePermission extends Vue {
   handleAdded() {
     this.dialogTitle = "新增角色";
     this.dialogVisible = true;
-    // this.getSystemFunction({ sysId: this.sysId })
     this.detailed = {
       roleName: "", // 角色名称
       roleDesc: "", // 备注
@@ -515,27 +455,36 @@ export default class RolePermission extends Vue {
     console.log("新增");
   }
   // 提交
-  submitRole() {
-    // console.log('2222', this.detailed, this.treeValue)
-    // 验证必填
-    const verificationResult = verification([
-      { condition: !this.detailed.roleName, errmsg: "请输入角色名称" },
-      { condition: !this.detailed.roleDesc, errmsg: "请输入备注说明" },
-      { condition: this.treeValue.length === 0, errmsg: "请选择权限" },
-      { condition: !this.sysId, errmsg: "请选择系统名称" },
-    ]);
-    if (!verificationResult.success) {
-      this.$message.error(verificationResult.errmsg[0]);
-      return false;
+  submitRole(type) {
+    let refDom=this.$refs['formDiv'];
+    if(type=='update'){
+      refDom=this.$refs['form'];
+    }else{
+      this.detailed.roleName=this.ruleForm.roleName;
+      this.detailed.roleDesc=this.ruleForm.roleDesc;
     }
-
-    // this.$message.success('成功')
-    console.log("data", { ...this.detailed, treeValue: this.treeValue });
-    if (this.dialogTitle === "新增角色") {
-      this.newAddRole();
-    } else {
-      this.editRole();
-    }
+    refDom['validate']((valid) => {
+      if (valid) {
+        const verificationResult = verification([
+        { condition: !this.detailed.roleName, errmsg: "请输入角色名称" },
+        { condition: !this.detailed.roleDesc, errmsg: "请输入备注说明" },
+        { condition: this.treeValue.length === 0, errmsg: "请选择权限" },
+        { condition: !this.sysId, errmsg: "请选择系统名称" },
+      ]);
+      if (!verificationResult.success) {
+        this.$message.error(verificationResult.errmsg[0]);
+        return false;
+      }
+      console.log("data", { ...this.detailed, treeValue: this.treeValue });
+      if (this.dialogTitle === "新增角色") {
+        this.newAddRole();
+      } else {
+        this.editRole();
+      }
+      } else {
+        return false;
+      }
+    });
   }
   // 新增
   newAddRole() {
@@ -543,6 +492,7 @@ export default class RolePermission extends Vue {
       if (res.code !== -1) {
         this.$message.success("新增成功");
         this.dialogVisible = false;
+        this.$refs.formDiv['resetFields']();
         this.fetchData(this.pagination);
       }
     });
@@ -574,11 +524,8 @@ export default class RolePermission extends Vue {
         this.lastDetail.roleDesc === this.detailed.roleDesc
           ? null
           : this.detailed.roleDesc,
-      // treeValue: this.treeValue.join(','),
       menuIds: this.treeValue.join(","),
     };
-    // if (this.dialogTitle === '新增角色') param.menuIds = undefined
-    // else param.treeValue = undefined
     return param;
   }
 }
@@ -597,14 +544,21 @@ export default class RolePermission extends Vue {
 .doalog-content {
   width: 100%;
 }
+/deep/.treeFormItem{
+  div.el-form-item__content{
+    height: 100% !important;
+  }
+}
 main {
   display: flex;
   aside {
-    width: 30%;
+    width: 45%;
     &:nth-of-type(2) {
       flex: 1;
       .sys-list {
-        height: 550px;
+        height: 100%;
+        width:300px;
+        border: 1px solid #E4E7ED;
         overflow-x: hidden;
         /deep/ .el-tree-node__content {
           &:hover {
