@@ -21,15 +21,17 @@ const map = {
   coveringSpecification: () => import('@/views/currentSystem/authorityManagement/coveringSpecification/index.vue'), // 覆土规范
 
   //综合展示-工具栏
+  //左侧顶部工具栏
   leftTopTool: () => import('@/views/zhpt/tongyonggongju/leftTopTool/widget.vue'), // 左侧顶部工具栏
   searchTool: () => import('@/views/zhpt/tongyonggongju/leftTopTool/searchTool/widget.vue'), // 搜索工具
   upOrDownView: () => import('@/views/zhpt/tongyonggongju/leftTopTool/upOrDownView/widget.vue'), // 上下视图
-
+  //左侧底部工具栏
   leftBottomTool: () => import('@/views/zhpt/tongyonggongju/leftBottomTool/widget.vue'), // 左侧底部工具栏
   propScale: () => import('@/views/zhpt/tongyonggongju/leftBottomTool/propScale/widget.vue'), // 比例尺
   showLoaction: () => import('@/views/zhpt/tongyonggongju/leftBottomTool/showLoaction/widget.vue'), // 坐标展示
-
+  //右侧顶部工具栏
   rightTopTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/widget.vue'), // 右侧顶部工具栏
+  
   measureTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/widget.vue'), //测量工具
   distanceTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/distanceTool.vue'), //距离测量
   areaTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/areaTool.vue'), //面积测量
@@ -37,7 +39,11 @@ const map = {
   coordinateTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/coordinateTool.vue'), //坐标
   clearMeasureTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/clearMeasureTool.vue'), //清除测量
 
+  toolBox:()=>import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/widget.vue'),//工具箱
+  fullScreen:()=>import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/fullScreen.vue'),//全屏
+  mapScreenshot:()=>import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/mapScreenshot.vue'),//截图
 
+  //右侧底部工具栏
   rightBottomTool: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/widget.vue'), // 右侧底部工具栏
   overView: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/overView/widget.vue'), // 鹰眼
   regionZoomIn: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/regionZoomIn/widget.vue'), // 缩小

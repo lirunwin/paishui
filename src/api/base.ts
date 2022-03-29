@@ -820,3 +820,26 @@ export function updataVertSpe(data) {
     data
   })
 }
+
+/**
+ * 获取最小净距
+*/
+export function getSpe(params) {
+  return request({
+    url: '/base/minvolumesp/list',
+    method: 'get',
+    params
+  })
+}
+
+
+/**
+ * 更新最小净距
+*/
+export function updataSpe(data) {
+  return request({
+    url: '/base/minvolumesp',
+    method: 'put',
+    data
+  })
+}

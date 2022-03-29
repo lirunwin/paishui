@@ -1,6 +1,5 @@
 
 <template>
-<div class="test12"></div>
 </template>
 
 <script>

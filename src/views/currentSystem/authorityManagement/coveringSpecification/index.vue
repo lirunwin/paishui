@@ -6,12 +6,13 @@
     height: 100%;" v-model="activeName">
     <el-tab-pane label="覆土规范" name="ft"><comComponents :tableTitle='"管线名称"' :getList='getDeepSpe' :updataList='updataDeepSpe'></comComponents></el-tab-pane>
     <el-tab-pane label="垂直间距" name="cz"><comComponents :tableTitle='"管线名称"' :getList='getVertSpe' :updataList='updataVertSpe'></comComponents></el-tab-pane>
+    <el-tab-pane label="最小净距" name="jj"><comComponents :tableTitle='"管线及建(构)筑物名称"' :getList='getSpe' :updataList='updataSpe'></comComponents></el-tab-pane>
   </el-tabs>
 </template>
 
 <script>
 /**覆土规范模块*/
-import {getDeepSpe,updataDeepSpe,getVertSpe,updataVertSpe} from '@/api/base';
+import {getDeepSpe,updataDeepSpe,getVertSpe,updataVertSpe,getSpe,updataSpe} from '@/api/base';
 import comComponents from "./comComponents"
 export default {
   name:"coveringSpecification",
@@ -25,6 +26,8 @@ export default {
       updataDeepSpe:null,
       getVertSpe:null,
       updataVertSpe:null,
+      getSpe:null,
+      updataSpe:null
     }
   },
   components:{comComponents},
@@ -33,6 +36,8 @@ export default {
     this.updataDeepSpe=updataDeepSpe;
     this.getVertSpe=getVertSpe;
     this.updataVertSpe=updataVertSpe;
+    this.getSpe=getSpe;
+    this.updataSpe=updataSpe;
   },
   mounted(){
     

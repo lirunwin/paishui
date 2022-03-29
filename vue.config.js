@@ -13,7 +13,8 @@ const name = defaultSettings.title || '登录系统' // page title
 //const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.100.204:1111'
 // const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://xrty.vipgz4.idcfengye.com'
 // const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.2.231:1111'
-const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.2.103:1111'
+const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.2.238:1111'
+// const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://127.0.0.1:1111'
 const port = 8031
 // const port = process.env.port || process.env.npm_config_port || 9528 // dev port
 
@@ -38,7 +39,8 @@ module.exports = {
     },
     proxy: {
       '/backstage': {
-        target: 'http://192.168.2.103:1111', // 修改后台接口地址
+        target: 'http://192.168.2.238:1111', // 修改后台接口地址
+        // target: 'http://127.0.0.1:1111', // 修改后台接口地址
         // target: 'http://192.168.2.231:1111', // 修改后台接口地址
         // target: 'http://xrty.vipgz4.idcfengye.com',
         //target: 'http://192.168.100.204:1111',

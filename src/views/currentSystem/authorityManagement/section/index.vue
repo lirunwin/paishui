@@ -53,7 +53,7 @@
     row-key="id"
     border
     default-expand-all
-    @rowDblclick="handleDbclick"
+    @row-dblclick="handleDbclick"
     @select-all="searchTableSelect"
     @select="handleSelectionChange" 
     :tree-props="{children: 'children',hasChildren: 'hasChildren'}">
@@ -81,7 +81,7 @@
         :rules="departmentRules"
       >
       <el-form-item label="上级单位：" style="margin: 20px 0">
-          <el-select v-model="department.parentId" size="small" placeholder="请选择上级部门">
+          <el-select v-model="department.parentId" clearable size="small" placeholder="请选择上级部门">
             <el-option
               v-for="item in departmentList"
               :key="item.id"

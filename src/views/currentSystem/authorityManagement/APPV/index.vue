@@ -4,8 +4,8 @@
       <!-- APP版本 -->
       <select-item
         can-clear
-        placeholder="请选择APP类型"
-        title="APP类型："
+        placeholder="请选择应用程序类型"
+        title="应用程序类型："
         nominate="appClassfication"
         :value="appClassfication"
         custom-style="display: inline-block; width: 300px;margin-right:10px"
@@ -32,7 +32,7 @@
       <!-- <el-date-picker v-model="publishTime" size="small" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" /> -->
       <el-date-picker
         v-model="publishTime.startTime"
-        style="width: 140px"
+        style="width: 160px"
         size="small"
         type="date"
         placeholder="请选择开始时间"
@@ -42,7 +42,7 @@
       ~
       <el-date-picker
         v-model="publishTime.endTime"
-        style="width: 140px"
+        style="width: 160px"
         size="small"
         type="date"
         placeholder="请选择结束时间"
@@ -96,7 +96,7 @@
       <div class="detail-container">
         <el-row class="info-row">
           <el-col class="info-col" :span="12">
-            <span>类型：</span
+            <span>应用程序类型：</span
             ><span>{{
               detailInfo.appType === "1" ? "app" : "前端平台"
             }}</span>
@@ -310,7 +310,7 @@ export default class APPV extends Vue {
   ];
   column = [
     {
-      label: "类型",
+      label: "应用程序类型",
       prop: "appType",
       width: "150",
       formatter: (row, col, cellValue, index) => {

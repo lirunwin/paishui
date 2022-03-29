@@ -78,7 +78,7 @@
           <el-form-item label="角色名称" prop="roleName">
             <el-input
               v-model="detailed.roleName"
-              style="width: 300px"
+              style="width: 100%"
               placeholder="请输入角色名称"
               type="text"
             />
@@ -86,7 +86,7 @@
           <el-form-item label="备注" prop="roleDesc" style="margin: 20px 0">
             <el-input
               v-model="detailed.roleDesc"
-              style="width: 300px"
+              style="width: 100%"
               placeholder="备注说明"
               type="textarea"
             />
@@ -557,7 +557,7 @@ main {
       flex: 1;
       .sys-list {
         height: 100%;
-        width:300px;
+        width:100%;
         border: 1px solid #E4E7ED;
         overflow-x: hidden;
         /deep/ .el-tree-node__content {
@@ -565,25 +565,25 @@ main {
             background: #ffffff;
           }
         }
-        &::-webkit-scrollbar {
-          width: 4px;
-          background: white;
-        }
-        &::-webkit-scrollbar-corner, /* 滚动条角落 */
-          &::-webkit-scrollbar-thumb,
-          &::-webkit-scrollbar-track {
-          border-radius: 4px;
-        }
-        &::-webkit-scrollbar-corner,
-        &::-webkit-scrollbar-track {
-          /* 滚动条轨道 */
-          background-color: rgba(180, 160, 120, 0.1);
-          box-shadow: inset 0 0 1px rgba(180, 160, 120, 0.5);
-        }
-        &::-webkit-scrollbar-thumb {
-          /* 滚动条手柄 */
-          background-color: #cccccc;
-        }
+        // &::-webkit-scrollbar {
+        //   width: 4px;
+        //   background: white;
+        // }
+        // &::-webkit-scrollbar-corner, /* 滚动条角落 */
+        //   &::-webkit-scrollbar-thumb,
+        //   &::-webkit-scrollbar-track {
+        //   border-radius: 4px;
+        // }
+        // &::-webkit-scrollbar-corner,
+        // &::-webkit-scrollbar-track {
+        //   /* 滚动条轨道 */
+        //   background-color: rgba(180, 160, 120, 0.1);
+        //   box-shadow: inset 0 0 1px rgba(180, 160, 120, 0.5);
+        // }
+        // &::-webkit-scrollbar-thumb {
+        //   /* 滚动条手柄 */
+        //   background-color: #cccccc;
+        // }
       }
     }
   }

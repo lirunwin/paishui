@@ -24,12 +24,30 @@ import '@/assets/iconfont/iconfont.css'
 // Vue.use(htmlToPdf)
 // dialog拖动
 import './utils/dialog'
-import '@/assets/font/other_font/iconfont.css'
+import '@/assets/font/al_font/iconfont.css'//阿里的icon图标
+import '@/assets/font/other_font/iconfont.css'//
 // 全局修改默认配置，点击空白处不能关闭弹窗
 //@ts-ignore
 ElementUI.Dialog.props.closeOnClickModal.default = false
-
 import echarts from 'echarts'
+
+// declare module 'vue/types/vue'{
+//   interface Vue{
+//     value:string;
+//     /**
+//      * dashboard混入函数
+//      * @param voucher 
+//      */
+//     validateAuth(voucher:string):any;
+
+//     /**
+//      *$comMethod混入函数
+//      * @param voucher 
+//      */
+//     $comMethod:dStore.utils.comMethod
+//   }
+// }
+
 Vue.prototype.$echarts = echarts
 Vue.prototype.$comMethod = comMethod
 import html2pdf from '@/utils/html2pdf'

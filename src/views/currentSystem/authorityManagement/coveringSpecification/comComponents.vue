@@ -1,6 +1,6 @@
 <template>
   <div style="height:100%;width:100%;overflow: auto;">
-    <table class='tablePlan' cellspacing="0" >
+    <table class='tablePlan' v-if='header&&header.length>0' cellspacing="0" >
       <thead v-if='header&&header.length>0'> 
         <tr>
           <th colspan='2' :rowspan='hasRowHeadr?"2":"1"'>{{tableTitle}}</th>
@@ -35,6 +35,12 @@
         </template>
       </tbody>
     </table>
+    <div v-else style="width:100%;height:100%">
+      <div style="position: relative;float: left;left: calc((100% - 50px)/2);top: calc((100% - 50px)/2);">
+        <img src="@/assets/icon/null.png" alt="">
+        <p class="empty-p">暂无数据</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -206,7 +212,20 @@ export default {
      * 保存数据
     */
     getSaveInfo(data){
-      if(this.updataList){
+      if(data.vol<=0){
+        this.$message({
+          showClose: true,
+          message: '配置值不能小于等于0',
+          type: 'warning'
+        });
+        // this.$message.warning('配置值不能小于等于0');
+        this.getData();
+        this.$nextTick(e=>{
+          this.editOption=false;
+        })
+        return
+      }
+      if(this.editOption){
         this.updataList({
           id:data.id,
           vol:data.vol

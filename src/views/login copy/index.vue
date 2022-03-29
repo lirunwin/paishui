@@ -1,17 +1,16 @@
 <template>
   <div class="login-container">
     <div class="company-name">
-      攀枝花城市排水综合管网管理平台
-      <!-- <img src="./images/logo.png" /> -->
+      <img src="./images/logo.png" />
     </div>
     <div class="fill-container">
       <div class="left">
-        <img src="./images/background3.png" />
+        <img src="./images/pipe.png" />
       </div>
       <div class="right">
         <div class="top">
-          <span>用户登录</span>
-          <!-- <span>城市排水综合管网管理平台</span> -->
+          <span>欢迎登录</span>
+          <span>智慧水务综合管理平台</span>
         </div>
         <el-form
           ref="loginForm"
@@ -20,12 +19,11 @@
           class="login-form middle"
           auto-complete="on"
           label-position="left"
-          style="position: relative;top: 200px; left: calc((100% - 320px)/2);top: 150px;"
         >
           <el-input
             ref="username"
             v-model="loginForm.username"
-            prefix-icon="el-icon-user"
+            suffix-icon="el-icon-user"
             placeholder="请输入账号"
             name="username"
             type="text"
@@ -43,7 +41,7 @@
             tabindex="2"
             class="form-input"
             auto-complete="on"
-            prefix-icon="el-icon-lock"
+            suffix-icon="el-icon-lock"
             @keyup.enter.native="handleLogin"
           />
         </el-form>
@@ -78,7 +76,7 @@
             autocomplete="off"
             type="password"
             placeholder="请输入密码"
-            prefix-icon="el-icon-lock"
+            suffix-icon="el-icon-lock"
           />
         </el-form-item>
         <el-form-item label="确认密码：" prop="checkPass">
@@ -87,7 +85,7 @@
             autocomplete="off"
             type="password"
             placeholder="请输入密码"
-            prefix-icon="el-icon-lock"
+            suffix-icon="el-icon-lock"
           />
         </el-form-item>
       </el-form>
@@ -310,67 +308,46 @@ export default class Login extends Vue {
 .login-container {
   width: 100%;
   height: 100%;
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background: url("./images/background.png") no-repeat fixed center/100%;
-  .company-name{
-    position: absolute;
-    font-size: 30px;
-    color: white;
-    font-weight: 700;
-    letter-spacing: 4px;
-    width: 100%;
-    text-align: center;
-    top: calc((100% - 534px)/2);
-  }
   img {
     user-select: none;
     height: 100%;
   }
   .fill-container {
-    position: relative;
-    width: 926px;
-    height: 434px;
+    width: 1000px;
+    height: 580px;
+    display: flex;
     border-radius: 10px;
-    background-color: rgb(228,242,255);
-    left: calc((100% - 926px)/2);
-    top: calc((100% - 334px)/2);
+    background-color: #ffffff;
     .left {
-      position: relative;
-      float: left;
-      width: 538px;
+      flex: 1;
       overflow: hidden;
     }
     .right {
-      width: 388px;
-      width: 388px;
-      position: relative;
-      float: left;
+      width: 546px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 114px;
       .top {
-        font-size: 25px;
-        font-weight: 700;
-        color: rgb(45,116,231);
-        text-align: center;
-        width: 100%;
-        top: 100px;
-        position: relative;
-        float: left;
+        height: 76px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 30px;
+        color: #333333;
+        margin-bottom: 70px;
         > span {
           line-height: 30px;
           &:nth-of-type(2) {
             margin-top: 16px;
           }
         }
-      }
-      /deep/ input.el-input__inner {
-          padding-left: 40px !important;
-      }
-      /deep/ i.el-input__icon.el-icon-user,/deep/ i.el-input__icon.el-icon-lock{
-        font-size: 20px;
-        color: #2d74e7;
-        top: -2.25px;
-        position: relative;
       }
       .middle {
         width: 320px;
@@ -383,18 +360,14 @@ export default class Login extends Vue {
             height: 36px;
           }
           &:nth-of-type(2) {
-            margin-top: 15px;
+            margin-top: 34px;
           }
         }
       }
       .login-btn {
         width: 320px;
         height: 44px;
-        border-radius: 22px;
-        position: relative;
-        float: left;
-        left: calc((100% - 320px)/2);
-        top: 120px;
+        border-radius: 4px;
         overflow: hidden;
         font-size: 16px;
         background: #2d74e7;

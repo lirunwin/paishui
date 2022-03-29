@@ -322,6 +322,7 @@ export default class BaseMap extends Vue {
         name:layerInfo.name,
         source: new TileSuperMapRest({
           url: layerInfo.url,
+          crossOrigin: 'Anonymous', // 是否请求跨域操作
           wrapX: true,
         }),
         properties:{
