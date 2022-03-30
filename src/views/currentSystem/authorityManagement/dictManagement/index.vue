@@ -107,7 +107,7 @@
     </el-row>
 
     <!-- 弹出新增模块框 -->
-    <el-dialog :title="dialogTitle" width="40%" :visible.sync="dialogVisible" :close-on-click-modal="false" @close="closeDialog">
+    <el-dialog :title="dialogTitle" width="45%" :visible.sync="dialogVisible" :close-on-click-modal="false" @close="closeDialog">
       <el-form ref="formData" :model="formData" :rules="rules" label-width="120px" label-position="right" class="demo-form-inline">
         <el-row class="row-form-height">
           <el-col :span="12">
@@ -383,10 +383,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
 .app-container {
   position: absolute;
   width: 100%;
   height: calc(100% - 40px);
+
   .row-height-width {
     width: 100%;
     height: 100%;
@@ -430,8 +432,11 @@ export default {
   }
 }
 
-/deep/ .el-dialog__body {
-  padding: 10px 20px !important;
+/deep/ .el-dialog {
+  min-width: 620px;
+  .el-dialog__body {
+    padding: 10px 20px !important;
+  }
 }
 
 /deep/ .demo-form-inline {
