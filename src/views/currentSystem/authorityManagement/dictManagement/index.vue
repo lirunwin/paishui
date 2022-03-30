@@ -238,11 +238,13 @@ export default {
     //  页码
     handleCurrentChange(currentPage) {
       this.pagination.current = currentPage
+      this.queryDictTypeList()
     },
 
     // 条数
     handleSizeChange(pagesize) {
       this.pagination.size = pagesize
+      this.queryDictTypeList()
     },
 
     // 选择
