@@ -12,7 +12,7 @@
                     <span>字典编码:</span>
                   </el-col>
                   <el-col :span="16">
-                    <el-input v-model="dictCode" placeholder="请输入内容" size="small" />
+                    <el-input v-model="dictCode" clearable placeholder="请输入内容" size="small" />
                   </el-col>
                 </el-row>
               </div>
@@ -24,7 +24,7 @@
                     <span>字典名称:</span>
                   </el-col>
                   <el-col :span="16">
-                    <el-input v-model="dictName" placeholder="请输入内容" size="small" />
+                    <el-input v-model="dictName" clearable placeholder="请输入内容" size="small" />
                   </el-col>
                 </el-row>
               </div>
@@ -261,6 +261,7 @@ export default {
           if (this.dialogTitle === '新增字典') {
             addDictionary(this.formData).then(res => {
               if (res.code === 1) {
+                this.pagination.total += 1
                 this.queryDictTypeList()
                 this.dialogVisible = false
               } else {
