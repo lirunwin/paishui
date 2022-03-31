@@ -5,7 +5,7 @@
       <select-item
         can-clear
         placeholder="请选择应用程序类型"
-        title="应用程序类型："
+        title="程序类型："
         nominate="appClassfication"
         :value="appClassfication"
         custom-style="display: inline-block; width: 300px;margin-right:10px"
@@ -50,26 +50,28 @@
         value-format="yyyy-MM-dd"
       />
 
-      <el-button type="primary" size="small" @click="handleClick('query')"
-        >查询</el-button
-      >
-      <el-button type="primary" size="small" @click="uploadDialog = true"
-        >上传</el-button
-      >
+      <el-button
+        type="primary"
+        size="small"
+        @click="handleClick('query')"
+      >查询</el-button>
+      <el-button
+        type="primary"
+        size="small"
+        @click="uploadDialog = true"
+      >上传</el-button>
       <el-button
         type="primary"
         size="small"
         :disabled="deleteDisabled"
         @click="handleClick('delete')"
-        >删除</el-button
-      >
+      >删除</el-button>
       <el-button
         type="primary"
         size="small"
         :disabled="publishDisabled"
         @click="handleClick('publish')"
-        >发布</el-button
-      >
+      >发布</el-button>
     </div>
     <div style="height:calc(100% - 76px);margin-top: 20px">
       <table-item
@@ -92,12 +94,11 @@
         @rowDblclick="detailsLook"
       />
     </div>
-    <el-dialog :visible.sync="detailDialog"   v-dialogDrag title="详细信息查看" width="900px">
+    <el-dialog v-dialogDrag :visible.sync="detailDialog" title="详细信息查看" width="900px">
       <div class="detail-container">
         <el-row class="info-row">
           <el-col class="info-col" :span="12">
-            <span>应用程序类型：</span
-            ><span>{{
+            <span>应用程序类型：</span><span>{{
               detailInfo.appType === "1" ? "app" : "前端平台"
             }}</span>
           </el-col>
@@ -123,8 +124,7 @@
         </el-row>
         <el-row class="info-row">
           <el-col class="info-col" :span="12">
-            <span>状态:</span
-            ><span>{{
+            <span>状态:</span><span>{{
               detailInfo.releasestatus === "1" ? "未发布" : "已发布"
             }}</span>
           </el-col>
@@ -214,17 +214,18 @@
                       justify-content: space-around;
                     "
                   >
-                    <el-button slot="trigger" size="small" type="primary"
-                      >选取文件</el-button
-                    >
+                    <el-button
+                      slot="trigger"
+                      size="small"
+                      type="primary"
+                    >选取文件</el-button>
                     <el-button
                       v-if="fileList.length !== 0"
                       style="margin-left: 20px"
                       size="small"
                       type="success"
                       @click.stop="upload"
-                      >上传文件</el-button
-                    >
+                    >上传文件</el-button>
                   </div>
                 </el-upload>
               </el-form-item>
@@ -237,35 +238,35 @@
 </template>
 
 <script lang='ts'>
-import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import TableItem from "@/components/Table/index.vue";
-import SelectItem from "@/components/FormItem/Select/index.vue";
+import { Vue, Component, Watch } from 'vue-property-decorator'
+import TableItem from '@/components/Table/index.vue'
+import SelectItem from '@/components/FormItem/Select/index.vue'
 import {
   recordList,
   upLoadFiles,
   deleteRecord,
-  publishRecord,
-} from "@/api/base";
+  publishRecord
+} from '@/api/base'
 @Component({
-  name: "APPV",
-  components: { TableItem, SelectItem },
+  name: 'APPV',
+  components: { TableItem, SelectItem }
 })
 export default class APPV extends Vue {
   pagination = { current: 1, size: 30 }; // 分页参数信息
   total = 1;
-  appClassfication = "";
-  publishStatus = "";
+  appClassfication = '';
+  publishStatus = '';
   publishTime = {
-    startTime: "",
-    endTime: "",
+    startTime: '',
+    endTime: ''
   };
   startOptions = {
     // 开始时间控制
     disabledDate: (time) => {
       if (this.publishTime.endTime) {
-        return time.getTime() >= new Date(this.publishTime.endTime);
+        return time.getTime() >= new Date(this.publishTime.endTime)
       }
-    },
+    }
   };
   endOptions = {
     // 结束时间控制
@@ -274,96 +275,96 @@ export default class APPV extends Vue {
         return (
           new Date(this.publishTime.startTime).getTime() - 1000 * 60 * 60 * 24 >
           time.getTime()
-        );
+        )
       }
-    },
+    }
   };
 
   options1 = [
     {
-      id: "1",
-      name: "APP",
+      id: '1',
+      name: 'APP'
     },
     {
-      id: "2",
-      name: "前端平台",
-    },
+      id: '2',
+      name: '前端平台'
+    }
   ];
   options2 = [
     {
-      id: "1",
-      name: "未发布",
+      id: '1',
+      name: '未发布'
     },
     {
-      id: "2",
-      name: "已发布",
-    },
+      id: '2',
+      name: '已发布'
+    }
   ];
   list = [
     {
-      applx: "公众APP",
-      bbh: "V1.0.1",
-      fbsj: "2020-11-06 11:27:12",
-      wj: "adsd.apk",
-      bbsm: "版本说明",
-    },
+      applx: '公众APP',
+      bbh: 'V1.0.1',
+      fbsj: '2020-11-06 11:27:12',
+      wj: 'adsd.apk',
+      bbsm: '版本说明'
+    }
   ];
   column = [
     {
-      label: "应用程序类型",
-      prop: "appType",
-      width: "150",
+      label: '应用程序类型',
+      prop: 'appType',
+      width: '150',
       formatter: (row, col, cellValue, index) => {
-        if (cellValue === "1") return "app";
-        if (cellValue === "2") return "前端平台";
-      },
+        if (cellValue === '1') return 'app'
+        if (cellValue === '2') return '前端平台'
+      }
     },
     {
-      label: "版本号",
-      prop: "version", // version
-      width: "150",
+      label: '版本号',
+      prop: 'version', // version
+      width: '150'
     },
     {
-      label: "上传包文件",
-      prop: "filename",
+      label: '上传包文件',
+      prop: 'filename'
     },
     {
-      label: "上传人员",
-      prop: "createUserName",
-      width: "100",
+      label: '上传人员',
+      prop: 'createUserName',
+      width: '100'
     },
     {
-      label: "上传时间",
-      prop: "createTime",
-      width: "200",
+      label: '上传时间',
+      prop: 'createTime',
+      width: '200'
     },
     {
-      label: "状态",
-      prop: "releasestatus",
-      width: "200",
+      label: '状态',
+      prop: 'releasestatus',
+      width: '200',
       formatter: (row, col, cellValue, index) => {
-        if (cellValue === "1") return "未发布";
-        if (cellValue === "2") return "已发布";
-      },
+        if (cellValue === '1') return '未发布'
+        if (cellValue === '2') return '已发布'
+      }
     },
     {
-      label: "发布人员",
-      prop: "releaserName",
-      width: "100",
+      label: '发布人员',
+      prop: 'releaserName',
+      width: '100'
     },
     {
-      label: "发布时间",
-      prop: "releasetime",
-      width: "200",
+      label: '发布时间',
+      prop: 'releasetime',
+      width: '200'
     },
     {
-      label: "操作",
-      slotScoped: "action",
-      emitWay: "detail",
-      width: "100",
-      operation: "详细",
-      acts: [{ emitWay: "detail", operation: "详细", color: "blue" }],
-    },
+      label: '操作',
+      slotScoped: 'action',
+      emitWay: 'detail',
+      width: '100',
+      operation: '详细',
+      acts: [{ emitWay: 'detail', operation: '详细', color: 'blue' }]
+    }
   ];
   multipleSelection = [];
   detailDialog = false;
@@ -372,43 +373,43 @@ export default class APPV extends Vue {
   fileList = [];
   uploadWaiting = false;
   appFormRules={
-    version: [{ required: true, message: "请输入版本号" }],
-    appType: [{ required: true, message: "请选择上传类型" }]
+    version: [{ required: true, message: '请输入版本号' }],
+    appType: [{ required: true, message: '请选择上传类型' }]
   }
   appForm = {
-    appType: "2", // app类型 1 APP；2 前端平台
-    version:"",
+    appType: '2', // app类型 1 APP；2 前端平台
+    version: ''
   };
   get deleteDisabled() {
-    const selAry = this.multipleSelection;
-    const newAry = selAry.filter((item) => item.releasestatus === "1");
+    const selAry = this.multipleSelection
+    const newAry = selAry.filter((item) => item.releasestatus === '1')
 
-    const enableFlag = selAry.length > 0 && newAry.length === selAry.length;
+    const enableFlag = selAry.length > 0 && newAry.length === selAry.length
 
-    return !enableFlag;
+    return !enableFlag
     // return !(this.multipleSelection.length !== 0 && this.multipleSelection.some(item => item.releasestatus === '1'))
   }
   get publishDisabled() {
     return !(
       this.multipleSelection.length === 1 &&
-      this.multipleSelection[0].releasestatus === "1"
-    );
+      this.multipleSelection[0].releasestatus === '1'
+    )
   }
-  @Watch("uploadDialog")
+  @Watch('uploadDialog')
   uploadDialogChange(val) {
     if (!val) {
-      this.fileList = [];
+      this.fileList = []
     }
   }
   mounted() {
-    this.getRecords();
+    this.getRecords()
   }
   success() {
-    console.log(arguments);
+    console.log(arguments)
   }
   // 获取记录
   getRecords() {
-    var that = this;
+    var that = this
 
     if (
       !(
@@ -416,191 +417,190 @@ export default class APPV extends Vue {
         (that.publishTime.startTime && that.publishTime.endTime)
       )
     ) {
-      that.$message.info("时间段请选择完整！");
-      return;
+      that.$message.info('时间段请选择完整！')
+      return
     }
 
     const params = {
       type: that.appClassfication || undefined,
       releasestatus: that.publishStatus || undefined,
       startDate: that.publishTime.startTime
-        ? that.publishTime.startTime + " 00:00:00"
-        : "",
+        ? that.publishTime.startTime + ' 00:00:00'
+        : '',
       endDate: that.publishTime.endTime
-        ? that.publishTime.endTime + " 23:59:59"
-        : "",
+        ? that.publishTime.endTime + ' 23:59:59'
+        : '',
       current: that.pagination.current,
-      size: that.pagination.size,
-    };
+      size: that.pagination.size
+    }
     recordList(params).then((res) => {
-      that.list = res.result.records;
-      that.total = res.result.total;
-    });
+      that.list = res.result.records
+      that.total = res.result.total
+    })
   }
   // 上传文件之前进行文件类型验证
   verificationFileType(data) {
     debugger
     // this.fileList.push(data.raw);
     if (
-      data.raw.type === "text/plain" ||
-      data.raw.type === "application/vnd.android.package-archive"||
-      data.raw.type === "application/x-zip-compressed"
+      data.raw.type === 'text/plain' ||
+      data.raw.type === 'application/vnd.android.package-archive' ||
+      data.raw.type === 'application/x-zip-compressed'
     ) {
-      this.fileList.push(data.raw);
+      this.fileList.push(data.raw)
     } else {
       this.$message({
-        message: "只能上传apk、txt、zip文件",
-        type: "error",
-      });
-      return;
+        message: '只能上传apk、txt、zip文件',
+        type: 'error'
+      })
+      return
     }
   }
   // 上传文件和版本说明
   upload() {
-    const form = new FormData();
+    const form = new FormData()
     // 增加类型
-    form.append("appType", this.appForm.appType);
-    form.append("version",this.appForm.version);
+    form.append('appType', this.appForm.appType)
+    form.append('version', this.appForm.version)
     for (const item of this.fileList) {
-      if (item.type === "text/plain"){
-        form.append("txtFile", item)
-      }else if(item.type === "application/vnd.android.package-archive"||item.type === "application/x-zip-compressed"){
-        form.append("appFile", item);
+      if (item.type === 'text/plain') {
+        form.append('txtFile', item)
+      } else if (item.type === 'application/vnd.android.package-archive' || item.type === 'application/x-zip-compressed') {
+        form.append('appFile', item)
       }
-        
     }
     // 判断附件是否存在
-    if (!form.get("txtFile")) {
+    if (!form.get('txtFile')) {
       this.$message({
-        message: "请上传版本说明信息(txt格式)",
-        type: "error",
-      });
-      return;
+        message: '请上传版本说明信息(txt格式)',
+        type: 'error'
+      })
+      return
     }
 
-    if (!form.get("appFile")) {
+    if (!form.get('appFile')) {
       this.$message({
-        message: "请上传app、zip安装文件(apk格式、zip格式)",
-        type: "error",
-      });
-      return;
+        message: '请上传app、zip安装文件(apk格式、zip格式)',
+        type: 'error'
+      })
+      return
     }
 
-    this.uploadWaiting = true;
+    this.uploadWaiting = true
     upLoadFiles(form)
       .then((res) => {
         // 上传成功后刷新列表
-          if (res.code !== -1) {
-            this.uploadDialog = false;
-            this.fileList = [];
-            this.$message({
-              message: "上传成功",
-              type: "success",
-            });
-            this.getRecords();
-          } else {
-            this.$message.error(res.result.message);
-          }
+        if (res.code !== -1) {
+          this.uploadDialog = false
+          this.fileList = []
+          this.$message({
+            message: '上传成功',
+            type: 'success'
+          })
+          this.getRecords()
+        } else {
+          this.$message.error(res.result.message)
+        }
       })
       .finally(() => {
-        this.uploadWaiting = false;
-      });
+        this.uploadWaiting = false
+      })
   }
   // 关闭弹窗
   canClose(done) {
-    if (this.uploadWaiting) return;
-    else done();
+    if (this.uploadWaiting) return
+    else done()
   }
   // 移除添加的文件
   deleteFile(params) {
-    const delIndex = this.fileList.findIndex((item) => item === params);
-    delIndex !== -1 ? this.fileList.splice(delIndex, 1) : null;
-    console.log(this.fileList);
+    const delIndex = this.fileList.findIndex((item) => item === params)
+    delIndex !== -1 ? this.fileList.splice(delIndex, 1) : null
+    console.log(this.fileList)
   }
   // 超限
   overflow(file, list) {
     if (list.length === 2) {
       this.$message({
-        message: "最多选择两个文件",
-        type: "error",
-      });
-      return;
+        message: '最多选择两个文件',
+        type: 'error'
+      })
+      return
     }
   }
   // 删除记录
   deleteUnPublish() {
-    const data = this.multipleSelection.map((item) => item.id).join(",");
-    const batch = data.length !== 1;
+    const data = this.multipleSelection.map((item) => item.id).join(',')
+    const batch = data.length !== 1
     deleteRecord({ ids: data }).then(() => {
-      this.getRecords();
-    });
+      this.getRecords()
+    })
   }
   // 发布版本
   publishVersion() {
-    this.$confirm("是否要发布该版本?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "info",
+    this.$confirm('是否要发布该版本?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info'
     })
       .then(() => {
         publishRecord(this.multipleSelection[0]).then((res) => {
           if (res.code !== -1) {
             this.$message({
-              type: "success",
-              message: "发布成功！",
-            });
-            this.getRecords();
+              type: 'success',
+              message: '发布成功！'
+            })
+            this.getRecords()
           }
-        });
+        })
       })
       .catch(() => {
         this.$message({
-          type: "info",
-          message: "已取消发布！",
-        });
-      });
+          type: 'info',
+          message: '已取消发布！'
+        })
+      })
   }
   // 按钮点击
   handleClick(type) {
-    if (type === "query") {
-      this.pagination.current = 1;
-      this.getRecords();
-    } else if (type === "delete") {
-      this.$confirm("是否删除数据？", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
+    if (type === 'query') {
+      this.pagination.current = 1
+      this.getRecords()
+    } else if (type === 'delete') {
+      this.$confirm('是否删除数据？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
       }).then(() => {
-        this.deleteUnPublish();
-      });
-    } else if (type === "publish") {
-      this.publishVersion();
+        this.deleteUnPublish()
+      })
+    } else if (type === 'publish') {
+      this.publishVersion()
     }
   }
   // 详情查看
   detailsLook(data) {
     // console.log(data)
-    this.detailDialog = true;
-    this.detailInfo = data;
+    this.detailDialog = true
+    this.detailInfo = data
   }
   changeSelectValue(key, val) {
-    this[key] = val;
+    this[key] = val
   }
   //  页码
   handleCurrentChange(currentPage) {
-    this.pagination.current = currentPage;
-    this.getRecords();
+    this.pagination.current = currentPage
+    this.getRecords()
   }
 
   // 条数
   handleSizeChange(pagesize) {
-    this.pagination.size = pagesize;
-    this.getRecords();
+    this.pagination.size = pagesize
+    this.getRecords()
   }
 
   // 选择
   handleSelectionChange(value) {
-    this.multipleSelection = value;
+    this.multipleSelection = value
     //  console.log('1111', value)
   }
 }
