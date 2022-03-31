@@ -73,18 +73,17 @@
             label-width="7.5rem"
             style="margin-bottom: 15px"
           >
-            <el-input v-model="ruleForm.esignature" :rows="3" type="textarea" />
             <!-- :data="upLoadData" -->
-            <!-- <el-upload
+            <el-upload
               class="avatar-uploader"
               action="111"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
               :before-upload="(file) => beforeAvatarUpload(file, 'sign')"
             >
-              <img v-if="form.signPic" :src="form.signPic" class="avatar" />
+              <img v-if="form.signPic" :src="form.signPic" class="avatar">
               <i v-else class="el-icon-plus avatar-uploader-icon el-upload" />
-            </el-upload> -->
+            </el-upload>
           </el-form-item>
           <el-form-item label="头像" label-width="7.5rem">
             <!-- :data="upLoadData" -->
@@ -136,7 +135,6 @@ export default class UserInfoEdit extends Vue {
     roles: [],
     job: '',
     note: '',
-    esignature: '',
     file: '',
     electronicFile: ''
   };
@@ -186,7 +184,6 @@ export default class UserInfoEdit extends Vue {
             : that.data.email // 邮箱
           that.data.job = that.strIsNull(that.data.job) ? '' : that.data.job // 工作岗位
           that.data.note = that.strIsNull(that.data.note) ? '' : that.data.note // 工作职责
-          that.data.esignature = that.strIsNull(that.data.esignature) ? '' : that.data.esignature // 个性签名
           that.handleEdit()
         } else {
           that.$message.error('未查询到相关的用户信息')
