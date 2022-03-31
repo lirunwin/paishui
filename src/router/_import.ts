@@ -31,7 +31,7 @@ const map = {
   showLoaction: () => import('@/views/zhpt/tongyonggongju/leftBottomTool/showLoaction/widget.vue'), // 坐标展示
   //右侧顶部工具栏
   rightTopTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/widget.vue'), // 右侧顶部工具栏
-  
+
   measureTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/widget.vue'), //测量工具
   distanceTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/distanceTool.vue'), //距离测量
   areaTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/areaTool.vue'), //面积测量
@@ -39,9 +39,9 @@ const map = {
   coordinateTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/coordinateTool.vue'), //坐标
   clearMeasureTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/clearMeasureTool.vue'), //清除测量
 
-  toolBox:()=>import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/widget.vue'),//工具箱
-  fullScreen:()=>import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/fullScreen.vue'),//全屏
-  mapScreenshot:()=>import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/mapScreenshot.vue'),//截图
+  toolBox: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/widget.vue'),//工具箱
+  fullScreen: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/fullScreen.vue'),//全屏
+  mapScreenshot: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/mapScreenshot.vue'),//截图
 
   //右侧底部工具栏
   rightBottomTool: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/widget.vue'), // 右侧底部工具栏
@@ -52,7 +52,11 @@ const map = {
   viewSwitch: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/viewSwitch/widget.vue'), // 视图切换
   mapCompass: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/mapCompass/widget.vue'), // 指北针
 
-  
+  // 设施评估
+  // 管道检测数据管理
+  EngineeringManage: () => import('@/views/facilityEvaluation/pipelineManage/engineeringManage/index.vue'), // 工程管理
+  TestResultDiagram: () => import('@/views/facilityEvaluation/pipelineManage/testResultDiagram/index.vue'), // 检测成果专题图
+
   // // 营销业务管理系统
   // register: () => import('@/views/currentSystem/work/order/register/index'), // 工单登记
   // WorkList: () => import('@/views/currentSystem/work/WorkList/work/index'), // 工单汇总
