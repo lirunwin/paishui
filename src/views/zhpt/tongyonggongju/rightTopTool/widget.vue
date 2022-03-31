@@ -119,6 +119,7 @@ export default {
      * @param val 对应功能的信息
      * */
     openFunction(val){
+      console.log("右上角工具箱", val)
       if(!val.widgetid){
         let componentList=this.getComponents("rightTopTool");
         let tempComponent=componentList.find(e=>{return e.name==val.name});
