@@ -213,7 +213,7 @@ export default class Journal extends Vue {
     },
     {
       label: "时间",
-      prop: "updateTime",
+      prop: "time",
     },
   ];
 
