@@ -149,7 +149,7 @@ export default class Journal extends Vue {
     //开始时间控制
     disabledDate: (time) => {
       if (this.problems.endTime) {
-        return time.getTime() >= new Date(this.problems.endTime);
+        return time.getTime() > new Date(this.problems.endTime);
       }
     },
   };
@@ -282,7 +282,7 @@ export default class Journal extends Vue {
    */
   dateDiff() {
   }
-  
+
   /**
    * 获取部门统计报表
    */
