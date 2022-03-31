@@ -136,6 +136,7 @@ export default class UserInfoEdit extends Vue {
     roles: [],
     job: '',
     note: '',
+    esignature: '',
     file: '',
     electronicFile: ''
   };
@@ -185,6 +186,7 @@ export default class UserInfoEdit extends Vue {
             : that.data.email // 邮箱
           that.data.job = that.strIsNull(that.data.job) ? '' : that.data.job // 工作岗位
           that.data.note = that.strIsNull(that.data.note) ? '' : that.data.note // 工作职责
+          that.data.esignature = that.strIsNull(that.data.esignature) ? '' : that.data.esignature // 个性签名
           that.handleEdit()
         } else {
           that.$message.error('未查询到相关的用户信息')
