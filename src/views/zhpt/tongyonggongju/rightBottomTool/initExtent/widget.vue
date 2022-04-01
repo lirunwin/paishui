@@ -27,7 +27,7 @@ export default {
       // 重置中心点位置为初始化位置
       this.map.getView().setZoom(appconfig.initZoom)
       this.map.getView().animate({
-        center: [appconfig.initCenter.x,appconfig.initCenter.y],
+        center: initCenter,
         duration: 600
       });
     },

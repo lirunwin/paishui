@@ -103,6 +103,7 @@
 import tfLegend from '@/views/zhpt/common/Legend'
 import { esriConfig, appconfig } from 'staticPub/config'
 import request from '@/utils/request'
+import { reject } from 'q'
 export default {
   name: 'ThemMap',
   components: { tfLegend },
@@ -208,6 +209,9 @@ export default {
   },
   methods: {
     async init() {
+      // 先跳出，后面的方法用 ol 重写
+      return new Promise(reject => reject())
+
       var mapView = this.mapView = this.$attrs.data.mapView
       for(var i=0,il=mapView.map.basemap.baseLayers.items,ii=il.length;i<ii;i++) {
         var di = il[i]
@@ -247,7 +251,7 @@ export default {
       var business = this.businessMap = appconfig.gisResource.business_map.config[0].url
       var mapView = this.mapView
       var idsdata    
-      for (let i=0,il=mapView.map.basemap.baseLayers.items,ii=il.length,sublayerids = [];i<ii; i++) {
+      for (let i=0,il= mapView.map.basemap.baseLayers.items,ii=il.length, sublayerids = [];i<ii; i++) {
         if(il[i].url && il[i].url == business) {
           for(let j=0,jl=il[i].allSublayers.items,jj=jl.length;j<jj;j++){
             var layer = jl[j]
@@ -256,7 +260,7 @@ export default {
           idsdata = sublayerids.sort((a, b) => a - b)
           break 
         }
-      }      
+      }
       if (idsdata.length == 0) return this.$message.error('管线图层无数据！')      
       var url = appconfig.gisResource.layer_name.config[0].url
       $.ajax({

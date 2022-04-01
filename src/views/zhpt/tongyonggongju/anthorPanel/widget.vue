@@ -57,8 +57,16 @@
 
 <script>
 import tfLegend from '@/views/zhpt/common/Legend'
-import { esriConfig, appconfig } from 'staticPub/config'
-import { loadModules } from 'esri-loader'
+import {appconfig } from 'staticPub/config'
+
+import "ol/ol.css";
+import Map from "ol/Map";
+import View from "ol/View";
+import TileLayer from "ol/layer/Tile";
+import * as control from "ol/control";
+import { Logo, TileSuperMapRest } from "@supermap/iclient-ol";
+
+
 export default {
   name: 'AnthorPanel',
   components: { tfLegend },  
@@ -88,84 +96,48 @@ export default {
     this.antP = this.data.that.$refs.antP
     this.antP.nextElementSibling.style.display = 'block'
     this.antP.style.display = 'block'
+
     var mapView = this.mapView = this.data.mapView
-    this.mapDiv = mapView.container
+    this.mapDiv = mapView.getTargetElement()
     this.mapDiv.style.width = 'calc(50% - 2px)'
     this.mapDiv.style.float = 'left'
-    mapView.TF_mouseLocation.$refs.mouse.style.left = 'calc(50% + 5px)'
+    // 更新地图尺寸
+    this.mapView.updateSize()
 
-    var that = this
-    loadModules(
-      ['esri/Map', 'esri/views/MapView', 'esri/layers/WebTileLayer', 'esri/layers/TileLayer', 'esri/layers/MapImageLayer', 'esri/layers/support/LOD'], 
-      { url: esriConfig.baseUrl })
-      .then((
-        [Map, MapView, WebTileLayer, TileLayer, MapImageLayer, Lod]) => {
-      var config = esriConfig
-      var aconfig = appconfig
-
-      var layerType = { 'webTiled': WebTileLayer, 'dynamic': MapImageLayer, 'tiled': TileLayer }
-      var layersConfig
-      var key = aconfig.isonline ? appconfig.tianMapKey : ''
-      var tileInfo = aconfig.isonline ? (visible) => {
-        return {
-          visible: visible !== false,
-          subDomains: '01234567'.split('').map(e => 't' + e),
-          tileInfo: {
-            rows: 256, cols: 256, origin: { x: -180, y: 90 }, spatialReference: { wkid: 4490 },
-            lods: Array.from({length:20}, (e, i) => i).map((e, i) => { 
-              return {level: i + 2, levelValue: i + 2, resolution: 0.3515625 / Math.pow(2, i), scale: 147748796.52937502 / Math.pow(2, i)}
-            })
-          }, spatialReference: 4490, fullExtent: { xmin: -180, ymin: -90, xmax: 180, ymax: 90, spatialReference: 4490 }
-        }
-      } : (visible) => { return { visible: visible } }
-      layersConfig = aconfig.isonline ? [
-        [ aconfig.gisResource.tian_online_vector.config[0].url, aconfig.gisResource.tian_online_vector.type ], 
-        [ aconfig.gisResource.tian_online_vector_label.config[0].url, aconfig.gisResource.tian_online_vector_label.type ], 
-        [ aconfig.gisResource.tian_online_raster.config[0].url, aconfig.gisResource.tian_online_raster.type ], 
-        [ aconfig.gisResource.tian_online_raster_label.config[0].url, aconfig.gisResource.tian_online_raster_label.type ], 
-        [ aconfig.gisResource.business_map.config[0].url, aconfig.gisResource.business_map.type ]
-      ] : [
-        [ aconfig.gisResource.tian_offline_vector.config[0].url, aconfig.gisResource.tian_offline_vector.type ], 
-        [ aconfig.gisResource.tian_offline_vector_label.config[0].url, aconfig.gisResource.tian_offline_vector_label.type ], 
-        [ aconfig.gisResource.tian_offline_raster.config[0].url, aconfig.gisResource.tian_offline_raster.type ], 
-        [ aconfig.gisResource.tian_offline_raster_label.config[0].url, aconfig.gisResource.tian_offline_raster_label.type ], 
-        [ aconfig.gisResource.business_map.config[0].url, aconfig.gisResource.business_map.type ]
-      ]
-      that.anthorBaseMaps = [
-        new layerType[layersConfig[0][1]](layersConfig[0][0] + key, tileInfo(true)),
-        new layerType[layersConfig[1][1]](layersConfig[1][0] + key, tileInfo(true)),
-        new layerType[layersConfig[2][1]](layersConfig[2][0] + key, tileInfo(false)),
-        new layerType[layersConfig[3][1]](layersConfig[3][0] + key, tileInfo(false)),
-        new layerType[layersConfig[4][1]]({ url: layersConfig[4][0] }),
-      ]
-      var anthorMapView = that.anthorMapView = new MapView({
-        container: that.antP,
-        map: new Map({ basemap: { baseLayers: that.anthorBaseMaps }}),
-        extent: that.mapView.extent
-      })
-
-      that.antP.children[0].style.height = '100%'
-      anthorMapView.ui.components = []
-      that.anthorBaseMaps[4].load().then(_ => {
-        that.loadTree()
-        anthorMapView.constraints.lods = [125000, 64000, 32000, 16000, 8000, 4000, 2000, 1000, 500, 100].map((s, i) => { return new Lod({ level: i, scale: s }) })
-        that.extentChange = that.mapView.watch('extent', (extent) => {        
-          if (that.followExtentC) anthorMapView.center = extent.center      
-          if (that.followExtentZ) anthorMapView.zoom = mapView.zoom      
-        })
-      })
-    })
+    this.loadOlMap(this.antP)
   },
   destroyed: function() {
-    this.extentChange.remove()
     this.antP.setAttribute('class', '')
     this.antP.innerHTML = ''
     this.antP.nextElementSibling.style.display = 'none'
     this.antP.style.display = 'none'
     this.mapDiv.style.width = this.mapDiv.style.float = ''
-    this.mapView.TF_mouseLocation.$refs.mouse.style.left = '5px'
+    this.mapView.updateSize()
   },
   methods: {
+    loadOlMap (mapContainer) {
+      console.log("加载地图")
+      let { url, name } = appconfig.gisResource['tian_online_vector'].config[0]
+      let center = this.mapView.getView().getCenter();
+      let zoom = this.mapView.getView().getZoom();
+      const map = new Map({
+        target: mapContainer,
+        view: new View({ center, zoom, projection: "EPSG:4326" }),
+      });
+      const veclayer = new TileLayer({ name, source: new TileSuperMapRest({ url: url, crossOrigin: 'anonymous' }) });
+      map.addLayer(veclayer);
+
+      this.mapView.getView().on("change", evt => {
+        if (this.followExtentC && this.followExtentZ) {
+          map.setView(evt.target)
+        } else {
+          this.followExtentC && map.getView().setCenter(evt.target.getCenter())
+          this.followExtentZ && map.getView().setZoom(evt.target.getZoom())
+        }
+        
+      })
+    },
+
     loadTree() {
       var tree = []
       var basemaps = this.anthorBaseMaps

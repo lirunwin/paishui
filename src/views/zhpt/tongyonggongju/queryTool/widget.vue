@@ -4,7 +4,7 @@
       <img src="./images/legendtool.png">
     </div>
     <div class="widgetGroupButtoms" style="float: left" title="动态标注" @click="queryFeature">
-      <img src="./images/shuxingbiaozhu.png">
+      <img src="./images/shuxingbiaozhu.png"> 
     </div>
   </div>
 </template>
