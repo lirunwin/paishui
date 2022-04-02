@@ -1,40 +1,94 @@
-<!--vue文件模板-->
-
 <template>
-  <div class="app-container">
-    <div class="hander_car">
-
-      <div class="btn_box">
-          <p>这是检测成果专题图</p>
-        <!-- <el-button type="primary" size="small" @click="query">查询</el-button>
-        <el-button type="success" size="small" @click="handleAddCar">新增车辆</el-button> -->
-      </div>
+  <div class="TestResultDiagram">
+    <div class="map"></div>
+    <div class="table-box">
+      <el-table
+        ref="multipleTable"
+        :data="tableData"
+        tooltip-effect="dark"
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55"> </el-table-column>
+        <el-table-column label="日期" width="120">
+          <template slot-scope="scope">{{ scope.row.date }}</template>
+        </el-table-column>
+        <el-table-column prop="name" label="姓名" width="120">
+        </el-table-column>
+        <el-table-column prop="address" label="地址" show-overflow-tooltip>
+        </el-table-column>
+      </el-table>
     </div>
   </div>
 </template>
 
 <script>
-import {Vue,Component,Prop,Watch} from 'vue-property-decorator'
-@Component({
-  name:'Car',
-  components:{}
-})
-export default class template extends Vue {
-  mounted() {
-    
-  }
-  created() {
-  }
-}
+export default {
+  data() {
+    return {
+      tableData: [
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-08",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-06",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+        {
+          date: "2016-05-07",
+          name: "王小虎",
+          address: "上海市普陀区金沙江路 1518 弄",
+        },
+      ],
+      multipleSelection: [],
+    };
+  },
+  methods: {
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
-.hander_car{
-  // display: inline-block;
-  line-height: 54px;
-}
-.btn_box{
-  display: inline-block;
-  margin-left: 20px;
+.TestResultDiagram {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  background-color: red;
+  .map {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    background-color: skyblue;
+  }
+  .table-box{
+  }
 }
 </style>

@@ -13,7 +13,10 @@
     />
     <el-container style="height: 100%; width: 100%">
       <el-container
-        :style="{ height: 'calc(100% - ' + footer_height + ')', width: '100%' }"
+        :style="{
+          height: 'calc(100% - ' + footer_height + ')',
+          width: '100%',
+        }"
       >
         <el-main>
           <!-- <float-panels :data='FloatPanels' @handelClose='handelClose'></float-panels> -->
@@ -21,6 +24,7 @@
             id="antherPanel"
             ref="antP"
             style="
+              width: 100%;
               display: none;
               width: calc(50% - 2px);
               height: 100%;
@@ -93,13 +97,45 @@
               />
             </div>
             <!-- 左上角工具栏 -->
-            <leftTopTool :toolList='leftTopTool.children' :map='view' v-if='leftTopTool&&leftTopTool.children&&leftTopTool.children.length>0' ></leftTopTool>
+            <leftTopTool
+              :toolList="leftTopTool.children"
+              :map="view"
+              v-if="
+                leftTopTool &&
+                leftTopTool.children &&
+                leftTopTool.children.length > 0
+              "
+            ></leftTopTool>
             <!-- 左下角工具栏 -->
-            <leftBottomTool :toolList='leftBottomTool.children' :map='view' v-if='leftBottomTool&&leftBottomTool.children&&leftBottomTool.children.length>0' ></leftBottomTool>
+            <leftBottomTool
+              :toolList="leftBottomTool.children"
+              :map="view"
+              v-if="
+                leftBottomTool &&
+                leftBottomTool.children &&
+                leftBottomTool.children.length > 0
+              "
+            ></leftBottomTool>
             <!-- 右上角工具栏 -->
-            <rightTopTool :toolList='rightTopTool.children' :map='view' v-if='rightTopTool&&rightTopTool.children&&rightTopTool.children.length>0' ></rightTopTool>
+            <rightTopTool
+              :toolList="rightTopTool.children"
+              :map="view"
+              v-if="
+                rightTopTool &&
+                rightTopTool.children &&
+                rightTopTool.children.length > 0
+              "
+            ></rightTopTool>
             <!-- 右下角工具栏 -->
-            <rightBottomTool :toolList='rightBottomTool.children' :map='view' v-if='rightBottomTool&&rightBottomTool.children&&rightBottomTool.children.length>0' ></rightBottomTool>
+            <rightBottomTool
+              :toolList="rightBottomTool.children"
+              :map="view"
+              v-if="
+                rightBottomTool &&
+                rightBottomTool.children &&
+                rightBottomTool.children.length > 0
+              "
+            ></rightBottomTool>
             <!-- 视图工具 -->
             <!-- <WidgetGroup :map-view="view" :that="this" /> -->
             <!-- 测量工具 -->
@@ -126,16 +162,26 @@
           <!-- <SimpleQueryTool :map-view="view" /> -->
           <float-panels :panels="FloatPanels" :data="panels" />
           <div id="map-index-floatPanels" ref="floatPanels" />
+              <!-- width: side_width, -->
+          <el-aside
+            :style="{
+              width:'400px',
+              height: '570px',
+              position: 'fixed',
+              right: '85px',
+              top: '120px',
+              borderRadius: '5px',
+            }"
+          >
+            <side-panels
+              :panels="Panels"
+              :data="panels"
+              :side-width.sync="side_width"
+              :panel-visible.sync="sidepanel_visible"
+              @handelClose="handelClose"
+            />
+          </el-aside>
         </el-main>
-        <el-aside :style="{ width: side_width, height: '100%' }">
-          <side-panels
-            :panels="Panels"
-            :data="panels"
-            :side-width.sync="side_width"
-            :panel-visible.sync="sidepanel_visible"
-            @handelClose="handelClose"
-          />
-        </el-aside>
       </el-container>
       <el-footer
         :style="{ height: footer_height, width: '100%', padding: '0px' }"
@@ -164,8 +210,7 @@
   </div>
 </template>
 <script lang='ts'>
-
-import {Vue,Component,Watch,Prop} from 'vue-property-decorator'
+import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 import "ol/ol.css";
 import Map from "ol/Map";
 import View from "ol/View";
@@ -181,7 +226,7 @@ import {
   SidePanels,
 } from "@/layout/components/index";
 import { esriConfig, appconfig } from "staticPub/config";
-import { loadModules } from 'esri-loader'
+import { loadModules } from "esri-loader";
 import { loadCss } from "@/utils/loadResources";
 import request from "@/utils/request";
 import tfDialog from "./common/Dialog.vue";
@@ -196,10 +241,10 @@ import leftBottomTool from "./tongyonggongju/leftBottomTool/widget.vue";
 import leftTopTool from "./tongyonggongju/leftTopTool/widget.vue";
 import rightBottomTool from "./tongyonggongju/rightBottomTool/widget.vue";
 import rightTopTool from "./tongyonggongju/rightTopTool/widget.vue";
-import { extend } from 'ol/array';
+import { extend } from "ol/array";
 
 @Component({
-components: {
+  components: {
     HalfPanels,
     FullPanels,
     FloatPanels,
@@ -215,84 +260,84 @@ components: {
     leftBottomTool,
     leftTopTool,
     rightBottomTool,
-    rightTopTool
-  }
+    rightTopTool,
+  },
 })
 export default class BaseMap extends Vue {
   /**左上角工具栏列表*/
-  leftTopTool=null;
+  leftTopTool = null;
   /**左下角工具栏列表*/
-  leftBottomTool=null;
+  leftBottomTool = null;
   /**右上角工具栏列表*/
-  rightTopTool=null;//
+  rightTopTool = null; //
   /**右下角工具栏列表*/
-  rightBottomTool=null;
-  @Prop(Object) params:object
-      view= null
-      Comps
-      show= true
-      themSrc= ""
-      labelShow= false
-      side_width= "0%"
-      footer_height= "0%"
-      sidepanel_visible= false
-      floatpanel_visible= false
-      halfpanel_visible= false
-      fullpanel_visible= false
-      halfpanel_defaultHeight= "400px"
-      legendHide= true
-      loading= true
-      loadText= ""
-      panels= {
-        mapView: this.view,
-        that: this,
-        // 当前激活的模块
-        activeModel: null,
-        tfDialog: { Show: null, Hide: null, setSize: null },
-      }
-  
-    get Panels() {
-      return this.$store.state.map.panels;
-    }
-    get FullPanels() {
-      return this.$store.state.map.fullPanels;
-    }
-    get HalfPanels() {
-      return this.$store.state.map.halfPanels;
-    }
-    get FloatPanels () {
-      return this.$store.state.map.floatPanels;
-    }
-    get jumpText() {
-      return this.$store.state.jumpText;
-    }
-    @Watch('FullPanels')
-    FullPanelsChange() {
-      this.show = true;
-    }
-    @Watch('loading')
-    loadingChange(value) {
-      if (value == false) {
-        var str = this.$store.state.jumpText;
-        if (!str) return;
-        str = str.split(",");
-        this.$store.dispatch("map/changeMethod", {
-          pathId: str[0],
-          widgetid: str[1],
-          label: str[2],
-        });
-      }
-    }
-    @Watch('jumpText')
-    jumpTextChange(n, o) {
-      if (!n) return;
-      n = n.split(",");
+  rightBottomTool = null;
+  @Prop(Object) params: object;
+  view = null;
+  Comps;
+  show = true;
+  themSrc = "";
+  labelShow = false;
+  side_width = "0%";
+  footer_height = "0%";
+  sidepanel_visible = false;
+  floatpanel_visible = false;
+  halfpanel_visible = false;
+  fullpanel_visible = false;
+  halfpanel_defaultHeight = "400px";
+  legendHide = true;
+  loading = true;
+  loadText = "";
+  panels = {
+    mapView: this.view,
+    that: this,
+    // 当前激活的模块
+    activeModel: null,
+    tfDialog: { Show: null, Hide: null, setSize: null },
+  };
+
+  get Panels() {
+    return this.$store.state.map.panels;
+  }
+  get FullPanels() {
+    return this.$store.state.map.fullPanels;
+  }
+  get HalfPanels() {
+    return this.$store.state.map.halfPanels;
+  }
+  get FloatPanels() {
+    return this.$store.state.map.floatPanels;
+  }
+  get jumpText() {
+    return this.$store.state.jumpText;
+  }
+  @Watch("FullPanels")
+  FullPanelsChange() {
+    this.show = true;
+  }
+  @Watch("loading")
+  loadingChange(value) {
+    if (value == false) {
+      var str = this.$store.state.jumpText;
+      if (!str) return;
+      str = str.split(",");
       this.$store.dispatch("map/changeMethod", {
-        pathId: n[0],
-        widgetid: n[1],
-        label: n[2],
+        pathId: str[0],
+        widgetid: str[1],
+        label: str[2],
       });
     }
+  }
+  @Watch("jumpText")
+  jumpTextChange(n, o) {
+    if (!n) return;
+    n = n.split(",");
+    this.$store.dispatch("map/changeMethod", {
+      pathId: n[0],
+      widgetid: n[1],
+      label: n[2],
+    });
+  }
   created() {
     console.log("=====", this.Comps);
   }
@@ -300,186 +345,206 @@ export default class BaseMap extends Vue {
     loadCss(esriConfig.baseCssUrl); // 本地css资源
     this.initConfig(); // 加载配置 ==> 加载地图
   }
-    handelClose() {
-      this.show = false;
-    }
-    async initMap() {
-      var config = esriConfig;
-      var aconfig = appconfig;
-      var layerInfo =appconfig.gisResource['tian_online_vector'].config[0]
-      layerInfo.url='https://iserver.supermap.io/iserver/services/map-world/rest/maps/World'
-      var map = new Map({
-        target: "mapView",
-        view: new View({
-          center: [0, 0],
-          zoom: 2,
-          projection: "EPSG:4326",
-        }),
-      });
+  handelClose() {
+    this.show = false;
+  }
+  async initMap() {
+    var config = esriConfig;
+    var aconfig = appconfig;
+    var layerInfo = appconfig.gisResource["tian_online_vector"].config[0];
+    layerInfo.url =
+      "https://iserver.supermap.io/iserver/services/map-world/rest/maps/World";
+    var map = new Map({
+      target: "mapView",
+      view: new View({
+        center: [0, 0],
+        zoom: 2,
+        projection: "EPSG:4326",
+      }),
+    });
 
-      var layer = new TileLayer({
-        /**图层名称*/
-        name:layerInfo.name,
-        source: new TileSuperMapRest({
-          url: layerInfo.url,
-          crossOrigin: 'Anonymous', // 是否请求跨域操作
-          wrapX: true,
-        }),
-        properties:{
-          projection: "EPSG:4326"
-        }
-      } as any);
-      map.addLayer(layer);
-      this.panels.mapView = this.view = map
-      this.loading=false;
-      this.$nextTick(this.controlToolDisplay);
+    var layer = new TileLayer({
+      /**图层名称*/
+      name: layerInfo.name,
+      source: new TileSuperMapRest({
+        url: layerInfo.url,
+        crossOrigin: "Anonymous", // 是否请求跨域操作
+        wrapX: true,
+      }),
+      properties: {
+        projection: "EPSG:4326",
+      },
+    } as any);
+    map.addLayer(layer);
+    this.panels.mapView = this.view = map;
+    this.loading = false;
+    this.$nextTick(this.controlToolDisplay);
+  }
+  legendClick() {
+    this.legendHide = !this.legendHide;
+    var whichP = [
+      ["收缩", 350, "▼"],
+      ["展开", 0, "▲"],
+    ][this.legendHide ? 0 : 1];
+    //@ts-ignore
+    this.$refs.legend_close.title = whichP[0];
+    //@ts-ignore
+    this.$refs.legend.style.height = whichP[1] + "px";
+    //@ts-ignore
+    this.$refs.legend_close.innerHTML = whichP[2];
+  }
+  closeAny() {
+    //@ts-ignore
+    this.$refs.any.style.display = "none";
+  }
+  initConfig() {
+    var index = appconfig.gisResource;
+    var nextDo = () => {
+      this.loadText = "地图加载中";
+      this.$nextTick(this.initMap);
     };
-    legendClick() {
-      this.legendHide = !this.legendHide;
-      var whichP = [
-        ["收缩", 350, "▼"],
-        ["展开", 0, "▲"],
-      ][this.legendHide ? 0 : 1];
-      //@ts-ignore
-      this.$refs.legend_close.title = whichP[0];
-      //@ts-ignore
-      this.$refs.legend.style.height = whichP[1] + "px";
-      //@ts-ignore
-      this.$refs.legend_close.innerHTML = whichP[2];
-    }
-    closeAny() {
-      //@ts-ignore
-      this.$refs.any.style.display = "none";
-    }
-    initConfig() {
-      var index = appconfig.gisResource;
-      var nextDo = () => {
-        this.loadText = "地图加载中";
-        this.$nextTick(this.initMap);
-      };
-      console.log("是否获取后台配置服务:" + appconfig.isloadServer);
-      if (appconfig.isloadServer) {
-        this.loadText = "服务加载中";
-        request({ url: "/base/sourcedic/getTreeService", method: "get" }).then(
-          (res1) => {
-            if (res1.code == 1) {
-              const res = res1.result;
-              //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
-              let onlineIndex = res.findIndex((item) => {
-                return item.code == "isOnlineAddress";
-              });
-              if (onlineIndex != -1) {
-                let isOnline = true;
-                let onLineAddress = res[onlineIndex].child[0].cval;
-                console.log("判断地址" + onLineAddress);
-                axios
-                  .get(onLineAddress)
-                  .then(
-                    (res) => {
-                      if (res.status == 200) {
-                        //正常返回
-                        isOnline = true;
-                      } else {
-                        isOnline = false;
-                      }
-                    },
-                    (error) => {
-                      //异常返回
+    console.log("是否获取后台配置服务:" + appconfig.isloadServer);
+    if (appconfig.isloadServer) {
+      this.loadText = "服务加载中";
+      request({ url: "/base/sourcedic/getTreeService", method: "get" }).then(
+        (res1) => {
+          if (res1.code == 1) {
+            const res = res1.result;
+            //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
+            let onlineIndex = res.findIndex((item) => {
+              return item.code == "isOnlineAddress";
+            });
+            if (onlineIndex != -1) {
+              let isOnline = true;
+              let onLineAddress = res[onlineIndex].child[0].cval;
+              console.log("判断地址" + onLineAddress);
+              axios
+                .get(onLineAddress)
+                .then(
+                  (res) => {
+                    if (res.status == 200) {
+                      //正常返回
+                      isOnline = true;
+                    } else {
                       isOnline = false;
                     }
-                  )
-                  .catch((e) => {
-                    isOnline = false; //异常返回
-                  })
-                  .finally(() => {
-                    for (var i = 0, ii = res.length; i < ii; i++) {
-                      var dr = res[i];
-                      if (index.hasOwnProperty(dr.code)) {
-                        //天地图相关的编码
-                        let replaceItems = [
-                          "tian_online_vector",
-                          "tian_online_raster",
-                          "tian_online_vector_label",
-                          "tian_online_raster_label",
-                        ];
-                        //离线状况下替换天地图地址
-                        if (!isOnline) {
-                          if (
-                            replaceItems.findIndex((valItem) => {
-                              return valItem == dr.code;
-                            }) != -1
-                          ) {
-                            let index2 = res.findIndex((item) => {
-                              return item.code == dr.code + "_dl";
-                            });
-                            if (index2 != -1) {
-                              let dataItem = res[index2];
-                              var odr = index[dr.code];
-                              odr.type = dataItem.type;
-                              odr.groupname = dataItem.name;
-                              if (dataItem.child) {
-                                odr.config = dataItem.child.map((e) => {
-                                  return { name: e.name, url: e.cval };
-                                });
-                              }
-                            }
-                            continue;
-                          }
-                        }
-                        var odr = index[dr.code];
-                        odr.type = dr.type;
-                        odr.groupname = dr.name;
-                        if (dr.child) {
-                          odr.config = dr.child.map((e) => {
-                            return { name: e.name, url: e.cval };
+                  },
+                  (error) => {
+                    //异常返回
+                    isOnline = false;
+                  }
+                )
+                .catch((e) => {
+                  isOnline = false; //异常返回
+                })
+                .finally(() => {
+                  for (var i = 0, ii = res.length; i < ii; i++) {
+                    var dr = res[i];
+                    if (index.hasOwnProperty(dr.code)) {
+                      //天地图相关的编码
+                      let replaceItems = [
+                        "tian_online_vector",
+                        "tian_online_raster",
+                        "tian_online_vector_label",
+                        "tian_online_raster_label",
+                      ];
+                      //离线状况下替换天地图地址
+                      if (!isOnline) {
+                        if (
+                          replaceItems.findIndex((valItem) => {
+                            return valItem == dr.code;
+                          }) != -1
+                        ) {
+                          let index2 = res.findIndex((item) => {
+                            return item.code == dr.code + "_dl";
                           });
+                          if (index2 != -1) {
+                            let dataItem = res[index2];
+                            var odr = index[dr.code];
+                            odr.type = dataItem.type;
+                            odr.groupname = dataItem.name;
+                            if (dataItem.child) {
+                              odr.config = dataItem.child.map((e) => {
+                                return { name: e.name, url: e.cval };
+                              });
+                            }
+                          }
+                          continue;
                         }
                       }
+                      var odr = index[dr.code];
+                      odr.type = dr.type;
+                      odr.groupname = dr.name;
+                      if (dr.child) {
+                        odr.config = dr.child.map((e) => {
+                          return { name: e.name, url: e.cval };
+                        });
+                      }
                     }
-                    nextDo();
-                  });
-              }
-            } else this.$message("服务加载失败 启用默认服务配置");
-          }
-        );
-      } else nextDo();
-    }
+                  }
+                  nextDo();
+                });
+            }
+          } else this.$message("服务加载失败 启用默认服务配置");
+        }
+      );
+    } else nextDo();
+  }
 
-    /**
-     * 根据权限控制地图四个角的工具栏的展示
-    */
-    controlToolDisplay(){
-      //本功能必须在权限管理-系统管理-模块管理的系统新增中分配leftTopTool,leftBottomTool,rightTopTool,rightBottomTool四个类型
-      //这四个类型分别对应地图工具栏的左上角,左下角,右上角,右下角
-      //这四个工具栏不在左边的功能列表中展示（改设置在src\layout\components\Sidebar\index.vue中）
-      if(this.$store.state&&this.$store.state.routeSetting&&this.$store.state.routeSetting.routes){
-        const allModel=this.$store.state.routeSetting.routes;//获取所有功能
-        /**工具栏识别的字符集合*/
-        const toolBoxList=['leftTopTool','leftBottomTool','rightBottomTool','rightTopTool']
-        const toolcomponentList={leftTopTool,leftBottomTool,rightTopTool,rightBottomTool};
-        //根据模块管理将组件注入
-        allModel.forEach(item=>{
-          let index=toolBoxList.findIndex(val=>{return val==item.type});
-          if(index!=-1){
-            this[item.type]=item||[];
-            let temp=this.getComponents(item.type);
-            temp.forEach(item2=>{
-              toolcomponentList[item.type]['components'][item2.name]=item2.component
-            })
-          }
+  /**
+   * 根据权限控制地图四个角的工具栏的展示
+   */
+  controlToolDisplay() {
+    //本功能必须在权限管理-系统管理-模块管理的系统新增中分配leftTopTool,leftBottomTool,rightTopTool,rightBottomTool四个类型
+    //这四个类型分别对应地图工具栏的左上角,左下角,右上角,右下角
+    //这四个工具栏不在左边的功能列表中展示（改设置在src\layout\components\Sidebar\index.vue中）
+    if (
+      this.$store.state &&
+      this.$store.state.routeSetting &&
+      this.$store.state.routeSetting.routes
+    ) {
+      const allModel = this.$store.state.routeSetting.routes; //获取所有功能
+      /**工具栏识别的字符集合*/
+      const toolBoxList = [
+        "leftTopTool",
+        "leftBottomTool",
+        "rightBottomTool",
+        "rightTopTool",
+      ];
+      const toolcomponentList = {
+        leftTopTool,
+        leftBottomTool,
+        rightTopTool,
+        rightBottomTool,
+      };
+      //根据模块管理将组件注入
+      allModel.forEach((item) => {
+        let index = toolBoxList.findIndex((val) => {
+          return val == item.type;
         });
-      }
+        if (index != -1) {
+          this[item.type] = item || [];
+          let temp = this.getComponents(item.type);
+          temp.forEach((item2) => {
+            toolcomponentList[item.type]["components"][item2.name] =
+              item2.component;
+          });
+        }
+      });
     }
+  }
 
-    /**
-     * 获取指定层级下面的组件
-     * @param typeString 指定层级的名称
-     * */ 
-    getComponents(typeString){
-        let temp=this.$store.state.routeSetting.addRoutes.find(val=>{ return val.name&&val.name==typeString});
-        return temp.children||[]
-    }
-};
+  /**
+   * 获取指定层级下面的组件
+   * @param typeString 指定层级的名称
+   * */
+  getComponents(typeString) {
+    let temp = this.$store.state.routeSetting.addRoutes.find((val) => {
+      return val.name && val.name == typeString;
+    });
+    return temp.children || [];
+  }
+}
 </script>
 <style lang="scss" scoped>
 #viewDiv {
@@ -489,15 +554,16 @@ export default class BaseMap extends Vue {
   height: 100%;
   .el-main {
     padding: 0px;
+    // position: absolute;
   }
   .mapView {
     position: relative;
     height: 100%;
     width: 100%;
-    /deep/ .ol-zoom{
+    /deep/ .ol-zoom {
       display: none !important;
     }
-    /deep/ .ol-attribution{
+    /deep/ .ol-attribution {
       display: none !important;
     }
   }

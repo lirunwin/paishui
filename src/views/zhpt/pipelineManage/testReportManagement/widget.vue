@@ -5,12 +5,15 @@
         <div class="serch-engineering">
           <div class="title">关键字：</div>
           <el-input
-            placeholder="搜索工程编号、工程名称"
+            placeholder="搜索工程名称、地点、报告名称"
             v-model="input"
             clearable
             class="serch-input"
           >
           </el-input>
+          <div class="title">检测日期：</div>
+          <el-date-picker v-model="value1" type="date" placeholder="检测日期">
+          </el-date-picker>
           <el-button class="serch-btn" icon="el-icon-search" type="primary"
             >搜索</el-button
           >
@@ -125,7 +128,9 @@
           width="100"
         >
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="zero = scope">详情</el-button>
+            <el-button type="text" size="small" @click="zero = scope"
+              >详情</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -218,7 +223,7 @@
 export default {
   data() {
     return {
-      zero:'',
+      zero: "",
       dialogFormVisible: false,
       tableData: [
         {
@@ -314,7 +319,7 @@ export default {
       justify-content: space-between;
       font-size: 14px;
       margin-bottom: 25px;
-      .serch-engineering {
+      /deep/ .serch-engineering {
         display: flex;
         justify-content: space-around;
         align-items: center;
