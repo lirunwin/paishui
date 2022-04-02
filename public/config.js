@@ -17,10 +17,11 @@ export const appconfig = {
   // 打印模板
   'templateFolder': 'D:/xrty/template',
   // 地图初始视角中心
-  'initCenter': { 'x': 104.44483, 'y': 30.85523 },
+  // 'initCenter': { 'x': 104.44483, 'y': 30.85523 },
+  // 临时使用
+  'initCenter': [104.753586, 31.521350], 
   // 地图初始视角级别
-  'initZoom': 15,
-  // 'initZoom': 3,
+  'initZoom': 6,
   // token
   'usertoken': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJVc2VySUQiOiIiLCJVU0VSTkFNRSI6IiIsIlJFQUxOQU1FIjoiIiwiV0tJRCI6NDU0NCwiUkFOR0UiOiJYUlRZIiwiUkFOR0VGSUVMRCI6bnVsbCwiQ09ERSI6IlhSVFkiLCJDT05ORUNUU1RSIjoiREFUQUJBU0U9b3JjbDtORVROQU1FPTE5Mi4xNjguMi4yNDIvb3JjbDtTRVJWRVI9MTkyLjE2OC4yLjI0MjtVU0VSSUQ9dGZfeHJ0eV9nZW87UEFTU1dPUkQ9dGZfeHJ0eV9nZW87UE9SVD0xNTIxQDUxNTEvdGNwO1ZFUlNJT049c2RlLkRFRkFVTFQiLCJCb3JuVGltZSI6MCwiQXBwSUQiOm51bGx9.bMNoX6nsvNYukk47_UnT9IHGlNIWclbmiXTj3ak1i5KuF5LGexfwV7TwF80nP08GEPaNwScgk7lbJkRHcqtT8w',
   // 地图资源服务
@@ -121,7 +122,7 @@ export const appconfig = {
       ]
     },
     'statistic': {
-      'groupname': '属性统计',
+      'groupname': '属性统计', 
       'config': [
         { 'name': '属性统计', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/statistic' }
       ]

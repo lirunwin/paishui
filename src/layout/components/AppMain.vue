@@ -4,8 +4,8 @@
     <transition name="fade-transform" mode="out-in">
       <keep-alive include="Monitor">
         <router-view :key="key" />
-      </keep-alive>
-    </transition>
+      </keep-alive> </transition
+    >
   </section>
 </template>
 

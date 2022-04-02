@@ -23,13 +23,12 @@
           :style="{ marginLeft: mainContainerMarginLeft, width: tagsViewWidth }"
         />
       </div>
+      <!-- <div>222232211111111111111111111111111111111111111</div> -->
       <app-main />
     </div>
-    <!-- <div>222232211111111111111111111111111111111111111</div> -->
 
-    <right-panel v-if="false">
-      <!--  -->
-    </right-panel>
+      <right-panel v-if="false">
+      </right-panel>
   </div>
 </template>
 
@@ -212,6 +211,7 @@ export default class Layout extends Vue {
       i,
       > div > span {
         color: #3174e9;
+        
       }
     }
 
@@ -244,5 +244,6 @@ export default class Layout extends Vue {
       }
     }
   }
+
 }
 </style>
