@@ -36,7 +36,7 @@
           </div>
         </div>
         <div class="cus-tab-operations">
-          <i
+          <!-- <i
             class="el-icon-more tools-viewed-trigger"
             @click="toggleMore('trigger')"
           >
@@ -62,7 +62,7 @@
                 />
               </div>
             </transition>
-          </i>
+          </i> -->
           <i class="el-icon-close" @click="handelClose" />
         </div>
       </div>
@@ -188,8 +188,10 @@ export default class SidePanels extends Vue {
 .sidepanels {
   position: relative;
   top: 0;
+  right: 0;
   width: 100%;
   height: 100%;
+  
   .close {
     position: absolute;
     top: 10px;
@@ -202,7 +204,7 @@ export default class SidePanels extends Vue {
     background-color: white;
     height: 100%;
     width: 100%;
-    padding: 5px;
+    padding: 20px;
   }
 }
 .cus-tab-container {
@@ -210,7 +212,7 @@ export default class SidePanels extends Vue {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  padding: 6px;
+  // padding: 6px;
   box-sizing: border-box;
   .cus-header {
     display: flex;
@@ -218,6 +220,7 @@ export default class SidePanels extends Vue {
     align-items: center;
     height: 40px;
     border-bottom: 1px solid #eaeaee;
+    background-color: #2d74e7;
     .cus-header-list {
       display: flex;
       width: 86%;
@@ -228,7 +231,7 @@ export default class SidePanels extends Vue {
         box-sizing: border-box;
         min-width: 80px;
         height: 40px;
-        color: black;
+        color: #fff;
         display: flex;
         align-items: center;
         justify-content: space-around;
@@ -237,10 +240,7 @@ export default class SidePanels extends Vue {
         box-sizing: border-box;
         font-size: 14px;
         &.active {
-          color: blue;
-          background: #fff;
-          border: 1px solid #eaeaea;
-          border-bottom: 1px solid #ffffff;
+          color: #fff;
         }
       }
     }
@@ -322,6 +322,9 @@ export default class SidePanels extends Vue {
     // overflow-x: hidden;
     overflow: hidden;
   }
+}
+.el-icon-close{
+  color: #fff;
 }
 .fade-enter-active,
 .fade-leave-active {

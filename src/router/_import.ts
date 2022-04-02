@@ -7,6 +7,7 @@ const map = {
   Dashboard: () => import('@/views/currentSystem/dashboard/index.vue'), // 首页
   currentSystem: () => import('@/views/currentSystem/index.vue'), // 当前系统的路由
   Map: () => import('@/views/zhpt/index.vue'),
+  facilityEvaluation: () => import('@/views/facilityEvaluation/index.vue'), // 设施评价
   // funMap: () => import('@/views/currentSystem/map/funCom/index'),
   // 系统权限
   userManage: () => import('@/views/currentSystem/authorityManagement/userRights/index.vue'), // 用户管理
@@ -60,8 +61,8 @@ const map = {
 
   // 设施评估
   // 管道检测数据管理
-  EngineeringManage: () => import('@/views/facilityEvaluation/pipelineManage/engineeringManage/index.vue'), // 工程管理
-  TestResultDiagram: () => import('@/views/facilityEvaluation/pipelineManage/testResultDiagram/index.vue'), // 检测成果专题图
+  // EngineeringManage: () => import('@/views/facilityEvaluation/pipelineManage/engineeringManage/index.vue'), // 工程管理
+  // TestResultDiagram: () => import('@/views/facilityEvaluation/pipelineManage/testResultDiagram/index.vue'), // 检测成果专题图
 
   // // 营销业务管理系统
   // register: () => import('@/views/currentSystem/work/order/register/index'), // 工单登记
