@@ -96,47 +96,6 @@
                 "
               />
             </div>
-           
-            <!-- 左上角工具栏 -->
-            <leftTopTool
-              :toolList="leftTopTool.children"
-              :map="view"
-              v-if="
-                leftTopTool &&
-                leftTopTool.children &&
-                leftTopTool.children.length > 0
-              "
-            ></leftTopTool>
-            <!-- 左下角工具栏 -->
-            <leftBottomTool
-              :toolList="leftBottomTool.children"
-              :map="view"
-              v-if="
-                leftBottomTool &&
-                leftBottomTool.children &&
-                leftBottomTool.children.length > 0
-              "
-            ></leftBottomTool>
-            <!-- 右上角工具栏 -->
-            <rightTopTool
-              :toolList="rightTopTool.children"
-              :map="view"
-              v-if="
-                rightTopTool &&
-                rightTopTool.children &&
-                rightTopTool.children.length > 0
-              "
-            ></rightTopTool>
-            <!-- 右下角工具栏 -->
-            <rightBottomTool
-              :toolList="rightBottomTool.children"
-              :map="view"
-              v-if="
-                rightBottomTool &&
-                rightBottomTool.children &&
-                rightBottomTool.children.length > 0
-              "
-            ></rightBottomTool>
 
             <!-- 视图工具 -->
             <!-- <WidgetGroup :map-view="view" :that="this" /> -->
@@ -467,7 +426,7 @@ export default class BaseMap extends Vue {
       this.$nextTick(this.initMap);
     };
     console.log('是否获取后台配置服务:' + appconfig.isloadServer)
-if (appconfig.isloadServer) {
+    if (appconfig.isloadServer) {
         this.loadText = '服务加载中';
         request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then(responce => {
           if (responce.code == 1) {
