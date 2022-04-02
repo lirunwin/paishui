@@ -97,16 +97,6 @@
               />
             </div>
 
-            <!-- 左上角工具栏 -->
-            <leftTopTool
-              :toolList="leftTopTool.children"
-              :map="view"
-              v-if="
-                leftTopTool &&
-                leftTopTool.children &&
-                leftTopTool.children.length > 0
-              "
-            ></leftTopTool>
             <!-- 左下角工具栏 -->
             <leftBottomTool
               :toolList="leftBottomTool.children"
@@ -127,16 +117,7 @@
                 rightTopTool.children.length > 0
               "
             ></rightTopTool>
-            <!-- 右下角工具栏 -->
-            <rightBottomTool
-              :toolList="rightBottomTool.children"
-              :map="view"
-              v-if="
-                rightBottomTool &&
-                rightBottomTool.children &&
-                rightBottomTool.children.length > 0
-              "
-            ></rightBottomTool>
+            
 
             <!-- 视图工具 -->
             <!-- <WidgetGroup :map-view="view" :that="this" /> -->
@@ -224,16 +205,6 @@
               @handelClose="handelClose"
             />
           </el-aside>
-          <!-- <el-aside :style="{ width: side_width, height: '100%' }">
-          <side-panels
-            :panels="Panels"
-            :data="panels"
-            :side-width.sync="side_width"
-            :panel-visible.sync="sidepanel_visible"
-            @handelClose="handelClose"
-            @updateMapSize="updateMapSize"
-          />
-        </el-aside> -->
         </el-main>
       </el-container>
       <el-footer
@@ -417,7 +388,6 @@ export default class BaseMap extends Vue {
     this.show = false;
   }
   async initMap() {
-    console.log('加载地图')
     var config = esriConfig;
     var aconfig = appconfig;
     var layerInfo = appconfig.gisResource["tian_online_vector"].config[0];
@@ -472,77 +442,93 @@ export default class BaseMap extends Vue {
       this.loadText = "地图加载中";
       this.$nextTick(this.initMap);
     };
-    console.log('是否获取后台配置服务:' + appconfig.isloadServer)
-if (appconfig.isloadServer) {
-        this.loadText = '服务加载中';
-        request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then(responce => {
-          if (responce.code == 1) {
-            let res = responce.result;
+    console.log("是否获取后台配置服务:" + appconfig.isloadServer);
+    if (appconfig.isloadServer) {
+      this.loadText = "服务加载中";
+      request({ url: "/base/sourcedic/getTreeService", method: "get" }).then(
+        (res1) => {
+          if (res1.code == 1) {
+            const res = res1.result;
             //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
-            let onlineIndex= res.findIndex(item=>{return item.code=='isOnlineAddress'});
-            if(onlineIndex!=-1){
-              let isOnline=true;
-              let onLineAddress=res[onlineIndex].child[0].cval;
-              console.log('判断地址'+onLineAddress);
-              axios.get(onLineAddress).then(res=>{
-                if(res.status==200){//正常返回
-                  isOnline=true
-                }else{
-                  isOnline=false
-                }
-              },error=>{//异常返回
-                isOnline=false
-              }).catch(e=>{
-                isOnline=false//异常返回
-              }).finally( () =>{
-                for (var i = 0, ii = res.length; i < ii; i++) {
-                  var dr = res[i]
-                  if (index.hasOwnProperty(dr.code)) {
-                  //天地图相关的编码
-                  let replaceItems=['tian_online_vector','tian_online_raster','tian_online_vector_label','tian_online_raster_label'];
-                    //离线状况下替换天地图地址
-                    if (!isOnline) {
-                      if(replaceItems.findIndex(valItem=> {return valItem==dr.code})!=-1){
-                        let index2=res.findIndex(item=>{return item.code==dr.code+'_dl'});
-                        if(index2!=-1){
-                          let dataItem=res[index2];
-                          var odr = index[dr.code]
-                          odr.type = dataItem.type
-                          odr.groupname = dataItem.name
-                          if (dataItem.child) {
-                            odr.config = dataItem.child.map(e => {
-                              return { 'name': e.name, 'url': e.cval }
-                            })
+            let onlineIndex = res.findIndex((item) => {
+              return item.code == "isOnlineAddress";
+            });
+            if (onlineIndex != -1) {
+              let isOnline = true;
+              let onLineAddress = res[onlineIndex].child[0].cval;
+              console.log("判断地址" + onLineAddress);
+              axios
+                .get(onLineAddress)
+                .then(
+                  (res) => {
+                    if (res.status == 200) {
+                      //正常返回
+                      isOnline = true;
+                    } else {
+                      isOnline = false;
+                    }
+                  },
+                  (error) => {
+                    //异常返回
+                    isOnline = false;
+                  }
+                )
+                .catch((e) => {
+                  isOnline = false; //异常返回
+                })
+                .finally(() => {
+                  for (var i = 0, ii = res.length; i < ii; i++) {
+                    var dr = res[i];
+                    if (index.hasOwnProperty(dr.code)) {
+                      //天地图相关的编码
+                      let replaceItems = [
+                        "tian_online_vector",
+                        "tian_online_raster",
+                        "tian_online_vector_label",
+                        "tian_online_raster_label",
+                      ];
+                      //离线状况下替换天地图地址
+                      if (!isOnline) {
+                        if (
+                          replaceItems.findIndex((valItem) => {
+                            return valItem == dr.code;
+                          }) != -1
+                        ) {
+                          let index2 = res.findIndex((item) => {
+                            return item.code == dr.code + "_dl";
+                          });
+                          if (index2 != -1) {
+                            let dataItem = res[index2];
+                            var odr = index[dr.code];
+                            odr.type = dataItem.type;
+                            odr.groupname = dataItem.name;
+                            if (dataItem.child) {
+                              odr.config = dataItem.child.map((e) => {
+                                return { name: e.name, url: e.cval };
+                              });
+                            }
                           }
+                          continue;
                         }
-                        continue
                       }
-                    } 
-                    var odr = index[dr.code]
-                    odr.type = dr.type
-                    odr.groupname = dr.name
-                    if (dr.child) {
-                      odr.config = dr.child.map(e => {
-                        return { 'name': e.name, 'url': e.cval }
-                      })
+                      var odr = index[dr.code];
+                      odr.type = dr.type;
+                      odr.groupname = dr.name;
+                      if (dr.child) {
+                        odr.config = dr.child.map((e) => {
+                          return { name: e.name, url: e.cval };
+                        });
+                      }
                     }
                   }
-                }
-                nextDo()
-              })
+                  nextDo();
+                });
             }
-          } else this.$message('服务加载失败 启用默认服务配置')
-        })
-      } else nextDo()
+          } else this.$message("服务加载失败 启用默认服务配置");
+        }
+      );
+    } else nextDo();
   }
-
-    updateMapSize() {
-      console.log("更新地图视野")
-      this.$nextTick(() => this.view && this.view.updateSize())
-    }
-
-  // ----------- add end
-
 
   /**
    * 根据权限控制地图四个角的工具栏的展示
