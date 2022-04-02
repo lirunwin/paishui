@@ -124,6 +124,7 @@ export default class SidePanels extends Vue {
       if (!this.panelVisible) return;
       this.$emit("update:panelVisible", false);
       this.$emit("update:sideWidth", "0%");
+      this.$emit("updateMapSize")
     }
   }
   @Watch("panelVisible")
@@ -141,6 +142,7 @@ export default class SidePanels extends Vue {
     // this.$store.dispatch('map/handelClose', data)
     this.$store.dispatch("map/delAllPanel");
     this.$emit("handelClose");
+    this.$emit("updateMapSize") // 更新地图尺寸
   }
   removeTab(targetName) {
     // console.log('333', targetName)

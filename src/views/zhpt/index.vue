@@ -135,6 +135,7 @@
             :side-width.sync="side_width"
             :panel-visible.sync="sidepanel_visible"
             @handelClose="handelClose"
+            @updateMapSize="updateMapSize"
           />
         </el-aside>
       </el-container>
@@ -362,7 +363,10 @@ export default class BaseMap extends Vue {
       this.loading = false;
       this.$nextTick(this.controlToolDisplay);
     };
-
+    updateMapSize() {
+      console.log("更新地图视野")
+      this.$nextTick(() => this.view && this.view.updateSize())
+    }
 
   // ----------- add end
 
