@@ -12,7 +12,7 @@ import './directives'
 import App from './App.vue'
 import store from './store'
 import router from './router'
-import {comMethod} from '@/utils/comMethod'
+import { comMethod } from '@/utils/comMethod'
 import '@/icons'
 import '@/permission' // 权限控制
 
@@ -20,14 +20,16 @@ import BaiduMap from 'vue-baidu-map'
 import '@/assets/iconfont/iconfont.js'
 import '@/assets/iconfont/iconfont.css'
 
+import Moment from 'vue-moment'
+
 // import htmlToPdf from './utils/htmlToPdf'
 // Vue.use(htmlToPdf)
 // dialog拖动
 import './utils/dialog'
-import '@/assets/font/al_font/iconfont.css'//阿里的icon图标
+import '@/assets/font/al_font/iconfont.css'// 阿里的icon图标
 import '@/assets/font/other_font/iconfont.css'//
 // 全局修改默认配置，点击空白处不能关闭弹窗
-//@ts-ignore
+// @ts-ignore
 ElementUI.Dialog.props.closeOnClickModal.default = false
 import echarts from 'echarts'
 
@@ -36,13 +38,13 @@ import echarts from 'echarts'
 //     value:string;
 //     /**
 //      * dashboard混入函数
-//      * @param voucher 
+//      * @param voucher
 //      */
 //     validateAuth(voucher:string):any;
 
 //     /**
 //      *$comMethod混入函数
-//      * @param voucher 
+//      * @param voucher
 //      */
 //     $comMethod:dStore.utils.comMethod
 //   }
@@ -67,6 +69,8 @@ Vue.use(BaiduMap, {
 
 Vue.use(ElementUI)
 Vue.use(Print)
+Vue.use(Moment)
+
 Vue.config.productionTip = false
 
 new Vue({
