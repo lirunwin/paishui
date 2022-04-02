@@ -10,7 +10,7 @@ function resolve(dir) {
 }
 
 const name = defaultSettings.title || '登录系统' // page title
-//const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.100.204:1111'
+// const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.100.204:1111'
 // const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://xrty.vipgz4.idcfengye.com'
 // const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.2.231:1111'
 const BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://192.168.2.238:1111'
@@ -22,7 +22,7 @@ module.exports = {
   /**
    * 如果计划在子路径下部署站点，则需要设置publicPath
    */
-  publicPath: './',//发布路径
+  publicPath: './', // 发布路径
   // publicPath: '/',//本地路径
   outputDir: 'dist',
   assetsDir: 'static',
@@ -43,7 +43,7 @@ module.exports = {
         // target: 'http://127.0.0.1:1111', // 修改后台接口地址
         // target: 'http://192.168.2.231:1111', // 修改后台接口地址
         // target: 'http://xrty.vipgz4.idcfengye.com',
-        //target: 'http://192.168.100.204:1111',
+        // target: 'http://192.168.100.204:1111',
         changeOrigin: true,
         pathRewrite: {
           '^/backstage': ''
@@ -99,7 +99,8 @@ module.exports = {
         {
           $: 'jquery',
           jQuery: 'jquery',
-          'windows.jQuery': 'jquery'
+          'windows.jQuery': 'jquery',
+          'vue-moment': 'vue-moment'
         }
       )
     ]
