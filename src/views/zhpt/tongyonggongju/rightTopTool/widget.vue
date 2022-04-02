@@ -9,7 +9,7 @@
             <!-- <img style='width:100%;width:100%' src=''> -->
           </div>
           <span  class='spanDiv'>{{item.label}}</span>
-          <i class="el-icon-arrow-down"></i>
+          <i v-if="item.childList.length" class="el-icon-arrow-down"></i>
         </div>
         <div @mouseleave="hideList" v-show='item.showList' class='groupList'>
           <div class='splitDiv'></div>
@@ -55,6 +55,8 @@ export default {
   },
   methods: {
     getGroupList(){
+      
+      console.log("1111",this.toolList)
       let temp=[];
       //确定父子关系
       this.toolList.forEach(item=>{
@@ -119,7 +121,7 @@ export default {
      * @param val 对应功能的信息
      * */
     openFunction(val){
-      console.log("右上角工具箱", val)
+      console.log("点击工具")
       if(!val.widgetid){
         let componentList=this.getComponents("rightTopTool");
         let tempComponent=componentList.find(e=>{return e.name==val.name});

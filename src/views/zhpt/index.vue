@@ -36,7 +36,7 @@
           <div
             style="
               display: none;
-              width: 3px;
+              width: 4px;
               height: 100%;
               background: #ccc;
               z-index: 2;
@@ -96,6 +96,7 @@
                 "
               />
             </div>
+<<<<<<< HEAD
             <!-- 左上角工具栏 -->
             <leftTopTool
               :toolList="leftTopTool.children"
@@ -136,6 +137,9 @@
                 rightBottomTool.children.length > 0
               "
             ></rightBottomTool>
+=======
+
+>>>>>>> e4652edbc7fb42d2a0a79f2f1728a9ef73dfc8c0
             <!-- 视图工具 -->
             <!-- <WidgetGroup :map-view="view" :that="this" /> -->
             <!-- 测量工具 -->
@@ -145,6 +149,14 @@
             <!-- 鹰眼 -->
             <!-- <OverviewMap :map-view="view" /> -->
           </div>
+            <!-- 左上角工具栏 -->
+            <leftTopTool :toolList='leftTopTool.children' :map='view' v-if='leftTopTool&&leftTopTool.children&&leftTopTool.children.length>0' ></leftTopTool>
+            <!-- 左下角工具栏 -->
+            <leftBottomTool :toolList='leftBottomTool.children' :map='view' v-if='leftBottomTool&&leftBottomTool.children&&leftBottomTool.children.length>0' ></leftBottomTool>
+            <!-- 右上角工具栏 -->
+            <rightTopTool :toolList='rightTopTool.children' :map='view' v-if='rightTopTool&&rightTopTool.children&&rightTopTool.children.length>0' ></rightTopTool>
+            <!-- 右下角工具栏 -->
+            <rightBottomTool :toolList='rightBottomTool.children' :map='view' v-if='rightBottomTool&&rightBottomTool.children&&rightBottomTool.children.length>0' ></rightBottomTool>
           <!-- <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
             <span
@@ -243,6 +255,11 @@ import rightBottomTool from "./tongyonggongju/rightBottomTool/widget.vue";
 import rightTopTool from "./tongyonggongju/rightTopTool/widget.vue";
 import { extend } from "ol/array";
 
+// 投影
+import { Projection, addProjection, get as getProjection, fromLonLat, transform } from 'ol/proj';
+import { register as olRegisterProj } from 'ol/proj/proj4';
+import proj4 from 'proj4'
+
 @Component({
   components: {
     HalfPanels,
@@ -264,6 +281,10 @@ import { extend } from "ol/array";
   },
 })
 export default class BaseMap extends Vue {
+  // 空间参考
+  projection = null;
+
+
   /**左上角工具栏列表*/
   leftTopTool = null;
   /**左下角工具栏列表*/
@@ -343,8 +364,10 @@ export default class BaseMap extends Vue {
   }
   mounted() {
     loadCss(esriConfig.baseCssUrl); // 本地css资源
+    // this.registerEPSG4490(); // 注册 4490 坐标系
     this.initConfig(); // 加载配置 ==> 加载地图
   }
+<<<<<<< HEAD
   handelClose() {
     this.show = false;
   }
@@ -426,6 +449,119 @@ export default class BaseMap extends Vue {
                       //正常返回
                       isOnline = true;
                     } else {
+=======
+  
+  // ----------- yj add 20220330 start
+  // 注册坐标系 4490
+    registerEPSG4490 () {
+      proj4.defs("EPSG:4490", "+proj=longlat +ellps=GRS80 +no_defs");
+      olRegisterProj(proj4);
+      this.projection = new Projection({
+        code: "EPSG:4490",
+        extent: [-180, -90, 180, 90],
+        worldExtent: [-180, -90, 180, 90],
+        units: "degrees"
+      });
+      addProjection(this.projection);
+    }
+    // 初始化地图
+    async initMap() {
+      let { initCenter, initZoom } = appconfig;
+      let veclayerInfo = appconfig.gisResource['tian_online_vector'].config[0]
+      let imglayerInfo = appconfig.gisResource['tian_online_raster'].config[0]
+      // var layerInfo =appconfig.gisResource['tian_online_vector'].config[0]
+      // layerInfo.url='http://117.174.10.73:8090/iserver/services/map-base/rest/maps/kxc_vec'
+      var map = new Map({
+        target: "mapView",
+        view: new View({
+          center: initCenter,
+          zoom: initZoom,
+          projection: "EPSG:4326"
+        }),
+      });
+
+      var veclayer = new TileLayer({
+        name: veclayerInfo.name,
+        source: new TileSuperMapRest({
+          url: veclayerInfo.url,
+          crossOrigin: 'anonymous', // 是否请求跨域操
+        })
+      } as any);
+      // var imglayer = new TileLayer({
+      //   name: imglayerInfo.name,
+      //   source: new TileSuperMapRest({
+      //     url: imglayerInfo.url,
+      //     crossOrigin: 'anonymous', // 是否请求跨域操
+      //   }),
+      //   visible: false
+      // } as any);
+      map.addLayer(veclayer);
+      // map.addLayer(imglayer);
+      this.panels.mapView = this.view = map
+      this.loading = false;
+      this.$nextTick(this.controlToolDisplay);
+    };
+
+
+  // ----------- add end
+
+
+    handelClose() {
+      this.show = false;
+    }
+
+    legendClick() {
+      this.legendHide = !this.legendHide;
+      var whichP = [
+        ["收缩", 350, "▼"],
+        ["展开", 0, "▲"],
+      ][this.legendHide ? 0 : 1];
+      //@ts-ignore
+      this.$refs.legend_close.title = whichP[0];
+      //@ts-ignore
+      this.$refs.legend.style.height = whichP[1] + "px";
+      //@ts-ignore
+      this.$refs.legend_close.innerHTML = whichP[2];
+    }
+    closeAny() {
+      //@ts-ignore
+      this.$refs.any.style.display = "none";
+    }
+    initConfig() {
+      var index = appconfig.gisResource;
+      var nextDo = () => {
+        this.loadText = "地图加载中";
+        this.$nextTick(this.initMap);
+      };
+      console.log("是否获取后台配置服务:" + appconfig.isloadServer);
+      if (appconfig.isloadServer) {
+        this.loadText = "服务加载中";
+        request({ url: "/base/sourcedic/getTreeService", method: "get" }).then(
+          (res1) => {
+            if (res1.code == 1) {
+              const res = res1.result;
+              //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
+              let onlineIndex = res.findIndex((item) => {
+                return item.code == "isOnlineAddress";
+              });
+              if (onlineIndex != -1) {
+                let isOnline = true;
+                let onLineAddress = res[onlineIndex].child[0].cval;
+                console.log("判断地址" + onLineAddress);
+                axios
+                  .get(onLineAddress)
+                  .then(
+                    (res) => {
+                      if (res.status == 200) {
+                        //正常返回
+                        isOnline = true;
+                      } else {
+                        isOnline = false;
+                      }
+                    },
+                    (error) => {
+                      //异常返回
+>>>>>>> e4652edbc7fb42d2a0a79f2f1728a9ef73dfc8c0
                       isOnline = false;
                     }
                   },

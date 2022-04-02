@@ -50,8 +50,6 @@ const map = {
   mapLegend: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/mapLegend.vue'), // 图例
   attrSearch: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/attrSearch.vue'), // 属性查询
 
-  mapMark: () => import("@/views/zhpt/tongyonggongju/Test/widget.vue"), // 测试工具
-
   //右侧底部工具栏
   rightBottomTool: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/widget.vue'), // 右侧底部工具栏
   overView: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/overView/widget.vue'), // 鹰眼
