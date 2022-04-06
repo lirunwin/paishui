@@ -46,7 +46,6 @@ const map = {
 
   
   otherTools: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/widget.vue'), //其他工具
-  layerTree: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/layerTree.vue'), // 图层树
   mapLegend: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/mapLegend.vue'), // 图例
   attrSearch: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/attrSearch.vue'), // 属性查询
 

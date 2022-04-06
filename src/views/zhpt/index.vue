@@ -152,6 +152,7 @@
           <rightTopTool
             :toolList="rightTopTool.children"
             :map="view"
+            :rootPage='this'
             v-if="
               rightTopTool &&
               rightTopTool.children &&
@@ -168,7 +169,7 @@
               rightBottomTool.children.length > 0
             "
           ></rightBottomTool>
-          <!-- <div v-show="labelShow" id="mapLabel">
+          <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
             <span
               id="mapView_close"
@@ -178,7 +179,7 @@
               >▼</span
             >
             <div id="mapView_legend" ref="legend" style="height: 350px" />
-          </div> -->
+          </div>
           <!-- 鼠标位置 -->
           <!-- <MouseLocation :map-view="view" /> -->
           <!-- 快捷查询 -->
@@ -388,37 +389,44 @@ export default class BaseMap extends Vue {
     this.show = false;
   }
   async initMap() {
-    var config = esriConfig;
-    var aconfig = appconfig;
-    var layerInfo = appconfig.gisResource["tian_online_vector"].config[0];
-    layerInfo.url =
-      "https://iserver.supermap.io/iserver/services/map-world/rest/maps/World";
-    var map = new Map({
+    let { initCenter, initZoom } = appconfig;
+
+    let layerResource = appconfig.gisResource["iserver_resource"].layers;
+    // layerInfo.url = "https://iserver.supermap.io/iserver/services/map-world/rest/maps/World";
+    let map = new Map({
       target: "mapView",
       view: new View({
-        center: [0, 0],
-        zoom: 2,
+        center: initCenter,
+        zoom: initZoom,
         projection: "EPSG:4326",
       }),
     });
-
-    var layer = new TileLayer({
-      /**图层名称*/
-      name: layerInfo.name,
-      source: new TileSuperMapRest({
-        url: layerInfo.url,
-        crossOrigin: "Anonymous", // 是否请求跨域操作
-        wrapX: true,
-      }),
-      properties: {
-        projection: "EPSG:4326",
-      },
-    } as any);
-    map.addLayer(layer);
     this.panels.mapView = this.view = map;
+
+    let layer = this.addLayers(layerResource)
+
     this.loading = false;
     this.$nextTick(this.controlToolDisplay);
   }
+
+  addLayers (layers) {
+    layers.forEach(layerConfig => {
+      let { name, url, parentname, id, visible = true } = layerConfig
+      let layer = new TileLayer({
+        name, parentname, id, visible,
+        source: new TileSuperMapRest({
+          url,
+          crossOrigin: "anonymous", // 是否请求跨域操作
+          wrapX: true,
+        }),
+        properties: {
+          projection: "EPSG:4326",
+        }
+      } as any);
+      this.view.addLayer(layer)
+    })
+  }
+
   legendClick() {
     this.legendHide = !this.legendHide;
     var whichP = [

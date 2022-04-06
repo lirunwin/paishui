@@ -27,6 +27,7 @@
     :key="item.name"
     :is="item.component"
     :map="map"
+    :rootPage="rootPage"
   />
   </div>
 </template>
@@ -38,7 +39,8 @@ export default {
   components: {  },
   props: { 
     toolList:null,
-    map:null
+    map:null,
+    rootPage: null
   },
   data() {
     return {

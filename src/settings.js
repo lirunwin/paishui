@@ -49,5 +49,5 @@ module.exports = {
   settings: true,
 
   // 系统名称
-  sysTitle: '沱源公司智慧水务综合管理平台'
+  sysTitle: '攀枝花城市排水综合管网管理平台'
 }
