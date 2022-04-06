@@ -96,17 +96,7 @@
                 "
               />
             </div>
-           
-            <!-- 左上角工具栏 -->
-            <leftTopTool
-              :toolList="leftTopTool.children"
-              :map="view"
-              v-if="
-                leftTopTool &&
-                leftTopTool.children &&
-                leftTopTool.children.length > 0
-              "
-            ></leftTopTool>
+
             <!-- 左下角工具栏 -->
             <leftBottomTool
               :toolList="leftBottomTool.children"
@@ -127,16 +117,7 @@
                 rightTopTool.children.length > 0
               "
             ></rightTopTool>
-            <!-- 右下角工具栏 -->
-            <rightBottomTool
-              :toolList="rightBottomTool.children"
-              :map="view"
-              v-if="
-                rightBottomTool &&
-                rightBottomTool.children &&
-                rightBottomTool.children.length > 0
-              "
-            ></rightBottomTool>
+            
 
             <!-- 视图工具 -->
             <!-- <WidgetGroup :map-view="view" :that="this" /> -->
@@ -207,12 +188,13 @@
           <!-- width: side_width, -->
           <el-aside
             :style="{
-              width: '400px',
+              width: side_width,
               height: '570px',
               position: 'fixed',
               right: '85px',
               top: '120px',
               borderRadius: '5px',
+              border:'1px solid #ccc'
             }"
           >
             <side-panels
@@ -286,9 +268,15 @@ import rightTopTool from "./tongyonggongju/rightTopTool/widget.vue";
 import { extend } from "ol/array";
 
 // 投影
-import { Projection, addProjection, get as getProjection, fromLonLat, transform } from 'ol/proj';
-import { register as olRegisterProj } from 'ol/proj/proj4';
-import proj4 from 'proj4'
+import {
+  Projection,
+  addProjection,
+  get as getProjection,
+  fromLonLat,
+  transform,
+} from "ol/proj";
+import { register as olRegisterProj } from "ol/proj/proj4";
+import proj4 from "proj4";
 
 @Component({
   components: {
@@ -313,7 +301,6 @@ import proj4 from 'proj4'
 export default class BaseMap extends Vue {
   // 空间参考
   projection = null;
-
 
   /**左上角工具栏列表*/
   leftTopTool = null;

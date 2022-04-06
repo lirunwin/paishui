@@ -12,11 +12,23 @@
           >
           </el-input>
           <div class="title">检测日期：</div>
-          <el-date-picker v-model="value1" type="date" placeholder="检测日期">
-          </el-date-picker>
-          <el-button class="serch-btn" icon="el-icon-search" type="primary"
-            >搜索</el-button
+          <el-date-picker
+            v-model="value1"
+            type="date"
+            placeholder="检测日期"
+            class="date-css"
           >
+          </el-date-picker>
+          <div class="release-radio">
+            <p class="release-title">发布状态:</p>
+            <el-checkbox-group v-model="checkList" max="1">
+              <el-checkbox label="未发布"></el-checkbox>
+              <el-checkbox label="已发布"></el-checkbox>
+            </el-checkbox-group>
+          </div>
+          <el-button class="serch-btn" icon="el-icon-search" type="primary">
+            搜索
+          </el-button>
         </div>
         <div class="right-btn">
           <el-button
@@ -223,6 +235,8 @@
 export default {
   data() {
     return {
+      checkList: [],
+      radio: "",
       zero: "",
       dialogFormVisible: false,
       tableData: [
@@ -321,16 +335,33 @@ export default {
       margin-bottom: 25px;
       /deep/ .serch-engineering {
         display: flex;
-        justify-content: space-around;
+        // justify-content: space-around;
         align-items: center;
-        /deep/.el-input__inner {
-          width: 210px;
+        .release-radio {
+          display: flex;
+          align-items: center;
+          white-space: nowrap;
+          .release-title {
+            margin: 0 10px;
+          }
+          .el-checkbox {
+            margin-right: 12px;
+          }
+        }
+        .serch-input {
+          width: 245px;
+        }
+        .el-input__inner {
           height: 34px;
+        }
+        .date-css {
+          width: 135px;
         }
 
         .title {
           font-family: Arial;
           white-space: nowrap;
+          margin-left: 5px;
         }
       }
       .serch-btn {
