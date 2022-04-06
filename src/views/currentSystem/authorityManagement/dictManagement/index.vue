@@ -58,7 +58,7 @@
               ref="multipleTable"
               :data="tableData"
               border
-              :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#dfeffe',color:'#333333'}"
+              :header-cell-style="{ fontSize: '14px', fontWeight: '600', background: '#dfeffe', color: '#333333' }"
               height="100%"
               highlight-current-row
               style="width: 100%;font-size: 14px;border: 0px solid;"
@@ -67,7 +67,7 @@
               <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->
               <el-table-column label="序号" width="80" align="center">
                 <template slot-scope="scope">
-                  <span>{{ scope.$index+1 }}</span>
+                  <span>{{ scope.$index + 1 }}</span>
                 </template>
               </el-table-column>
               <el-table-column prop="codeKey" label="字典编码" show-overflow-tooltip align="center" />
@@ -78,7 +78,9 @@
               <el-table-column label="操作" align="center" width="140">
                 <template slot-scope="scope">
                   <el-button type="text" size="mini" style="color:#36af36" @click="editDicType(scope)">编辑</el-button>
-                  <el-button type="text" size="mini" style="color:#FF0000" @click="deleteDicType(scope)">删除</el-button>
+                  <el-button type="text" size="mini" style="color:#FF0000" @click="deleteDicType(scope)"
+                    >删除</el-button
+                  >
                 </template>
               </el-table-column>
             </el-table>
@@ -107,8 +109,21 @@
     </el-row>
 
     <!-- 弹出新增模块框 -->
-    <el-dialog :title="dialogTitle" width="45%" :visible.sync="dialogVisible" :close-on-click-modal="false" @close="closeDialog">
-      <el-form ref="formData" :model="formData" :rules="rules" label-width="120px" label-position="right" class="demo-form-inline">
+    <el-dialog
+      :title="dialogTitle"
+      width="45%"
+      :visible.sync="dialogVisible"
+      :close-on-click-modal="false"
+      @close="closeDialog"
+    >
+      <el-form
+        ref="formData"
+        :model="formData"
+        :rules="rules"
+        label-width="120px"
+        label-position="right"
+        class="demo-form-inline"
+      >
         <el-row class="row-form-height">
           <el-col :span="12">
             <el-form-item label="字典编码：" prop="codeKey">
@@ -145,30 +160,25 @@
         </el-row> -->
       </el-form>
       <div class="btn-container">
-        <el-button class="btn_float" @click="dialogVisible=false">取消</el-button>
-        <el-button v-if="currentOp=='add'" class="btn_float" type="primary" @click="formReset">重置</el-button>
-        <el-button v-if="currentOp !='view'" class="btn_float" type="primary" @click="submitForm">提交</el-button>
+        <el-button class="btn_float" @click="dialogVisible = false">取消</el-button>
+        <el-button v-if="currentOp == 'add'" class="btn_float" type="primary" @click="formReset">重置</el-button>
+        <el-button v-if="currentOp != 'view'" class="btn_float" type="primary" @click="submitForm">提交</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-
 // import TableItem from '@/components/Table'
 import DicValue from './widgets/dicValue'
-import {
-  getKeyPage,
-  addDictionary,
-  editDictionary,
-  deleteDictionary
-} from '@/api/base'
+import { getKeyPage, addDictionary, editDictionary, deleteDictionary } from '@/api/base'
 
 export default {
   name: 'DictManagement',
   components: {
     //  TableItem,
-    DicValue },
+    DicValue
+  },
   data() {
     return {
       dicName: '',
@@ -196,14 +206,11 @@ export default {
           { required: true, message: '请输入字典编号', trigger: 'blur' }
           // { pattern: '^[a-zA-Z\$_][a-zA-Z0-9_$]*$', message: '字典编号不合法' }
         ],
-        codeRemark: [
-          { required: true, message: '请输入字典名称', trigger: 'blur' }
-        ]
+        codeRemark: [{ required: true, message: '请输入字典名称', trigger: 'blur' }]
       }
     }
   },
-  created() {
-  },
+  created() {},
 
   mounted() {
     if (this.$store.state.user) {
@@ -217,12 +224,12 @@ export default {
     /**
      * 查询字典类型
      * @ulevel=1
-    */
+     */
     queryDictTypeList() {
       const param = Object.assign({ ulevel: 1 }, this.pagination)
       if (this.dictCode !== '') param['codeKey'] = this.dictCode
       if (this.dictName !== '') param['codeRemark'] = this.dictName
-      getKeyPage(param).then(res => {
+      getKeyPage(param).then((res) => {
         if (res.code === 1) {
           this.tableData = res.result.records
           this.pagination.total = res.result.total
@@ -254,12 +261,12 @@ export default {
 
     /**
      * 新增提交
-    */
+     */
     submitForm() {
       this.$refs.formData.validate((valid) => {
         if (valid) {
           if (this.dialogTitle === '新增字典') {
-            addDictionary(this.formData).then(res => {
+            addDictionary(this.formData).then((res) => {
               if (res.code === 1) {
                 this.pagination.total += 1
                 this.queryDictTypeList()
@@ -273,7 +280,7 @@ export default {
             })
           }
           if (this.dialogTitle === '编辑字典') {
-            editDictionary(this.formData).then(res => {
+            editDictionary(this.formData).then((res) => {
               if (res.code === 1) {
                 this.queryDictTypeList()
                 this.dialogVisible = false
@@ -295,7 +302,7 @@ export default {
 
     /**
      * 编辑字典类型
-    */
+     */
     editDicType(scope) {
       this.formData = scope.row
       this.formData.creater = this.user.hasOwnProperty('username') ? this.user.username : ''
@@ -305,7 +312,7 @@ export default {
 
     /**
      * 删除字典
-    */
+     */
     deleteDicType(scope) {
       // console.log(scope.row)
       const id = scope.row.id
@@ -313,27 +320,31 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        deleteDictionary(id).then(res => {
-          if (res.code === 1) {
-            this.queryDictTypeList()
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            })
-          } else {
-            this.$message({
-              type: 'error',
-              message: '删除失败'
-            })
-          }
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
       })
+        .then(() => {
+          deleteDictionary(id).then((res) => {
+            if (res.code === 1) {
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              })
+            } else {
+              this.$message({
+                type: 'error',
+                message: '删除失败'
+              })
+            }
+          })
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
+        .finally(() => {
+          this.queryDictTypeList()
+        })
     },
 
     handleAdded() {
@@ -352,7 +363,7 @@ export default {
 
     /**
      * 点击行事件
-    */
+     */
     rowClick(row, column, event) {
       this.dicType = {
         codeKey: row.codeKey,
@@ -386,7 +397,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .app-container {
   position: absolute;
   width: 100%;
