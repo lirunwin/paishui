@@ -200,7 +200,7 @@ export default class RolePermission extends Vue {
   }
   @Watch('multipleSelection')
   multipleSelectionChange(value) {
-    console.log('++++++', value)
+    // console.log('++++++', value)
     this.disabledEdit = this.multipleSelection.length !== 1
     if (this.multipleSelection.length === 1) {
       this.detailed.roleName = this.multipleSelection[0].roleName
