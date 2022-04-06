@@ -383,14 +383,18 @@ export default {
     },
     // 重置
     formReset() {
-      this.formData = {}
+      this.formData = {
+        ulevel: 1
+      }
     },
 
     /**
      * @description 关闭数据弹窗
      */
     closeDialog() {
-      this.formData = {} // 清空数据
+      this.formData = {
+        ulevel: 1
+      } // 清空数据
     }
   }
 }
