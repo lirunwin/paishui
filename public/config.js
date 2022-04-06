@@ -4,7 +4,11 @@
 export const esriConfig = {
   'baseUrl': 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/4.16/dojo/dojo.js',
   'baseCssUrl': 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/4.16/esri/css/main.css',
-  'font_url': 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/fonts/'
+  'font_url': 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/fonts/',
+}
+
+export const iserverConfig = {
+  'baseUrl': 'http://117.174.10.73:8090/iserver/'
 }
 
 export const appconfig = {
@@ -21,11 +25,51 @@ export const appconfig = {
   // 临时使用
   'initCenter': [104.753586, 31.521350], 
   // 地图初始视角级别
-  'initZoom': 6,
+  'initZoom': 15,
   // token
   'usertoken': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJVc2VySUQiOiIiLCJVU0VSTkFNRSI6IiIsIlJFQUxOQU1FIjoiIiwiV0tJRCI6NDU0NCwiUkFOR0UiOiJYUlRZIiwiUkFOR0VGSUVMRCI6bnVsbCwiQ09ERSI6IlhSVFkiLCJDT05ORUNUU1RSIjoiREFUQUJBU0U9b3JjbDtORVROQU1FPTE5Mi4xNjguMi4yNDIvb3JjbDtTRVJWRVI9MTkyLjE2OC4yLjI0MjtVU0VSSUQ9dGZfeHJ0eV9nZW87UEFTU1dPUkQ9dGZfeHJ0eV9nZW87UE9SVD0xNTIxQDUxNTEvdGNwO1ZFUlNJT049c2RlLkRFRkFVTFQiLCJCb3JuVGltZSI6MCwiQXBwSUQiOm51bGx9.bMNoX6nsvNYukk47_UnT9IHGlNIWclbmiXTj3ak1i5KuF5LGexfwV7TwF80nP08GEPaNwScgk7lbJkRHcqtT8w',
   // 地图资源服务
   'gisResource': {
+    'legend': [
+      {
+        'name': '图例',
+        'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer'
+      }
+    ],
+    // add iserverResource
+    "iserver_resource": {
+      'layers': [
+        {
+          'parentname': '底图',
+          'name': '矢量底图', 
+          'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_vec',
+          'visible': true,
+          'id': 3
+        },
+        {
+          'parentname': '底图',
+          'name': '影像底图', 
+          'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_img',
+          'visible': false,
+          'id': 4
+        },
+        { 
+          'parentname': '管线',
+          'name': '广电线缆', 
+          'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/广电线缆',
+          'visible': true,
+          'id': 5
+        },
+        { 
+          'parentname': '管线',
+          'name': '给水管线', 
+          'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/给水管线',
+          'visible': true,
+          'id': 6
+        }
+      ]
+    },
+
     'tian_online_vector': {
       'groupname': '天地图在线矢量服务',
       'type': 'webTiled',

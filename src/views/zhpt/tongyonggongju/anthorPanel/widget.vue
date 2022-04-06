@@ -101,9 +101,8 @@ export default {
     this.mapDiv = mapView.getTargetElement()
     this.mapDiv.style.width = 'calc(50% - 2px)'
     this.mapDiv.style.float = 'left'
-    // 更新地图尺寸
-    this.mapView.updateSize()
-
+    
+    this.mapView.updateSize() // 更新地图尺寸
     this.loadOlMap(this.antP)
   },
   destroyed: function() {
@@ -116,7 +115,6 @@ export default {
   },
   methods: {
     loadOlMap (mapContainer) {
-      console.log("加载地图")
       let { url, name } = appconfig.gisResource['tian_online_vector'].config[0]
       let center = this.mapView.getView().getCenter();
       let zoom = this.mapView.getView().getZoom();
@@ -124,18 +122,24 @@ export default {
         target: mapContainer,
         view: new View({ center, zoom, projection: "EPSG:4326" }),
       });
-      const veclayer = new TileLayer({ name, source: new TileSuperMapRest({ url: url, crossOrigin: 'anonymous' }) });
+      const veclayer = new TileLayer({ name, source: new TileSuperMapRest({ url, crossOrigin: 'anonymous' }) });
       map.addLayer(veclayer);
 
       this.mapView.getView().on("change", evt => {
-        if (this.followExtentC && this.followExtentZ) {
-          map.setView(evt.target)
-        } else {
-          this.followExtentC && map.getView().setCenter(evt.target.getCenter())
-          this.followExtentZ && map.getView().setZoom(evt.target.getZoom())
-        }
-        
+        let currView = map.getView();
+        let center = evt.target.getCenter(), zoom = evt.target.getZoom();
+        this.setCenterAndZoom(currView, { center: this.followExtentC && center, zoom: this.followExtentZ && zoom })
       })
+    },
+    setCenterAndZoom (view, { center = null, zoom = 0 }) {
+      center && view.setCenter(center)
+      zoom && view.setZoom(zoom)
+      // if (duration) {
+      //   view.animate({ duration }, center ? { center }: null, zoom ? { zoom }: null)
+      // } else {
+      //   center && view.setCenter(center)
+      //   zoom && view.setZoom(zoom)
+      // }
     },
 
     loadTree() {
