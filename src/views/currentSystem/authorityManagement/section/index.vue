@@ -206,8 +206,8 @@ export default class Section extends Vue {
   handleClick(type) {
     if (type === 'add') {
       this.currType = 1
-      // this.dialog = true;
-      this.getAllUnit()
+      this.dialog = true
+      // this.getAllUnit()
     } else if (type === 'edit') {
       this.currType = 2
       this.editData = this.unitTreeSelect[0]
