@@ -3,22 +3,29 @@
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
-          <div class="title">关键字：</div>
-          <el-input placeholder="搜索工程编号、工程名称" v-model="input" clearable class="serch-input"> </el-input>
-          <el-button class="serch-btn" icon="el-icon-search" type="primary">搜索</el-button>
+          <div class="title">起始井号：</div>
+          <el-select v-model="form.name" placeholder="--选择井号--">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+          <div class="title">终止井号：</div>
+          <el-select v-model="form.name" placeholder="--选择井号--">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+          <div class="title">检测日期：</div>
+          <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker> ~
+          <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
+          <div class="title">整改建议：</div>
+          <el-select v-model="form.name" placeholder="--选择建议--">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+
+          <el-button class="serch-btn" style="margin-left: 26px" type="primary"> 查询 </el-button>
+          <el-button class="serch-btn" type="primary"> 导出 </el-button>
         </div>
-        <div class="right-btn">
-          <el-button @click="dialogFormVisible = true" class="serch-btn" icon="el-icon-plus" type="primary"
-            >添加</el-button
-          >
-          <el-button class="serch-btn" icon="el-icon-edit" type="primary">修改</el-button>
-          <el-button class="serch-btn" icon="el-icon-upload" type="primary">上传</el-button>
-          <el-button class="serch-btn" icon="el-icon-download" type="primary">下载</el-button>
-          <el-button class="serch-btn" icon="el-icon-share" type="primary">发布</el-button>
-          <el-button class="serch-btn" style="background-color: #f56c6c" icon="el-icon-delete" type="primary"
-            >删除</el-button
-          >
-        </div>
+        <div class="right-btn"></div>
       </div>
 
       <el-table
@@ -29,21 +36,32 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-
-        <el-table-column prop="date" header-align="center" label="工程编号" align="center" show-overflow-tooltip>
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
+        <el-table-column prop="date" header-align="center" label="检测日期" align="center" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="name" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
+        <el-table-column prop="name" header-align="center" label="起始井号" align="center" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="行政区划" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="终止井号" align="center" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="委托单位" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="起点埋深(m)" align="center" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="施工单位" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="终点埋深(m)" align="center" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="工程简介" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="管段类型" align="center" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="创建时间" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="管段材质" align="center" show-overflow-tooltip>
+        </el-table-column>
+          <el-table-column prop="address" header-align="center" label="管段直径" align="center" show-overflow-tooltip>
+        </el-table-column>
+          <el-table-column prop="address" header-align="center" label="管段长度" align="center" show-overflow-tooltip>
+        </el-table-column>
+          <el-table-column prop="address" header-align="center" label="检测长度" align="center" show-overflow-tooltip>
+        </el-table-column>
+          <el-table-column prop="address" header-align="center" label="整改建议" align="center" show-overflow-tooltip>
+        </el-table-column>
+          <el-table-column prop="address" header-align="center" label="检测方向" align="center" show-overflow-tooltip>
+        </el-table-column>
+          <el-table-column prop="address" header-align="center" label="检测人员" align="center" show-overflow-tooltip>
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
@@ -107,17 +125,13 @@
         <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
       </div>
     </el-dialog>
-    <button @click="add">添加数据</button>
   </div>
 </template>
 
 <script>
-import { projectPagingQuery, addData } from '@/api/pipelineManage'
-
 export default {
   data() {
     return {
-      pagination: { current: 1, size: 10 }, // 分页参数信息
       zero: '',
       dialogFormVisible: false,
       tableData: [
@@ -158,33 +172,15 @@ export default {
         }
       ],
       form: {
-        area: 0,
-        createTime: 0,
-        createUserId: 0,
-        createUserName: 'string',
-        ecoord: 'string',
-        epoints: 0,
-        finishDate: 0,
-        hpoints: 0,
-        id: 0,
-        jcunit: 'string',
-        jpoints: 0,
-        jsunit: 'string',
-        kcunit: 'string',
-        pcoord: 'string',
-        pllength: 0,
-        plnumber: 0,
-        principal: 'string',
-        prjNo: 'string',
-        sgunit: 'string',
-        sjunit: 'string',
-        startDate: 0,
-        superUnit: 'string',
-        supervisor: 'string',
-        tcunit: 'string',
-        updateTime: 0,
-        updateUserId: 0,
-        updateUserName: 'string'
+        name: '',
+        number: '',
+        constructionUnit: '',
+        designUnit: '',
+        workUnit: '',
+        testUnit: '',
+        probeUnit: '',
+        supervisorUnit: '',
+        projectIntroduction: ''
       },
       rules: {
         name: [
@@ -204,26 +200,7 @@ export default {
       }
     }
   },
-  created() {
-    let res = this.getDate()
-    console.log('接口函数', projectPagingQuery)
-    console.log('接口参数', this.pagination)
-    console.log('接口返回', res)
-  },
   methods: {
-    add() {
-      addData(this.form)
-    },
-    // 查询数据
-    getDate() {
-      // const data = {
-      //   page: 1
-      // }
-      // uploadRoute(JSON.stringify(data)).then((res) => {
-      //   this.$message.success("上传成功");
-      // });
-      projectPagingQuery(this.pagination)
-    },
     handleSelectionChange(val) {
       this.multipleSelection = val
     }
@@ -245,19 +222,29 @@ export default {
     .top-tool {
       display: flex;
       justify-content: space-between;
+      flex-direction: row;
+      // flex-wrap: wrap;
       font-size: 14px;
-      .serch-engineering {
+      /deep/ .serch-engineering {
         display: flex;
-        justify-content: space-around;
+        // justify-content: space-around;
         align-items: center;
-        /deep/.el-input__inner {
-          width: 210px;
+        margin-bottom: 14px;
+
+        .serch-input {
+          width: 245px;
+        }
+        .el-input__inner {
           height: 34px;
+        }
+        .date-css {
+          width: 135px;
         }
 
         .title {
           font-family: Arial;
           white-space: nowrap;
+          margin-left: 5px;
         }
       }
       .serch-btn {
@@ -266,19 +253,23 @@ export default {
         justify-content: center;
         align-items: center;
         background-color: #2d74e7;
-        margin-left: 20px;
+        // margin-left: 14px;
+        padding: 12px;
         border: none !important;
       }
+
       .serch-btn:hover {
         opacity: 0.8;
       }
       .right-btn {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        margin-bottom: 14px;
+        display: inline-block;
+        // display: flex;
+        // align-items: center;
+        // flex-direction: row;
+        // flex-wrap: wrap;
       }
     }
-
     /deep/ .el-table th.el-table__cell > .cell {
       height: 40px;
       line-height: 40px;
@@ -305,6 +296,10 @@ export default {
       padding: 0 35px;
       box-sizing: border-box;
     }
+  }
+  // 选择框
+  /deep/ .el-select {
+    width: 130px;
   }
 }
 </style>

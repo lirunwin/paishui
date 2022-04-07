@@ -195,7 +195,6 @@
               right: '85px',
               top: '120px',
               borderRadius: '5px',
-              border:'1px solid #ccc'
             }"
           >
             <side-panels
