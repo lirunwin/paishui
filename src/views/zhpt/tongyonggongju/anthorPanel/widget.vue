@@ -4,52 +4,110 @@
       <el-checkbox v-model="followExtentC">中心同步</el-checkbox>
       <el-checkbox v-model="followExtentZ">缩放同步</el-checkbox>
     </tf-legend>
-    <tf-legend class="legend_dept" label="副视图基础图层" isopen="true" title="控制副视图中的基础图层显示，如需控制主视图请直接使用主视图的图层控制。">
-      <el-tree ref="tree" :data="layerTable" node-key="label" :default-expand-all="true"
-        :props="defaultProps" show-checkbox @check="subLayerChange" >
-        <el-row slot-scope="{ node, data }" class="custom-tree-node" style="width: 100%" >
+    <tf-legend
+      class="legend_dept"
+      label="副视图基础图层"
+      isopen="true"
+      title="控制副视图中的基础图层显示，如需控制主视图请直接使用主视图的图层控制。"
+    >
+      <el-tree
+        ref="tree"
+        :data="layerTable"
+        node-key="id"
+        :default-expand-all="true"
+        show-checkbox
+        @check="subLayerChange"
+        :default-checked-keys="defaultCheckedKeys"
+      >
+        <el-row slot-scope="{ node, data }" class="custom-tree-node" style="width: 100%">
           <el-tooltip placement="right" effect="light">
             <div slot="content" style="width: 130px">
-              <div><span class="el-tree-node__label">透明度：{{ data.visibleNum }}</span></div>
-              <el-slider v-model="data.visibleNum" input-size="mini" @input="data.layer.opacity = 1.0 - data.opacity / 100" :disabled="!data.visible" />
+              <div>
+                <span class="el-tree-node__label">透明度：{{ data.visibleNum }}</span>
+              </div>
+              <el-slider
+                v-if="data.id !==0 && data.id !== 1"
+                v-model="data.visibleNum"
+                input-size="mini"
+                @input="data.layer.values_.opacity = 1 - data.visibleNum / 100"
+                :disabled="!data.layer.values_.visible"
+              />
             </div>
             <span class="el-tree-node__label">{{ node.label }}</span>
           </el-tooltip>
         </el-row>
       </el-tree>
     </tf-legend>
-    <tf-legend class="legend_dept" label="副视图底图图层" isopen="true" title="控制副视图中的底图图层显示，如需控制主视图请直接使用主视图的图层控制。">
-      <el-row>
+    <tf-legend
+      class="legend_dept"
+      label="副视图底图图层"
+      isopen="true"
+      title="控制副视图中的底图图层显示，如需控制主视图请直接使用主视图的图层控制。"
+    >
+      <!-- <el-row>
         <el-col :span="8">
-          <el-switch v-model="showLabel" style="display: block" active-color="#2d74e7" inactive-color="#ecf2ff"
-                active-text="" inactive-text="标注图" @change="labelChange" />
-        </el-col>
-        <el-col :span="6" style="transform: translateX(-5px);" >
-          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[0] }}</span>
-        </el-col>
-        <el-col :span="10" >
-          <el-slider v-model="baseMapsNum[0]" @input="inputBaseLayer(0)" :disabled="!showLabel"/>
-        </el-col>
-      </el-row>
-      <el-row style="margin-top: 5px" >
-        <el-col :span="8" >
-          <el-switch v-model="showVectorBase" style="display: block" active-color="#2d74e7" inactive-color="#ecf2ff" 
-          active-text="" inactive-text="矢量图" @change="baseMapChange(true)" />
-        </el-col>
-        <el-col :span="6" style="transform: translateX(-5px);" >
-          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[1] }}</span>
-        </el-col>
-        <el-col :span="10"><el-slider v-model="baseMapsNum[1]" @input="inputBaseLayer(1)" :disabled="!showVectorBase"/></el-col>
-      </el-row>
-      <el-row style="margin-top: 5px">
-        <el-col :span="8">
-          <el-switch v-model="showImageBase" style="display: block" active-color="#2d74e7" inactive-color="#ecf2ff" active-text=""
-          inactive-text="影像图" @change="baseMapChange(false)" />
+          <el-switch
+            v-model="showLabel"
+            style="display: block"
+            active-color="#2d74e7"
+            inactive-color="#ecf2ff"
+            active-text
+            inactive-text="标注图"
+            @change="labelChange"
+          />
         </el-col>
         <el-col :span="6" style="transform: translateX(-5px);">
+          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[0] }}</span>
+        </el-col>
+        <el-col :span="10">
+          <el-slider v-model="baseMapsNum[0]" @input="inputBaseLayer(0)" :disabled="!showLabel" />
+        </el-col>
+      </el-row> -->
+      <el-row style="margin-top: 5px">
+        <el-col :span="8" style="padding-top:9px;">
+          <el-switch
+            v-model="showVectorBase"
+            style="display: block"
+            active-color="#2d74e7"
+            inactive-color="#ecf2ff"
+            active-text
+            inactive-text="矢量图"
+            @change="baseMapChange(true)"
+          />
+        </el-col>
+        <el-col :span="6" style="transform: translateX(-5px);padding-top:9px;">
+          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[1] }}</span>
+        </el-col>
+        <el-col :span="10">
+          <el-slider
+            v-model="baseMapsNum[1]"
+            @input="inputBaseLayer(1)"
+            :disabled="!showVectorBase"
+          />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top: 5px">
+        <el-col :span="8" style="padding-top:9px;">
+          <el-switch
+            v-model="showImageBase"
+            style="display: block"
+            active-color="#2d74e7"
+            inactive-color="#ecf2ff"
+            active-text
+            inactive-text="影像图"
+            @change="baseMapChange(false)"
+          />
+        </el-col>
+        <el-col :span="6" style="transform: translateX(-5px);padding-top:9px;">
           <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[2] }}</span>
         </el-col>
-        <el-col :span="10"><el-slider v-model="baseMapsNum[2]" @input="inputBaseLayer(2)" :disabled="!showImageBase"/></el-col>
+        <el-col :span="10">
+          <el-slider
+            v-model="baseMapsNum[2]"
+            @input="inputBaseLayer(2)"
+            :disabled="!showImageBase"
+          />
+        </el-col>
       </el-row>
     </tf-legend>
   </div>
@@ -57,19 +115,18 @@
 
 <script>
 import tfLegend from '@/views/zhpt/common/Legend'
-import {appconfig } from 'staticPub/config'
+import { appconfig } from 'staticPub/config'
 
-import "ol/ol.css";
-import Map from "ol/Map";
-import View from "ol/View";
-import TileLayer from "ol/layer/Tile";
-import * as control from "ol/control";
-import { Logo, TileSuperMapRest } from "@supermap/iclient-ol";
-
+import 'ol/ol.css'
+import { default as Olmap } from 'ol/Map'
+import View from 'ol/View'
+import TileLayer from 'ol/layer/Tile'
+import * as control from 'ol/control'
+import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
 
 export default {
   name: 'AnthorPanel',
-  components: { tfLegend },  
+  components: { tfLegend },
   props: { data: Object },
   data() {
     return {
@@ -88,8 +145,11 @@ export default {
       },
       followExtentC: true,
       followExtentZ: true,
-      layerTable: [],      
-      pipeLayer: undefined
+      layerTable: [],
+      pipeLayer: undefined,
+      
+      currMap: null,
+      defaultCheckedKeys: []
     }
   },
   mounted: function() {
@@ -97,11 +157,11 @@ export default {
     this.antP.nextElementSibling.style.display = 'block'
     this.antP.style.display = 'block'
 
-    var mapView = this.mapView = this.data.mapView
+    var mapView = (this.mapView = this.data.mapView)
     this.mapDiv = mapView.getTargetElement()
     this.mapDiv.style.width = 'calc(50% - 2px)'
     this.mapDiv.style.float = 'left'
-    
+
     this.mapView.updateSize() // 更新地图尺寸
     this.loadOlMap(this.antP)
   },
@@ -114,24 +174,27 @@ export default {
     this.mapView.updateSize()
   },
   methods: {
-    loadOlMap (mapContainer) {
-      let { url, name } = appconfig.gisResource['tian_online_vector'].config[0]
-      let center = this.mapView.getView().getCenter();
-      let zoom = this.mapView.getView().getZoom();
-      const map = new Map({
+    loadOlMap(mapContainer) {
+      let layerResource = appconfig.gisResource['iserver_resource'].layers
+      let center = this.mapView.getView().getCenter()
+      let zoom = this.mapView.getView().getZoom()
+      let map = new Olmap({
         target: mapContainer,
-        view: new View({ center, zoom, projection: "EPSG:4326" }),
-      });
-      const veclayer = new TileLayer({ name, source: new TileSuperMapRest({ url, crossOrigin: 'anonymous' }) });
-      map.addLayer(veclayer);
+        view: new View({ center, zoom, projection: 'EPSG:4326' })
+      })
+      this.currMap = map
+      this.addLayers(layerResource)
 
-      this.mapView.getView().on("change", evt => {
-        let currView = map.getView();
-        let center = evt.target.getCenter(), zoom = evt.target.getZoom();
+      this.setTreeData()
+
+      this.mapView.getView().on('change', (evt) => {
+        let currView = map.getView()
+        let center = evt.target.getCenter(),
+          zoom = evt.target.getZoom()
         this.setCenterAndZoom(currView, { center: this.followExtentC && center, zoom: this.followExtentZ && zoom })
       })
     },
-    setCenterAndZoom (view, { center = null, zoom = 0 }) {
+    setCenterAndZoom(view, { center = null, zoom = 0 }) {
       center && view.setCenter(center)
       zoom && view.setZoom(zoom)
       // if (duration) {
@@ -142,99 +205,108 @@ export default {
       // }
     },
 
-    loadTree() {
-      var tree = []
-      var basemaps = this.anthorBaseMaps
-      var mainBaseMap = this.mapView.map.basemap.baseLayers.items[4].sublayers.items
-      for(let i=0,il=basemaps[4].sublayers.items,ii=il.length;i<ii;i++){    
-        var layer = il[i]
-        var mainLayer = mainBaseMap[i]
-        layer.opacity = mainLayer.opacity
-        layer.visible = mainLayer.visible
-        tree.push({
-          id:layer.id, label: layer.title, visible: layer.visible ? 1 : 0,
-          opacity: 100 - layer.opacity * 100, layer: layer
+    addLayers(layers) {
+      layers.forEach((layerConfig) => {
+        let { name, url, parentname, id, visible = true } = layerConfig
+        // 显示图层的 id
+        let visibleLayerIndex = [2]
+        visible = visibleLayerIndex.includes(layerConfig.id)
+
+        let layer = new TileLayer({
+          name,
+          parentname,
+          id,
+          visible,
+          source: new TileSuperMapRest({
+            url,
+            crossOrigin: 'anonymous', // 是否请求跨域操作
+            wrapX: true
+          }),
+          properties: {
+            projection: 'EPSG:4326'
+          }
         })
-        if(!layer.sublayers) continue
-        var nodeChildren = tree[tree.length - 1]
-        nodeChildren.children = []
-        nodeChildren = nodeChildren.children
-        var visible = 0
-        for(var j=0,jl=layer.sublayers.items,jj=jl.length;j<jj;j++){
-          layer = jl[j]
-          if(layer.visible) visible += 1
-          mainLayer = mainBaseMap[i].sublayers.items[j]
-          layer.opacity = mainLayer.opacity
-          layer.visible = mainLayer.visible
-          nodeChildren.push({
-            id:layer.id, label: layer.title, visible: layer.visible ? 1 : 0,
-            opacity: 100 - layer.opacity * 100, layer: layer
-          })
-        }
-        if(visible == jj) visible = 1
-        if(visible != 0 && visible != jj) visible = 0.5
-        tree[tree.length - 1].visible = visible
-      }
-      tree = tree.reverse()
-      for(let i=0,ii=tree.length;i<ii;i++){
-        if(tree[i].children) {
-          tree[i].children = tree[i].children.reverse()
-        }
-      }
-      this.layerTable = tree
-      var treeDiv = this.$refs.tree
-      this.$nextTick(() => {
-        for (let i = 0, il = tree, ii = il.length; i < ii; i++) {
-          var di = il[i]
-          treeDiv.setChecked(di.label, di.visible)
-          if(!di.children) continue
-          for (let j = 0, jl = di.children, jj = jl.length; j < jj; j++) 
-            treeDiv.setChecked(jl[j].label, jl[j].visible)        
+        this.currMap.addLayer(layer)
+      })
+    },
+
+    setTreeData() {
+      let layers = this.currMap.getLayers().array_
+      let [a, b, ...last] = layers
+      let layerGroup = new Map()
+      last.forEach(layer => {
+        let { name, parentname, id, visible } = layer.values_
+        if (layerGroup.get(parentname)) {
+          if (!layerGroup.get(parentname).includes(name)) {
+            layerGroup.get(parentname).push({ name, id, visible, layer })
+          }
+        } else {
+          layerGroup.set(parentname, [{ name, id, visible, layer }])
         }
       })
-      this.showLabel = basemaps[1].visible || basemaps[3].visible
-      this.showImageBase = !(this.showVectorBase = basemaps[0].visible)
+
+      let parentid = 0, layersData = [], defaultCheckedKeys = []
+      layerGroup.forEach((sublayers, parentname) => {
+        layersData.push({
+          id: parentid++,
+          label: parentname,
+          children: sublayers.map((sublayer) => {
+            let { id, name, layer } = sublayer
+            let opacity, visibleNum;
+            if (sublayer.visible) {
+              defaultCheckedKeys.push(id)
+              visibleNum = 0
+            } else {
+              visibleNum = 0
+            }
+            return { label: name, id, layer, opacity, visibleNum }
+          })
+        })
+      })
+      this.layerTable = layersData
+      this.defaultCheckedKeys = defaultCheckedKeys
     },
-    subLayerChange: function(node) {       
-      var dv
-      switch(node.visible) {
-        case 0:
-          node.layer.visible = true
-          dv = node.visible = 1
-          break
-        case 0.5: 
-          node.layer.visible = true
-          dv = node.visible = 1
-          break
-        case 1: 
-          node.layer.visible = false
-          dv = node.visible = 0
-          break
+
+    subLayerChange (node) {
+      console.log(node)
+      node.layer.values_.visible = !node.layer.values_.visible;
+      this.currMap.render()
+    },
+    // 底图变化
+    baseMapChange: function(showVector) {
+      if (showVector) {
+        this.showImageBase = !this.showImageBase
+      } else {
+        this.showVectorBase = !this.showVectorBase
       }
-      if(node.children) {
-        var ldv = dv ? true : false
-        for(var i=0,il=node.children,ii=il.length;i<ii;i++) {
-          var di = il[i]
-          di.layer.visible = ldv
-          di.visible = dv
+      
+      let layers = this.currMap.getLayers().array_
+      layers.forEach(layer => {
+        let { parentname, name, } = layer.values_
+        if (parentname === "底图") {
+          if (name === "矢量底图") layer.setVisible(this.showVectorBase)
+          else if (name === "影像底图") layer.setVisible(!this.showVectorBase)
+          else layer.setVisible(false)
         }
-      }
-      // node.layer.visible = node.visible = !node.visible
+      })
     },
-    baseMapChange: function(e) {
-      if (e) this.showImageBase = !this.showVectorBase
-      else this.showVectorBase = !this.showImageBase
-      var basemaps = this.anthorBaseMaps
-      basemaps[0].visible = !(basemaps[2].visible = this.showImageBase)      
-      if (this.showLabel) {
-        basemaps[1].visible = !(basemaps[3].visible = this.showImageBase)
-      }
+    labelChange: function(e) {
+      this.anthorBaseMaps[this.showImageBase ? 3 : 1].visible = e
     },
-    labelChange: function(e) { this.anthorBaseMaps[this.showImageBase ? 3 : 1].visible = e }, 
     inputBaseLayer: function(w) {
-      if(!this.anthorBaseMaps) return
-      if (w === 0) this.anthorBaseMaps[1].opacity = this.anthorBaseMaps[3].opacity = 1.0 - this.baseMapsNum[w] / 100
-      else this.anthorBaseMaps[w > 1 ? w : w - 1].opacity = 1.0 - this.baseMapsNum[w] / 100
+      const layerBox = ["标注", "矢量底图", "影像底图"]
+      let opacity = this.baseMapsNum[w];
+      let layers = this.currMap.getLayers().array_
+      let thisLayer = layers.find(layer => layer.values_.name === layerBox[w])
+      thisLayer.setOpacity(1 - opacity / 100)
+    }
+  },
+  watch: {
+    layerTable: {
+      handler (newValue, oldValue) {
+        this.currMap && this.currMap.render()
+      },
+      deep: true
     }
   }
 }
