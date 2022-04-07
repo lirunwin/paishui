@@ -127,6 +127,8 @@
             <!-- <QueryTool :map-view="view" :that="this" /> -->
             <!-- 鹰眼 -->
             <!-- <OverviewMap :map-view="view" /> -->
+            <!-- 弹出框 -->
+            <popupWindow v-if="view" ref="popupWindow" :map="view"></popupWindow>
           </div>
           <!-- 左上角工具栏 -->
           <leftTopTool
@@ -267,6 +269,7 @@ import leftTopTool from "./tongyonggongju/leftTopTool/widget.vue";
 import rightBottomTool from "./tongyonggongju/rightBottomTool/widget.vue";
 import rightTopTool from "./tongyonggongju/rightTopTool/widget.vue";
 import { extend } from "ol/array";
+import popupWindow from "@/components/PopupWindow/popupWindow.vue"
 
 // 投影
 import {
@@ -297,6 +300,7 @@ import proj4 from "proj4";
     leftTopTool,
     rightBottomTool,
     rightTopTool,
+    popupWindow
   },
 })
 export default class BaseMap extends Vue {

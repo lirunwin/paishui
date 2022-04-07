@@ -30,7 +30,7 @@ export default {
       let viewTileLayers = [
         new TileLayer({
           source: new TileSuperMapRest({
-            url: appconfig.gisResource['tian_online_vector'].config[0].url,
+            url: appconfig.gisResource['iserver_resource'].layers[0].url,
             crossOrigin: 'anonymous'
           })
         })
