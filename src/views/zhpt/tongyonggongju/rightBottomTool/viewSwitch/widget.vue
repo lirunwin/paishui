@@ -30,17 +30,18 @@ export default {
      * 
     */
     mapChange(type) {
-      let layers=this.map.getLayers().array_//所有的地图图层
-      let tdtLayerInfo=appconfig.gisResource['tian_online_vector'].config[0];//天地图信息
-      let yxtLayerInfo=appconfig.gisResource['tian_online_raster'].config[0];//影像图信息
-      let tdtLayer=layers.find(item=>{return item.values_.name==tdtLayerInfo.name});//天地图图层
-      let yxtLayer=layers.find(item=>{return item.values_.name==yxtLayerInfo.name});//影像图图层
-      let tdtAction=true;
-      let yxtAction=false;
-      if(type=='1'){//切换电子地图
+      let layers = this.map.getLayers().getArray() //所有的地图图层
+      console.log("切换地图", layers)
+      let tdtLayerInfo = appconfig.gisResource['iserver_resource'].layers[0];//天地图信息
+      let yxtLayerInfo = appconfig.gisResource['iserver_resource'].layers[1];//影像图信息
+      let tdtLayer = layers.find(item=>{return item.values_.name === tdtLayerInfo.name});//天地图图层
+      let yxtLayer = layers.find(item=>{return item.values_.name === yxtLayerInfo.name});//影像图图层
+      let tdtAction = true;
+      let yxtAction = false;
+      if (type=='1') {//切换电子地图
         tdtAction=true;
         yxtAction=false;
-      }else{//切换影像图
+      } else {//切换影像图
         tdtAction=false;
         yxtAction=true;
       }
@@ -53,7 +54,7 @@ export default {
    * @param layer 图层
    * @param action true显示，false隐藏
    * */ 
-    layerControl(layer,action){
+    layerControl(layer, action){
       if(layer){
         layer.setVisible(action);
       }

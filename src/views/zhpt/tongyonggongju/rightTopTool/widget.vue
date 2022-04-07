@@ -50,6 +50,8 @@ export default {
       currentList:null,
       /**没有在浮动框、全框、半框里面的组件*/
       componentList:[],
+      //
+      activeTools: []
     }
   },
   mounted() {
@@ -123,7 +125,12 @@ export default {
      * @param val 对应功能的信息
      * */
     openFunction(val){
-      console.log("点击工具")
+      // 添加当前激活的功能, 第二次点击时删除
+      if (!this.activeTools.includes(val.name)) {
+        this.activeTools.push(val.name)
+      } else {
+        this.activeTools.splice(this.activeTools.indexOf(val.name), 1)
+      }
       if(!val.widgetid){
         let componentList=this.getComponents("rightTopTool");
         let tempComponent=componentList.find(e=>{return e.name==val.name});

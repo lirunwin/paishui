@@ -32,7 +32,7 @@ export default {
               })
               this.rootPage.$refs.legend.innerHTML = htmlStr.join("")
             },
-            error: (error) => { console.log(error) }
+            error: error => console.error(error)
           })
         }
     },

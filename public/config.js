@@ -38,6 +38,15 @@ export const appconfig = {
     ],
     // add iserverResource
     "iserver_resource": {
+      'dataServer': {
+        'dataServiceUrl': "http://117.174.10.73:8090/iserver/services/data-kxcgw/rest/data",
+        'dataSource': "kxcgw",
+        'dataSet': ["给水管线", "广电线缆"],
+        'dataSetInfo': [
+            { name: '给水管线', type: 'line', label: '给水管线', s3mName: 'ResultNetWork@pipe3D', attachName: "给水管线节点" },
+            { name: '广电线缆', type: 'line', label: '广电线缆', s3mName: '', attachName: "广电线缆节点" }
+        ]
+      },
       'layers': [
         {
           'parentname': '底图',

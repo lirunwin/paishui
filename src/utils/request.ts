@@ -4,22 +4,27 @@ import store from '@/store'
 import { geteSessionStorage } from '@/utils/auth'
 import qs from 'qs'
 import router from '@/router'
-declare module 'axios'{
-  export interface AxiosRequestConfig{
+declare module 'axios' {
+  export interface AxiosRequestConfig {
     /**
      * 是否上传静态文件
      */
-    file?:boolean
+    file?: boolean
   }
-  export interface AxiosResponse{
-    result:any,
-    code:number,
-    message:string
+  export interface AxiosResponse {
+    result: any
+    code: number
+    message: string
   }
 }
 // 创建axios实例
 // export const IP = 'http://192.168.2.231:1111'
+<<<<<<< HEAD
 export const IP = 'http://192.168.2.145:1111'
+=======
+export const IP = 'http://117.174.10.73:1114'
+// export const IP = 'http://192.168.2.145:1111'
+>>>>>>> 69c6bcbc2a702607ebb06fcc6c2c1aa7d4f764b3
 // export const IP = 'http://127.0.0.1:1111'
 //export const NewIp = 'http://58.17.241.6:1212'
 // export const NewIp = 'http://192.168.15.5:8095'
@@ -34,9 +39,10 @@ let requestTimes = 0
 
 // 请求拦截器
 service.interceptors.request.use(
-  config => {
-    if (config.method === 'post' && config.url === '/auth/oauth/login') { // 请求为post    使用qs转换数据
-    // if (config.method === 'post') { // 请求为post    使用qs转换数据
+  (config) => {
+    if (config.method === 'post' && config.url === '/auth/oauth/login') {
+      // 请求为post    使用qs转换数据
+      // if (config.method === 'post') { // 请求为post    使用qs转换数据
       config.data = qs.stringify(config.data)
       config.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'
     } else {
@@ -51,7 +57,7 @@ service.interceptors.request.use(
     }
     return config
   },
-  error => {
+  (error) => {
     // 处理请求错误
     console.log(error)
     return Promise.reject(error)
@@ -68,7 +74,7 @@ service.interceptors.response.use(
   /**
    * 通过自定义代码确定请求状态
    */
-  response => {
+  (response) => {
     const res = response.data
 
     // 如果直接返回字符串（请求的图片 直接返回base64
@@ -110,11 +116,13 @@ service.interceptors.response.use(
       requestTimes = 0
       return res
     }
-    return Promise.reject(new Error(res.message || 'Error')).catch(err => { console.log(err) })
+    return Promise.reject(new Error(res.message || 'Error')).catch((err) => {
+      console.log(err)
+    })
   },
-  error => {
+  (error) => {
     function clearSession() {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         sessionStorage.clear()
         resolve(1)
       })
@@ -128,7 +136,7 @@ service.interceptors.response.use(
           showClose: false,
           closeOnPressEscape: false,
           closeOnClickModal: false
-        }).then(async() => {
+        }).then(async () => {
           const result = await clearSession()
           if (result === 1) {
             requestTimes = 0
