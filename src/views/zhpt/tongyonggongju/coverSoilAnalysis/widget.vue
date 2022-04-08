@@ -1,5 +1,5 @@
 <template>
-  <div class="panel-container">
+  <div class="panel-container i-scrollbar">
     <!-- 纵剖面分析 -->
     <div class="op-box">
       <el-button type="primary" size="small" style="width:100%" :loading="loading" @click="selectPipe">选择分析的管线</el-button>
@@ -280,4 +280,9 @@ export default {
 
 <style lang="scss" scoped>
 @import './css.scss';
+@import "~@/styles/mixin.scss";
+.i-scrollbar {
+  overflow: auto;
+  @include scrollBar;
+}
 </style>

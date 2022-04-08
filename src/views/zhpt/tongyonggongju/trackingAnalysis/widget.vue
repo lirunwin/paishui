@@ -1,6 +1,6 @@
 <template>
   <!-- 追踪分析 -->
-  <div class="panel-container">
+  <div class="panel-container i-scrollbar">
     <div class="op-box">
       <el-button type="primary" size="small" style="width:100%" @click="selectPipe" :loading="loading">选择分析管线</el-button>
     </div>
@@ -432,5 +432,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/styles/mixin.scss";
+
 @import './css.scss';
+.i-scrollbar {
+  overflow: auto;
+  @include scrollBar;
+}
 </style>
