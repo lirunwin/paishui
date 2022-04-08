@@ -497,6 +497,11 @@ export default class UserRights extends Vue {
       sortable: true
     },
     {
+      label: '工作职责',
+      width: 150,
+      prop: 'note'
+    },
+    {
       label: '创建类型',
       // width: 120,
       prop: 'createType',
