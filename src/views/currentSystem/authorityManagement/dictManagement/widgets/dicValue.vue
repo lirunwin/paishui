@@ -8,13 +8,18 @@
     </el-row>
 
     <div class="dictionary-table">
-      <el-table ref="multipleTable" :data="tableData" border
-                :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#dfeffe',color:'#333333'}" height="100%"
-                style="width: 100%;font-size: 14px;border: 0px solid;">
+      <el-table
+        ref="multipleTable"
+        :data="tableData"
+        border
+        :header-cell-style="{ fontSize: '14px', fontWeight: '600', background: '#dfeffe', color: '#333333' }"
+        height="100%"
+        style="width: 100%;font-size: 14px;border: 0px solid;"
+      >
         <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->
         <el-table-column label="序号" width="80" align="center">
           <template slot-scope="scope">
-            <span>{{scope.$index+1}}</span>
+            <span>{{ scope.$index + 1 }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="notes" label="字典名称" show-overflow-tooltip align="center"></el-table-column>
@@ -44,8 +49,21 @@
 
     <!-- 弹出新增模块框 -->
 
-    <el-dialog :title="dialogTitle" width="40%" :visible.sync="dialogVisible" @close="closeDialog" :close-on-click-modal='false'>
-      <el-form ref="formData" :model="formData" :rules="rules" label-width="120px" label-position="right" class="demo-form-inline">
+    <el-dialog
+      :title="dialogTitle"
+      width="40%"
+      :visible.sync="dialogVisible"
+      @close="closeDialog"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="formData"
+        :model="formData"
+        :rules="rules"
+        label-width="120px"
+        label-position="right"
+        class="demo-form-inline"
+      >
         <el-row class="row-form-height">
           <el-col :span="12">
             <el-form-item label="字典类型编码：">
@@ -77,7 +95,15 @@
           <el-col :span="12">
             <el-form-item label="字典值序号：">
               <!-- <el-input type="number" v-model="formData.sort" :readonly="readonly"></el-input> -->
-              <el-input-number v-model="formData.sort" :min="1" :step="1" :readonly="readonly" @blur="inputNumber" controls-position="right" style="width:100%"></el-input-number>
+              <el-input-number
+                v-model="formData.sort"
+                :min="1"
+                :step="1"
+                :readonly="readonly"
+                @blur="inputNumber"
+                controls-position="right"
+                style="width:100%"
+              ></el-input-number>
             </el-form-item>
           </el-col>
         </el-row>
@@ -91,21 +117,16 @@
               </el-row> -->
       </el-form>
       <div class="btn-container">
-        <el-button class="btn_float" @click="dialogVisible=false">取消</el-button>
+        <el-button class="btn_float" @click="dialogVisible = false">取消</el-button>
         <!-- <el-button class="btn_float" v-if="currentOp=='add'" type="primary" @click="formReset">重置</el-button> -->
-        <el-button class="btn_float" v-if="currentOp !='view'" type="primary" @click="submitForm">提交</el-button>
+        <el-button class="btn_float" v-if="currentOp != 'view'" type="primary" @click="submitForm">提交</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import {
-  getDicValueByKeys,
-  addDictionary,
-  editDictionary,
-  deleteDictionary
-} from '@/api/base';
+import { getDicValueByKeys, addDictionary, editDictionary, deleteDictionary } from '@/api/base'
 
 export default {
   name: 'dicValue',
@@ -113,13 +134,13 @@ export default {
     dicType: {
       type: Object,
       required: true
-    },
+    }
   },
   data() {
     return {
       dicName: '',
       dicCode: '',
-      dialogTitle: "新增字典值",
+      dialogTitle: '新增字典值',
       currentOp: 'add',
       dialogVisible: false,
       formData: {
@@ -128,7 +149,7 @@ export default {
         ulevel: 2,
         codeValue: '0',
         notes: '',
-        sort: 1,
+        sort: 1
       },
       pagination: { current: 1, size: 10 }, // 分页参数信息
       tableData: [],
@@ -138,144 +159,137 @@ export default {
           { required: true, message: '请输入字典值编码', trigger: 'blur' },
           { pattern: '^[0-9a-zA-Z]+$', message: '字典值不合法' }
         ],
-        notes: [
-          { required: true, message: '请输入字典值名称', trigger: 'blur' }
-        ]
-      },
+        notes: [{ required: true, message: '请输入字典值名称', trigger: 'blur' }]
+      }
     }
   },
   watch: {
     /**
      * 监测字典类型改变
-    */
+     */
     dicType(newValue, oldValue) {
-      this.formData.codeKey = newValue.codeKey;
-      this.formData.codeRemark = newValue.codeRemark;
-      this.getValueListByKeys(newValue.codeKey);
-    },
+      this.formData.codeKey = newValue.codeKey
+      this.formData.codeRemark = newValue.codeRemark
+      this.getValueListByKeys(newValue.codeKey)
+    }
   },
   computed: {},
   mounted() {
-    this.$nextTick(() => {
-    });
+    this.$nextTick(() => {})
   },
-  mounted() {
-
-  },
+  mounted() {},
   methods: {
-    inputNumber(){
-      if (!this.formData.sort) { this.formData.sort = 1 }
+    inputNumber() {
+      if (!this.formData.sort) {
+        this.formData.sort = 1
+      }
     },
     /**
      * 根据字典codeKey值查询value
-    */
+     */
     getValueListByKeys(dictName) {
-      let param = null;
+      let param = null
       if (dictName != '') {
         param = {
           // codeKeys: dictName
-          keys:dictName
+          keys: dictName
         }
       }
-      getDicValueByKeys(param).then(res => {
+      getDicValueByKeys(param).then((res) => {
         if (res.code == 1) {
           if (res.result.hasOwnProperty(this.dicType.codeKey)) {
-            this.tableData = res.result[this.dicType.codeKey];
+            this.tableData = res.result[this.dicType.codeKey]
           } else {
-            this.tableData = [];
+            this.tableData = []
           }
         } else {
-          this.$message.error('查询失败！');
+          this.$message.error('查询失败！')
         }
-      });
+      })
     },
 
     /**
      * 提交数据
-    */
+     */
     submitForm() {
       if (!this.formData.codeKey) {
-        return null;
+        return null
       }
       this.$refs.formData.validate((valid) => {
         if (valid) {
-          if (this.dialogTitle == "新增字典值") {
-            addDictionary(this.formData).then(res => {
+          if (this.dialogTitle == '新增字典值') {
+            addDictionary(this.formData).then((res) => {
               if (res.code == 1) {
-                this.getValueListByKeys(this.dicType.codeKey);
-                this.dialogVisible = false;
+                this.getValueListByKeys(this.dicType.codeKey)
+                this.dialogVisible = false
               } else {
                 this.$message({
                   type: 'error',
                   message: '提交失败！'
-                });
+                })
               }
-            });
+            })
           }
 
-          if (this.dialogTitle == "编辑字典值") {
-            editDictionary(this.formData).then(res => {
+          if (this.dialogTitle == '编辑字典值') {
+            editDictionary(this.formData).then((res) => {
               if (res.code == 1) {
-                this.getValueListByKeys(this.dicType.codeKey);
-                this.dialogVisible = false;
+                this.getValueListByKeys(this.dicType.codeKey)
+                this.dialogVisible = false
               } else {
                 this.$message({
                   type: 'error',
                   message: '提交失败！'
-                });
+                })
               }
-            });
+            })
           }
           return true
-        } else {
-          this.$message.error('请检查填写是否正确')
-          return false
         }
-      });
-
+      })
     },
 
     /**
      * 编辑字典类型
-    */
+     */
     editDicValue(scope) {
-      this.formData = scope.row;
-      this.dialogTitle = "编辑字典值",
-        this.dialogVisible = true;
+      this.formData = scope.row
+      ;(this.dialogTitle = '编辑字典值'), (this.dialogVisible = true)
     },
 
     /**
      * 删除字典
-    */
+     */
     deleteDicValue(scope) {
-      console.log(scope.row);
-      let id = scope.row.id;
+      console.log(scope.row)
+      let id = scope.row.id
       this.$confirm('此操作将永久删除该类字典, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        deleteDictionary(id).then(res => {
-          if (res.code == 1) {
-            this.getValueListByKeys(this.dicType.codeKey);
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            });
-          } else {
-            this.$message({
-              type: 'error',
-              message: '删除失败'
-            });
-          }
+      })
+        .then(() => {
+          deleteDictionary(id).then((res) => {
+            if (res.code == 1) {
+              this.getValueListByKeys(this.dicType.codeKey)
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              })
+            } else {
+              this.$message({
+                type: 'error',
+                message: '删除失败'
+              })
+            }
+          })
         })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        });
-      });
-
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          })
+        })
     },
     //  页码
     handleCurrentChange(currentPage) {
@@ -298,7 +312,7 @@ export default {
         sort: null,
         discription: ''
       }
-      this.dialogVisible = true;
+      this.dialogVisible = true
     },
     _editor(param) {
       console.log(param)
@@ -306,19 +320,19 @@ export default {
 
     //重置
     formReset() {
-      this.formData = {};
+      this.formData = {}
     },
 
     /**
      * @description 关闭数据弹窗
      */
     closeDialog() {
-      this.formData = {}; //清空数据
-    },
+      this.formData = {} //清空数据
+    }
   }
 }
 </script>
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .dic-container {
   height: 100%;
   width: 100%;

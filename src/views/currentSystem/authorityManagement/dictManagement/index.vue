@@ -293,9 +293,6 @@ export default {
             })
           }
           return true
-        } else {
-          this.$message.error('请检查填写是否正确')
-          return false
         }
       })
     },
