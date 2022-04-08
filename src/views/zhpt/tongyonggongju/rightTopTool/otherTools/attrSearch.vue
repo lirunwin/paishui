@@ -41,7 +41,6 @@ export default {
             this.pointermoveEvent = this.map.on("pointermove", evt => {
                 overlay.setPosition(evt.coordinate);
             })
-            console.log("地图容器", this.map)
 
             this.searchEvent = this.map.on("click", evt => {
                 this.spaceQuery(evt.coordinate)
@@ -76,7 +75,6 @@ export default {
             
             if(showData.length !== 0) {
                 let feature = showData[0][0]
-                console.log("需要展示的数据", feature)
                 this.openPopup(position, feature)
                 this.lightGeometry(feature)
                 // 重置事件
@@ -89,7 +87,7 @@ export default {
         /**
          * 超图数据服务
          */
-        async smGetFeatureService (queryGeometry, {dataServiceUrl, dataSets, dataSource, dataSetInfo }) {
+        async smGetFeatureService (queryGeometry, { dataServiceUrl, dataSets, dataSource, dataSetInfo }) {
             let result = []
             return Promise.all(dataSetInfo.map(info => {
                 return new Promise(resolve => {
@@ -168,17 +166,23 @@ export default {
                 default: return null
             }
             return new Feature({ geometry: geo })
+        },
+        closeAll () {
+            this.tipOverlay && this.tipOverlay.setPosition(null)
+            this.pointermoveEvent && unByKey(this.pointermoveEvent)
+            this.searchEvent && unByKey(this.searchEvent)
+            this.rootPage.$refs.popupWindow.popup.setPosition(null)
         }
     },
     mounted () {
         if (this.$parent.$data.activeTools.includes("attrSearch")) {
             this.attrSearchEvent()
+        } else {
+            this.closeAll()
         }
     },
     destroyed () {
-        this.tipOverlay.setPosition(null)
-        unByKey(this.pointermoveEvent)
-        unByKey(this.searchEvent)
+        this.closeAll()
     }
 
 }

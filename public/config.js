@@ -53,28 +53,28 @@ export const appconfig = {
           'name': '矢量底图', 
           'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_vec',
           'visible': true,
-          'id': 3
+          'id': 2
         },
         {
           'parentname': '底图',
           'name': '影像底图', 
           'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_img',
           'visible': false,
-          'id': 4
+          'id': 3
         },
         { 
           'parentname': '管线',
           'name': '广电线缆', 
           'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/广电线缆',
           'visible': true,
-          'id': 5
+          'id': 4
         },
         { 
           'parentname': '管线',
           'name': '给水管线', 
           'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/给水管线',
           'visible': true,
-          'id': 6
+          'id': 5
         }
       ]
     },

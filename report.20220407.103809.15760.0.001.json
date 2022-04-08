@@ -1,0 +1,530 @@
+
+{
+  "header": {
+    "reportVersion": 2,
+    "event": "Allocation failed - JavaScript heap out of memory",
+    "trigger": "FatalError",
+    "filename": "report.20220407.103809.15760.0.001.json",
+    "dumpEventTime": "2022-04-07T10:38:09Z",
+    "dumpEventTimeStamp": "1649299089660",
+    "processId": 15760,
+    "threadId": null,
+    "cwd": "D:\\itme\\psgwxt_bz",
+    "commandLine": [
+      "node",
+      "D:\\itme\\psgwxt_bz\\node_modules\\.bin\\\\..\\@vue\\cli-service\\bin\\vue-cli-service.js",
+      "serve"
+    ],
+    "nodejsVersion": "v12.16.2",
+    "wordSize": 64,
+    "arch": "x64",
+    "platform": "win32",
+    "componentVersions": {
+      "node": "12.16.2",
+      "v8": "7.8.279.23-node.34",
+      "uv": "1.34.2",
+      "zlib": "1.2.11",
+      "brotli": "1.0.7",
+      "ares": "1.15.0",
+      "modules": "72",
+      "nghttp2": "1.40.0",
+      "napi": "5",
+      "llhttp": "2.0.4",
+      "http_parser": "2.9.3",
+      "openssl": "1.1.1e",
+      "cldr": "36.0",
+      "icu": "65.1",
+      "tz": "2019c",
+      "unicode": "12.1"
+    },
+    "release": {
+      "name": "node",
+      "lts": "Erbium",
+      "headersUrl": "https://nodejs.org/download/release/v12.16.2/node-v12.16.2-headers.tar.gz",
+      "sourceUrl": "https://nodejs.org/download/release/v12.16.2/node-v12.16.2.tar.gz",
+      "libUrl": "https://nodejs.org/download/release/v12.16.2/win-x64/node.lib"
+    },
+    "osName": "Windows_NT",
+    "osRelease": "10.0.22000",
+    "osVersion": "Windows 10 Home China",
+    "osMachine": "x86_64",
+    "cpus": [
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 14692734,
+        "nice": 0,
+        "sys": 8503500,
+        "idle": 124083015,
+        "irq": 2077500
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 2243046,
+        "nice": 0,
+        "sys": 1904484,
+        "idle": 143131562,
+        "irq": 91328
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 29433671,
+        "nice": 0,
+        "sys": 6864968,
+        "idle": 110980453,
+        "irq": 52093
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 2214125,
+        "nice": 0,
+        "sys": 1198796,
+        "idle": 143866171,
+        "irq": 12593
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 19653203,
+        "nice": 0,
+        "sys": 4071578,
+        "idle": 123554296,
+        "irq": 41843
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 2322718,
+        "nice": 0,
+        "sys": 1264359,
+        "idle": 143692015,
+        "irq": 11281
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 16363468,
+        "nice": 0,
+        "sys": 4041468,
+        "idle": 126874156,
+        "irq": 35359
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 2906984,
+        "nice": 0,
+        "sys": 1428812,
+        "idle": 142943296,
+        "irq": 13515
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 13540000,
+        "nice": 0,
+        "sys": 3481031,
+        "idle": 130258046,
+        "irq": 54328
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 2610531,
+        "nice": 0,
+        "sys": 1460125,
+        "idle": 143208437,
+        "irq": 19328
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 10649859,
+        "nice": 0,
+        "sys": 3146015,
+        "idle": 133483187,
+        "irq": 41156
+      },
+      {
+        "model": "AMD Ryzen 5 5600H with Radeon Graphics         ",
+        "speed": 3294,
+        "user": 4021875,
+        "nice": 0,
+        "sys": 1798859,
+        "idle": 141458343,
+        "irq": 56046
+      }
+    ],
+    "networkInterfaces": [
+      {
+        "name": "WLAN",
+        "internal": false,
+        "mac": "10:51:07:4c:cc:00",
+        "address": "fe80::b81d:6691:ea65:5ad",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 8
+      },
+      {
+        "name": "WLAN",
+        "internal": false,
+        "mac": "10:51:07:4c:cc:00",
+        "address": "192.168.2.50",
+        "netmask": "255.255.255.0",
+        "family": "IPv4"
+      },
+      {
+        "name": "Loopback Pseudo-Interface 1",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "::1",
+        "netmask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
+        "name": "Loopback Pseudo-Interface 1",
+        "internal": true,
+        "mac": "00:00:00:00:00:00",
+        "address": "127.0.0.1",
+        "netmask": "255.0.0.0",
+        "family": "IPv4"
+      }
+    ],
+    "host": "LAPTOP-SNHEVCHC"
+  },
+  "javascriptStack": {
+    "message": "No stack.",
+    "stack": [
+      "Unavailable."
+    ]
+  },
+  "nativeStack": [
+    {
+      "pc": "0x00007ff702252309",
+      "symbol": "std::basic_ostream<char,std::char_traits<char> >::operator<<+11577"
+    },
+    {
+      "pc": "0x00007ff702256869",
+      "symbol": "std::basic_ostream<char,std::char_traits<char> >::operator<<+29337"
+    },
+    {
+      "pc": "0x00007ff7022556e8",
+      "symbol": "std::basic_ostream<char,std::char_traits<char> >::operator<<+24856"
+    },
+    {
+      "pc": "0x00007ff70237dd82",
+      "symbol": "v8::base::CPU::has_sse+59378"
+    },
+    {
+      "pc": "0x00007ff702b9a27e",
+      "symbol": "v8::Isolate::ReportExternalAllocationLimitReached+94"
+    },
+    {
+      "pc": "0x00007ff702b82351",
+      "symbol": "v8::SharedArrayBuffer::Externalize+833"
+    },
+    {
+      "pc": "0x00007ff702a4e8ac",
+      "symbol": "v8::internal::Heap::EphemeronKeyWriteBarrierFromCode+1436"
+    },
+    {
+      "pc": "0x00007ff702a59ae0",
+      "symbol": "v8::internal::Heap::ProtectUnprotectedMemoryChunks+1312"
+    },
+    {
+      "pc": "0x00007ff702a56604",
+      "symbol": "v8::internal::Heap::PageFlagsAreConsistent+3204"
+    },
+    {
+      "pc": "0x00007ff702a4be03",
+      "symbol": "v8::internal::Heap::CollectGarbage+1283"
+    },
+    {
+      "pc": "0x00007ff702a4a474",
+      "symbol": "v8::internal::Heap::AddRetainedMap+2452"
+    },
+    {
+      "pc": "0x00007ff702a6b67d",
+      "symbol": "v8::internal::Factory::NewFillerObject+61"
+    },
+    {
+      "pc": "0x00007ff7027d13d1",
+      "symbol": "v8::internal::interpreter::JumpTableTargetOffsets::iterator::operator=+1665"
+    },
+    {
+      "pc": "0x00007ff702fe730d",
+      "symbol": "v8::internal::SetupIsolateDelegate::SetupHeap+546637"
+    },
+    {
+      "pc": "0x00007ff702f6d7b1",
+      "symbol": "v8::internal::SetupIsolateDelegate::SetupHeap+48113"
+    },
+    {
+      "pc": "0x00000396830f5646",
+      "symbol": ""
+    }
+  ],
+  "javascriptHeap": {
+    "totalMemory": 2172006400,
+    "totalCommittedMemory": 2172006400,
+    "usedMemory": 2122030920,
+    "availableMemory": 36732960,
+    "memoryLimit": 2197815296,
+    "heapSpaces": {
+      "read_only_space": {
+        "memorySize": 262144,
+        "committedMemory": 262144,
+        "capacity": 32808,
+        "used": 32808,
+        "available": 0
+      },
+      "new_space": {
+        "memorySize": 12582912,
+        "committedMemory": 12582912,
+        "capacity": 6284736,
+        "used": 1801416,
+        "available": 4483320
+      },
+      "old_space": {
+        "memorySize": 392568832,
+        "committedMemory": 392568832,
+        "capacity": 390730040,
+        "used": 390574032,
+        "available": 156008
+      },
+      "code_space": {
+        "memorySize": 3313664,
+        "committedMemory": 3313664,
+        "capacity": 2685760,
+        "used": 2685760,
+        "available": 0
+      },
+      "map_space": {
+        "memorySize": 40374272,
+        "committedMemory": 40374272,
+        "capacity": 4715200,
+        "used": 4715200,
+        "available": 0
+      },
+      "large_object_space": {
+        "memorySize": 1721987072,
+        "committedMemory": 1721987072,
+        "capacity": 1721398600,
+        "used": 1721398600,
+        "available": 0
+      },
+      "code_large_object_space": {
+        "memorySize": 917504,
+        "committedMemory": 917504,
+        "capacity": 823104,
+        "used": 823104,
+        "available": 0
+      },
+      "new_large_object_space": {
+        "memorySize": 0,
+        "committedMemory": 0,
+        "capacity": 6284736,
+        "used": 0,
+        "available": 6284736
+      }
+    }
+  },
+  "resourceUsage": {
+    "userCpuSeconds": 138.031,
+    "kernelCpuSeconds": 21.328,
+    "cpuConsumptionPercent": 13.5625,
+    "maxRss": 2651918336,
+    "pageFaults": {
+      "IORequired": 3243244,
+      "IONotRequired": 0
+    },
+    "fsActivity": {
+      "reads": 10651,
+      "writes": 167
+    }
+  },
+  "libuv": [
+  ],
+  "workers": [
+  ],
+  "environmentVariables": {
+    "=D:": "D:\\itme\\psgwxt_bz",
+    "ACLOCAL_PATH": "D:\\Git\\mingw64\\share\\aclocal;D:\\Git\\usr\\share\\aclocal",
+    "ALLUSERSPROFILE": "C:\\ProgramData",
+    "APPDATA": "C:\\Users\\LQ\\AppData\\Roaming",
+    "APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL": "true",
+    "BABEL_ENV": "development",
+    "CHROME_CRASHPAD_PIPE_NAME": "\\\\.\\pipe\\crashpad_6888_KFMFQJRXJKOMUJZY",
+    "COLOR": "1",
+    "COLORTERM": "truecolor",
+    "CommonProgramFiles": "C:\\Program Files\\Common Files",
+    "COMMONPROGRAMFILES": "C:\\Program Files\\Common Files",
+    "CommonProgramFiles(x86)": "C:\\Program Files (x86)\\Common Files",
+    "CommonProgramW6432": "C:\\Program Files\\Common Files",
+    "COMPUTERNAME": "LAPTOP-SNHEVCHC",
+    "COMSPEC": "C:\\Windows\\system32\\cmd.exe",
+    "ComSpec": "C:\\Windows\\system32\\cmd.exe",
+    "CONFIG_SITE": "D:/Git/mingw64/etc/config.site",
+    "DISPLAY": "needs-to-be-defined",
+    "dp0": "D:\\itme\\psgwxt_bz\\node_modules\\.bin\\",
+    "DriverData": "C:\\Windows\\System32\\Drivers\\DriverData",
+    "EDITOR": "notepad.exe",
+    "ENV": "development",
+    "EXEPATH": "D:\\Git",
+    "FPS_BROWSER_APP_PROFILE_STRING": "Internet Explorer",
+    "FPS_BROWSER_USER_PROFILE_STRING": "Default",
+    "GIT_ASKPASS": "c:\\Users\\LQ\\AppData\\Local\\Programs\\Microsoft VS Code\\resources\\app\\extensions\\git\\dist\\askpass.sh",
+    "HOME": "C:\\Users\\LQ",
+    "HOMEDRIVE": "C:",
+    "HOMEPATH": "\\Users\\LQ",
+    "HOSTNAME": "LAPTOP-SNHEVCHC",
+    "INFOPATH": "D:\\Git\\usr\\local\\info;D:\\Git\\usr\\share\\info;D:\\Git\\usr\\info;D:\\Git\\share\\info",
+    "INIT_CWD": "D:\\itme\\psgwxt_bz",
+    "LANG": "zh_CN.UTF-8",
+    "LC_CTYPE": "C.UTF-8",
+    "LOCALAPPDATA": "C:\\Users\\LQ\\AppData\\Local",
+    "LOGONSERVER": "\\\\LAPTOP-SNHEVCHC",
+    "MANPATH": "D:\\Git\\mingw64\\local\\man;D:\\Git\\mingw64\\share\\man;D:\\Git\\usr\\local\\man;D:\\Git\\usr\\share\\man;D:\\Git\\usr\\man;D:\\Git\\share\\man",
+    "MINGW_CHOST": "x86_64-w64-mingw32",
+    "MINGW_PACKAGE_PREFIX": "mingw-w64-x86_64",
+    "MINGW_PREFIX": "D:/Git/mingw64",
+    "MSYSTEM": "MINGW64",
+    "MSYSTEM_CARCH": "x86_64",
+    "MSYSTEM_CHOST": "x86_64-w64-mingw32",
+    "MSYSTEM_PREFIX": "D:/Git/mingw64",
+    "NODE": "D:\\nvm\\v12.16.2\\node.exe",
+    "NODE_ENV": "development",
+    "NODE_EXE": "D:\\nvm\\v12.16.2\\\\node.exe",
+    "NPM_CLI_JS": "D:\\node\\nodejs\\node_global\\node_modules\\npm\\bin\\npm-cli.js",
+    "npm_command": "run-script",
+    "npm_config_cache": "D:\\node\\nodejs\\node_cache",
+    "npm_config_disturl": "https://npm.taobao.org/dist",
+    "npm_config_globalconfig": "D:\\node\\nodejs\\node_global\\etc\\npmrc",
+    "npm_config_global_prefix": "D:\\node\\nodejs\\node_global",
+    "npm_config_init_module": "C:\\Users\\LQ\\.npm-init.js",
+    "npm_config_local_prefix": "D:\\itme\\psgwxt_bz",
+    "npm_config_metrics_registry": "https://registry.npm.taobao.org/",
+    "npm_config_node_gyp": "D:\\nvm\\v12.16.2\\nodejs\\node_global\\node_modules\\npm\\node_modules\\node-gyp\\bin\\node-gyp.js",
+    "npm_config_noproxy": "",
+    "npm_config_prefix": "D:\\node\\nodejs\\node_global",
+    "npm_config_python": "/path/to/executable/python2.7",
+    "npm_config_registry": "https://registry.npm.taobao.org/",
+    "npm_config_sass_binary_site": "https://npm.taobao.org/mirrors/node-sass/",
+    "npm_config_userconfig": "C:\\Users\\LQ\\.npmrc",
+    "npm_config_user_agent": "npm/8.5.5 node/v12.16.2 win32 x64 workspaces/false",
+    "npm_execpath": "D:\\nvm\\v12.16.2\\nodejs\\node_global\\node_modules\\npm\\bin\\npm-cli.js",
+    "npm_lifecycle_event": "dev",
+    "npm_lifecycle_script": "vue-cli-service serve",
+    "npm_node_execpath": "D:\\nvm\\v12.16.2\\node.exe",
+    "npm_package_engines_node": ">=8.9",
+    "npm_package_engines_npm": ">= 3.0.0",
+    "npm_package_json": "D:\\itme\\psgwxt_bz\\package.json",
+    "npm_package_name": "admin",
+    "npm_package_version": "1.0.0",
+    "NPM_PREFIX_NPM_CLI_JS": "D:\\node\\nodejs\\node_global\\node_modules\\npm\\bin\\npm-cli.js",
+    "NUMBER_OF_PROCESSORS": "12",
+    "NVM_HOME": "D:\\nvm",
+    "NVM_SYMLINK": "D:\\node",
+    "OneDrive": "C:\\Users\\LQ\\OneDrive",
+    "ORIGINAL_PATH": "D:\\Git\\mingw64\\bin;D:\\Git\\usr\\bin;C:\\Users\\LQ\\bin;D:\\nvm\\v12.16.2;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0;C:\\Windows\\System32\\OpenSSH;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR;D:\\00-前端一条龙\\xiaochengxu\\微信web开发者工具\\dll;D:\\nvm;D:\\node;C:\\Users\\LQ\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\LQ\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;D:\\nvm;D:\\node",
+    "ORIGINAL_TEMP": "C:/Users/LQ/AppData/Local/Temp",
+    "ORIGINAL_TMP": "C:/Users/LQ/AppData/Local/Temp",
+    "ORIGINAL_XDG_CURRENT_DESKTOP": "undefined",
+    "OS": "Windows_NT",
+    "Path": "D:\\itme\\psgwxt_bz\\node_modules\\.bin;D:\\itme\\node_modules\\.bin;D:\\node_modules\\.bin;D:\\nvm\\v12.16.2\\nodejs\\node_global\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin;C:\\Users\\LQ\\bin;D:\\Git\\mingw64\\bin;D:\\Git\\usr\\local\\bin;D:\\Git\\usr\\bin;D:\\Git\\usr\\bin;D:\\Git\\mingw64\\bin;D:\\Git\\usr\\bin;C:\\Users\\LQ\\bin;D:\\nvm\\v12.16.2;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0;C:\\Windows\\System32\\OpenSSH;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR;D:\\00-前端一条龙\\xiaochengxu\\微信web开发者工具\\dll;D:\\nvm;D:\\node;C:\\Users\\LQ\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\LQ\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;D:\\nvm;D:\\node;D:\\Git\\usr\\bin\\vendor_perl;D:\\Git\\usr\\bin\\core_perl",
+    "PATH": "D:\\itme\\psgwxt_bz\\node_modules\\.bin;D:\\itme\\node_modules\\.bin;D:\\node_modules\\.bin;D:\\nvm\\v12.16.2\\nodejs\\node_global\\node_modules\\npm\\node_modules\\@npmcli\\run-script\\lib\\node-gyp-bin;C:\\Users\\LQ\\bin;D:\\Git\\mingw64\\bin;D:\\Git\\usr\\local\\bin;D:\\Git\\usr\\bin;D:\\Git\\usr\\bin;D:\\Git\\mingw64\\bin;D:\\Git\\usr\\bin;C:\\Users\\LQ\\bin;D:\\nvm\\v12.16.2;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0;C:\\Windows\\System32\\OpenSSH;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;C:\\Program Files\\NVIDIA Corporation\\NVIDIA NvDLISR;D:\\00-前端一条龙\\xiaochengxu\\微信web开发者工具\\dll;D:\\nvm;D:\\node;C:\\Users\\LQ\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\LQ\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;D:\\nvm;D:\\node;D:\\Git\\usr\\bin\\vendor_perl;D:\\Git\\usr\\bin\\core_perl",
+    "PATHEXT": ".COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JSE;.WSF;.WSH;.MSC;.CPL",
+    "PKG_CONFIG_PATH": "D:\\Git\\mingw64\\lib\\pkgconfig;D:\\Git\\mingw64\\share\\pkgconfig",
+    "PLINK_PROTOCOL": "ssh",
+    "PROCESSOR_ARCHITECTURE": "AMD64",
+    "PROCESSOR_IDENTIFIER": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+    "PROCESSOR_LEVEL": "25",
+    "PROCESSOR_REVISION": "5000",
+    "ProgramData": "C:\\ProgramData",
+    "PROGRAMFILES": "C:\\Program Files",
+    "ProgramFiles": "C:\\Program Files",
+    "ProgramFiles(x86)": "C:\\Program Files (x86)",
+    "ProgramW6432": "C:\\Program Files",
+    "PROMPT": "$P$G",
+    "PSModulePath": "C:\\Users\\LQ\\Documents\\WindowsPowerShell\\Modules;C:\\Program Files\\WindowsPowerShell\\Modules;C:\\Windows\\system32\\WindowsPowerShell\\v1.0\\Modules",
+    "PUBLIC": "C:\\Users\\Public",
+    "PWD": "D:/itme/psgwxt_bz",
+    "SESSIONNAME": "Console",
+    "SHELL": "D:\\Git\\usr\\bin\\bash.exe",
+    "SHLVL": "2",
+    "SSH_ASKPASS": "D:/Git/mingw64/libexec/git-core/git-gui--askpass",
+    "SystemDrive": "C:",
+    "SYSTEMDRIVE": "C:",
+    "SystemRoot": "C:\\Windows",
+    "SYSTEMROOT": "C:\\Windows",
+    "TEMP": "C:\\Users\\LQ\\AppData\\Local\\Temp",
+    "TERM": "xterm",
+    "TERM_PROGRAM": "vscode",
+    "TERM_PROGRAM_VERSION": "1.66.0",
+    "TMP": "C:\\Users\\LQ\\AppData\\Local\\Temp",
+    "TMPDIR": "C:\\Users\\LQ\\AppData\\Local\\Temp",
+    "USERDOMAIN": "LAPTOP-SNHEVCHC",
+    "USERDOMAIN_ROAMINGPROFILE": "LAPTOP-SNHEVCHC",
+    "USERNAME": "LQ",
+    "USERPROFILE": "C:\\Users\\LQ",
+    "VSCODE_GIT_ASKPASS_EXTRA_ARGS": "--ms-enable-electron-run-as-node",
+    "VSCODE_GIT_ASKPASS_MAIN": "c:\\Users\\LQ\\AppData\\Local\\Programs\\Microsoft VS Code\\resources\\app\\extensions\\git\\dist\\askpass-main.js",
+    "VSCODE_GIT_ASKPASS_NODE": "C:\\Users\\LQ\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+    "VSCODE_GIT_IPC_HANDLE": "\\\\.\\pipe\\vscode-git-61bed215ef-sock",
+    "VUE_APP_BASE_API": "",
+    "VUE_CLI_BABEL_TRANSPILE_MODULES": "true",
+    "VUE_CLI_ENTRY_FILES": "[\"D:\\\\itme\\\\psgwxt_bz\\\\src\\\\main.ts\"]",
+    "WEBPACK_DEV_SERVER": "true",
+    "windir": "C:\\Windows",
+    "WINDIR": "C:\\Windows",
+    "_": "C:/Users/LQ/AppData/Local/Programs/Microsoft VS Code/Code.exe",
+    "_prog": "node"
+  },
+  "sharedObjects": [
+    "D:\\nvm\\v12.16.2\\node.exe",
+    "C:\\Windows\\SYSTEM32\\ntdll.dll",
+    "C:\\Windows\\System32\\KERNEL32.DLL",
+    "C:\\Windows\\System32\\KERNELBASE.dll",
+    "C:\\Windows\\System32\\WS2_32.dll",
+    "C:\\Windows\\System32\\RPCRT4.dll",
+    "C:\\Windows\\System32\\PSAPI.DLL",
+    "C:\\Windows\\System32\\ADVAPI32.dll",
+    "C:\\Windows\\System32\\msvcrt.dll",
+    "C:\\Windows\\SYSTEM32\\dbghelp.dll",
+    "C:\\Windows\\System32\\sechost.dll",
+    "C:\\Windows\\System32\\ucrtbase.dll",
+    "C:\\Windows\\System32\\USER32.dll",
+    "C:\\Windows\\SYSTEM32\\IPHLPAPI.DLL",
+    "C:\\Windows\\System32\\win32u.dll",
+    "C:\\Windows\\SYSTEM32\\USERENV.dll",
+    "C:\\Windows\\System32\\GDI32.dll",
+    "C:\\Windows\\System32\\gdi32full.dll",
+    "C:\\Windows\\System32\\msvcp_win.dll",
+    "C:\\Windows\\System32\\CRYPT32.dll",
+    "C:\\Windows\\SYSTEM32\\bcrypt.dll",
+    "C:\\Windows\\SYSTEM32\\WINMM.dll",
+    "C:\\Windows\\System32\\IMM32.DLL",
+    "C:\\Windows\\SYSTEM32\\powrprof.dll",
+    "C:\\Windows\\SYSTEM32\\UMPDC.dll",
+    "C:\\Windows\\SYSTEM32\\CRYPTBASE.DLL",
+    "C:\\Windows\\system32\\uxtheme.dll",
+    "C:\\Windows\\System32\\combase.dll",
+    "C:\\Windows\\system32\\mswsock.dll",
+    "C:\\Windows\\SYSTEM32\\kernel.appcore.dll",
+    "C:\\Windows\\System32\\bcryptprimitives.dll",
+    "C:\\Windows\\system32\\napinsp.dll",
+    "C:\\Windows\\system32\\pnrpnsp.dll",
+    "C:\\Windows\\SYSTEM32\\DNSAPI.dll",
+    "C:\\Windows\\System32\\NSI.dll",
+    "C:\\Windows\\System32\\winrnr.dll",
+    "C:\\Windows\\system32\\wshbth.dll",
+    "C:\\Windows\\system32\\nlansp_c.dll",
+    "C:\\Windows\\SYSTEM32\\dhcpcsvc6.DLL",
+    "C:\\Windows\\SYSTEM32\\dhcpcsvc.DLL",
+    "\\\\?\\D:\\itme\\psgwxt_bz\\node_modules\\node-sass\\vendor\\win32-x64-72\\binding.node"
+  ]
+}

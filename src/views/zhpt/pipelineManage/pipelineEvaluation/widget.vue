@@ -4,27 +4,25 @@
       <div class="top-tool">
         <div class="serch-engineering">
           <div class="title">关键字：</div>
-          <el-input placeholder="搜索工程名称、地点、报告名称" v-model="input" clearable class="serch-input" suffix-icon="el-input__icon el-icon-search">
+          <el-input placeholder="支持搜索管段编号、材质、评价" v-model="input" clearable class="serch-input" suffix-icon="el-input__icon el-icon-search">
           </el-input>
-          <div class="title">检测日期：</div>
-          <el-date-picker v-model="value1" type="date" placeholder="检测日期" class="date-css"> </el-date-picker>
-          <div class="release-radio">
-            <p class="release-title">发布状态:</p>
-            <el-checkbox-group v-model="checkList" max="1">
-              <el-checkbox label="未发布"></el-checkbox>
-              <el-checkbox label="已发布"></el-checkbox>
-            </el-checkbox-group>
-          </div>
-          <el-button class="serch-btn" icon="el-icon-search" type="primary"> 搜索 </el-button>
-          <el-button class="serch-btn" icon="el-icon-refresh-right" type="primary"> 重置 </el-button>
+          <div class="title">检测时间：</div>
+          <el-date-picker v-model="value1" type="date" placeholder="入库时间" class="date-css"> </el-date-picker>
+          <div class="title">结构性缺陷等级：</div>
+          <el-select v-model="form.name" placeholder="全部">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+          <div class="title">功能性缺陷等级：</div>
+          <el-select v-model="form.name" placeholder="全部">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+          <el-button class="serch-btn" style="margin-left: 26px" type="primary"> 搜索 </el-button>
+          <el-button class="serch-btn" type="primary"> 重置 </el-button>
         </div>
         <div class="right-btn">
-          <el-button class="serch-btn" type="primary" @click="dialogFormVisible = true">报告上传</el-button>
-          <el-button class="serch-btn" type="primary">视频上传</el-button>
-          <el-button class="serch-btn" type="primary">批量发布</el-button>
-          <el-button class="serch-btn" style="background-color: #f56c6c" icon="el-icon-delete" type="primary"
-            >删除</el-button
-          >
+          <el-button class="serch-btn" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
         </div>
       </div>
 
@@ -39,22 +37,75 @@
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
 
-        <el-table-column prop="date" header-align="center" label="工程编号" align="center" show-overflow-tooltip>
+        <el-table-column prop="date" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="name" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
+        <el-table-column
+          prop="name"
+          min-width="150"
+          header-align="center"
+          label="管段编号"
+          align="center"
+          show-overflow-tooltip
+        >
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="行政区划" align="center" show-overflow-tooltip>
+        <el-table-column
+          prop="address"
+          min-width="150"
+          header-align="center"
+          label="管段类型"
+          align="center"
+          show-overflow-tooltip
+        >
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="委托单位" align="center" show-overflow-tooltip>
+        <el-table-column
+          prop="address"
+          min-width="150"
+          header-align="center"
+          label="管径(mm)"
+          align="center"
+          show-overflow-tooltip
+        >
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="施工单位" align="center" show-overflow-tooltip>
+        <el-table-column
+          prop="address"
+          min-width="150"
+          header-align="center"
+          label="材质"
+          align="center"
+          show-overflow-tooltip
+        >
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="工程简介" align="center" show-overflow-tooltip>
+        <el-table-column
+          prop="address"
+          min-width="150"
+          header-align="center"
+          label="结构性缺陷等级"
+          align="center"
+          show-overflow-tooltip
+        >
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="创建时间" align="center" show-overflow-tooltip>
+        <el-table-column
+          prop="address"
+          min-width="150"
+          header-align="center"
+          label="结构性缺陷评价"
+          align="center"
+          show-overflow-tooltip
+        >
+        </el-table-column>
+        <el-table-column prop="address" header-align="center" label="缺陷数量" align="center" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column prop="address" header-align="center" label="检测照片" align="center" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column prop="address" header-align="center" label="检测视频" align="center" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column prop="address" header-align="center" label="检测地点" align="center" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column prop="address" header-align="center" label="检测日期" align="center" show-overflow-tooltip>
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
+            <el-button type="text" size="small" @click="zero = scope">报告</el-button>
             <el-button type="text" size="small" @click="zero = scope">详情</el-button>
           </template>
         </el-table-column>
@@ -98,10 +149,9 @@
 export default {
   data() {
     return {
-       // 分页需要的值
+      // 分页需要的值
       currentPage4: 4,
       // ------------
-      checkList: [],
       radio: '',
       zero: '',
       tableData: [
@@ -206,7 +256,7 @@ export default {
     }
   },
   methods: {
-   // 表格多选事件
+    // 表格多选事件
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
@@ -239,24 +289,14 @@ export default {
       display: flex;
       justify-content: space-between;
       flex-direction: row;
-      flex-wrap: wrap;
+      // flex-wrap: wrap;
       font-size: 14px;
       /deep/ .serch-engineering {
         display: flex;
         // justify-content: space-around;
         align-items: center;
         margin-bottom: 14px;
-        .release-radio {
-          display: flex;
-          align-items: center;
-          white-space: nowrap;
-          .release-title {
-            margin: 0 10px;
-          }
-          .el-checkbox {
-            margin-right: 12px;
-          }
-        }
+
         .serch-input {
           width: 245px;
         }
@@ -289,8 +329,9 @@ export default {
       }
       .right-btn {
         margin-bottom: 14px;
-        display: flex;
-        align-items: center;
+        display: inline-block;
+        // display: flex;
+        // align-items: center;
         // flex-direction: row;
         // flex-wrap: wrap;
       }
@@ -319,7 +360,7 @@ export default {
     }
   }
   .el-select {
-    width: 70%;
+    width: 8%;
   }
   /deep/ .is-required {
     position: relative;
