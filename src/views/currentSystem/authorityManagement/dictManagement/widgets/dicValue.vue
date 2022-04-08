@@ -117,7 +117,7 @@
               </el-row> -->
       </el-form>
       <div class="btn-container">
-        <el-button class="btn_float" @click="dialogVisible = false">取消</el-button>
+        <el-button class="btn_float" @click="onCancel">取消</el-button>
         <!-- <el-button class="btn_float" v-if="currentOp=='add'" type="primary" @click="formReset">重置</el-button> -->
         <el-button class="btn_float" v-if="currentOp != 'view'" type="primary" @click="submitForm">提交</el-button>
       </div>
@@ -206,6 +206,12 @@ export default {
           this.$message.error('查询失败！')
         }
       })
+    },
+
+    onCancel() {
+      this.dialogVisible = false
+      const { resetFields } = this.$refs.formData
+      if (resetFields) resetFields()
     },
 
     /**
