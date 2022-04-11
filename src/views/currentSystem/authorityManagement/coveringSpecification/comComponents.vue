@@ -247,10 +247,10 @@ export default {
           vol: data.vol
         }).then((res) => {
           if (this.$comMethod.verificationResult(res)) {
-            this.$message.info('更新成功')
+            this.$message.success('更新成功')
             this.getData()
           } else {
-            this.$message.info(res.message || '更新失败')
+            this.$message.warning(res.message || '更新失败')
           }
           this.$nextTick((e) => {
             this.editOption = false
