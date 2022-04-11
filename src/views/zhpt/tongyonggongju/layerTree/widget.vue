@@ -14,6 +14,8 @@
 
 <script>
 
+import { Vector } from "ol/layer"
+
 export default {
     props: {
         data: null,
@@ -28,7 +30,10 @@ export default {
         initTree () {
             if (this.data) {
                 let { that, mapView } = this.data
-                let layers = mapView.getLayers()
+                // 过滤掉 Vector
+                let layers = mapView.getLayers().array_.filter(layer => {
+                    return !(layer instanceof Vector)
+                })
                 let layerGroup = new Map()
                 layers.forEach(layer => {
                     let { name, parentname, id, visible } = layer.values_

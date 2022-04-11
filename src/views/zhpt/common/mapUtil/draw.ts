@@ -23,6 +23,8 @@ export default class iDraw {
 
     showCloser = true
 
+    overlay = null
+
     drawType = {
         line: "LineString", // 线
         polygon: "Polygon", // 面
@@ -94,8 +96,8 @@ export default class iDraw {
     clear () {
         this.vectorSource.clear()
         this.map.removeLayer(this.vectorLayer)
-        this.vectorSource = null
-        this.vectorLayer = null
+        this.overlay && this.overlay.setPosition(null)
+        this.vectorSource = this.vectorLayer = this.overlay = null
     }
     // crosshair, auto
     setCursor (cursorStyle = "auto") {
@@ -114,6 +116,7 @@ export default class iDraw {
             id: "drawFeatureCloser" + Math.floor(Math.random() * 1e6),
             stopEvent: false
         });
+        this.overlay = overlay
         this.map.addOverlay(overlay)
         overlay.setPosition(position)
 
