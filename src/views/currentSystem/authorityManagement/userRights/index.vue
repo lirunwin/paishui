@@ -359,7 +359,7 @@
                 <span class="title">用户头像：</span>
                 <img v-if="detailInfo.avatar !== null" :src="detailInfo.avatar" />
               </el-row>
-              <el-row> <span class="title">工作职责：</span><span v-html="detailInfo.jobduties" /> </el-row>
+              <el-row> <span class="title">工作职责：</span><span v-html="detailInfo.note" /> </el-row>
             </el-col>
           </el-row>
         </el-collapse-item>
