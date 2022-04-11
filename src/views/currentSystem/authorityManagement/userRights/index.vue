@@ -766,7 +766,7 @@ export default class UserRights extends Vue {
     const arr = [this.multipleSelection[0].avatar, this.multipleSelection[0].esignature]
     arr.forEach((item, index) => {
       imageByName(item).then((res) => {
-        debugger
+        // debugger
         if (res.status === 200) {
           index === 1
             ? (this.multipleSelection[0].esignature = res.config.url)
