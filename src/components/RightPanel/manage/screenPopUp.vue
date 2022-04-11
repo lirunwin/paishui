@@ -14,28 +14,14 @@
           <el-form-item label="工单编号">
             <el-row type="flex" justify="space-between">
               <el-col :span="16">
-                <el-input
-                  v-model="orderForm.lxdh"
-                  size="small"
-                  :disabled="true"
-                />
+                <el-input v-model="orderForm.lxdh" size="small" :disabled="true" />
               </el-col>
               <el-col :span="8" style="color: red"> *自动生成 </el-col>
             </el-row>
           </el-form-item>
           <el-form-item label="工单类型">
-            <el-select
-              v-model="orderForm.gdlx"
-              multiple
-              size="small"
-              placeholder="请选择工单类型"
-            >
-              <el-option
-                v-for="item in workOrderTypeT"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
+            <el-select v-model="orderForm.gdlx" multiple size="small" placeholder="请选择工单类型">
+              <el-option v-for="item in workOrderTypeT" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item label="计划开始时间">
@@ -50,31 +36,13 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="工单来源">
-            <el-select
-              v-model="orderForm.jjly"
-              size="small"
-              placeholder="请选择工单来源"
-            >
-              <el-option
-                v-for="item in workOrderSource"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
+            <el-select v-model="orderForm.jjly" size="small" placeholder="请选择工单来源">
+              <el-option v-for="item in workOrderSource" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item label="工单详细类型">
-            <el-select
-              v-model="orderForm.gzlx"
-              size="small"
-              placeholder="请选择工单详细类型"
-            >
-              <el-option
-                v-for="item in workOrderType"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
+            <el-select v-model="orderForm.gzlx" size="small" placeholder="请选择工单详细类型">
+              <el-option v-for="item in workOrderType" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
           <el-form-item label="计划结束时间">
@@ -218,18 +186,17 @@
 </template>
 
 <script>
-import {
-// addRegister,
+import // addRegister,
 // editRegister,
 // getWorkOrderList,
 // getWorkOrderSourceList,
 // getFaultList,
-} from '@/api/work'
+'@/api/work'
 import { parseTime } from '@/utils/index'
 // import { getSectionList } from '@/api/base'
 
 export default {
-  components: { },
+  components: {},
   props: {
     data: {
       // 编辑的数据
@@ -319,8 +286,12 @@ export default {
     },
 
     // 条数
-    handleSizeChange(pagesize) {
-      this.pagination.size = pagesize
+    handleSizeChange(size = 1) {
+      this.pagination = {
+        ...this.pagination,
+        size,
+        current: 1
+      }
       this.fetchData(this.pagination)
     },
 

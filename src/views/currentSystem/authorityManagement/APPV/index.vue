@@ -1,5 +1,8 @@
 <template>
-  <div class="app-container" style="height:calc(100% - 40px);width:100%;position: absolute;overflow-y: auto;overflow-x: hidden;">
+  <div
+    class="app-container"
+    style="height:calc(100% - 40px);width:100%;position: absolute;overflow-y: auto;overflow-x: hidden;"
+  >
     <div style="line-height: 54px">
       <!-- APP版本 -->
       <select-item
@@ -50,28 +53,12 @@
         value-format="yyyy-MM-dd"
       />
 
-      <el-button
-        type="primary"
-        size="small"
-        @click="handleClick('query')"
-      >查询</el-button>
-      <el-button
-        type="primary"
-        size="small"
-        @click="uploadDialog = true"
-      >上传</el-button>
-      <el-button
-        type="primary"
-        size="small"
-        :disabled="deleteDisabled"
-        @click="handleClick('delete')"
-      >删除</el-button>
-      <el-button
-        type="primary"
-        size="small"
-        :disabled="publishDisabled"
-        @click="handleClick('publish')"
-      >发布</el-button>
+      <el-button type="primary" size="small" @click="handleClick('query')">查询</el-button>
+      <el-button type="primary" size="small" @click="uploadDialog = true">上传</el-button>
+      <el-button type="primary" size="small" :disabled="deleteDisabled" @click="handleClick('delete')">删除</el-button>
+      <el-button type="primary" size="small" :disabled="publishDisabled" @click="handleClick('publish')"
+        >发布</el-button
+      >
     </div>
     <div style="height:calc(100% - 76px);margin-top: 20px">
       <table-item
@@ -98,9 +85,7 @@
       <div class="detail-container">
         <el-row class="info-row">
           <el-col class="info-col" :span="12">
-            <span>应用程序类型：</span><span>{{
-              detailInfo.appType === "1" ? "app" : "前端平台"
-            }}</span>
+            <span>应用程序类型：</span><span>{{ detailInfo.appType === '1' ? 'app' : '前端平台' }}</span>
           </el-col>
           <el-col class="info-col" :span="12">
             <span>版本号：</span><span>{{ detailInfo.version }}</span>
@@ -124,9 +109,7 @@
         </el-row>
         <el-row class="info-row">
           <el-col class="info-col" :span="12">
-            <span>状态:</span><span>{{
-              detailInfo.releasestatus === "1" ? "未发布" : "已发布"
-            }}</span>
+            <span>状态:</span><span>{{ detailInfo.releasestatus === '1' ? '未发布' : '已发布' }}</span>
           </el-col>
           <el-col class="info-col" :span="12">
             <span>发布人:</span><span>{{ detailInfo.releaserName }}</span>
@@ -151,43 +134,20 @@
       :close-on-click-modal="false"
     >
       <div v-loading="uploadWaiting" style="width: 100%">
-        <el-form
-          ref="appForm"
-          :model="appForm"
-          :rules="appFormRules"
-          label-width="90px"
-          class="demo-ruleForm"
-        >
+        <el-form ref="appForm" :model="appForm" :rules="appFormRules" label-width="90px" class="demo-ruleForm">
           <el-row type="flex" justify="space-around">
             <el-col :span="24">
               <el-form-item style="margin-bottom: 15px" prop="appType" label="app类型">
-                <el-select
-                  v-model="appForm.appType"
-                  size="small"
-                  placeholder="请选择app类型"
-                >
-                  <el-option
-                    v-for="item in options1"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                  />
+                <el-select v-model="appForm.appType" size="small" placeholder="请选择app类型">
+                  <el-option v-for="item in options1" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row type="flex" justify="space-around">
             <el-col :span="24">
-              <el-form-item
-                label="版本号"
-                style="margin: 20px 0"
-                prop="version"
-              >
-                <el-input
-                  v-model="appForm.version"
-                  size="small"
-                  placeholder="请输入版本号"
-                />
+              <el-form-item label="版本号" style="margin: 20px 0" prop="version">
+                <el-input v-model="appForm.version" size="small" placeholder="请输入版本号" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -214,18 +174,15 @@
                       justify-content: space-around;
                     "
                   >
-                    <el-button
-                      slot="trigger"
-                      size="small"
-                      type="primary"
-                    >选取文件</el-button>
+                    <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
                     <el-button
                       v-if="fileList.length !== 0"
                       style="margin-left: 20px"
                       size="small"
                       type="success"
                       @click.stop="upload"
-                    >上传文件</el-button>
+                      >上传文件</el-button
+                    >
                   </div>
                 </el-upload>
               </el-form-item>
@@ -237,29 +194,24 @@
   </div>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator'
 import TableItem from '@/components/Table/index.vue'
 import SelectItem from '@/components/FormItem/Select/index.vue'
-import {
-  recordList,
-  upLoadFiles,
-  deleteRecord,
-  publishRecord
-} from '@/api/base'
+import { recordList, upLoadFiles, deleteRecord, publishRecord } from '@/api/base'
 @Component({
   name: 'APPV',
   components: { TableItem, SelectItem }
 })
 export default class APPV extends Vue {
-  pagination = { current: 1, size: 30 }; // 分页参数信息
-  total = 1;
-  appClassfication = '';
-  publishStatus = '';
+  pagination = { current: 1, size: 30 } // 分页参数信息
+  total = 1
+  appClassfication = ''
+  publishStatus = ''
   publishTime = {
     startTime: '',
     endTime: ''
-  };
+  }
   startOptions = {
     // 开始时间控制
     disabledDate: (time) => {
@@ -267,18 +219,15 @@ export default class APPV extends Vue {
         return time.getTime() >= new Date(this.publishTime.endTime)
       }
     }
-  };
+  }
   endOptions = {
     // 结束时间控制
     disabledDate: (time) => {
       if (this.publishTime.startTime) {
-        return (
-          new Date(this.publishTime.startTime).getTime() - 1000 * 60 * 60 * 24 >
-          time.getTime()
-        )
+        return new Date(this.publishTime.startTime).getTime() - 1000 * 60 * 60 * 24 > time.getTime()
       }
     }
-  };
+  }
 
   options1 = [
     {
@@ -289,7 +238,7 @@ export default class APPV extends Vue {
       id: '2',
       name: '前端平台'
     }
-  ];
+  ]
   options2 = [
     {
       id: '1',
@@ -299,7 +248,7 @@ export default class APPV extends Vue {
       id: '2',
       name: '已发布'
     }
-  ];
+  ]
   list = [
     {
       applx: '公众APP',
@@ -308,7 +257,7 @@ export default class APPV extends Vue {
       wj: 'adsd.apk',
       bbsm: '版本说明'
     }
-  ];
+  ]
   column = [
     {
       label: '应用程序类型',
@@ -365,21 +314,21 @@ export default class APPV extends Vue {
       operation: '详细',
       acts: [{ emitWay: 'detail', operation: '详细', color: 'blue' }]
     }
-  ];
-  multipleSelection = [];
-  detailDialog = false;
-  uploadDialog = false;
-  detailInfo = {};
-  fileList = [];
-  uploadWaiting = false;
-  appFormRules={
+  ]
+  multipleSelection = []
+  detailDialog = false
+  uploadDialog = false
+  detailInfo = {}
+  fileList = []
+  uploadWaiting = false
+  appFormRules = {
     version: [{ required: true, message: '请输入版本号' }],
     appType: [{ required: true, message: '请选择上传类型' }]
   }
   appForm = {
     appType: '2', // app类型 1 APP；2 前端平台
     version: ''
-  };
+  }
   get deleteDisabled() {
     const selAry = this.multipleSelection
     const newAry = selAry.filter((item) => item.releasestatus === '1')
@@ -390,10 +339,7 @@ export default class APPV extends Vue {
     // return !(this.multipleSelection.length !== 0 && this.multipleSelection.some(item => item.releasestatus === '1'))
   }
   get publishDisabled() {
-    return !(
-      this.multipleSelection.length === 1 &&
-      this.multipleSelection[0].releasestatus === '1'
-    )
+    return !(this.multipleSelection.length === 1 && this.multipleSelection[0].releasestatus === '1')
   }
   @Watch('uploadDialog')
   uploadDialogChange(val) {
@@ -424,12 +370,8 @@ export default class APPV extends Vue {
     const params = {
       type: that.appClassfication || undefined,
       releasestatus: that.publishStatus || undefined,
-      startDate: that.publishTime.startTime
-        ? that.publishTime.startTime + ' 00:00:00'
-        : '',
-      endDate: that.publishTime.endTime
-        ? that.publishTime.endTime + ' 23:59:59'
-        : '',
+      startDate: that.publishTime.startTime ? that.publishTime.startTime + ' 00:00:00' : '',
+      endDate: that.publishTime.endTime ? that.publishTime.endTime + ' 23:59:59' : '',
       current: that.pagination.current,
       size: that.pagination.size
     }
@@ -465,7 +407,10 @@ export default class APPV extends Vue {
     for (const item of this.fileList) {
       if (item.type === 'text/plain') {
         form.append('txtFile', item)
-      } else if (item.type === 'application/vnd.android.package-archive' || item.type === 'application/x-zip-compressed') {
+      } else if (
+        item.type === 'application/vnd.android.package-archive' ||
+        item.type === 'application/x-zip-compressed'
+      ) {
         form.append('appFile', item)
       }
     }
@@ -593,8 +538,12 @@ export default class APPV extends Vue {
   }
 
   // 条数
-  handleSizeChange(pagesize) {
-    this.pagination.size = pagesize
+  handleSizeChange(size = 1) {
+    this.pagination = {
+      ...this.pagination,
+      size,
+      current: 1
+    }
     this.getRecords()
   }
 

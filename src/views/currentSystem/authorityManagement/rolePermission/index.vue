@@ -326,8 +326,12 @@ export default class RolePermission extends Vue {
     this.fetchData(this.pagination)
   }
   // 条数
-  handleSizeChange(pagesize) {
-    this.pagination.size = pagesize
+  handleSizeChange(size = 1) {
+    this.pagination = {
+      ...this.pagination,
+      size,
+      current: 1
+    }
     this.fetchData(this.pagination)
   }
   // 选择

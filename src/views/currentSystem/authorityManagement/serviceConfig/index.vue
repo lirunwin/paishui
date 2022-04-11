@@ -316,7 +316,7 @@ export default class ServiceConfig extends Vue {
     }
     serviceList(data).then((res) => {
       this.total = res.result.total
-      console.log(res.result.total, this.total)
+      // console.log(res.result.total, this.total)
       this.list = res.result.records || []
     })
   }
@@ -484,10 +484,11 @@ export default class ServiceConfig extends Vue {
     this.getServiceList()
   }
   // 条数
-  handleSizeChange(size) {
+  handleSizeChange(size = 1) {
     this.pagination = {
       ...this.pagination,
-      size
+      size,
+      current: 1
     }
     this.getServiceList()
   }

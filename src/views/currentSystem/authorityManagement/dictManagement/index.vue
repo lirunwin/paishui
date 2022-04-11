@@ -255,8 +255,12 @@ export default {
     },
 
     // 条数
-    handleSizeChange(pagesize) {
-      this.pagination.size = pagesize
+    handleSizeChange(size = 1) {
+      this.pagination = {
+        ...this.pagination,
+        size,
+        current: 1
+      }
       this.queryDictTypeList()
     },
 

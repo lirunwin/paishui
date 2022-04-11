@@ -896,8 +896,12 @@ export default class UserRights extends Vue {
     this.onSubmit()
   }
 
-  handleSizeChange(pagesize) {
-    this.pagination.size = pagesize
+  handleSizeChange(size = 1) {
+    this.pagination = {
+      ...this.pagination,
+      size,
+      current: 1
+    }
     this.onSubmit()
   }
 
