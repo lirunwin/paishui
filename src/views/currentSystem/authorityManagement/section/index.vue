@@ -226,8 +226,11 @@ export default class Section extends Vue {
   // 新增部门/单位
   addNewUnit() {
     addSection(this.department).then((res) => {
-      this.dialog = false
-      this.getAllUnit()
+      if (res.code === 1) {
+        this.dialog = false
+        this.$message({ type: 'success', message: '添加成功!' })
+        this.getAllUnit()
+      }
     })
   }
   // // 批量导入
@@ -258,10 +261,7 @@ export default class Section extends Vue {
     } else data = this.unitTreeSelect.map((item) => item.id).join(',')
     deleteSection({ ids: data }).then((res) => {
       if (res.code !== -1) {
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
-        })
+        this.$message({ type: 'success', message: '删除成功!' })
         this.getAllUnit()
       }
     })
@@ -269,8 +269,11 @@ export default class Section extends Vue {
   // 编辑部门/单位
   editUnit() {
     editSection(this.department).then((res) => {
-      this.dialog = false
-      this.getAllUnit()
+      if (res.code === 1) {
+        this.dialog = false
+        this.$message({ type: 'success', message: '修改成功!' })
+        this.getAllUnit()
+      }
     })
   }
   // // 获取单位
