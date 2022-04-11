@@ -301,7 +301,7 @@ export default class MergeUser extends Vue {
    */
   getCopyDeptUserList() {
     let deptId = this.ruleForm.departmentId
-    console.log('部门编码：' + deptId)
+    // console.log('部门编码：' + deptId)
 
     let data = {
       userLevel: 1,

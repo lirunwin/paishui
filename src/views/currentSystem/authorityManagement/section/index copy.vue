@@ -51,6 +51,7 @@
       border
       default-expand-all
       @row-dblclick="handleDbclick"
+      @select-all="searchTableSelect"
       @select="handleSelectionChange"
       :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
     >
@@ -60,9 +61,30 @@
       </template>
       <!-- <el-table-column type="selection" align='center' width="55"  /> -->
       <!-- <el-table-column type="index" width="50" label="序号" /> -->
-      <el-table-column prop="name" header-align="center" sortable label="部门名称" show-overflow-tooltip />
-      <el-table-column prop="shortName" align="center" sortable label="简称" show-overflow-tooltip />
-      <el-table-column prop="code" align="center" sortable label="部门编码" show-overflow-tooltip />
+      <el-table-column
+        prop="name"
+        header-align="center"
+        :formatter="formatter"
+        sortable
+        label="部门名称"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="shortName"
+        align="center"
+        :formatter="formatter"
+        sortable
+        label="简称"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="code"
+        align="center"
+        :formatter="formatter"
+        sortable
+        label="部门编码"
+        show-overflow-tooltip
+      />
       <el-table-column label="操作" align="center" width="100">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="handelDelete(scope.row)">删除</el-button>
