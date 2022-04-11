@@ -7,9 +7,9 @@
     <el-row type="flex" style="margin-bottom: 20px">
       <el-col :span="10">
         <el-button type="primary" size="small" @click="handleClick('add')">新增</el-button>
-        <el-button type="primary" size="small" :disabled="unitTreeSelect.length !== 1" @click="handleClick('edit')"
+        <!-- <el-button type="primary" size="small" :disabled="unitTreeSelect.length !== 1" @click="handleClick('edit')"
           >修改</el-button
-        >
+        > -->
         <!-- <el-button
           type="primary"
           size="small"
@@ -372,19 +372,13 @@ export default class Section extends Vue {
       .then(() => {
         deleteSection({ ids: data.id.toString() }).then((res) => {
           if (res.code !== -1) {
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            })
+            this.$message({ type: 'success', message: '删除成功!' })
             this.getAllUnit()
           }
         })
       })
       .catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
+        this.$message({ type: 'info', message: '已取消删除' })
       })
   }
 
