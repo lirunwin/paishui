@@ -170,7 +170,11 @@ export default {
     dicType(newValue, oldValue) {
       this.formData.codeKey = newValue.codeKey
       this.formData.codeRemark = newValue.codeRemark
-      this.getValueListByKeys(newValue.codeKey)
+      if (newValue && newValue.codeKey) {
+        this.getValueListByKeys(newValue.codeKey)
+      } else {
+        this.tableData = []
+      }
     }
   },
   computed: {},
