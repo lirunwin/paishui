@@ -1,10 +1,17 @@
 <template>
   <div class="engineering-manage">
+    <!-- 管道评估结果管理 -->
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
           <div class="title">关键字：</div>
-          <el-input placeholder="支持搜索管段编号、材质、评价" v-model="input" clearable class="serch-input" suffix-icon="el-input__icon el-icon-search">
+          <el-input
+            placeholder="支持搜索管段编号、材质、评价"
+            v-model="input"
+            clearable
+            class="serch-input"
+            suffix-icon="el-input__icon el-icon-search"
+          >
           </el-input>
           <div class="title">检测时间：</div>
           <el-date-picker v-model="value1" type="date" placeholder="入库时间" class="date-css"> </el-date-picker>
@@ -106,7 +113,7 @@
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="zero = scope">报告</el-button>
-            <el-button type="text" size="small" @click="zero = scope">详情</el-button>
+            <el-button type="text" size="small" @click="dialogFormVisible = true">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -124,23 +131,9 @@
       </div>
     </div>
     <!-- 添加卡片 -->
-    <el-dialog title="检测报告上传" v-if="dialogFormVisible" :visible.sync="dialogFormVisible">
-      <el-form ref="form" :model="form" :rules="rules">
-        <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
-          <el-select v-model="form.name" placeholder="请选择工程名称">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="检测报告" :label-width="formLabelWidth" class="hd-input" prop="report">
-          <el-input v-model="form.report" autocomplete="off"></el-input>
-          <el-button class="select-btn" type="primary">选择文件夹</el-button>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-      </div>
+    <el-dialog title="检测报告上传" width="40%" v-if="dialogFormVisible" :visible.sync="dialogFormVisible">
+     
+      
     </el-dialog>
   </div>
 </template>
@@ -157,7 +150,7 @@ export default {
       tableData: [
         {
           date: '2016-05-03',
-          name: '王小虎',
+          name: '王小虎11',
           address: '上海市普陀区金沙江路 1518 弄'
         },
         {
@@ -343,7 +336,9 @@ export default {
       background-color: #dfeffe;
     }
   }
-
+  /deep/ .el-dialog {
+    margin-right: 5vw;
+  }
   // 报告上传样式
   /deep/ .el-dialog__header {
     background-color: #2d74e7;

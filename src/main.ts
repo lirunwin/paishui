@@ -20,7 +20,7 @@ import BaiduMap from 'vue-baidu-map'
 import '@/assets/iconfont/iconfont.js'
 import '@/assets/iconfont/iconfont.css'
 
-import Moment from 'vue-moment'
+import Moment  from 'vue-moment'
 
 // import htmlToPdf from './utils/htmlToPdf'
 // Vue.use(htmlToPdf)
@@ -59,6 +59,12 @@ Vue.use(BaiduMap, {
   ak: 'CO5txfs21UEm2XUgiaPiGhZcvfpjVBXS'
 })
 
+// Vue.filter('formatDate', function (value) {
+//   return moment(value).format('YYYY-MM-DD HH:mm')
+// })
+
+// 全局引入moment
+Vue.prototype.$moment = Moment//挂载Vue上
 /**
  * mock数据
  */
@@ -69,7 +75,7 @@ Vue.use(BaiduMap, {
 
 Vue.use(ElementUI)
 Vue.use(Print)
-Vue.use(Moment)
+Vue.use(<any>Moment)
 
 Vue.config.productionTip = false
 

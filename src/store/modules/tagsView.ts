@@ -157,6 +157,7 @@ const actions = {
   // 更新组件
   updateVisitedView({ commit }, view) {
     commit('UPDATE_VISITED_VIEW', view)
+    console.log("更新组件",view)
   },
   // 退出清空
   loginOutdel({ commit }) {

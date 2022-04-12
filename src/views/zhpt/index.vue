@@ -191,7 +191,7 @@
           <!-- width: side_width, -->
           <el-aside
             :style="{
-              width: side_width,
+              width: '480px',
               height: '570px',
               position: 'fixed',
               right: '85px',

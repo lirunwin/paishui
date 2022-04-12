@@ -150,7 +150,9 @@ export default class SidePanels extends Vue {
     // this.$store.state.map.panels.length !== 0 && this.clickTab(this.$store.state.map.panels[this.$store.state.map.panels.length - 1]);
   }
   clickTab(targetName) {
+    console.log("切换tab时触发")
     this.$store.dispatch("map/changeTab", targetName.com);
+
   }
 }
 </script>

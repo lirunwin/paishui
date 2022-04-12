@@ -7,7 +7,7 @@ const map = {
   Dashboard: () => import('@/views/currentSystem/dashboard/index.vue'), // 首页
   currentSystem: () => import('@/views/currentSystem/index.vue'), // 当前系统的路由
   Map: () => import('@/views/zhpt/index.vue'),
-  facilityEvaluation: () => import('@/views/facilityEvaluation/index.vue'), // 设施评价
+  // facilityEvaluation: () => import('@/views/facilityEvaluation/index.vue'), // 设施评价
   // funMap: () => import('@/views/currentSystem/map/funCom/index'),
   // 系统权限
   userManage: () => import('@/views/currentSystem/authorityManagement/userRights/index.vue'), // 用户管理

@@ -25,6 +25,7 @@ export default {
 
   }, 
   mounted() {
+    console.log("走了这里");
     this.initConfig()
   },
   methods: {

@@ -1,5 +1,6 @@
 <template>
   <div class="testResultDiagram">
+    <!-- 检测成果专题图 -->
     <p class="title">显示设置</p>
     <el-form ref="form" :model="form" label-width="auto" :rules="rules">
       <el-form-item label="工程名称:" prop="name">
@@ -16,21 +17,11 @@
       </el-form-item>
       <el-form-item label="检测日期:">
         <el-col :span="11">
-          <el-date-picker
-            type="date"
-            placeholder="选择日期"
-            v-model="form.date1"
-            style="width: 100%"
-          ></el-date-picker>
+          <el-date-picker type="date" placeholder="选择日期" v-model="form.date1" style="width: 100%"></el-date-picker>
         </el-col>
         <el-col class="line" :span="2"> ~</el-col>
         <el-col :span="11">
-          <el-date-picker
-            type="date"
-            placeholder="选择日期"
-            v-model="form.date2"
-            style="width: 100%"
-          ></el-date-picker>
+          <el-date-picker type="date" placeholder="选择日期" v-model="form.date2" style="width: 100%"></el-date-picker>
         </el-col>
       </el-form-item>
     </el-form>
@@ -44,14 +35,11 @@
           <i
             :class="{
               'el-icon-caret-bottom': ShowThematicMap1,
-              'el-icon-caret-right': !ShowThematicMap1,
+              'el-icon-caret-right': !ShowThematicMap1
             }"
             @click="ShowThematicMap1 = !ShowThematicMap1"
           ></i>
-          <el-checkbox
-            v-model="thematicMap1"
-            label="管网缺陷密度图"
-          ></el-checkbox>
+          <el-checkbox v-model="thematicMap1" label="管网缺陷密度图"></el-checkbox>
         </div>
         <transition name="el-zoom-in-top">
           <div v-show="ShowThematicMap1" class="transition-box">
@@ -68,21 +56,18 @@
           <i
             :class="{
               'el-icon-caret-bottom': ShowThematicMap2,
-              'el-icon-caret-right': !ShowThematicMap2,
+              'el-icon-caret-right': !ShowThematicMap2
             }"
             @click="ShowThematicMap2 = !ShowThematicMap2"
           ></i>
-          <el-checkbox
-            v-model="thematicMap2"
-            label="管网缺陷分布专题图"
-          ></el-checkbox>
+          <el-checkbox v-model="thematicMap2" label="管网缺陷分布专题图"></el-checkbox>
         </div>
         <transition name="el-zoom-in-top">
           <div v-show="ShowThematicMap2" class="transition-box">
             <ul>
-              <li class="see-data">1级 ({{ "111个" }})</li>
-              <li class="see-data">2级 ({{ "111个" }})</li>
-              <li class="see-data">3级 ({{ "111个" }})</li>
+              <li class="see-data">1级 ({{ '111个' }})</li>
+              <li class="see-data">2级 ({{ '111个' }})</li>
+              <li class="see-data">3级 ({{ '111个' }})</li>
             </ul>
           </div>
         </transition>
@@ -92,21 +77,18 @@
           <i
             :class="{
               'el-icon-caret-bottom': ShowThematicMap3,
-              'el-icon-caret-right': !ShowThematicMap3,
+              'el-icon-caret-right': !ShowThematicMap3
             }"
             @click="ShowThematicMap3 = !ShowThematicMap3"
           ></i>
-          <el-checkbox
-            v-model="thematicMap3"
-            label="检查井缺陷分布专题图"
-          ></el-checkbox>
+          <el-checkbox v-model="thematicMap3" label="检查井缺陷分布专题图"></el-checkbox>
         </div>
         <transition name="el-zoom-in-top">
           <div v-show="ShowThematicMap3" class="transition-box">
             <ul>
-              <li class="see-data">井盖缺失 ({{ "111个" }})</li>
-              <li class="see-data">井盖破损 ({{ "111个" }})</li>
-              <li class="see-data">井盖移位 ({{ "111个" }})</li>
+              <li class="see-data">井盖缺失 ({{ '111个' }})</li>
+              <li class="see-data">井盖破损 ({{ '111个' }})</li>
+              <li class="see-data">井盖移位 ({{ '111个' }})</li>
             </ul>
           </div>
         </transition>
@@ -116,21 +98,18 @@
           <i
             :class="{
               'el-icon-caret-bottom': ShowThematicMap4,
-              'el-icon-caret-right': !ShowThematicMap4,
+              'el-icon-caret-right': !ShowThematicMap4
             }"
             @click="ShowThematicMap4 = !ShowThematicMap4"
           ></i>
-          <el-checkbox
-            v-model="thematicMap4"
-            label="管网健康评估专题图"
-          ></el-checkbox>
+          <el-checkbox v-model="thematicMap4" label="管网健康评估专题图"></el-checkbox>
         </div>
         <transition name="el-zoom-in-top">
           <div v-show="ShowThematicMap4" class="transition-box">
             <ul>
-              <li class="see-data-line">1级 ({{ "111个" }})</li>
-              <li class="see-data-line">2级 ({{ "111个" }})</li>
-              <li class="see-data-line">3级 ({{ "111个" }})</li>
+              <li class="see-data-line">1级 ({{ '111个' }})</li>
+              <li class="see-data-line">2级 ({{ '111个' }})</li>
+              <li class="see-data-line">3级 ({{ '111个' }})</li>
             </ul>
           </div>
         </transition>
@@ -153,20 +132,20 @@ export default {
       thematicMap4: false,
       checkList: [],
       form: {
-        test1: "",
-        test2: "",
-        time1: "",
-        time2: "",
+        test1: '',
+        test2: '',
+        time1: '',
+        time2: ''
       },
       rules: {
         name: [
-          { required: true, message: "不能为空", trigger: "blur" },
-          { max: 100, message: "内容不能超过100个字符串", trigger: "blur" },
-        ],
-      },
-    };
-  },
-};
+          { required: true, message: '不能为空', trigger: 'blur' },
+          { max: 100, message: '内容不能超过100个字符串', trigger: 'blur' }
+        ]
+      }
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -195,7 +174,7 @@ export default {
   position: relative;
   left: -10px;
   top: 2px;
-  content: "";
+  content: '';
   width: 5px;
   height: 18px;
   display: inline-block;
@@ -203,6 +182,9 @@ export default {
 }
 .thematicMap-list {
   padding-left: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   .transition-box {
     padding: 6px 0 6px 44px;
     box-sizing: border-box;
@@ -228,7 +210,7 @@ export default {
   position: relative;
   left: -20px;
   top: -2px;
-  content: "";
+  content: '';
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -242,7 +224,7 @@ ul > .see-data-line::before {
   position: relative;
   top: -2px;
   left: -20px;
-  content: "";
+  content: '';
   width: 40px;
   height: 8px;
   display: inline-block;

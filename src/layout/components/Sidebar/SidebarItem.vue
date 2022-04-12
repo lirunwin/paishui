@@ -95,6 +95,7 @@ export default class SidebarItem extends Vue {
     return false;
   }
   resolvePath(routePath) {
+    console.log("要去的路由",routePath)
     if (isExternal(routePath)) {
       return routePath;
     }

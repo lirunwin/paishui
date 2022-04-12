@@ -97,34 +97,34 @@
     <!-- 添加卡片 -->
     <el-dialog title="添加工程" :visible.sync="dialogFormVisible">
       <el-form ref="form" :rules="rules" :model="form" label-width="auto" label-position="right">
-        <el-form-item label="行政区" prop="requiredInput">
+        <el-form-item label="行政区">
           <el-input v-model="form.area"></el-input>
         </el-form-item>
-        <el-form-item label="工程名称" prop="prjName">
-          <el-input v-model="form.prjName"></el-input>
+        <el-form-item label="工程名称">
+          <el-input v-model="form.prjName" prop="prjName"></el-input>
         </el-form-item>
         <el-form-item label="工程编号" prop="prjNo">
           <el-input v-model="form.prjNo"></el-input>
         </el-form-item>
-        <el-form-item label="工程范围" prop="requiredInput">
+        <el-form-item label="工程范围">
           <el-input v-model="form.null"></el-input>
         </el-form-item>
-        <el-form-item label="委托单位" prop="requiredInput">
+        <el-form-item label="委托单位">
           <el-input v-model="form.null"></el-input>
         </el-form-item>
-        <el-form-item label="检测单位" prop="requiredInput">
+        <el-form-item label="检测单位">
           <el-input v-model="form.principal"></el-input>
         </el-form-item>
         <el-form-item label="勘察单位">
           <el-input v-model="form.kcunit" placeholder="竣工类项目必填"></el-input>
         </el-form-item>
-        <el-form-item label="探测单位" prop="tcunit">
+        <el-form-item label="探测单位">
           <el-input v-model="form.tcunit"></el-input>
         </el-form-item>
-        <el-form-item label="设计单位" prop="sjunit">
+        <el-form-item label="设计单位">
           <el-input v-model="form.sjunit" placeholder="竣工类项目必填"></el-input>
         </el-form-item>
-        <el-form-item label="建设单位" prop="jsunit">
+        <el-form-item label="建设单位">
           <el-input v-model="form.jsunit"></el-input>
         </el-form-item>
         <el-form-item label="监理单位">
@@ -133,37 +133,37 @@
         <el-form-item label="施工单位" prop="sgunit">
           <el-input v-model="form.sgunit"></el-input>
         </el-form-item>
-        <el-form-item label="施工负责人" prop="requiredInput">
+        <el-form-item label="施工负责人" prop="workUnit">
           <el-input v-model="form.null"></el-input>
         </el-form-item>
-        <el-form-item label="高程系统" prop="requiredInput">
+        <el-form-item label="高程系统" prop="ecoord">
           <el-input v-model="form.ecoord"></el-input>
         </el-form-item>
-        <el-form-item label="平面坐标系统" prop="requiredInput">
+        <el-form-item label="平面坐标系统" prop="pcoord">
           <el-select v-model="form.pcoord" placeholder="请选择">
             <el-option label="区域一" value="shanghai"></el-option>
             <el-option label="区域二" value="beijing"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="管线长度" prop="requiredInput">
+        <el-form-item label="管线长度" prop="workUnit">
           <el-input v-model="form.null" placeholder="单位:m"></el-input>
         </el-form-item>
-        <el-form-item label="管线总长度" prop="requiredInput">
+        <el-form-item label="管线总长度" prop="pllength">
           <el-input v-model="form.pllength" placeholder="单位:m"></el-input>
         </el-form-item>
-        <el-form-item label="管线种类" prop="requiredInput">
+        <el-form-item label="管线种类" prop="workUnit">
           <el-input v-model="form.null"></el-input>
         </el-form-item>
-        <el-form-item label="管线种类数量" prop="requiredInput">
+        <el-form-item label="管线种类数量" prop="plnumber">
           <el-input v-model="form.plnumber"></el-input>
         </el-form-item>
-        <el-form-item label="接边点数" prop="requiredInput">
+        <el-form-item label="接边点数" prop="jpoints">
           <el-input v-model="form.jpoints" placeholder="工程类必填"></el-input>
         </el-form-item>
-        <el-form-item label="明显管线点数量" prop="requiredInput">
+        <el-form-item label="明显管线点数量" prop="epoints">
           <el-input v-model="form.epoints"></el-input>
         </el-form-item>
-        <el-form-item label="隐蔽管线点数量" prop="requiredInput">
+        <el-form-item label="隐蔽管线点数量" prop="hpoints">
           <el-input v-model="form.hpoints"></el-input>
         </el-form-item>
         <el-row>
@@ -188,8 +188,9 @@
           <el-button type="primary" style="margin-left: 10px">选择文件</el-button> -->
           <el-upload
             class="upload-demo"
-            action="http://192.168.2.78:1111/psjc/wordInfo/projectInfo"
+            action="http://117.174.10.73:1114/psjc/import/word"
             :on-preview="handlePreview"
+            :headers="Myhead"
             :on-remove="handleRemove"
             :before-remove="beforeRemove"
             multiple
@@ -225,7 +226,7 @@ export default {
       fileList: [],
       // ----------
       multipleSelection: [], // 表格被选中的数据
-      pagination: { current: 1, size: 30 }, // 分页参数信息
+      pagination: { current: 1, size: 10 }, // 分页参数信息
       paginationTotal: 0, // 总页数
       zero: '',
       dialogFormVisible: false,
@@ -265,7 +266,6 @@ export default {
           { required: true, message: '不能为空', trigger: 'blur' },
           { max: 100, message: '内容不能超过100个字符串', trigger: 'blur' }
         ],
-        requiredInput: [{ required: true, message: '不能为空', trigger: 'blur' }],
         prjNo: [
           { max: 20, message: '内容不能超过20个字符串', trigger: 'blur' },
           {
@@ -273,12 +273,6 @@ export default {
             message: '只能输入数字或英文',
             trigger: 'blur'
           }
-        ],
-        jsunit: [{ max: 4, message: '内容不能超过4个字符串', trigger: 'blur' }],
-        sjunit: [{ max: 4, message: '内容不能超过4个字符串', trigger: 'blur' }],
-        tcunit: [
-          { required: true, message: '不能为空', trigger: 'blur' },
-          { max: 4, message: '内容不能超过4个字符串', trigger: 'blur' }
         ],
         sgunit: [{ max: 255, message: '内容不能超过255个字符串', trigger: 'blur' }],
         projectIntroduction: [{ max: 1000, message: '内容不能超过1000个字符串', trigger: 'blur' }]
@@ -341,17 +335,8 @@ export default {
     },
     // ----------
     async addTable() {
-      let res = await addData(this.form)
-      if (res.result) {
-        this.$message({
-          message: '添加成功',
-          type: 'success'
-        })
-      } else {
-        this.$message.error('添加失败')
-      }
-      await this.getDate()
-      this.dialogFormVisible = false
+      await addData(this.form)
+      dialogFormVisible = false
       // this.$store.dispatch('app/toggleSideBarShow', true)
     },
     async updataInfo() {
@@ -375,12 +360,12 @@ export default {
     },
     // 分页触发的事件
     async handleSizeChange(val) {
-      this.pagination.size = val
+      // this.pagination.size = val
       await this.getDate()
       console.log(`每页 ${val} 条`)
     },
     async handleCurrentChange(val) {
-      this.pagination.current = val
+      // this.pagination.currentPage = val
       await this.getDate()
       console.log(`当前页: ${val}`)
     },

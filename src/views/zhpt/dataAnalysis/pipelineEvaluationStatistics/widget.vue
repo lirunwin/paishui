@@ -1,41 +1,36 @@
 <template>
   <div class="engineering-manage">
-    <!-- 管道缺陷分类 -->
+    <!-- 管道评估统计 -->
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
           <div class="title">检测日期：</div>
-          <el-date-picker v-model="value1" type="date" placeholder="年/月/日" class="date-css"> </el-date-picker>
+          <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
           ~
-          <el-date-picker v-model="value1" type="date" placeholder="年/月/日" class="date-css"> </el-date-picker>
-          <div class="title">起始井号：</div>
-          <el-select v-model="form.name" placeholder="--选择井号--">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-          <div class="title">终止井号：</div>
-          <el-select v-model="form.name" placeholder="--选择井号--">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-          <div class="title">缺陷类型：</div>
-          <el-select v-model="form.name" placeholder="--选择缺陷类型--">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-          <div class="title">类型名称：</div>
-          <el-select v-model="form.name" placeholder="">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-
-          <el-button class="serch-btn" style="margin-left: 26px" type="primary"> 查询 </el-button>
-          <el-button class="serch-btn" type="primary"> 导出 </el-button>
+          <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
         </div>
-        <div class="right-btn"></div>
+        <div class="serch-engineering">
+          <div class="title">整改建议：</div>
+          <el-select v-model="form.name" placeholder="--整改建议--">
+            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="区域二" value="beijing"></el-option>
+          </el-select>
+        </div>
+        <div class="serch-engineering">
+          <el-button class="serch-btn" type="primary"> 绘制 </el-button>
+          <el-button class="serch-btn" type="primary"> 清除 </el-button>
+          <el-button class="serch-btn" type="primary"> 查询 </el-button>
+          <el-button class="serch-btn" type="primary"> 导出 </el-button>
+          <div class="right-btn"></div>
+        </div>
       </div>
       <div class="content">
-        <div id="mainA" style="height: 500px"></div>
+        <el-radio v-model="radio" label="1">饼状图</el-radio>
+        <el-radio v-model="radio" label="2">柱状图</el-radio>
+        <el-radio v-model="radioB" label="num">管道数量</el-radio>
+        <el-radio v-model="radioC" label="length">管道长度</el-radio>
+        <h2 style="text-align: center">管道评估统计图</h2>
+        <div id="mainB" style="height: 250px"></div>
         <div style="border: 1px solid #ccc">
           <h3 class="title">管道缺陷分类统计表</h3>
           <ul class="table-content">
@@ -73,6 +68,9 @@ require('echarts/lib/component/title')
 export default {
   data() {
     return {
+      radio: '1', // 单选框的值
+      radioB: '', // 管道数量
+      radioC: '', // 管道长度
       zero: '',
       form: {
         name: '',
@@ -103,126 +101,107 @@ export default {
       }
     }
   },
-  created() {
-    console.log('created生效了吗?')
-  },
   mounted() {
     this.initData()
-    console.log('mounted生效了吗?')
   },
   beforeCreate() {
     console.log('销毁echatrs')
-    document.getElementById('mainA').removeAttribute('_echarts_instance_')
+    document.getElementById('mainB').removeAttribute('_echarts_instance_')
   },
   methods: {
-    //初始化数据
+    //初始化数据(饼状图)
     initData() {
       // 基于准备好的dom，初始化echarts实例
-      let myChart = echarts.init(document.getElementById('mainA'))
+      let myChart = echarts.init(document.getElementById('mainB'))
       // 绘制图表
-      myChart.setOption(
-        {
-          tooltip: {
-            trigger: 'item',
-            formatter: '{a} <br/>{b}: {c} ({d}%)'
-          },
-          legend: {
-            orient: 'vertical',
-            top: '20',
-            right: '20',
-            data: [
-              'Direct',
-              'Marketing',
-              'Search Engine',
-              'Email',
-              'Union Ads',
-              'Video Ads',
-              'Baidu',
-              'Google',
-              'Bing',
-              'Others'
-            ]
-          },
-          series: [
-            {
-              name: 'Access From',
-              type: 'pie',
-              selectedMode: 'single',
-              radius: [0, '30%'],
-              label: {
-                position: 'inner',
-                fontSize: 14
-              },
-              labelLine: {
-                show: false
-              },
-              data: [
-                { value: 1548, name: 'Search Engine' },
-                { value: 775, name: 'Direct' },
-                { value: 679, name: 'Marketing', selected: true }
-              ]
+      if (this.radio == '1') {
+        myChart.setOption(
+          {
+            title: {
+              // text: "某站点用户访问来源", //主标题
+              // subtext: "纯属虚构", //副标题
+              x: 'center' //x轴方向对齐方式
             },
-            {
-              // name: 'Access From',
-              type: 'pie',
-              radius: ['40%', '55%'],
-              // labelLine: {
-              //   length: 30
-              // },
-              label: {
-                formatter: '  {b|{b}：}{c}  {per|{d}%}  ',
-                backgroundColor: '#F6F8FC',
-                borderColor: '#8C8D8E',
-                borderWidth: 1,
-                borderRadius: 4,
-                rich: {
-                  b: {
-                    color: '#4C5058',
-                    fontSize: 14,
-                    fontWeight: 'bold',
-                    lineHeight: 33
-                  },
-                  per: {
-                    color: '#fff',
-                    backgroundColor: '#4C5058',
-                    padding: [3, 4],
-                    borderRadius: 4
+            tooltip: {
+              trigger: 'item',
+              formatter: '{a} <br/>{b} : {c} ({d}%)'
+            },
+            legend: {
+              orient: 'horizontal',
+              // top: '20',
+              // right: '20',
+              data: ['直接访问', '邮件营销', '联盟广告', '视频广告', '搜索引擎']
+            },
+            series: [
+              {
+                name: '访问来源',
+                type: 'pie',
+                radius: '55%',
+                center: ['50%', '60%'],
+                data: [
+                  { value: 335, name: '直接访问' },
+                  { value: 310, name: '邮件营销' },
+                  { value: 234, name: '联盟广告' },
+                  { value: 135, name: '视频广告' },
+                  { value: 1548, name: '搜索引擎' }
+                ],
+                itemStyle: {
+                  emphasis: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
                   }
                 }
+              }
+            ]
+          },
+          true
+        )
+      } else if (this.radio == '2') {
+        myChart.setOption(
+          {
+            legend: {},
+            xAxis: {
+              type: 'category',
+              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            },
+            yAxis: {
+              type: 'value'
+            },
+            series: [
+              {
+                name: '2011',
+                type: 'bar',
+                data: [1803, 2389, 2934, 1470, 1374, 6330]
               },
-              data: [
-                { value: 1048, name: 'Baidu' },
-                { value: 335, name: 'Direct' },
-                { value: 310, name: 'Email' },
-                { value: 251, name: 'Google' },
-                { value: 234, name: 'Union Ads' },
-                { value: 147, name: 'Bing' },
-                { value: 135, name: 'Video Ads' },
-                { value: 102, name: 'Others' }
-              ]
-            }
-          ]
-        },
-        true
-      )
+              {
+                name: '2012',
+                type: 'bar',
+                data: [1325, 2338, 3000, 1254, 3141, 6807]
+              }
+            ]
+          },
+          true
+        )
+      }
+    }
+  },
+  watch: {
+    radio: function (newValue, old) {
+      if (old != newValue) {
+        this.initData()
+      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-ul,
-li {
-  direction: none;
-  padding: 0;
-  margin: 0;
-}
 .engineering-manage {
-  height: 100vh;
   margin: 0;
-  padding: 20px 0;
   box-sizing: border-box;
   position: relative;
+  overflow-y: scroll;
   // 表格样式
   .table-box {
     width: 96%;
@@ -230,8 +209,8 @@ li {
     margin: auto;
     .top-tool {
       display: flex;
-      justify-content: space-between;
-      flex-direction: row;
+      // justify-content: space-between;
+      flex-direction: column;
       // flex-wrap: wrap;
       font-size: 14px;
       /deep/ .serch-engineering {
@@ -282,10 +261,21 @@ li {
     .content {
       height: 92%;
       width: 100%;
-      border: 1px solid #afe7f8;
-      overflow-y: scroll;
+      // overflow-y: scroll;
       padding: 10px;
       box-sizing: border-box;
+      /deep/ .el-radio {
+        margin-right: 9px;
+        .el-radio__label {
+          padding-left: 4px;
+        }
+      }
+      ul,
+      li {
+        direction: none;
+        padding: 0;
+        margin: 0;
+      }
       .title {
         text-align: center;
       }

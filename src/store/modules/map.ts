@@ -132,6 +132,7 @@ const actions = {
   // 切换tab
   changeTab({ commit }, val) {
     commit('CHANGE_TAB', val)
+    console.log("被切换的tab",val)
   },
   // 添加
   changeMethod({ commit }, value) {

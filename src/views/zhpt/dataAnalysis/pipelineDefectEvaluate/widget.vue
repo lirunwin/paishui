@@ -1,10 +1,10 @@
 <template>
   <div class="engineering-manage">
-    <!-- 管道缺陷分类 -->
+    <!-- 管道缺陷评价 -->
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
-          <div class="title">检测日期：</div>
+          <div class="title">检测日期1：</div>
           <el-date-picker v-model="value1" type="date" placeholder="年/月/日" class="date-css"> </el-date-picker>
           ~
           <el-date-picker v-model="value1" type="date" placeholder="年/月/日" class="date-css"> </el-date-picker>
@@ -35,7 +35,7 @@
         <div class="right-btn"></div>
       </div>
       <div class="content">
-        <div id="mainA" style="height: 500px"></div>
+        <div id="mainC" style="height: 500px"></div>
         <div style="border: 1px solid #ccc">
           <h3 class="title">管道缺陷分类统计表</h3>
           <ul class="table-content">
@@ -110,96 +110,53 @@ export default {
     this.initData()
     console.log('mounted生效了吗?')
   },
-  beforeCreate() {
+ beforeCreate() {
     console.log('销毁echatrs')
-    document.getElementById('mainA').removeAttribute('_echarts_instance_')
+    document.getElementById('mainC').removeAttribute('_echarts_instance_')
   },
   methods: {
     //初始化数据
     initData() {
       // 基于准备好的dom，初始化echarts实例
-      let myChart = echarts.init(document.getElementById('mainA'))
+      let myChart = echarts.init(document.getElementById('mainC'))
       // 绘制图表
       myChart.setOption(
         {
+          title: {
+            // text: "某站点用户访问来源", //主标题
+            // subtext: "纯属虚构", //副标题
+            x: 'center' //x轴方向对齐方式
+          },
           tooltip: {
             trigger: 'item',
-            formatter: '{a} <br/>{b}: {c} ({d}%)'
+            formatter: '{a} <br/>{b} : {c} ({d}%)'
           },
           legend: {
             orient: 'vertical',
             top: '20',
             right: '20',
-            data: [
-              'Direct',
-              'Marketing',
-              'Search Engine',
-              'Email',
-              'Union Ads',
-              'Video Ads',
-              'Baidu',
-              'Google',
-              'Bing',
-              'Others'
-            ]
+            data: ['直接访问', '邮件营销', '联盟广告', '视频广告', '搜索引擎']
           },
           series: [
             {
-              name: 'Access From',
+              name: '访问来源',
               type: 'pie',
-              selectedMode: 'single',
-              radius: [0, '30%'],
-              label: {
-                position: 'inner',
-                fontSize: 14
-              },
-              labelLine: {
-                show: false
-              },
+              radius: '55%',
+              center: ['50%', '60%'],
               data: [
-                { value: 1548, name: 'Search Engine' },
-                { value: 775, name: 'Direct' },
-                { value: 679, name: 'Marketing', selected: true }
-              ]
-            },
-            {
-              // name: 'Access From',
-              type: 'pie',
-              radius: ['40%', '55%'],
-              // labelLine: {
-              //   length: 30
-              // },
-              label: {
-                formatter: '  {b|{b}：}{c}  {per|{d}%}  ',
-                backgroundColor: '#F6F8FC',
-                borderColor: '#8C8D8E',
-                borderWidth: 1,
-                borderRadius: 4,
-                rich: {
-                  b: {
-                    color: '#4C5058',
-                    fontSize: 14,
-                    fontWeight: 'bold',
-                    lineHeight: 33
-                  },
-                  per: {
-                    color: '#fff',
-                    backgroundColor: '#4C5058',
-                    padding: [3, 4],
-                    borderRadius: 4
-                  }
+                { value: 335, name: '直接访问' },
+                { value: 310, name: '邮件营销' },
+                { value: 234, name: '联盟广告' },
+                { value: 135, name: '视频广告' },
+                { value: 1548, name: '搜索引擎' }
+              ],
+              itemStyle: {
+                emphasis: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)'
                 }
-              },
-              data: [
-                { value: 1048, name: 'Baidu' },
-                { value: 335, name: 'Direct' },
-                { value: 310, name: 'Email' },
-                { value: 251, name: 'Google' },
-                { value: 234, name: 'Union Ads' },
-                { value: 147, name: 'Bing' },
-                { value: 135, name: 'Video Ads' },
-                { value: 102, name: 'Others' }
-              ]
+              }
             }
           ]
         },
