@@ -1,6 +1,6 @@
 <template>
   <!-- 预警分析 -->
-  <div class="panel-container">
+  <div class="panel-container i-scrollbar">
     <div class="op-box">
       <div class="item-head" style="margin-top:0">预警图层</div>
       <el-form label-width="70px">
@@ -494,4 +494,9 @@ export default {
 
 <style lang="scss" scoped>
 @import './css.scss';
+@import "~@/styles/mixin.scss";
+.i-scrollbar {
+  overflow: auto;
+  @include scrollBar;
+}
 </style>

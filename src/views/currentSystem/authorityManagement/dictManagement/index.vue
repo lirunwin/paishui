@@ -160,7 +160,7 @@
         </el-row> -->
       </el-form>
       <div class="btn-container">
-        <el-button class="btn_float" @click="dialogVisible = false">取消</el-button>
+        <el-button class="btn_float" @click="onCancel">取消</el-button>
         <el-button v-if="currentOp == 'add'" class="btn_float" type="primary" @click="formReset">重置</el-button>
         <el-button v-if="currentOp != 'view'" class="btn_float" type="primary" @click="submitForm">提交</el-button>
       </div>
@@ -242,6 +242,12 @@ export default {
       })
     },
 
+    onCancel() {
+      this.dialogVisible = false
+      const { resetFields } = this.$refs.formData
+      if (resetFields) resetFields()
+    },
+
     //  页码
     handleCurrentChange(currentPage) {
       this.pagination.current = currentPage
@@ -249,8 +255,12 @@ export default {
     },
 
     // 条数
-    handleSizeChange(pagesize) {
-      this.pagination.size = pagesize
+    handleSizeChange(size = 1) {
+      this.pagination = {
+        ...this.pagination,
+        size,
+        current: 1
+      }
       this.queryDictTypeList()
     },
 
@@ -293,9 +303,6 @@ export default {
             })
           }
           return true
-        } else {
-          this.$message.error('请检查填写是否正确')
-          return false
         }
       })
     },
@@ -328,6 +335,7 @@ export default {
                 type: 'success',
                 message: '删除成功!'
               })
+              this.dicType = {}
             } else {
               this.$message({
                 type: 'error',

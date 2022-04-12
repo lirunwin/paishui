@@ -58,7 +58,7 @@ div:focus {
     visibility: hidden;
     display: block;
     font-size: 0;
-    content: " ";
+    content: ' ';
     clear: both;
     height: 0;
   }
@@ -172,7 +172,7 @@ div:focus {
 .border-right-1px::after,
 .border-bottom-1px::after,
 .border-left-1px::after {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   -webkit-transform-origin: 0 0;
@@ -270,3 +270,7 @@ div:focus {
 //   justify-content: center;
 //   align-items: center;
 // }
+
+.el-tooltip__popper {
+  max-width: 80vw;
+}

@@ -61,7 +61,7 @@
         <el-option v-for="item in userList" :key="item.id" :label="item.realName" :value="item.id" />
       </el-select>
       <div class="btn_box">
-        <el-button type="primary" size="small" @click="query">查询</el-button>
+        <el-button type="primary" size="small" @click="onQuery">查询</el-button>
         <el-button v-if="!btnFlag" type="primary" size="small" @click="retreat">返回</el-button>
       </div>
     </div>
@@ -383,6 +383,11 @@ export default class Journal extends Vue {
     }
   }
 
+  onQuery() {
+    this.pagination = { ...this.pagination, current: 1 }
+    this.query()
+  }
+
   // 查询全部
   queryAll() {
     this.fetchData(this.pagination)
@@ -394,8 +399,12 @@ export default class Journal extends Vue {
   }
 
   // 条数
-  handleSizeChange(pagesize) {
-    this.pagination.size = pagesize
+  handleSizeChange(size = 1) {
+    this.pagination = {
+      ...this.pagination,
+      size,
+      current: 1
+    }
     this.query()
   }
 
@@ -470,7 +479,7 @@ export default class Journal extends Vue {
   getDeptUserList() {
     if (!this.btnFlag) {
       let deptId = this.postSearch.deptId
-      console.log('部门编码：' + deptId)
+      // console.log('部门编码：' + deptId)
 
       let data = {
         userLevel: 1,

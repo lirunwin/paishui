@@ -359,7 +359,7 @@
                 <span class="title">用户头像：</span>
                 <img v-if="detailInfo.avatar !== null" :src="detailInfo.avatar" />
               </el-row>
-              <el-row> <span class="title">工作职责：</span><span v-html="detailInfo.jobduties" /> </el-row>
+              <el-row> <span class="title">工作职责：</span><span v-html="detailInfo.note" /> </el-row>
             </el-col>
           </el-row>
         </el-collapse-item>
@@ -495,6 +495,11 @@ export default class UserRights extends Vue {
       width: 120,
       prop: 'job',
       sortable: true
+    },
+    {
+      label: '工作职责',
+      width: 150,
+      prop: 'note'
     },
     {
       label: '创建类型',
@@ -761,7 +766,7 @@ export default class UserRights extends Vue {
     const arr = [this.multipleSelection[0].avatar, this.multipleSelection[0].esignature]
     arr.forEach((item, index) => {
       imageByName(item).then((res) => {
-        debugger
+        // debugger
         if (res.status === 200) {
           index === 1
             ? (this.multipleSelection[0].esignature = res.config.url)
@@ -891,8 +896,12 @@ export default class UserRights extends Vue {
     this.onSubmit()
   }
 
-  handleSizeChange(pagesize) {
-    this.pagination.size = pagesize
+  handleSizeChange(size = 1) {
+    this.pagination = {
+      ...this.pagination,
+      size,
+      current: 1
+    }
     this.onSubmit()
   }
 

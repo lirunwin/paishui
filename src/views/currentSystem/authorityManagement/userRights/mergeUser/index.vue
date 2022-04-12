@@ -233,10 +233,6 @@ export default class MergeUser extends Vue {
           _this.editSubmit(data)
         }
         return true
-      } else {
-        // _this.$message.error('请检查填写是否正确')
-        // _this.$emit('remind', '失败')
-        return false
       }
     })
   }
@@ -305,7 +301,7 @@ export default class MergeUser extends Vue {
    */
   getCopyDeptUserList() {
     let deptId = this.ruleForm.departmentId
-    console.log('部门编码：' + deptId)
+    // console.log('部门编码：' + deptId)
 
     let data = {
       userLevel: 1,

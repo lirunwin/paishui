@@ -7,9 +7,9 @@
     <el-row type="flex" style="margin-bottom: 20px">
       <el-col :span="10">
         <el-button type="primary" size="small" @click="handleClick('add')">新增</el-button>
-        <!-- <el-button type="primary" size="small" :disabled="unitTreeSelect.length !== 1" @click="handleClick('edit')"
+        <el-button type="primary" size="small" :disabled="unitTreeSelect.length !== 1" @click="handleClick('edit')"
           >修改</el-button
-        > -->
+        >
         <!-- <el-button
           type="primary"
           size="small"
@@ -51,6 +51,7 @@
       border
       default-expand-all
       @row-dblclick="handleDbclick"
+      @select-all="searchTableSelect"
       @select="handleSelectionChange"
       :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
     >
@@ -60,9 +61,30 @@
       </template>
       <!-- <el-table-column type="selection" align='center' width="55"  /> -->
       <!-- <el-table-column type="index" width="50" label="序号" /> -->
-      <el-table-column prop="name" header-align="center" sortable label="部门名称" show-overflow-tooltip />
-      <el-table-column prop="shortName" align="center" sortable label="简称" show-overflow-tooltip />
-      <el-table-column prop="code" align="center" sortable label="部门编码" show-overflow-tooltip />
+      <el-table-column
+        prop="name"
+        header-align="center"
+        :formatter="formatter"
+        sortable
+        label="部门名称"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="shortName"
+        align="center"
+        :formatter="formatter"
+        sortable
+        label="简称"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="code"
+        align="center"
+        :formatter="formatter"
+        sortable
+        label="部门编码"
+        show-overflow-tooltip
+      />
       <el-table-column label="操作" align="center" width="100">
         <template slot-scope="scope">
           <el-button type="text" size="small" @click="handelDelete(scope.row)">删除</el-button>
@@ -226,11 +248,8 @@ export default class Section extends Vue {
   // 新增部门/单位
   addNewUnit() {
     addSection(this.department).then((res) => {
-      if (res.code === 1) {
-        this.dialog = false
-        this.$message({ type: 'success', message: '添加成功!' })
-        this.getAllUnit()
-      }
+      this.dialog = false
+      this.getAllUnit()
     })
   }
   // // 批量导入
@@ -261,7 +280,10 @@ export default class Section extends Vue {
     } else data = this.unitTreeSelect.map((item) => item.id).join(',')
     deleteSection({ ids: data }).then((res) => {
       if (res.code !== -1) {
-        this.$message({ type: 'success', message: '删除成功!' })
+        this.$message({
+          type: 'success',
+          message: '删除成功!'
+        })
         this.getAllUnit()
       }
     })
@@ -269,11 +291,8 @@ export default class Section extends Vue {
   // 编辑部门/单位
   editUnit() {
     editSection(this.department).then((res) => {
-      if (res.code === 1) {
-        this.dialog = false
-        this.$message({ type: 'success', message: '修改成功!' })
-        this.getAllUnit()
-      }
+      this.dialog = false
+      this.getAllUnit()
     })
   }
   // // 获取单位
@@ -375,13 +394,19 @@ export default class Section extends Vue {
       .then(() => {
         deleteSection({ ids: data.id.toString() }).then((res) => {
           if (res.code !== -1) {
-            this.$message({ type: 'success', message: '删除成功!' })
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            })
             this.getAllUnit()
           }
         })
       })
       .catch(() => {
-        this.$message({ type: 'info', message: '已取消删除' })
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
       })
   }
 
