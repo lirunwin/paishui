@@ -49,6 +49,7 @@ export default class iDraw {
             style: comSymbol.getAllStyle(7, "#f40", 5, "#7BDCFE")
         })
         this.map.addLayer(this.vectorLayer);
+        this.vectorLayer.setZIndex(99)
     }
 
     start () {

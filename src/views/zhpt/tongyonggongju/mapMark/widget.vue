@@ -37,7 +37,7 @@
           @current-change="listRefersh" @size-change="listRefersh" />
         </el-col>
         <el-col :span="4">
-          <span ref='pageLength' style="font-size: 13px;" class="el-pagination__total">1/30 页</span>
+          <span ref='pageLength' style="font-size: 13px;" class="el-pagination__total">1/10 页</span>
         </el-col>
       </el-row>
       <el-row style="margin-top: 8px" >

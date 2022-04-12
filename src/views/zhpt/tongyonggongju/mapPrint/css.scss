@@ -1,0 +1,41 @@
+.panel-container {
+    margin-bottom: 20px;
+  
+    .item-head {
+      font-size: 14px;
+      font-family: Source Han Sans CN;
+      color: #333333;
+      line-height: 18px;
+      margin: 10px 0;
+      font-weight: 600;
+  
+      &::before {
+        content: '';
+        display: inline-block;
+        width: 3px;
+        height: 12px;
+        background: #2a77f7;
+        vertical-align: middle;
+        margin-right: 5px;
+      }
+    }
+  
+    .el-input-number>>>.el-input__inner {
+      text-align: left;
+    }
+  
+    .op-box {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+  
+      .item-close {
+        cursor: pointer;
+  
+        &:hover {
+          color: #f40;
+        }
+      }
+    }
+  }
+  

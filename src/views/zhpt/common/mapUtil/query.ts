@@ -1,5 +1,10 @@
 import { SuperMap, FeatureService } from '@supermap/iclient-ol';
 import GeoJSON from 'ol/format/GeoJSON';
+import Feature from 'ol/Feature';
+import { Circle, LineString } from 'ol/geom';
+import * as olSphere from 'ol/sphere';
+import * as turf from '@turf/turf'
+
 
 export default class iQuery {
 
@@ -28,18 +33,31 @@ export default class iQuery {
     
     // 空间查询
     spaceQuery (queryFeature) {
+        if (!(queryFeature instanceof Feature)) {
+            queryFeature = new GeoJSON().readFeature(queryFeature)
+        } else if (queryFeature.getGeometry() instanceof Circle) {
+            // 空间查询 不支持圆, 把圆转换为点 buffer
+            let center = queryFeature.getGeometry().getCenter()
+            let radius = queryFeature.getGeometry().getRadius()
+            let dis = olSphere.getLength(new LineString([center, [center[0] + radius, center[1]]]), { projection: "EPSG:4326" })
+            queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(center), dis / 1000, { units: 'kilometers' }))
+        }
         let queryPromises = this.dataSetInfo.map(info => {
+            let layerName = info.name
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesByGeometryParameters({
                     toIndex: -1,
                     maxFeatures: 1e3,
                     datasetNames: [this.dataSource + ':' + info.name],
-                    geometry: new GeoJSON().readFeature(queryFeature).getGeometry(),
+                    geometry: queryFeature.getGeometry(),
                     spatialQueryMode: "INTERSECT" // 相交空间查询模式
                 })
                 this.featureService.getFeaturesByGeometry(params, result => {
                     if (result.type == "processFailed") resolve(null);
-                    else resolve(result);
+                    else {
+                        result.layerName = layerName
+                        resolve(result)
+                    };
                 })
             })
         })
@@ -50,6 +68,7 @@ export default class iQuery {
     sqlQuery (sqlStr) {
         console.log("sql过滤条件", sqlStr)
         let queryPromises = this.dataSetInfo.map(info => {
+            let layerName = info.name
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesBySQLParameters({
                     maxFeatures: 1e4,
@@ -59,7 +78,10 @@ export default class iQuery {
                 })
                 this.featureService.getFeaturesBySQL(params, result => {
                     if (result.type == "processFailed") resolve(null);
-                    else resolve(result);
+                    else {
+                        result.layerName = layerName
+                        resolve(result)
+                    };
                 })
             })
         })
