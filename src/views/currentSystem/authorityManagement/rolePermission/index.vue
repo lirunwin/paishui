@@ -338,7 +338,7 @@ export default class RolePermission extends Vue {
   handleSelectionChange(value) {
     this.multipleSelection = value
     this.$refs.form['resetFields']()
-    console.log('1111', value)
+    // console.log('1111', value)
   }
   // 修改
   handleEdit() {
