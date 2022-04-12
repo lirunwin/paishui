@@ -69,9 +69,10 @@
 <script lang="ts">
 import { getParams, saveParams } from './api/index.js'
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-@Component({
-  name: 'ParamSetting'
-})
+
+const toNumber = (val?: string): number => (val ? +val : -1)
+
+@Component({ name: 'ParamSetting' })
 export default class ParamSetting extends Vue {
   tabList = [{ name: 'paramSetting', label: 'APP端参数设置' }, { name: 'Web', label: '系统轨迹参数设置' }]
   activeName = 'paramSetting'
@@ -100,7 +101,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '人巡最快速度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: (val) => (val ? +val : -1) }
+        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber }
       ],
       title: '人员人巡模式下巡查过程中最快的速度，当大于此速度时，系统判断此人员未到位'
     },
@@ -110,7 +111,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '人巡最大到位容差不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '容差必须为大于0的数字值', transform: (val) => (val ? +val : -1) }
+        { type: 'number', min: 0, message: '容差必须为大于0的数字值', transform: toNumber }
       ],
       title: '人员人巡模式下巡查过程中，巡查地物在此距离范围内，系统认为人员已巡查到位'
     },
@@ -120,7 +121,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '车巡最快速度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: (val) => (val ? +val : -1) }
+        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber }
       ],
       title: '人员巡查任务切换到车巡模式时，人员巡查最快的速度，当大于此速度，系统判断此人员未到位'
     },
@@ -130,7 +131,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '车巡最大到位容差不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '容差必须为大于0的数字值', transform: (val) => (val ? +val : -1) }
+        { type: 'number', min: 0, message: '容差必须为大于0的数字值', transform: toNumber }
       ],
       title: '人员巡查任务切换到车巡模式时，巡查地物在此距离范围内，系统认为人员已巡查到位'
     },
@@ -140,7 +141,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '上传频率不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '频率必须为大于0的数字值', transform: (val) => (val ? +val : -1) }
+        { type: 'number', min: 0, message: '频率必须为大于0的数字值', transform: toNumber }
       ],
       title: 'app端登录签到上班后，手机位置坐标上传频率'
     },
@@ -150,7 +151,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '轨迹最大速度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: (val) => (val ? +val : -1) }
+        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber }
       ],
       title: '人员登录签到上班后，上传时的位置坐标时，当速度大于此速度，此位置不参与人员轨迹绘制'
     },
@@ -191,7 +192,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '轨迹点细度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '轨迹点细度必须为大于0的数字值', transform: (val) => (val ? +val : -1) }
+        { type: 'number', min: 0, message: '轨迹点细度必须为大于0的数字值', transform: toNumber }
       ],
       title: '轨迹上点的大小'
     },
@@ -201,7 +202,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '轨迹线细度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '轨迹线细度必须为大于0的数字值', transform: (val) => (val ? +val : -1) }
+        { type: 'number', min: 0, message: '轨迹线细度必须为大于0的数字值', transform: toNumber }
       ],
       title: '轨迹线的粗细'
     }
