@@ -167,11 +167,7 @@ export default {
       })
     },
     activeName(e) {
-      this.printRect.visible = e != 'listShow'
-      var view = this.mapView
-      var draw = view.TF_draw
-      if(draw.activeAction) draw.reset()
-      view.container.style.cursor = ''    
+         
     },
     space(value) {
       this.drawer && this.drawer.end()

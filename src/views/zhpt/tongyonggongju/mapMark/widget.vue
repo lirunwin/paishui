@@ -50,7 +50,7 @@
 <script>
 import { esriConfig } from 'staticPub/config'
 import tfLegend from '@/views/zhpt/common/Legend'
-import request from '@/utils/request'
+import { getMapMark, addMapMark, deleteMapMark } from '@/api/mainMap/mapMark'
 
 export default {
   name: 'MapMark',
@@ -66,6 +66,7 @@ export default {
   },
   mounted() {
     this.mapView = this.$attrs.data.mapView
+    console.log("初始化表格")
     this.listRefersh(1, 10)
   },
   methods: {
@@ -76,16 +77,11 @@ export default {
       if(!markName) return this.$message.error('请输入书签名称');
       if(!mark) return this.$message.error('请输入书签描述');
       var center = view.center
-      request({
-        url: 'gis/views', method: 'post',
-        data: {
-          name: markName,
-          notes: mark,
-          extent: JSON.stringify({ center: [center.longitude, center.latitude], zoom: view.zoom })
-        }
-      }).then(res => {
-        if(res.code == 1) {          this.queName
-      var mark = this.queMark
+
+      // TODO
+      addMark({}).then(res => {
+        if (res.code === 1) {
+          let mark = this.queMark
           this.$message.success('添加书签：' + markName + ' 成功');
           this.queName = this.queMark = ''
           this.listRefersh()
@@ -100,10 +96,8 @@ export default {
         '确定删除选中的 ' + selects.length + '条书签？', '提示',
         { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }
       ).then(() => {
-        request({
-          url: 'gis/views/deleteByIds?&ids=' + selects.map((e) => e.id).join(','), 
-          method: 'delete'
-        }).then(res => {
+        // TODO
+        deleteMapMark({}).then(res => {
           if(res.code == 1) {            
             this.$message("已删除");
             this.$refs.pagination.internalCurrentPage = 1
@@ -114,10 +108,7 @@ export default {
     },
     listRefersh() {
       var pages = this.$refs.pagination
-      request({
-        url: 'gis/views/getMe?&current=' + pages.internalCurrentPage + '&size=' + pages.internalPageSize, 
-        method: 'get'
-      }).then(res => {
+      getMapMark().then(res => {
         if(res.code == 1) {
           res = res.result
           this.total = res.total
