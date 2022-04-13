@@ -375,7 +375,7 @@ export default {
       function createThemLayer () {
         return new VectorLayer({
           source: new VectorSource(),
-          style: comSymbol.getAllStyle(3, "#f40", 2, "#7BDCFE")
+          style: comSymbol.getAllStyle(3, "#f40", 2, "#C0DB8D")
         })
       }
     },

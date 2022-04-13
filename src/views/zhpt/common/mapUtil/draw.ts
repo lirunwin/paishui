@@ -46,7 +46,7 @@ export default class iDraw {
         this.vectorSource = new VectorSource({ wrapX: false })
         this.vectorLayer = new VectorLayer({ 
             source: this.vectorSource,
-            style: comSymbol.getAllStyle(7, "#f40", 5, "#7BDCFE")
+            style: comSymbol.getAllStyle(7, "#f40", 5, "#C0DB8D")
         })
         this.map.addLayer(this.vectorLayer);
         this.vectorLayer.setZIndex(99)
@@ -61,7 +61,7 @@ export default class iDraw {
             source: this.vectorSource,
             type: this.drawType[this.type],
             maxPoints: null,
-            style: comSymbol.getDrawStyle(7, "#f40", 5, "#7BDCFE"),
+            style: comSymbol.getDrawStyle(7, "#f40", 5, "#C0DB8D"),
             condition: evt => {
                 return true
             },

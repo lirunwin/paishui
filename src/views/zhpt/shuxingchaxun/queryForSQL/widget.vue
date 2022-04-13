@@ -1,9 +1,9 @@
 <template>
   <!-- 查询统计---综合查询 -->
-  <div style="padding: 0 8px;overflow-y:auto;">    
+  <div style="padding: 0 8px;overflow-y:auto;" class="i-scrollbar">    
     <tf-legend class="legend_dept" label="图层名称" isopen="true" title="选择将要进行查询的图层。">
       <el-select v-model="layerId" placeholder="请选择">
-        <el-option v-for="item in layersAtt" :key="item.value" :label="item.label" :value="item.value"/>
+        <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.value"/>
       </el-select>
     </tf-legend>
     <tf-legend class="legend_dept" label="图层字段" isopen="true" title="选择将要查询的字段。">
@@ -15,31 +15,27 @@
     </tf-legend>
     <tf-legend class="legend_dept" label="构造查询语句" isopen="true" title="查询条件的计算逻辑，及图层属性字段对应的唯一值。">
       <div style="width: 100%">
-        <div style="width: 130px; float: left">
+        <div style="width: 100%; float: left">
           <div style="margin-bottom: 3px">
             <el-button size="mini" type="primary" plain @click="addText('=', 2)" style="width:56px">＝</el-button>
             <el-button size="mini" type="primary" plain @click="addText('like \'%%\'', 7)" style="width:56px">模糊</el-button>
+            <el-button size="mini" type="primary" plain @click="addText('<>', 3)" style="width:56px">≠</el-button>
+            <el-button size="mini" type="primary" plain @click="addText('and ', 4)" style="width:56px">与</el-button>
           </div>
           <div style="margin-bottom: 3px">
             <el-button size="mini" type="primary" plain @click="addText('>', 2)" style="width:56px">＞</el-button>
             <el-button size="mini" type="primary" plain @click="addText('<', 2)" style="width:56px">＜</el-button>
-          </div>
-          <div style="margin-bottom: 3px">
-            <el-button size="mini" type="primary" plain @click="addText('<>', 3)" style="width:56px">≠</el-button>
-            <el-button size="mini" type="primary" plain @click="addText('and ', 4)" style="width:56px">与</el-button>
-          </div>
-          <div>
             <el-button size="mini" type="primary" plain @click="addText('or ', 3)" style="width:56px">或</el-button>
             <el-button size="mini" type="primary" plain @click="addText('% ', 2)" style="width:56px">占位</el-button>
           </div>
         </div>
-        <div style="width: calc(100% - 130px); float: right">
+        <!-- <div style="width: calc(100% - 130px); float: right">
           <ul class="sqlQueryUl" style="height: 120px" v-loading="fixLoading">
             <li v-for="(item, id) in layerFix" :key="id" @click="addText('\'' + item + '\' ', item.length + 3)">{{ item }}</li>
             <span style="color: #C0C4CC;letter-spacing: 1px;margin-left: 5px;"
                   v-if="!layerFix.length">请选择字段</span>
           </ul>
-        </div>
+        </div> -->
       </div>
     </tf-legend>
     <tf-legend class="legend_dept" label="组合查询条件" isopen="true" style="clear: both" title="选择字段、属性及构造语句组合成查询过滤的语句，通过构建的条件过滤数据。">    
@@ -73,16 +69,25 @@
 </template>
 
 <script>
-import { esriConfig, appconfig } from 'staticPub/config'
+import { appconfig } from 'staticPub/config'
 import tfLegend from "@/views/zhpt/common/Legend";
-import { loadModules } from 'esri-loader'
-// import { stuffWorkTimeStatistic } from '../../wxreportforms/api/reportFormApis';
+
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import GeoJSON from 'ol/format/GeoJSON';
+import { Vector as VectorSource } from "ol/source";
+import { Vector as VectorLayer } from "ol/layer";
+import { comSymbol } from "@/utils/comSymbol";
+import { Polygon, LineString, Point } from 'ol/geom';
+import * as turf from '@turf/turf';
+import { fieldDoc } from '@/views/zhpt/common/doc'
+import { getThemLayer, addThemLayer, deleteThemLayer } from '@/api/mainMap/themMap'
+import { SuperMap, FieldService, FeatureService, FieldParameters } from '@supermap/iclient-ol';
+
 export default {
   name: "QueryForSQL",
   components: { tfLegend },
-  props: {
-    param: Object
-  },
+  props: { data: Object },
   data() {
     return {
       attLoading: false,
@@ -103,6 +108,11 @@ export default {
       Extent:null,
       analysisDisable: false,
       queryLayer:null,
+
+      // add
+      limitFeature: null, // 绘制图形
+      drawer: null,
+      layers: []
     }
   },
   computed: { 
@@ -110,113 +120,49 @@ export default {
   },
   watch: {
     layerId(e) {
-      if(!e) return
-      let seed = new Date().getTime()
-      this.layerLoadSeed = seed
-      this.analysisAtt = []
-      this.attLoading = true
-      $.ajax({
-        url: appconfig.gisResource.business_map.config[0].url + "/" + e + "/?f=pjson",
-        type: 'GET',
-        success: (data) => {
-          if(this.layerLoadSeed != seed) return
-          this.attLoading = false
-          this.layerLoadSeed = undefined
-          data = JSON.parse(data).fields
-          if(!data) return this.$message.error('图层信息获取失败')
-          this.analysisAtt = data.map((df) => { return { value: df.name, label: df.alias } })
-        },
-        error: (error) => this.$message.error(error)
+      if(!e) return 
+      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      this.getServerFields(dataServer, this.layerId).then(fields => {
+        if (fields) {
+          this.analysisAtt = fields.map(field => {
+            return { label: fieldDoc[field] || field, value: field }
+          })
+        } else this.$message.error("获取字段失败")
       })
     },
     sidePanelOn(newTab, oldTab) {
-      if(newTab == oldTab) return
-      if(newTab == 'queryForSQL') {
-        this.$nextTick(() => {
-          this.printRect.visible = true
-        })  
-      } 
-      if(oldTab == 'queryForSQL') {
-        this.printRect.visible = false
-        var view = this.mapView
-        var draw = view.TF_draw
-        if(draw.activeAction) draw.reset()
-        view.container.style.cursor = ''
-      }
+
     },
     queText(newValue,oldValue){
       if(newValue.length < oldValue.length || newValue=="") this.queTextName = '';
     }
   },
   mounted: function () {
-    var that = this
-    this.initLoad()
-    this.mapView = this.$attrs.data.mapView
-    var layerIndex = this.layersIndex = {}
-    this.printRect = new this.mapView.TF_graphic({
-      geometry: { type: 'polygon', rings: [[[0,0]]], spatialReference: this.mapView.spatialReference },
-      symbol: { type: 'simple-fill', color: [0, 0, 0, 0.1], outline: { color: [45, 116, 231, 1], width: "1px" } }
-    })
-    this.mapView.graphics.add(this.printRect)
-    $.ajax({
-      url: appconfig.gisResource.business_map.config[0].url + "/?f=pjson",
-      type: 'GET',
-      success: function(data) {
-        data = JSON.parse(data).layers
-        var tId = [];
-        for(let i=0,ii=data.length;i<ii;i++){
-          var layer = data[i]
-          // if([0, 16, 17].indexOf(layer.id) < 0){
-          //   tId.push({ value: layer.id, label: layer.name })
-          //   layerIndex[layer.id] = layer.name
-          // }
-          if(layer.parentLayerId != -1){
-            tId.push({ value: layer.id, label: layer.name })
-            layerIndex[layer.id] = layer.name
-          }
-        }
-        that.layersAtt = tId
-      },
-      error: (error) => { console.log(error) }
-    })
-    this.finalCheck = undefined
+      let { layers, dataServer } = appconfig.gisResource["iserver_resource"]
+      let netLayers = layers.filter(layer => layer.parentname === "管线")
+
+      // 设置图层
+      this.layers = netLayers.map(layer => {
+        return { label: layer.name, value: layer.name }
+      })
+
+      var mapView = this.mapView = this.data.mapView
+
   },
   methods: {
-    initLoad() {
-      loadModules([
-        'esri/Map', 'esri/views/MapView',
-        'esri/layers/WebTileLayer', 'esri/Basemap',
-        'esri/layers/TileLayer', 'esri/layers/MapImageLayer',
-        'esri/layers/support/LOD', 'esri/config', 'esri/layers/GraphicsLayer',
-        'esri/Graphic', 'esri/views/draw/Draw', 'esri/geometry/geometryEngine', 'esri/geometry/Extent'
-      ], { url: esriConfig.baseUrl }
-      ).then(([Map, MapView, WebTileLayer, Basemap, TileLayer, MapImageLayer, Lod, mapConfig, GraphicsLayer, Graphic, Draw, GeometryEngine, Extent]) => {
-        this.Extent = Extent;
-      })
-    },
-    getAtt: function(field) {
-      let seed = new Date().getTime()
-      this.attLoadSeed = seed
-      this.fixLoading = true
-      $.ajax({
-        url: appconfig.gisResource.fieldUniqueValue.config[0].url,
-        type: 'POST',
-        data: {
-          usertoken: appconfig.usertoken,
-          layerid: this.layerId,
-          field_name: field,
-          f: 'pjson'
-        },
-        success: (data) => {
-          if(this.attLoadSeed != seed) return
-          this.fixLoading = false
-          this.attLoadSeed = undefined
-          data = JSON.parse(data)
-          if(data.code != 10000) return this.$message.error('图层字段获取失败')
-          this.layerFix = data.result.rows
-          if(data.result.rows.length == 0) this.$message.error('字段无唯一值')
-        },
-        error: (error) => this.$message.error(error)
+    // 获取服务字段
+    getServerFields ({ dataServiceUrl, dataSource }, dataSet) {
+      return new Promise(resolve => {
+        // 设置数据集，数据源
+        var param = new SuperMap.FieldParameters({
+          datasource: dataSource,
+          dataset: dataSet
+        });
+        // 创建字段查询实例
+        new FieldService(dataServiceUrl).getFields(param, serviceResult => {
+          if (serviceResult.type === "processFailed") resolve(null) 
+          else resolve(serviceResult.result.fieldNames)
+        });
       })
     },
     addText: function (text, length, isField) {   
@@ -232,7 +178,6 @@ export default {
         myField.selectionStart = myField.selectionEnd = startL + length;
         myField.focus();
       });
-      if(isField) this.getAtt(text.replace(/(\s*$)/g,""))
     },
     languageChange(text, length, isField){
       if(isField){
@@ -252,32 +197,20 @@ export default {
         this.queTextName = this.queTextName +  text;
       }
     },
+    // 绘制
     drawRect: function() {
-      var view = this.mapView
-      var sp = view.spatialReference
-      var draw = view.TF_draw
-      if(draw.activeAction) draw.reset()
-      view.TF_drawPolygon(() => {view.container.style.cursor = 'crosshair'}, () => {}, 
-      (evt) => {
-        var v = evt.vertices
-        if (v.length > 1)
-          this.printRect.geometry = {
-            type: 'polygon', rings: v, spatialReference: sp
-          } 
-      }, () => {
-        this.haveRect = true
-        draw.reset()
-        view.container.style.cursor = ''
+      this.drawer = new iDraw(this.mapView, "polygon", {
+        showCloser: false,
+        endDrawCallBack: featrue => {
+          this.limitFeature = featrue
+          this.drawer.remove()
+        }
       })
+      this.drawer.start()
     },
 
-    clearRect: function () {      
-      this.haveRect = false
-      var view = this.mapView
-      var draw = view.TF_draw
-      if(draw.activeAction) draw.reset()
-      this.printRect.geometry = { type: 'polygon', rings: [[[0,0]]], spatialReference: view.spatialReference }
-      view.container.style.cursor = ''
+    clearRect: function () {
+      this.drawer && this.drawer.end()
     },
 
     clearAll() {
@@ -285,97 +218,98 @@ export default {
       this.analysisAtt = []
       this.layerFix = []
       this.queText = ''
-      this.seed = undefined
-      var view = this.mapView
-      if(view.TF_resultFeatures) view.TF_resultFeatures.destroy('QueryForSQL')
-      var draw = view.TF_draw
-      if(draw.activeAction) draw.reset()
-      this.printRect.geometry = { type: 'polygon', rings: [[[0,0]]], spatialReference: view.spatialReference }
       view.container.style.cursor = ''
-      this.haveRect = false
-      this.finalData = [];
-      let mapView =this.$attrs.data.mapView;
-      if(this.queryLayer) mapView.map.remove(this.queryLayer);
+      this.queryLayer && this.mapView.removeLayer(this.queryLayer)
+      this.queryLayer = null
     },
     
     /**
     * 点击查询事件
     */
     queryResult() {
-      let seed = new Date().getTime()
-      this.seed = seed
-      this.analysisDisable = true
-      var queText = this.queText.replace(/^\s*|\s*$/g,"")
-      var geo = this.haveRect ? JSON.stringify(this.printRect.geometry.toJSON()) : undefined
-      var layer = this.layerId
-      if(!layer) this.$message.error('请选中图层')
-      var outFields = 'OBJECTID', hasPipe;
-      //if(hasPipe = [13, 14].indexOf(layer) > 0) outFields += ',PIPELENGTH'
-      let layerCurr = this.layersAtt.find(item => item.value == this.layerId);
-      if(layerCurr && (layerCurr.label == '管线' || layerCurr.label == '立管')){
-        outFields += ',PIPELENGTH';
-        hasPipe = true;
-      }
-      $.ajax({
-        url: appconfig.gisResource.business_map.config[0].url + "/" + layer + "/query",
-        type: 'POST',
-        data: {
-          where: queText || '1=1',
-          geometry: geo,
-          geometryType: geo == '' ? undefined : 'esriGeometryPolygon',
-          outFields: outFields,
-          f: 'pjson'
-        },  
-        success: (data) => {
-          if(this.seed != seed) return
-          //查询中图标状态隐藏
-          this.analysisDisable = false
-          data = JSON.parse(data)
-          if(data.hasOwnProperty('error')) {
-            this.finalData = []
-            switch(data.error.code) {
-              case 400: 
-                return this.$message.error('SQL查询语句出错')
-              default: 
-                return this.$message.error(data.error.message)
+      if (!this.layerId) return this.$message.error('请选择查询图层名称')
+      if (!this.queText) return this.$message.error('请选择查询图层过滤条件')
+
+      this.queryLayer && this.mapView.removeLayer(this.queryLayer)
+      this.queryLayer = null
+      this.finalData = []
+      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      let dataSetInfo = dataServer.dataSetInfo.filter(info => info.name === this.layerId)
+      
+      let queryTask = new iQuery({...dataServer, dataSetInfo })
+      queryTask.sqlQuery(this.queText).then(resArr => {
+        if (!resArr) return this.$message.error("服务器请求失败!")
+
+        let featruesData = resArr.filter(item => {
+          return item.result.featureCount !== 0
+        })
+        //  添加表格数据 
+        
+        // 绘制图层
+        if (featruesData.length !== 0) {
+          this.queryLayer = this.queryLayer || createThemLayer()
+          this.mapView.addLayer(this.queryLayer)
+
+          featruesData.forEach(featrueObj => {
+            let features = featrueObj.result.features.features
+            let themFeatures = features.map(feature => new GeoJSON().readFeature(feature))
+
+            let layerName = featrueObj.layerName
+            // 范围限制
+            if (this.limitFeature) {
+              themFeatures = themFeatures.filter(feature => {
+                let limitGeometry = turf.polygon(this.limitFeature.getGeometry().getCoordinates())
+                let geomtry = feature.getGeometry(), inGeometry
+                if (geomtry instanceof Point) {
+                  inGeometry = turf.point(geomtry.getCoordinates())
+                } else if (geomtry instanceof LineString) {
+                  inGeometry = turf.lineString(geomtry.getCoordinates())
+                } else return false
+                return turf.booleanContains(limitGeometry, inGeometry)
+              })
             }
-          }
-          if(data.features.length < 1) return this.$message("无查询结果")
-          var dataTable = this.panel.param.dataTable = []
-          dataTable.push({
-            tableIndex: layer,
-            tableName: this.layersIndex[layer]
+            //
+            this.queryLayer.getSource().addFeatures(themFeatures)
+            this.addResData(layerName, themFeatures)
           })
-          var oids = []
-          var n = 0, l = 0
-          
-          for(var i=0,il=data.features,ii=il.length;i<ii;i++) {
-            var att = il[i].attributes
-            oids.push(att.OBJECTID)
-            n += 1
-            if(hasPipe) l += parseFloat(att.PIPELENGTH)
-          }
-          this.$message('返回结果：' + n + '条')
-          this.finalData = [{ name: this.layersIndex[layer], value: n, length: l}]
-          this.panel.param = {
-            oids: oids,
-            layer: layer
-          }
-          this.showAllHighlight(data);
-        },
-        error: (error) => { console.log(error) }
+        } else return this.$message.error("无符合过滤条件数据")
+      })
+
+      function createThemLayer () {
+        return new VectorLayer({
+          source: new VectorSource(),
+          style: comSymbol.getAllStyle(3, "#f40", 5, "#C0DB8D")
+        })
+      }
+    },
+    addResData (layerName, features) {
+      const lengthField = 'SMLENGTH'
+      let sumLength = features.reduce((prev, next) => {
+        return { values_: { "SMLENGTH": Number(prev.values_[lengthField] || 0) + Number(next.values_[lengthField] || 0) } }
+      }, { values_: { "SMLENGTH": 0 } })
+      this.finalData.push({
+        name: layerName,
+        value: features.length,
+        length: sumLength.values_["SMLENGTH"],
+        features
       })
     },
 
-    rowC: function () {
-      var mapview = this.mapView
-      var param = this.panel.param
-      if(mapview.TF_resultFeatures) {
-        mapview.TF_resultFeatures.load(param.oids, param.layer, 'QueryForSQL')
-      } else {
-        param.showId = 'QueryForSQL'
-        this.$store.dispatch("map/changeMethod", this.panel)
+    rowC: function (row) {
+      console.log('详情', row)
+      let colsData = [], rowData = []
+      for (let key in fieldDoc) {
+          colsData.push({ prop: key, label: fieldDoc[key]})
       }
+      rowData = row.features.map(fea => fea.values_ || {})
+      // 测试先显示20条
+      colsData.length = 15
+      this.$store.dispatch('map/changeMethod', {
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+        label: '更多信息',
+        param: { data: rowData, colsData }
+      })
     },
 
     /**
@@ -474,13 +408,19 @@ export default {
     },
   },
   destroyed() {
-    var view = this.mapView
-    var draw = view.TF_draw
-    if(draw.activeAction) draw.reset()
-    view.graphics.remove(this.printRect)
-    if(view.TF_resultFeatures) view.TF_resultFeatures.destroy('QueryForSQL');
-    //清除查询生成图形
-    if(this.queryLayer)view.map.remove(this.queryLayer);
+    this.drawer && this.drawer.end()
+    this.drawer = null
+     this.$store.dispatch('map/handelClose', {
+      box:'HalfPanel',
+      pathId: 'queryResultMore',
+      widgetid: 'HalfPanel',
+    });
   }
 };
 </script>
+<style lang="scss" scoped>
+  @import "~@/styles/mixin.scss";
+  .i-scrollbar {
+    @include scrollBar;
+  }
+</style>

@@ -135,7 +135,7 @@ export default {
       drawer: null,
       queryService: null,
       queryLayer: null,
-      fields: ['SID', 'START_DEPTH', 'END_DEPTH', 'MATERIAL'],
+      fields: ['SID', 'START_SID', 'END_SID', 'MATERIAL'],
       rowData: null
     }
   },
@@ -509,6 +509,11 @@ export default {
     this.drawer && this.drawer.end()
     this.queryLayer && this.queryLayer.getSource().clear()
     this.drawer = this.queryLayer = null
+    this.$store.dispatch('map/handelClose', {
+      box:'HalfPanel',
+      pathId: 'queryResultMore',
+      widgetid: 'HalfPanel',
+    });
   }
 }
 </script>

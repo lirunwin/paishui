@@ -129,7 +129,7 @@ export default {
                         color: "#fff"
                     }),
                     stroke: new Stroke({
-                        color: "#7BDCFE",
+                        color: "#C0DB8D",
                         width: 5
                     }),
                     image: new Circle({
