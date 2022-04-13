@@ -54,6 +54,7 @@
       width="40%"
       :visible.sync="dialogVisible"
       @close="closeDialog"
+      @open="clear"
       :close-on-click-modal="false"
     >
       <el-form
@@ -215,7 +216,12 @@ export default {
     onCancel() {
       this.dialogVisible = false
       const { resetFields } = this.$refs.formData
-      if (resetFields) resetFields()
+      if (typeof resetFields === 'function') resetFields()
+    },
+
+    clear() {
+      const { clearValidate } = this.$refs.formData
+      if (typeof clearValidate === 'function') clearValidate()
     },
 
     /**
