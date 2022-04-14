@@ -274,3 +274,11 @@ div:focus {
 .el-tooltip__popper {
   max-width: 80vw;
 }
+
+.page-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden auto;
+  position: absolute;
+  background-color: #f5f5f6;
+}
