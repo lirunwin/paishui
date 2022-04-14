@@ -184,10 +184,10 @@ export default {
             } else {
             }
           })
-          features.forEach((fea) => {
-            let features = new GeoJSON().readFeatures(fea)
+          features.forEach(feaJson => {
+            let feas = new GeoJSON().readFeatures(feaJson)
             !that.queryLayer && that.initLayer()
-            that.queryLayer.getSource().addFeatures(features)
+            that.queryLayer.getSource().addFeatures(feas)
           })
         })
       }

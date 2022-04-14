@@ -1,6 +1,6 @@
 <template>
   <div ref="mainDiv" style="width: 100%; height: 100%;">
-    <el-table class="mapTable" style="width:100%;" height="calc(100% - 40px)" tooltip-effect="dark" stripe :data="featureData" ref="table">
+    <el-table class="mapTable" style="width:100%;" height="calc(100% - 40px)" @row-dblclick="viewFeature" tooltip-effect="dark" stripe :data="featureData" ref="table">
       <el-table-column v-for="item in colsData" :key="item.prop" :prop="item.prop" :label="item.label" />
       <!-- <el-table-column prop="respUserName" label="主要负责人"/>
       <el-table-column prop="teamUserName" label="协同处理人"/>
@@ -17,8 +17,8 @@
     </el-table>
     <div style="width:100%;margin-top:8px;">
       <div style="float:left;width:80%">
-        <el-pagination ref="pagination" small background layout="total, sizes, prev, pager, next" :page-sizes="[5, 10, 50, 100]" :total="total"
-          @current-change="init" @size-change="init"/>
+        <el-pagination ref="pagination" small background layout="total, sizes, prev, pager, next" :current-page.sync="currentPage" :page-size.sync="pageSize" :page-sizes="[5, 10, 50, 100]" :total="total"
+          @current-change="updatePage" @size-change="updatePage"/>
       </div>
     </div>
   </div>
@@ -35,9 +35,13 @@ export default {
       activeName: '',
       tabs: [],
       column: [],
+
+      tableData: null,
       featureData: [],
       total: 0,
-      colsData: []
+      colsData: [],
+      pageSize: 10,
+      currentPage: 1
     }
   },
   mounted() {
@@ -75,8 +79,30 @@ export default {
     },
     init_new () {
       console.log("更多信息")
-      this.featureData = this.param.data || []
+
+      this.tableData = this.param.data || []
+      if (this.tableData.length !== 0) {
+        if (this.tableData < this.pageSize) {
+          this.featureData = this.tableData.splice(0, this.tableData.length)
+        } else {
+          this.featureData = this.tableData.splice(0, this.pageSize)
+        }
+      }
       this.colsData = this.param.colsData || []
+      this.total = this.tableData.length
+    },
+    updatePage () {
+      console.log(this.pageSize, this.currentPage)
+      let firstIndex = this.pageSize * (this.currentPage - 1)
+      let length = this.pageSize * this.currentPage > this.tableData.length ? (this.tableData.length % this.pageSize) : this.pageSize
+      this.featureData = [...this.tableData].splice(firstIndex, length)
+    },
+    viewFeature (row) {
+      if (row.geometry) {
+        if (this.param.rootPage) {
+          this.param.rootPage.gotoGeometry(row.geometry)
+        }
+      } else this.$message.error("无图形信息")
     }
   }
 }
