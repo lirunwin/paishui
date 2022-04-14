@@ -115,6 +115,7 @@
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
       @close="closeDialog"
+      @open="clear"
     >
       <el-form
         ref="formData"
@@ -245,7 +246,12 @@ export default {
     onCancel() {
       this.dialogVisible = false
       const { resetFields } = this.$refs.formData
-      if (resetFields) resetFields()
+      if (typeof resetFields === 'function') resetFields()
+    },
+
+    clear() {
+      const { clearValidate } = this.$refs.formData
+      if (typeof clearValidate === 'function') clearValidate()
     },
 
     //  页码

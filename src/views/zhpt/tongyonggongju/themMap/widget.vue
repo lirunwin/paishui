@@ -84,7 +84,7 @@
             <el-table-column prop="size" label="操作" >
               <template slot-scope="scope">
                 <el-link type="primary" @click="jump(scope.row, scope.$index)">跳转</el-link>
-                <el-link type="primary" @click="deleteFeas(scope.row, scope.$index)">删除</el-link>
+                <!-- <el-link type="primary" @click="deleteFeas(scope.row, scope.$index)">删除</el-link> -->
               </template>
             </el-table-column>
           </el-table>
@@ -199,7 +199,7 @@ export default {
     this.$refs.tabs.$el.children[0].style.background = '#fff'
     this.init().then(() => this.widgetLoading = false)
   },
-  methods: {
+  methods: { 
     init() {
       let { layers, dataServer } = appconfig.gisResource["iserver_resource"]
       let netLayers = layers.filter(layer => layer.parentname === "管线")
@@ -366,6 +366,7 @@ export default {
                 return turf.booleanContains(limitGeometry, inGeometry)
               })
             }
+            //
             this.themLayer.getSource().addFeatures(themFeatures)
           })
         } else return this.$message.error("无符合过滤条件数据")
@@ -374,7 +375,7 @@ export default {
       function createThemLayer () {
         return new VectorLayer({
           source: new VectorSource(),
-          style: comSymbol.getAllStyle(3, "#f40", 2, "#7BDCFE")
+          style: comSymbol.getAllStyle(3, "#f40", 2, "#C0DB8D")
         })
       }
     },
@@ -402,6 +403,9 @@ export default {
 
     // TODO 删除专题图
     deleteThemLayer () {
+      let selects = this.$refs.multipleTable.selection
+      if (selects.length == 0) return this.$message('请选中至少一个专题图')
+
       let params = {}
       if(row.id && row.id > -1) {
         this.$confirm('确定删除"' + row.name + '"图层信息', '提示',
@@ -455,17 +459,10 @@ export default {
       })
     }, 
     selectChange(select, row) {
-      if(row) {
-        row.layer.visible  = row.select = !row.select
-      } else {
-        select = select.length != 0
-        for(let j=0,jl=this.themLayerData,jj=jl.length;j<jj;j++) {
-          var ij = jl[j]
-          ij.layer.visible = ij.select = select
-        }
-      }
+      
     },
     deleteFeas(row, index) {
+      console.log("删除专题图")
       if(row.id && row.id > -1) {
         this.$confirm('确定删除"' + row.name + '"图层信息', '提示',
         { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }).then(_ => {

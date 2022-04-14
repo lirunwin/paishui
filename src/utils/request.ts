@@ -22,6 +22,7 @@ declare module 'axios' {
 // export const IP = 'http://117.174.10.73:1114'
 export const IP = 'http://192.168.2.78:1111'
 // export const IP = 'http://117.174.10.73:1114'
+// export const IP = 'http://117.174.10.73:1114'
 // export const IP = 'http://192.168.2.145:1111'
 // export const IP = 'http://127.0.0.1:1111'
 //export const NewIp = 'http://58.17.241.6:1212'

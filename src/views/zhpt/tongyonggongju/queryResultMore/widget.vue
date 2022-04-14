@@ -1,7 +1,8 @@
 <template>
   <div ref="mainDiv" style="width: 100%; height: 100%;">
     <el-table class="mapTable" style="width:100%;" height="calc(100% - 40px)" tooltip-effect="dark" stripe :data="featureData" ref="table">
-      <el-table-column prop="respUserName" label="主要负责人"/>
+      <el-table-column v-for="item in colsData" :key="item.prop" :prop="item.prop" :label="item.label" />
+      <!-- <el-table-column prop="respUserName" label="主要负责人"/>
       <el-table-column prop="teamUserName" label="协同处理人"/>
       <el-table-column prop="isread" label="是否确认"/>
       <el-table-column prop="isrepeat" label="是否返工"/>
@@ -12,7 +13,7 @@
       <el-table-column prop="regionName" label="所在片区"/>
       <el-table-column prop="address" label="实际地址"/>
       <el-table-column prop="confirmTime" label="接收时间"/>
-      <el-table-column prop="overTime" label="处理完成上报时间"/>
+      <el-table-column prop="overTime" label="处理完成上报时间"/> -->
     </el-table>
     <div style="width:100%;margin-top:8px;">
       <div style="float:left;width:80%">
@@ -36,10 +37,11 @@ export default {
       column: [],
       featureData: [],
       total: 0,
+      colsData: []
     }
   },
   mounted() {
-    this.init()
+    this.init_new()
   },
   methods: {
     init() {          
@@ -70,6 +72,11 @@ export default {
           this.featureData = rows
         } else this.$message(res.message)
       })
+    },
+    init_new () {
+      console.log("更多信息")
+      this.featureData = this.param.data || []
+      this.colsData = this.param.colsData || []
     }
   }
 }

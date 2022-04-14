@@ -30,6 +30,10 @@ export const appconfig = {
   'usertoken': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJVc2VySUQiOiIiLCJVU0VSTkFNRSI6IiIsIlJFQUxOQU1FIjoiIiwiV0tJRCI6NDU0NCwiUkFOR0UiOiJYUlRZIiwiUkFOR0VGSUVMRCI6bnVsbCwiQ09ERSI6IlhSVFkiLCJDT05ORUNUU1RSIjoiREFUQUJBU0U9b3JjbDtORVROQU1FPTE5Mi4xNjguMi4yNDIvb3JjbDtTRVJWRVI9MTkyLjE2OC4yLjI0MjtVU0VSSUQ9dGZfeHJ0eV9nZW87UEFTU1dPUkQ9dGZfeHJ0eV9nZW87UE9SVD0xNTIxQDUxNTEvdGNwO1ZFUlNJT049c2RlLkRFRkFVTFQiLCJCb3JuVGltZSI6MCwiQXBwSUQiOm51bGx9.bMNoX6nsvNYukk47_UnT9IHGlNIWclbmiXTj3ak1i5KuF5LGexfwV7TwF80nP08GEPaNwScgk7lbJkRHcqtT8w',
   // 地图资源服务
   'gisResource': {
+    'printer': {
+      'name': '打印地址',
+      'url': 'http://117.174.10.73:8090/iserver/services/webprinting/rest/webprinting/v1'
+    },
     'legend': [
       {
         'name': '图例',
@@ -43,8 +47,9 @@ export const appconfig = {
         'dataSource': "kxcgw",
         'dataSet': ["给水管线", "广电线缆"],
         'dataSetInfo': [
-            { name: '给水管线', type: 'line', label: '给水管线', s3mName: 'ResultNetWork@pipe3D', attachName: "给水管线节点" },
-            { name: '广电线缆', type: 'line', label: '广电线缆', s3mName: '', attachName: "广电线缆节点" }
+            { name: '给水管线', type: 'line', label: '给水管线' },
+            { name: '广电线缆', type: 'line', label: '广电线缆' },
+            { name: '给水管线节点', type: 'point', label: '给水管线节点' },
         ]
       },
       'layers': [
@@ -74,6 +79,7 @@ export const appconfig = {
           'name': '给水管线', 
           'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/给水管线',
           'visible': true,
+          'legendUrl': 'http://117.174.10.73:8090/iserver/services/map-kxcgw/rest/maps/%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF/layers/%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF@kxcgw.1@@%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF/legend',
           'id': 5
         }
       ]
