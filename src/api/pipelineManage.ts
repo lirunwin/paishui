@@ -8,16 +8,76 @@ import request from '@/utils/request'
   */
 let base = "/psjc"
 
-// 文件导入
+// 管道内窥检测数据导入(文件导入) / 检测报告管理
 export function importFiles(params) {
     return request({
-        url: base + '/import/word',
+        url: base + '/pipeState/pipeStateUpload',
+        method: 'POST',
+        params
+    })
+}
+
+// --管道内窥检测报告信息--
+// 通过ID查询
+// export function queryPageDefectinfo(params) {
+//     return request({
+//         url: base + '/wordInfo/'+ params,
+//         method: 'get',
+//     })
+// }
+// 通过ID删除管道内窥检测报告信息
+export function deleteIdData(params) {
+    return request({
+        url: base + "/wordInfo/" + params,
+        method: 'delete',
+    })
+}
+// 分页查询
+export function queryPageTestReport(params) {
+    return request({
+        url: base + '/wordInfo/page',
+        method: 'get',
+        params
+    })
+}
+// 通过IDS删除管道内窥检测报告信息
+export function deleteTestReport(params) {
+    return request({
+        url: base + "/wordInfo/removeByIds",
+        method: 'delete',
+        params
+    })
+}
+
+
+
+// --管道缺陷管理--
+// 新增管段检测缺陷与评估成果信息表
+export function addDefectinfo(data) {
+    return request({
+        url: base + '/defectinfo',
+        method: 'post',
+        data
+    })
+}
+
+// 修改管段检测缺陷与评估成果信息表
+
+
+// 通过ID查询
+
+// 通过ID删除管段检测缺陷与评估成果信息表
+
+// 分页查询
+export function queryPageDefectinfo(params) {
+    return request({
+        url: base + '/defectinfo/page',
         method: 'get',
         params
     })
 }
 
-// 工程管理
+// --工程管理--
 // 根据条件新增数据
 export function addData(data) {
     return request({

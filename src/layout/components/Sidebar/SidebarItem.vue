@@ -8,14 +8,8 @@
       "
     >
       <app-link v-if="item.type === 'sys'" :to="resolvePath(onlyOneChild.path)">
-        <el-menu-item
-          :index="resolvePath(onlyOneChild.path)"
-          :class="{ 'submenu-title-noDropdown': !isNest }"
-        >
-          <item
-            :icon="isNest ? '' : item.icon"
-            :title="onlyOneChild.meta !== null ? onlyOneChild.meta.title : ''"
-          />
+        <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{ 'submenu-title-noDropdown': !isNest }">
+          <item :icon="isNest ? '' : item.icon" :title="onlyOneChild.meta !== null ? onlyOneChild.meta.title : ''" />
         </el-menu-item>
       </app-link>
       <el-menu-item
@@ -36,10 +30,7 @@
       popper-class="custom-popper-list"
     >
       <template slot="title">
-        <item
-          :icon="item.icon"
-          :title="item.meta !== null ? item.meta.title : ''"
-        />
+        <item :icon="item.icon" :title="item.meta !== null ? item.meta.title : ''" />
       </template>
       <sidebar-item
         v-for="child in item.children"
@@ -54,71 +45,82 @@
 </template>
 
 <script lang='ts'>
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop } from 'vue-property-decorator'
 
-import { isExternal } from "@/utils/validate";
-import Item from "./Item.vue";
-import AppLink from "./Link.vue";
-import FixiOSBug from "./FixiOSBug";
+import { isExternal } from '@/utils/validate'
+import Item from './Item.vue'
+import AppLink from './Link.vue'
+import FixiOSBug from './FixiOSBug'
 import path from 'path'
 @Component({
-  name: "SidebarItem",
+  name: 'SidebarItem',
   components: { Item, AppLink },
-  mixins: [FixiOSBug],
+  mixins: [FixiOSBug]
 })
 export default class SidebarItem extends Vue {
-  @Prop({ required: true }) item: object;
-  @Prop({ default: true }) isNest: boolean;
-  @Prop({ default: "" }) basePath: string;
-  @Prop({ default: "" }) color: string;
-  onlyOneChild = null;
+  @Prop({ required: true }) item: object
+  @Prop({ default: true }) isNest: boolean
+  @Prop({ default: '' }) basePath: string
+  @Prop({ default: '' }) color: string
+  onlyOneChild = null
   hasOneShowingChild(children = [], parent) {
     const showingChildren = children.filter((item) => {
       if (item.hidden) {
-        return false;
+        return false
       } else {
         // 设定(将在只有一个显示子项时使用)
-        this.onlyOneChild = item;
-        return true;
+        this.onlyOneChild = item
+        return true
       }
-    });
+    })
     // 当只有一个子路由器时，默认显示子路由器
     // if (showingChildren.length === 1) {
     //   return true
     // }
     // 如果没有要显示的子路由器，则显示父路由器
     if (showingChildren.length === 0) {
-      this.onlyOneChild = { ...parent, path: "", noShowingChildren: true };
-      return true;
+      this.onlyOneChild = { ...parent, path: '', noShowingChildren: true }
+      return true
     }
 
-    return false;
+    return false
   }
   resolvePath(routePath) {
-    console.log("要去的路由",routePath)
+    // console.log("要去的路由",routePath)
     if (isExternal(routePath)) {
-      return routePath;
+      return routePath
     }
     if (isExternal(this.basePath)) {
-      return this.basePath;
+      return this.basePath
     }
-    return path.resolve(this.basePath, routePath);
+    return path.resolve(this.basePath, routePath)
   }
   handleMap(info) {
-    const currentRouter = this.$route.path;
-    const jumpRouter = "/map"; // '/map/mapFun/funMap'
-    if (
-      jumpRouter != null  &&
-      jumpRouter !== currentRouter
-    ) {
-      this.$router.push(jumpRouter);
+    // debugger
+    const currentRouter = this.$route.path
+    const jumpRouter = '/map' // '/map/mapFun/funMap'
+    if (jumpRouter != null && jumpRouter !== currentRouter) {
+      this.$router.push(jumpRouter)
     }
-    this.$store.dispatch("map/changeMethod", info);
-    if (
-      info.widgetid !== "FullPanel" &&
-      this.$store.state.map.fullPanels.length > 0
-    ) {
-      this.$store.dispatch("map/delAllFull");
+    // {
+    //   icon: 'iconfont '
+    //   id: 'pipelineDefect'
+    //   label: '管道缺陷管理'
+    //   meta: {
+    //     title: '管道缺陷管理'
+    //   }
+    //   name: 'PipelineDefect'
+    //   noShowingChildren: true
+    //   parentPathid: '/pipelineDefect'
+    //   path: ''
+    //   type: 'gis'
+    //   widgetid: 'HalfPanel'
+    // }
+    // 这是map里的跳转方法
+    this.$store.dispatch('map/changeMethod', info)
+    console.log(info)
+    if (info.widgetid !== 'FullPanel' && this.$store.state.map.fullPanels.length > 0) {
+      this.$store.dispatch('map/delAllFull')
     }
   }
 }

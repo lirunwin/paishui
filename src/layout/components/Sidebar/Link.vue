@@ -13,6 +13,8 @@ export default class Link extends Vue {
   @Prop({ required: true }) to: string;
 
   linkProps(url) {
+    console.log("app跳转")
+    // debugger
     if (isExternal(url)) {
       return {
         is: "a",

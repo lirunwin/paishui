@@ -115,6 +115,7 @@
         </transition>
       </div>
     </div>
+    <button type="primary" @click="openDefect">打开管道缺陷管理模块</button>
   </div>
 </template>
 
@@ -143,6 +144,30 @@ export default {
           { max: 100, message: '内容不能超过100个字符串', trigger: 'blur' }
         ]
       }
+    }
+  },
+  beforeCreate(){
+
+  },
+  methods: {
+    openDefect() {
+      // 管道缺陷管理的信息
+      let info = {
+        icon: 'iconfont ',
+        id: 'pipelineDefect',
+        label: '管道缺陷管理',
+        meta: {
+          title: '管道缺陷管理'
+        },
+        name: 'PipelineDefect',
+        noShowingChildren: true,
+        parentPathid: '/pipelineDefect',
+        path: '',
+        type: 'gis',
+        widgetid: 'HalfPanel'
+      }
+      // 这是map里的跳转方法
+      this.$store.dispatch('map/changeMethod', info)
     }
   }
 }

@@ -156,7 +156,7 @@ export default class HalfPanels extends Vue {
 }
 .el-tabs >>> .el-tabs__content {
   height: calc(100% - 42px);
-  padding: 4px 4px 0px 4px;
+  padding: 0 4px 0px 4px;
 }
 .el-tabs >>> .el-tab-pane {
   height: 100%;

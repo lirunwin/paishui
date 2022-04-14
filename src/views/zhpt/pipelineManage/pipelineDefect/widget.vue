@@ -4,7 +4,13 @@
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
-          <el-input placeholder="支持搜索管段编号、材质、评价" v-model="input" clearable class="serch-input" suffix-icon="el-input__icon el-icon-search">
+          <el-input
+            placeholder="支持搜索管段编号、材质、评价"
+            v-model="input"
+            clearable
+            class="serch-input"
+            suffix-icon="el-input__icon el-icon-search"
+          >
           </el-input>
           <el-date-picker v-model="value1" type="date" placeholder="入库时间" class="date-css"> </el-date-picker>
           <div class="title">结构性缺陷等级：</div>
@@ -113,11 +119,11 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="currentPage4"
+          :current-page="pagination.current"
           :page-sizes="[10, 20, 30, 50, 100, 1000]"
-          :page-size="30"
+          :page-size="pagination.size"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
+          :total="paginationTotal"
         >
         </el-pagination>
       </div>
@@ -145,97 +151,18 @@
 </template>
 
 <script>
+import { queryPageDefectinfo } from '@/api/pipelineManage'
+
 export default {
   data() {
     return {
-      // 分页需要的值
-      currentPage4: 4,
-      // ------------
+      paginationTotal: 0, // 总页数
+      pagination: { current: 1, size: 30 }, // 分页参数信息
       radio: '',
       zero: '',
       tableData: [
         {
           date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-07',
           name: '王小虎',
           address: '上海市普陀区金沙江路 1518 弄'
         }
@@ -254,16 +181,37 @@ export default {
       formLabelWidth: '120px'
     }
   },
+  mounted() {
+    let res = this.getDate()
+  },
   methods: {
+    // 查询数据
+    async getDate(params) {
+      let data = this.pagination
+      if (params) {
+        data.prjName = params.prjName
+        data.prjNo = params.prjNo
+      }
+      await queryPageDefectinfo(data).then((res) => {
+        // console.log('接口返回', res)
+        this.tableData = res.result.records
+        this.paginationTotal = res.result.total
+        // this.$message.success("上传成功");
+      })
+    },
     // 表格多选事件
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
-    // 分页的事件
-    handleSizeChange(val) {
+    // 分页触发的事件
+    async handleSizeChange(val) {
+      this.pagination.size = val
+      await this.getDate()
       console.log(`每页 ${val} 条`)
     },
-    handleCurrentChange(val) {
+    async handleCurrentChange(val) {
+      this.pagination.current = val
+      await this.getDate()
       console.log(`当前页: ${val}`)
     }
   }
