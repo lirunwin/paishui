@@ -47,8 +47,9 @@ export const appconfig = {
         'dataSource': "kxcgw",
         'dataSet': ["给水管线", "广电线缆"],
         'dataSetInfo': [
-            { name: '给水管线', type: 'line', label: '给水管线', attachName: "给水管线节点" },
-            { name: '广电线缆', type: 'line', label: '广电线缆', attachName: "广电线缆节点" }
+            { name: '给水管线', type: 'line', label: '给水管线' },
+            { name: '广电线缆', type: 'line', label: '广电线缆' },
+            { name: '给水管线节点', type: 'point', label: '给水管线节点' },
         ]
       },
       'layers': [

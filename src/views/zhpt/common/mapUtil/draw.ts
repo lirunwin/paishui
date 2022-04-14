@@ -17,13 +17,13 @@ export default class iDraw {
 
     vectorLayer = null // 绘制图层
 
-    startDrawCallBack = null
+    startDrawCallBack = null // 开始绘制时回调
 
-    endDrawCallback = null
+    endDrawCallback = null // 结束绘制时回调
 
-    showCloser = true
+    showCloser = true // 是否显示关闭
 
-    overlay = null
+    overlay = null // 绘制图形关闭
 
     drawType = {
         line: "LineString", // 线
@@ -31,7 +31,7 @@ export default class iDraw {
         point: "Point", // 点
         rect: "Circle", // 框
         circle: "Circle" // 圆
-    }
+    } // 绘制类型
 
     constructor (map, type, { startDrawCallBack = null, endDrawCallBack = null, showCloser = true }) {
         this.map = map
