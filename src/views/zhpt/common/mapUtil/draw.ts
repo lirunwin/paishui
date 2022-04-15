@@ -25,6 +25,8 @@ export default class iDraw {
 
     overlay = null // 绘制图形关闭
 
+    maxLength = 1e3 // 最多绘制点数
+
     drawType = {
         line: "LineString", // 线
         polygon: "Polygon", // 面
@@ -33,12 +35,13 @@ export default class iDraw {
         circle: "Circle" // 圆
     } // 绘制类型
 
-    constructor (map, type, { startDrawCallBack = null, endDrawCallBack = null, showCloser = true }) {
+    constructor (map, type, { startDrawCallBack = null, endDrawCallBack = null, showCloser = true, maxLength = 1e3 }) {
         this.map = map
         this.type = type
         this.startDrawCallBack = startDrawCallBack
         this.endDrawCallback = endDrawCallBack
         this.showCloser = showCloser
+        this.maxLength = maxLength
         this.init()
     }
 
@@ -60,7 +63,7 @@ export default class iDraw {
         this.drawer = new Draw({
             source: this.vectorSource,
             type: this.drawType[this.type],
-            maxPoints: null,
+            maxPoints: this.maxLength,
             style: comSymbol.getDrawStyle(7, "#f40", 5, "#C0DB8D"),
             condition: evt => {
                 return true

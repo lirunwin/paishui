@@ -8,7 +8,7 @@
     <div style="width:100%;height:calc(100% - 29px);background:#fff;border: 1px solid #2D74E7;overflow: auto;">      
       <el-tabs v-model="activeName" style="width:100%;">
         <el-tab-pane v-for="item of tabs" :key="item.index" :label="item.label" :name="item.index"></el-tab-pane>
-      </el-tabs>
+      </el-tabs> 
       <div style="width:100%;height:calc(100% - 55px);display:flex;">
         <div ref="echart" style="flex:1;height:100%"></div>
         <div ref="map" style="display:none;width:40%;height:100%"></div>

@@ -155,7 +155,8 @@ export default {
         { name: "权属单位", field: "OWNERUNIT" },
         { name: "探测单位", field: "DETECTUNIT" },
       ],
-      limitFeature: null
+      limitFeature: null,
+      drawer: null
     }
   },
   computed: { 
@@ -631,6 +632,7 @@ export default {
     }
   },
   destroyed() {    
+    this.drawer && this.drawer.end()
     this.mapView.graphics.remove(this.printRect);
     //销毁所有浮动框
     this.$store.dispatch('map/handelClose', {
