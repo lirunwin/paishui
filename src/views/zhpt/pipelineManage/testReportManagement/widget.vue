@@ -24,26 +24,17 @@
           </el-date-picker>
           <div class="release-radio">
             <p class="release-title">发布状态:</p>
-            <el-checkbox-group v-model="searchValue.checkList" :max="1">
-              <el-checkbox label="0">未发布</el-checkbox>
-              <el-checkbox label="1">已发布</el-checkbox>
-            </el-checkbox-group>
+            <el-radio v-model="searchValue.checkList" label="0">未发布</el-radio>
+            <el-radio v-model="searchValue.checkList" label="1">已发布</el-radio>
           </div>
           <el-button class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi"> 搜索 </el-button>
-          <el-button class="serch-btn" icon="el-icon-refresh-right" type="primary" @click="getDate"> 重置 </el-button>
+          <el-button class="serch-btn" icon="el-icon-refresh-right" type="primary" @click="resetDate"> 重置 </el-button>
         </div>
         <div class="right-btn">
-          <el-button class="serch-btn" type="primary" @click="showUpdata" :disabled="!multipleSelection.length"
-            >报告上传</el-button
-          >
-          <el-button class="serch-btn" type="primary" @click="dialogFormVisible2 = true">视频上传</el-button>
-          <el-button
-            class="serch-btn"
-            type="primary"
-            @click="dialogFormVisible3 = true"
-            :disabled="!multipleSelection.length"
-            >批量发布</el-button
-          >
+          <el-button class="serch-btn" type="primary" @click="showUpdata">报告上传</el-button>
+          <!-- <el-button class="serch-btn" type="primary" @click="dialogFormVisible2 = true">视频上传</el-button> -->
+          <el-button class="serch-btn" type="primary" @click="$message('该功能暂未开放')">视频上传</el-button>
+          <el-button class="serch-btn" type="primary" @click="$message('该功能暂未开放')">批量发布</el-button>
           <el-button
             class="serch-btn"
             icon="el-icon-delete"
@@ -69,16 +60,28 @@
 
         <!-- <el-table-column prop="prjNo" header-align="center" label="检测报告名称" align="center" show-overflow-tooltip>
         </el-table-column> -->
-        <el-table-column :prop="v.name" header-align="center" :label="v.label" align="center" show-overflow-tooltip v-for="(v) in tableContent" :key="v.name">
+        <el-table-column
+          :prop="v.name"
+          header-align="center"
+          :label="v.label"
+          align="center"
+          show-overflow-tooltip
+          v-for="v in tableContent"
+          :key="v.name"
+        >
         </el-table-column>
-       
+
         <el-table-column prop="state" header-align="center" label="发布状态" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
-            <span>{{ scope.row.state | filter_state }}</span>
+            <span :class="{ stateRedClass: scope.row.state == '0', stateGreenClass: scope.row.state == '1' }">{{
+              scope.row.state | filter_state
+            }}</span>
           </template>
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
+            <el-button type="text" size="small" :wu="scope" @click="$message('该功能暂未开放')">发布</el-button>
+            <!-- <el-button type="text" size="small" :wu="scope" @click="$message('该功能暂未开放')">撤回</el-button> -->
             <el-button type="text" size="small" :wu="scope" @click="dialogFormVisible3 = true">详情</el-button>
           </template>
         </el-table-column>
@@ -100,21 +103,30 @@
     <el-dialog title="检测报告上传" v-if="dialogFormVisible" :visible.sync="dialogFormVisible">
       <el-form ref="form" :model="form" :rules="rules">
         <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
-          <el-select v-model="form.name" placeholder="请选择工程名称">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select
+            clearable
+            v-model="form.name"
+            placeholder="请选择工程名称"
+            v-selectLoadMore="selectLoadMore"
+            @blur="initSelectDate"
+            filterable
+          >
+            <el-option v-for="(item, i) in selectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item label="检测报告" :label-width="formLabelWidth" class="hd-input" prop="report">
+          <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
           <el-upload
+            :on-change="getFile"
+            show-file-list
             ref="updataDocx"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload"
+            action="http://117.174.10.73:1114/psjc/pipeState/pipeStateUpload"
             accept=".doc,.docx"
-            :data="{ prjNo: UpdataList }"
+            :data="getData"
             multiple
-            :limit="1"
             :on-success="handleAvatarSuccess"
             :before-remove="beforeRemove"
             :on-progress="beforeUpload"
@@ -129,7 +141,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="uploadWord">确 定</el-button>
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button @click="hideUpdataDocx">取 消</el-button>
       </div>
     </el-dialog>
     <!-- 视频上传 -->
@@ -180,25 +192,28 @@
 </template>
 
 <script>
-import { queryPageTestReport, deleteIdData, deleteTestReport } from '@/api/pipelineManage'
+import { queryPageTestReport, deleteIdData, deleteTestReport, projectPagingQuery } from '@/api/pipelineManage'
 
 export default {
   data() {
     return {
+      // 选择框分页参数
+      selectParm: { current: 1, size: 30 },
+      selectArr: [], // 选择工程数组
       // 表格参数
       tableContent: [
-        { label: '检测段数',name: 'jcnum' },
-        { label: '检测长度',name: 'jclength' },
-        { label: '工程名称',name: 'prjName' },
-        { label: '施工单位',name: 'sgunit' },
-        { label: '检测日期',name: 'jcDate' },
-        { label: '入库人',name: 'createUserName' },
-        { label: '入库时间',name: 'createTime' }
+        { label: '检测段数', name: 'jcnum' },
+        { label: '检测长度', name: 'jclength' },
+        { label: '工程名称', name: 'prjName' },
+        { label: '施工单位', name: 'sgunit' },
+        { label: '检测日期', name: 'jcDate' },
+        { label: '入库人', name: 'createUserName' },
+        { label: '入库时间', name: 'createTime' }
       ],
       // 搜索功能参数
       searchValue: {
         dateTime: '', // 检测日期
-        checkList: [] // 发布状态
+        checkList: '0' // 发布状态
       },
       serchValue: '', // 搜索关键字
       testDate: '', // 检测日期
@@ -233,17 +248,66 @@ export default {
         name: '',
         report: ''
       },
-
       formLabelWidth: '120px'
     }
   },
   created() {
     let res = this.getDate()
   },
+  computed: {
+    // 动态设置上传携带参数
+    getData() {
+      return { prjNo: this.form.name }
+    }
+  },
+  mounted() {},
   methods: {
+    // 文件发生变化时触发
+    getFile(file, fileList) {
+      console.log('file', file)
+      console.log('fileList', fileList)
+    },
+    // 重置
+    async resetDate() {
+      this.searchValue.checkList = '0'
+      this.serchValue = ''
+      this.testDate = ''
+      await this.getDate()
+    },
+    // 报告上传取消按钮
+    hideUpdataDocx() {
+      this.form.name = ''
+      this.dialogFormVisible = false
+    },
+    // 失去焦点时
+    initSelectDate() {
+      this.selectParm.current = 1
+    },
+    // 选择工程下拉刷新加载更多数据
+    async selectLoadMore() {
+      this.selectParm.current++
+      let res = await projectPagingQuery(this.selectParm)
+      data.forEach((v) => {
+        this.selectArr.push({
+          name: v.prjName,
+          No: v.prjNo
+        })
+      })
+      console.log('下滑到底了')
+    },
     // 报告上传按钮
-    showUpdata() {
-      this.UpdataList = this.multipleSelection[0].prjNo
+    async showUpdata() {
+      // 选择工程名称的分页查询
+      let res = await projectPagingQuery(this.selectParm)
+      let data = res.result.records
+      this.selectArr = data.map((v) => {
+        return {
+          name: v.prjName,
+          No: v.prjNo
+        }
+      })
+      // this.selectArr
+      console.log('选择框数据', this.selectArr)
       this.dialogFormVisible = true
     },
     // 上传按钮
@@ -260,14 +324,13 @@ export default {
         })
         this.getDate()
       }
+      this.form.name = ''
       this.dialogFormVisible = false
       console.log('上传后的code码', res)
     },
     beforeUpload() {},
     handleExceed(files, fileList) {
-      this.$message.warning(
-        `当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`
-      )
+      this.$message.warning(`本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
     },
     beforeRemove(file, fileList) {
       return this.$confirm(`确定移除 ${file.name}？`)
@@ -303,12 +366,13 @@ export default {
     },
     // 查询数据
     async getDate(params) {
-      let data = this.pagination
+      let data = { ...this.pagination }
       console.log('参数', params)
       if (params) {
         data.jcDate = params.dateTime
         params.checkList.length == 1 ? (data.state = params.checkList[0] * 1) : ''
       }
+      console.log('最后传进去的参数', data)
       await queryPageTestReport(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
@@ -359,6 +423,13 @@ export default {
     display: flex;
     height: 100%;
     flex-direction: column;
+    // 发布状态样式
+    .stateRedClass {
+      color: #ff0017;
+    }
+    .stateGreenClass {
+      color: #5c9a44;
+    }
     .top-tool {
       display: flex;
       justify-content: space-between;
@@ -437,6 +508,14 @@ export default {
   .hd-input {
     /deep/.el-input__inner {
       width: 70%;
+    }
+  }
+  .release-radio {
+    .el-radio {
+      margin-right: 8px !important;
+      .radio__label {
+        padding-left: 4px;
+      }
     }
   }
   .el-select {

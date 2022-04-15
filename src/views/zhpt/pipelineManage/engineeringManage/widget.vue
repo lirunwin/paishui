@@ -29,20 +29,6 @@
           >
           <el-button
             class="serch-btn"
-            icon="el-icon-upload"
-            type="primary"
-            :disabled="!multipleSelection.length"
-            @click="showUpdata"
-            >上传</el-button
-          >
-          <el-button class="serch-btn" icon="el-icon-download" type="primary" :disabled="!multipleSelection.length"
-            >下载</el-button
-          >
-          <el-button class="serch-btn" icon="el-icon-share" type="primary" :disabled="!multipleSelection.length"
-            >发布</el-button
-          >
-          <el-button
-            class="serch-btn"
             icon="el-icon-delete"
             type="danger"
             :disabled="!multipleSelection.length"
@@ -77,7 +63,7 @@
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="zero = scope">详情</el-button>
+            <el-button type="text" size="small" @click="openDetails(scope.row)">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -96,62 +82,148 @@
       </div>
     </div>
     <!-- 添加卡片 -->
-    <el-dialog title="添加工程" :visible.sync="dialogFormVisible">
+    <el-dialog title="添加工程" :visible.sync="dialogFormVisible" @close="closeDialog">
       <el-form ref="form" :rules="rules" :model="form" label-width="auto" label-position="right">
-        <el-form-item label="工程名称" prop="prjName">
-          <el-input v-model="form.prjName" maxlength="100" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="工程编号" prop="prjNo">
-          <el-input v-model="form.prjNo" maxlength="20" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="检测单位" prop="principal">
-          <el-input v-model="form.principal" maxlength="50" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="勘察单位">
-          <el-input v-model="form.kcunit" placeholder="竣工类项目必填"></el-input>
-        </el-form-item>
-        <el-form-item label="探测单位" prop="tcunit">
-          <el-input v-model="form.tcunit" maxlength="4" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="设计单位" prop="sjunit">
-          <el-input v-model="form.sjunit" placeholder="竣工类项目必填" maxlength="4" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="建设单位" prop="jsunit">
-          <el-input v-model="form.jsunit" maxlength="4" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="监理单位">
-          <el-input v-model="form.ctunit" maxlength="50" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="施工单位" prop="sgunit">
-          <el-input v-model="form.sgunit" maxlength="255" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="施工负责人" prop="constructionCharge">
-          <el-input v-model="form.constructionCharge" maxlength="30" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="高程系统" prop="ecoord">
-          <el-input v-model="form.ecoord" maxlength="20" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="平面坐标系统" prop="pcoord">
-          <el-select v-model="form.pcoord" placeholder="请选择">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="管线总长度" prop="pllength">
-          <el-input v-model="form.pllength" placeholder="单位:m" maxlength="9" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="管线种类数量" prop="plnumber">
-          <el-input v-model="form.plnumber" maxlength="9" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="接边点数" prop="jpoints">
-          <el-input v-model="form.jpoints" placeholder="工程类必填" maxlength="15" show-word-limit></el-input>
-        </el-form-item>
-        <el-form-item label="明显管线点数量" prop="epoints">
-          <el-input v-model="form.epoints" maxlength="15" show-word-limit></el-input>
-        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="工程名称" prop="prjName">
+              <el-input v-model="form.prjName" maxlength="100" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12"
+            ><el-form-item label="工程编号" prop="prjNo">
+              <el-input v-model="form.prjNo" maxlength="20" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12"
+            ><el-form-item label="检测单位" prop="principal">
+              <el-input v-model="form.principal" maxlength="50" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="勘察单位">
+              <el-input
+                v-model="form.kcunit"
+                placeholder="竣工类项目必填"
+                maxlength="50"
+                show-word-limit
+                :disabled="isDetails"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="探测单位" prop="tcunit">
+              <el-input
+                v-model="form.tcunit"
+                maxlength="4"
+                show-word-limit
+                :disabled="isDetails"
+              ></el-input> </el-form-item
+          ></el-col>
+          <el-col :span="12">
+            <el-form-item label="设计单位" prop="sjunit">
+              <el-input
+                v-model="form.sjunit"
+                placeholder="竣工类项目必填"
+                maxlength="4"
+                show-word-limit
+                :disabled="isDetails"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="建设单位" prop="jsunit">
+              <el-input v-model="form.jsunit" maxlength="4" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12"
+            ><el-form-item label="监理单位">
+              <el-input v-model="form.ctunit" maxlength="50" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12"
+            ><el-form-item label="施工单位" prop="sgunit">
+              <el-input v-model="form.sgunit" maxlength="255" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="施工负责人" prop="constructionCharge">
+              <el-input
+                v-model="form.constructionCharge"
+                maxlength="30"
+                show-word-limit
+                :disabled="isDetails"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="高程系统" prop="ecoord">
+              <el-input v-model="form.ecoord" maxlength="20" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="平面坐标系统" prop="pcoord">
+              <el-input v-model="form.pcoord" maxlength="20" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="管线总长度" prop="pllength">
+              <el-input
+                v-model="form.pllength"
+                placeholder="单位:m"
+                maxlength="9"
+                show-word-limit
+                :disabled="isDetails"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="管线种类数量" prop="plnumber">
+              <el-input v-model="form.plnumber" maxlength="9" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="接边点数" prop="jpoints">
+              <el-input
+                v-model="form.jpoints"
+                placeholder="工程类必填"
+                maxlength="15"
+                show-word-limit
+                :disabled="isDetails"
+              ></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="明显管线点数量" prop="epoints">
+              <el-input v-model="form.epoints" maxlength="15" show-word-limit :disabled="isDetails"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <el-form-item label="隐蔽管线点数量" prop="hpoints">
-          <el-input v-model="form.hpoints" maxlength="15" show-word-limit></el-input>
+          <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails"></el-input>
         </el-form-item>
+
         <!-- <el-row>
           <el-col :span="12">
             <el-form-item label="工程开始日期">
@@ -166,6 +238,7 @@
         </el-row> -->
         <el-form-item label="工程日期范围">
           <el-date-picker
+            :disabled="isDetails"
             v-model="dateRange"
             @change="getDateRange"
             value-format="yyyy-MM-dd HH:mm:ss"
@@ -180,15 +253,15 @@
         <el-form-item label="工程简介" prop="proIntroduction">
           <el-input
             type="textarea"
-            :rows="5"
             resize="none"
             v-model="form.proIntroduction"
             maxlength="1000"
             show-word-limit
+            :disabled="isDetails"
           >
           </el-input>
         </el-form-item>
-        <el-form-item label="附件:">
+        <el-form-item label="附件:" v-show="!isDetails">
           <!-- <el-col :span="12">
             <el-input v-model="form.name"></el-input>
           </el-col>
@@ -207,13 +280,13 @@
             :auto-upload="false"
             :destroy-on-close="true"
           >
-            <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传docx/doc文件，且不超过500kb</div>
+            <el-button size="small" type="primary">点击上传</el-button><span> 只能上传docx/doc文件，且不超过500kb</span>
+            <!-- <div slot="tip" class="el-upload__tip"></div> -->
           </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="resetForm('form')">取 消</el-button>
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="addTable('form')">确 定</el-button>
       </div>
     </el-dialog>
@@ -242,7 +315,6 @@
         <el-button type="primary" @click="uploadWord">确 定</el-button>
       </div>
     </el-dialog>
-    <el-button type="primary" @click="getVuex">获取veux的数据</el-button>
   </div>
 </template>
 
@@ -252,6 +324,8 @@ import { projectPagingQuery, addData, changeInfo, deleteData, deleteDatas, impor
 export default {
   data() {
     return {
+      isDetails: false, // 判断是否是详情
+      isEdit: false, // 判断是否是修改数据
       dateRange: '', // 日期范围
       UpdataList: '', // 上传文件携带的参数
       updataDialog: false, // 上传对话框
@@ -392,6 +466,22 @@ export default {
     let res = this.getDate()
   },
   methods: {
+    // 打开详情
+    openDetails(row) {
+      this.initForm = { ...this.form }
+      console.log('当前列数据', row)
+      this.form = row
+      this.isDetails = true
+      this.dialogFormVisible = true
+    },
+    // 关闭对话框
+    closeDialog() {
+      console.log('关闭了对话框', this.initForm)
+      this.form = { ...this.initForm }
+      // 提交条件初始化
+      this.isEdit = false
+      this.isDetails = false
+    },
     // 获取日期范围
     getDateRange() {
       this.startdate = this.dateRange[0]
@@ -399,7 +489,8 @@ export default {
     },
     // 显示添加表单
     showForm() {
-      this.initForm = this.form
+      this.initForm = { ...this.form }
+      console.log('initForm', this.initForm)
       this.dialogFormVisible = true
     },
     // 显示上传表单
@@ -412,10 +503,6 @@ export default {
       console.log(this.multipleSelection)
       await this.$refs.updataDocx.submit()
       this.updataDialog = false
-    },
-    // 测试vuex
-    getVuex() {
-      console.log('打印veux', this.$store.state.specialWidth)
     },
     // 搜索
     searchApi() {
@@ -461,7 +548,13 @@ export default {
       // this.$refs[formName].validate(async (valid) => {
       //   if (valid) {
       // 将文件上传到服务器，先触发beforeUpload事件，对上传的文件进行校验，校验通过后才会上传
-      let res = await addData(this.form)
+      let res
+      if (this.isEdit) {
+        res = await changeInfo(this.form)
+        this.isEdit = false
+      } else {
+        res = await addData(this.form)
+      }
       // await this.$refs.upload.submit()
       if (res.result) {
         this.$message({
@@ -473,7 +566,7 @@ export default {
       }
       await this.getDate()
       // 最后清空表单
-      this.form = this.initForm
+      this.form = { ...this.initForm }
       this.dialogFormVisible = false
       //     // this.$store.dispatch('app/toggleSideBarShow', true)
       //   } else {
@@ -482,14 +575,14 @@ export default {
       //   }
       // })
     },
-    resetForm(formName) {
-      this.$refs[formName].resetFields()
-      this.form = this.initForm
-      this.dialogFormVisible = false
-    },
     // 修改信息
     async updataInfo() {
-      this.$message('修改功能暂未开放');
+      // this.$message('修改功能暂未开放')
+      this.initForm = { ...this.form }
+      console.log('initForm', this.initForm)
+      this.form = this.multipleSelection[0]
+      this.isEdit = true
+      this.dialogFormVisible = true
       // this.form.createUserName = "李大钊"
       // this.form.prjNo = "007"
       // let parmas = {
@@ -601,7 +694,11 @@ export default {
   }
   // 卡片样式
   /deep/ .el-dialog {
+    margin-top: 9vh !important;
     font-size: 14px;
+    .el-dialog__body {
+      padding: 10px 0px !important;
+    }
     .el-dialog__header {
       background-color: #2d74e7;
       .el-dialog__title {
@@ -617,6 +714,12 @@ export default {
     .el-form {
       padding: 0 35px;
       box-sizing: border-box;
+      .el-form-item {
+        margin-bottom: 14px;
+      }
+    }
+    .el-dialog__footer {
+      padding: 0 20px 5px !important;
     }
   }
 }
