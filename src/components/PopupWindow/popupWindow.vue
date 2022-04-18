@@ -75,6 +75,7 @@ export default {
       flg: false,
       infoObject: {},
       afterClosePopup: null,
+      popup: null
     }
   },
   mounted() {
@@ -104,7 +105,7 @@ export default {
      * 关闭弹窗 
      * */
     closePopup() {
-      this.popup.setPosition(undefined);
+      this.popup && this.popup.setPosition(undefined);
       this.afterClosePopup && this.afterClosePopup()
     }
   }
