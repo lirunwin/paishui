@@ -2,17 +2,17 @@
   <div style="padding: 0 8px">
     <tf-legend class="legend_dept" label="标记剖面线" isopen="true" title="点击下方按钮后，在地图上绘制剖面线。">
       <el-row style="margin-top: 8px">
-        <el-button size="mini" type="primary" style="width: 100%" @click="drawLine" :disabled="analysisDisable">
+        <el-button size="mini" type="primary" style="width: 100%" @click="drawLine_new" :disabled="analysisDisable">
           <i v-if="analysisDisable" class="el-icon-loading"/>绘制横剖面线</el-button>
       </el-row>
     </tf-legend>
     <tf-legend class="legend_dept" label="分析结果" isopen="true" title="分析结果。">
-      <el-table :data="laterData" stripe style="width: 100%">
+      <el-table :data="layerData" stripe style="width: 100%">
         <el-table-column prop="name" label="图层名称" />
         <el-table-column prop="value" label="数量" />
         <el-table-column label="操作">
           <template slot-scope="scope">
-            <el-link type="primary" @click="showValue(scope.row)">查看</el-link>
+            <el-link type="primary" @click="showValue_new(scope.row)">查看</el-link>
           </template>
         </el-table-column>
       </el-table>
@@ -24,43 +24,211 @@
 import proj4 from "@/components/proj4/index";
 import tfLegend from '@/views/zhpt/common/Legend'
 import Echarts from 'echarts'
-import { esriConfig, appconfig } from 'staticPub/config'
+import { appconfig } from 'staticPub/config'
+
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import { Vector as VectorSource } from 'ol/source'
+import { Vector as VectorLayer } from 'ol/layer'
+import { comSymbol } from '@/utils/comSymbol'
+import GeoJSON from 'ol/format/GeoJSON'
+import * as turf from '@turf/turf'
+import * as olSphere from 'ol/sphere';
+import { LineString, Geometry } from 'ol/geom';
+import { fieldDoc } from '@/views/zhpt/common/doc'
+import { Feature } from 'ol';
+
 export default {
   name: 'HorizontalProfileAnalysis',
   components: { tfLegend, Echarts, proj4 },
-  props: { param: Object },
+  props: { 
+    param: Object,
+    data: Object
+  },
   data() {
     return {
       analysisDisable: false,
-      laterData: []
+      layerData: [],
+      //
+      mapView: null,
+      drawer: null,
+      vectorLayer: null
     }
   },
   computed: { sidePanelOn() { return this.$store.state.map.P_editableTabsValue } },
   watch: {
     sidePanelOn(newTab, oldTab) {
-      if(newTab == oldTab) return
-      if(newTab == 'horizontalProfileAnalysis') {        
-        this.$nextTick(() => {
-          this.gra.visible = true
-        })
-      } 
-      if(oldTab == 'horizontalProfileAnalysis') {
-        this.gra.visible = false        
-        var view = this.mapView
-        var draw = view.TF_draw
-        if(draw.activeAction) draw.reset()
-        view.container.style.cursor = ''
-      }
     }
   },
   mounted: function() {    
-    var mapView = this.mapView = this.$attrs.data.mapView    
-    mapView.graphics.add(this.gra = new mapView.TF_graphic({
-      geometry: { type: 'polygon', rings: [[[0,0]]], spatialReference: mapView.spatialReference },
-      symbol: { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: { color: [45, 116, 231, 1], width: "3px" } }
-    }))
+    this.mapView = this.data.mapView
   },
   methods: {
+    drawLine_new () {
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
+      this.vectorLayer = null
+      this.drawer = new iDraw(this.mapView, 'line', {
+        maxLength: 2,
+        showCloser: false,
+        endDrawCallBack: feature => {
+          this.drawer.remove()
+          this.analysis_new(feature)
+        }
+      })
+      this.drawer.start()
+
+    },
+    showValue_new (row) {
+      console.log('更多信息')
+      if (row) {
+        let colsData = []
+        for (let field in fieldDoc) {
+          colsData.push({ prop: field, label: fieldDoc[field] })
+        }
+        // 暂时展示15条属性
+        colsData.length = 15
+        let rowData = row.features.map(fea => {
+          return { ...fea.properties, geometry: fea.geometry }
+        })
+        this.$store.dispatch('map/handelClose', {
+          box:'HalfPanel',
+          pathId: 'queryResultMore',
+          widgetid: 'HalfPanel',
+        });
+        this.$nextTick(() => {
+          this.$store.dispatch('map/changeMethod', {
+            pathId: 'queryResultMore', 
+            widgetid: 'HalfPanel', 
+            label: '详情', 
+            param: { rootPage: this, data: rowData || [], colsData }
+          }
+        )
+        })
+      }
+    },
+    analysis_new (drawFeature) {
+      let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
+      let queryTask = new iQuery({ ...appconfig.gisResource["iserver_resource"].dataServer, dataSetInfo })
+
+      queryTask.spaceQuery(drawFeature).then(resArr => {
+        if (!this.vectorLayer) {
+          this.vectorLayer = createLayer()
+          this.vectorLayer.setZIndex(100)
+          this.mapView.addLayer(this.vectorLayer)
+        }
+
+        let insertPoints = [], tableData = []
+        resArr.forEach(item => {
+          if (item && item.result.featureCount !== 0) {
+            let features = item.result.features.features
+            let tableRow = { name: item.layerName, value: features.length, features }
+            tableData.push(tableRow)
+            item.result.features.features.forEach(feaJson => {
+              // 添加要素
+              let feas = new GeoJSON().readFeatures(feaJson)
+              this.vectorLayer.getSource().addFeatures(feas)
+              // 计算线段相交点
+              feas.forEach(fea => {
+                let line1 = turf.lineString(drawFeature.getGeometry().getCoordinates())
+                let line2 = turf.lineString(fea.getGeometry().getCoordinates())
+                let points = turf.lineIntersect(line1, line2)
+                let attrs = fea.values_
+                this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(points))
+                insertPoints.push({ points, attrs })
+              })
+            })
+          }
+        })
+        if (insertPoints.length !== 0) {
+          let coordinates = drawFeature.getGeometry().getCoordinates()
+          let center = [(coordinates[0][0] + coordinates[1][0]) / 2, (coordinates[0][1] + coordinates[1][1]) / 2]
+          this.openBox(insertPoints, center)
+          this.layerData = tableData
+        } else this.$message.error('无相交管线')
+      })
+      
+      function createLayer () {
+        return new VectorLayer({
+          source: new VectorSource(),
+          style: comSymbol.getAllStyle(3, '#f40', 5, '#C0DB8D'),
+          visible: false
+        })
+      }
+    },
+    // 定位要素点
+    gotoGeometry(geometry) {
+      if (this.vectorLayer) {
+        this.vectorLayer.setStyle(comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF'))
+        let source = this.vectorLayer.getSource()
+        source.clear()
+        geometry = new LineString(geometry.coordinates)
+        source.addFeature(new Feature({ geometry }))
+        this.vectorLayer.setVisible(true)
+        // 添加视野
+        // let extent = geometry.getExtent()
+        // this.mapView.getView().animate({ center: [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2]}, { zoom: 20 }, { duration: 100 })
+      }
+    },
+
+    openBox (features, mapCenter) {
+      let xminDistance = 0, xmaxDistance = 1, xmin = 0, xmax = 0
+      let dataYPipe = [], dataYGround = []
+      const heightField = "START_HEIGHT", deepFiled = "START_DEPTH"
+
+      if (features.length === 1) {
+        xminDistance = 0.1
+        let { attrs, points } = features[0]
+        let height = attrs[heightField]
+        let deep = attrs[deepFiled]
+        if (!height) return this.$.$message.error("管线高程数据不完整！")
+        dataYPipe.push([0, Number(height), Number(deep)])
+      } else {
+        let startX = 0
+        for (let length = features.length, i = 0; i < length; i++) {
+          let { attrs, points } = features[i]
+          let height = attrs[heightField]
+          let deep = attrs[deepFiled]
+          if (i) {
+            let prevPoint = new GeoJSON().readFeature(features[i - 1].points.features[0]).getGeometry().getCoordinates()
+            let thisPoint = new GeoJSON().readFeature(points.features[0]).getGeometry().getCoordinates()
+            let length = olSphere.getLength(new LineString([prevPoint, thisPoint]), { projection: "EPSG:4326" })
+            startX = Math.round((startX + length) * 1000) / 1000
+            xmax = Math.max(startX, xmax)
+          }
+          dataYPipe.push([Number(startX), Number(height), Number(deep)])
+          dataYGround.push([Number(startX), Math.round((Number(height) + Number(deep)) * 1000) / 1000 ])
+        }
+      }
+      
+      let chartOption = {
+        title: { text: '横剖面分析', left: 'center' }, 
+        tooltip: { trigger: 'axis', axisPointer: { show: true, type: 'cross', lineStyle: { type: 'dashed' } }, 
+          formatter: (params) => {
+            return `距离：${params[0].data[0]}m<br/>管线高程：${params[0].data[1]}m<br/>埋深：${params[0].data[2]}m`
+          }
+        },
+        grid: { right: 60 },
+        xAxis: { name: '距离(m)', max: parseFloat((xmax + xmaxDistance).toFixed(2)), min: parseFloat((xmin - xminDistance).toFixed(2)), scale: true, boundaryGap: false, }, dataZoom: [{ minSpan:1, type: 'slider' }], toolbox: { feature: { saveAsImage: {} } },
+        legend: { data: ['管线高程', '地面高程'], left: '0' },
+        yAxis: { name: '高程(m)', type: 'value', scale: true },
+        series: [
+          { name: '管线高程', smooth: true, data: dataYPipe, type: 'scatter', symbolSize: 12, itemStyle: { borderWidth: 2, borderColor: '#AF1F17', color: '#C69A74' }},
+          { name: '地面高程', smooth: true, data: dataYGround, type: 'line', symbolSize: 8, areaStyle:{color:'#ECF2FF'}, itemStyle:{ borderColor:'#2D74E7', color: '#2D74E7' } }
+        ]
+      }
+
+
+      this.$store.dispatch('map/changeMethod', {
+        pathId: 'analysisBox',
+        widgetid: 'FloatPanel',
+        label: '分析结果统计',
+        param: { that: this, title: '横剖面分析', mapCenter, tabs: [{ option: chartOption, title: '横剖面分析结果' }] }
+      })
+
+    },
+    
+
     drawLine: function() {      
       var view = this.mapView
       var sp = view.spatialReference
@@ -119,22 +287,28 @@ export default {
             var distance = (xMax - xMin) * 0.01
             var dataTable = { x: dataX, y1: dataYPipe, y2: dataYGround}
             let [pointerHighLightX, pointerX] = [0]
-            var options = { id: (new Date()).getTime(), name: '横剖面分析', data: dataTable, option: {
-              title: { text: '横剖面分析', left: 'center' }, 
-              tooltip: { trigger: 'axis', axisPointer: { show: true, type: 'cross', lineStyle: { type: 'dashed' } }, formatter: (params) => {
-                var x = params[params.length / 2].data
-                var y = x[1]
-                x = x[0]
-                return '距离：' + x + 'm<br/>地面高程：' + y + 'm<br/>埋深：' + (y - params[0].data[1]).toFixed(2) + 'm'
-              }},
-              grid: { right: 60 },
-              xAxis: { name: '距离(m)', max: parseFloat((xMax + distance).toFixed(2)), min: parseFloat((xMin - distance).toFixed(2)),scale: true, boundaryGap: false, }, dataZoom: [{ minSpan:1, type: 'slider' }], toolbox: { feature: { saveAsImage: {} } },
-              legend: { data: ['管线高程', '地面高程'], left: '0' },
-              yAxis: { name: '长度(m)', type: 'value', scale: true },
-              series: [
-                { name: '管线高程', smooth: true, data: dataYPipe, type: 'scatter', symbolSize: 12, itemStyle: { borderWidth: 2, borderColor: '#AF1F17', color: '#C69A74' }},
-                { name: '地面高程', smooth: true, data: dataYGround, type: 'line', symbolSize: 8, areaStyle:{color:'#ECF2FF'}, itemStyle:{ borderColor:'#2D74E7', color: '#2D74E7' } }
-              ]}, mapOptions: {
+            var options = { 
+              id: (new Date()).getTime(),
+              name: '横剖面分析', 
+              data: dataTable, 
+              option: {
+                title: { text: '横剖面分析', left: 'center' }, 
+                tooltip: { trigger: 'axis', axisPointer: { show: true, type: 'cross', lineStyle: { type: 'dashed' } }, formatter: (params) => {
+                  var x = params[params.length / 2].data
+                  var y = x[1]
+                  x = x[0]
+                  return '距离：' + x + 'm<br/>地面高程：' + y + 'm<br/>埋深：' + (y - params[0].data[1]).toFixed(2) + 'm'
+                }},
+                grid: { right: 60 },
+                xAxis: { name: '距离(m)', max: parseFloat((xMax + distance).toFixed(2)), min: parseFloat((xMin - distance).toFixed(2)),scale: true, boundaryGap: false, }, dataZoom: [{ minSpan:1, type: 'slider' }], toolbox: { feature: { saveAsImage: {} } },
+                legend: { data: ['管线高程', '地面高程'], left: '0' },
+                yAxis: { name: '长度(m)', type: 'value', scale: true },
+                series: [
+                  { name: '管线高程', smooth: true, data: dataYPipe, type: 'scatter', symbolSize: 12, itemStyle: { borderWidth: 2, borderColor: '#AF1F17', color: '#C69A74' }},
+                  { name: '地面高程', smooth: true, data: dataYGround, type: 'line', symbolSize: 8, areaStyle:{color:'#ECF2FF'}, itemStyle:{ borderColor:'#2D74E7', color: '#2D74E7' } }
+                ]
+              }, 
+              mapOptions: {
                 pipe: paths,
                 onPointer: (params, map, point, that) => {
                   var xAxisInfo = params.axesInfo[0];
@@ -154,9 +328,9 @@ export default {
                   }
                 }
               }}
-            this.laterData = [{ name: '管线', value: pipes.length, ids: pipes}]
+            this.layerData = [{ name: '管线', value: pipes.length, ids: pipes}]
             var showResult = this.$store.state.map.analysisResult
-            var showBoxs = showResult ? showResult.box : undefined
+            var showBoxs = showResult ? showResult.box : undefined 
             if(showBoxs) {
               var firstI = showBoxs.tabs.length.toString()
               showBoxs.tabs.push({ label:'横剖面分析', index: firstI, option: options.option, hasMap: options.mapOptions })
@@ -205,11 +379,18 @@ export default {
     }
   },
   destroyed() {
-    var view = this.mapView
-    var draw = view.TF_draw
-    if(draw.activeAction) draw.reset()
-    view.graphics.remove(this.gra)
-    if(view.TF_resultFeatures) view.TF_resultFeatures.destroy('HorizontalProfileAnalysis')
+    this.drawer && this.drawer.end()
+    this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
+
+    this.$store.dispatch('map/handelClose', {
+      box:'HalfPanel',
+      pathId: 'queryResultMore',
+      widgetid: 'HalfPanel',
+    });
+    this.$store.dispatch('map/handelClose', {
+      pathId: 'analysisBox',
+      widgetid: 'FloatPanel',
+    })
   }
 }
 </script>

@@ -76,6 +76,7 @@ import iDraw from '@/views/zhpt/common/mapUtil/draw'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
 import { comSymbol } from '@/utils/comSymbol';
 import { fieldDoc } from '@/views/zhpt/common/doc'
+import { Feature } from 'ol';
 
 export default {
   props: ['data'],
@@ -96,7 +97,8 @@ export default {
       drawer: null,
       vectorLayer: null,
       drawFeature: null,
-
+      lightFeature: null,
+      lightLayer: null
     }
   },
   computed: {
@@ -120,7 +122,13 @@ export default {
   destroyed() {
     this.drawer && this.drawer.end()
     this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
-    this.drawer = this.vectorLayer = null
+    this.lightLayer && this.mapView.removeLayer(this.lightLayer)
+    this.drawer = this.vectorLayer = this.lightLayer = null
+    this.$store.dispatch('map/handelClose', {
+      box:'HalfPanel',
+      pathId: 'queryResultMore',
+      widgetid: 'HalfPanel',
+    });
   },
   mounted() {
     this.mapView = this.data.mapView
@@ -131,7 +139,7 @@ export default {
     */
     initDraw () {
       this.drawer && this.drawer.end()
-      this.vectorLayer.getSource().clear()
+      this.vectorLayer && this.vectorLayer.getSource().clear()
       this.drawer = new iDraw(this.data.mapView, this.drawType, {
         endDrawCallBack: feature => {
           this.drawer.remove()
@@ -293,6 +301,7 @@ export default {
       this.vectorLayer.getSource().clear()
       this.initDraw()
       this.drawFeature = null
+      this.resultData = []
     },
     /**
      *  展示查询结果
@@ -308,9 +317,20 @@ export default {
         pathId: 'queryResultMore',
         widgetid: 'HalfPanel',
         label: '详细信息',
-        param: { data, colsData }
+        param: { data, colsData, rootPage: this }
       })
       
+    },
+    gotoGeometry (geometry) {
+      console.log("定位")
+      if (!this.lightLayer) {
+        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#FFFFB6') })
+        this.lightLayer.setZIndex(999)
+        this.mapView.addLayer(this.lightLayer)
+      }
+      this.lightLayer.getSource().clear()
+      this.lightFeature = new Feature({ geometry })
+      this.lightLayer.getSource().addFeature(this.lightFeature)
     }
   }
 }

@@ -95,7 +95,6 @@ export default {
      * 打开弹窗 
      * */
     showPopup(position, infoObject, afterClosePopup) {
-      console.log("打开弹窗")
       this.afterClosePopup = afterClosePopup
       this.infoObject = infoObject
       this.flg = true

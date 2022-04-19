@@ -102,7 +102,7 @@ export default class iDraw {
     }
     // 清除绘制图形
     clear () {
-        this.vectorSource.clear()
+        this.vectorSource && this.vectorSource.clear()
         this.map.removeLayer(this.vectorLayer)
         this.overlay && this.overlay.setPosition(null)
         this.vectorSource = this.vectorLayer = this.overlay = null

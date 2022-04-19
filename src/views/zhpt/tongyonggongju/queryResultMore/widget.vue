@@ -81,9 +81,9 @@ export default {
       this.tableData = this.param.data || []
       if (this.tableData.length !== 0) {
         if (this.tableData < this.pageSize) {
-          this.featureData = this.tableData.splice(0, this.tableData.length)
+          this.featureData = [...this.tableData].splice(0, this.tableData.length)
         } else {
-          this.featureData = this.tableData.splice(0, this.pageSize)
+          this.featureData = [...this.tableData].splice(0, this.pageSize)
         }
       }
       this.colsData = this.param.colsData || []
@@ -96,6 +96,7 @@ export default {
     },
     viewFeature (row) {
       if (row.geometry) {
+        // 调用该组件的界面需要定义 gotoGeometry 方法
         this.param.rootPage && this.param.rootPage.gotoGeometry(row.geometry)
       } else this.$message.error("无图形信息")
     }

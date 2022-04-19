@@ -43,7 +43,9 @@ export const appconfig = {
     // add iserverResource
     "iserver_resource": {
       'dataServer': {
-        'dataServiceUrl': "http://117.174.10.73:8090/iserver/services/data-kxcgw/rest/data",
+        'dataServiceUrl': "http://117.174.10.73:8090/iserver/services/data-kxcgw/rest/data", // 数据服务
+        'netWorkAnalysisUrl': "http://117.174.10.73:8090/iserver/services/transportationAnalyst-jsgw/rest/networkanalyst/jsgw_Network@jsgw", // 网络分析
+        'connetedAnalysisUrl': "http://117.174.10.73:8090/iserver/services/transportationAnalyst-jsgw/rest/networkanalyst/jsgw_Network@jsgw/connectededges.json", // 连通分析
         'dataSource': "kxcgw",
         'dataSet': ["给水管线", "广电线缆"],
         'dataSetInfo': [
