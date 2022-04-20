@@ -1,28 +1,27 @@
 import request from '@/utils/request'
 
-// 获取地图书签
-export function getMapMark (data) { 
+// 获取地图书签 { page }
+export function getMapMark (params) { 
     return request({
-        url: "",
-        method: "",
-        data
+        url: "/psgw/titleLabel/page",
+        method: "get",
+        params
     })
 }
 
-// 添加地图书签
+// 添加地图书签 {  }
 export function addMapMark (data) {
     return request({
-        url: "",
-        method: "",
+        url: "/psgw/titleLabel",
+        method: "post",
         data
     })
 }
 
-// 删除地图书签
-export function deleteMapMark (data) {
+// 删除地图书签 { id }
+export function deleteMapMark (id) {
     return request({
-        url: "",
-        method: "",
-        data
+        url: "/psgw/titleLabel/" + id,
+        method: "delete",
     })
 }

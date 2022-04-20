@@ -19,6 +19,8 @@ export default class iDraw {
 
     startDrawCallBack = null // 开始绘制时回调
 
+    conditionCallBack = null // 
+
     endDrawCallback = null // 结束绘制时回调
 
     showCloser = true // 是否显示关闭
@@ -35,11 +37,12 @@ export default class iDraw {
         circle: "Circle" // 圆
     } // 绘制类型
 
-    constructor (map, type, { startDrawCallBack = null, endDrawCallBack = null, showCloser = true, maxLength = 1e3 }) {
+    constructor (map, type, { startDrawCallBack = null, conditionCallBack = null, endDrawCallBack = null, showCloser = true, maxLength = 1e3 }) {
         this.map = map
         this.type = type
         this.startDrawCallBack = startDrawCallBack
         this.endDrawCallback = endDrawCallBack
+        this.conditionCallBack = conditionCallBack
         this.showCloser = showCloser
         this.maxLength = maxLength
         this.init()
@@ -66,6 +69,7 @@ export default class iDraw {
             maxPoints: this.maxLength,
             style: comSymbol.getDrawStyle(7, "#f40", 5, "#C0DB8D"),
             condition: evt => {
+                this.conditionCallBack && this.conditionCallBack(evt)
                 return true
             },
             ...geometryFunction
@@ -98,7 +102,7 @@ export default class iDraw {
     }
     // 清除绘制图形
     clear () {
-        this.vectorSource.clear()
+        this.vectorSource && this.vectorSource.clear()
         this.map.removeLayer(this.vectorLayer)
         this.overlay && this.overlay.setPosition(null)
         this.vectorSource = this.vectorLayer = this.overlay = null

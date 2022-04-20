@@ -49,6 +49,8 @@ import echarts from 'echarts'
 //     $comMethod:dStore.utils.comMethod
 //   }
 // }
+import JsonExcel from "vue-json-excel";
+Vue.component("downloadExcel", JsonExcel);
 
 Vue.prototype.$echarts = echarts
 Vue.prototype.$comMethod = comMethod

@@ -70,7 +70,7 @@
         </tf-legend>
         <el-row style="margin-top: 8px">
           <el-button size="mini" type="primary" style="width:100%" @click="showThemLayer" :disabled="analysisDisable">
-            <i v-if="analysisDisable" class="el-icon-loading"/>添加显示</el-button>
+            <i v-if="analysisDisable" class="el-icon-loading"/>添加并显示</el-button>
         </el-row>
       </div>
     </el-tab-pane>
@@ -80,15 +80,22 @@
           <el-table ref="multipleTable" :data="themLayerData" tooltip-effect="dark" max-height="400px"
             style="width: 100%" @select="selectChange" @select-all="selectChange">
             <el-table-column type="selection" width="55" />
-            <el-table-column prop="name" label="图层" /> 
+            <el-table-column prop="mapName" label="图层" /> 
             <el-table-column prop="size" label="操作" >
               <template slot-scope="scope">
                 <el-link type="primary" @click="jump(scope.row, scope.$index)">跳转</el-link>
-                <!-- <el-link type="primary" @click="deleteFeas(scope.row, scope.$index)">删除</el-link> -->
+                <el-link type="primary" @click="deleteThemLayer(scope.row)">删除</el-link>
               </template>
             </el-table-column>
           </el-table>
-          <el-button size="mini" type="primary" style="width:100%" @click="deleteSelectFeas">删除选中专题图</el-button>
+          <el-row style="margin-top: 8px">
+            <el-col :span="20">
+              <el-pagination ref="pagination" small background layout="total, sizes, prev, next" 
+              :page-size.sync='pageSize' :current-page.sync='currentPage' :page-sizes="[5, 10, 50, 100]" :total="total"
+              @current-change="updateThemLayerTable" @size-change="updateThemLayerTable" />
+            </el-col>
+          </el-row>
+          <!-- <el-button size="mini" type="primary" style="width:100%" @click="deleteSelectFeas">删除选中专题图</el-button> -->
         </tf-legend>
       </div>
     </el-tab-pane>
@@ -134,18 +141,21 @@ export default {
       space: 'all',
       spaceSetting: [],
       spaceSettings: { },
-      themLayerData: [
-        { name: "测试专题图" }
-      ],
+      
       analysisDisable: false,
 
       // 
-      themLayerName: '专题图名称',
+      themLayerName: '',
+      themLayerData: [],
       layerId: '', // 图层名
       analysisAtt: [], // 字段名
       drawer: null, // 绘制器
       themLayer: null, // 专题图层
-      limitFeature: null // 绘制图形
+      limitFeature: null, // 绘制图形
+
+      pageSize: 10,
+      currentPage: 1,
+      total: 0
     }
   },
   computed: { 
@@ -178,7 +188,8 @@ export default {
           endDrawCallBack: featrue => {
             this.limitFeature = featrue
             this.drawer.remove()
-          }
+          },
+          showCloser: false
         })
         this.drawer.start()
       } else {
@@ -198,6 +209,7 @@ export default {
   mounted() {
     this.$refs.tabs.$el.children[0].style.background = '#fff'
     this.init().then(() => this.widgetLoading = false)
+    this.updateThemLayerTable()
   },
   methods: { 
     init() {
@@ -325,20 +337,22 @@ export default {
     showThemLayer () {
       if (!this.themLayerName) return this.$message.error('请输入专题图名称')
       if (!this.queText) return this.$message.error('请选择专题图过滤条件')
+      if (this.space === "draw" && !this.limitFeature) return this.$message.error('请先绘制范围')
 
-      this.addThemLayer(this.limitFeature, this.queText)
+      this.addThemLayer(this.limitFeature, this.layerId, this.queText)
       
       this.uploadThemLayer(this.limitFeature, this.queText)
     },
 
-    addThemLayer (limitFeature, sqlFilterStr) {
+    addThemLayer (limitFeature, layerId, sqlFilterStr) {
       this.themLayer && this.mapView.removeLayer(this.themLayer)
       this.themLayer = null
 
       this.data.that.loading = true
       this.data.that.loadText = "专题图显示中..."
 
-      let queryTask = new iQuery(appconfig.gisResource['iserver_resource'].dataServer)
+      let dataSetInfo = [{ name: layerId }]
+      let queryTask = new iQuery({ ...appconfig.gisResource['iserver_resource'].dataServer, dataSetInfo })
       queryTask.sqlQuery(sqlFilterStr).then(resArr => {
         this.data.that.loading = false
         if (!resArr) return this.$message.error("服务器请求失败!")
@@ -375,17 +389,21 @@ export default {
       function createThemLayer () {
         return new VectorLayer({
           source: new VectorSource(),
-          style: comSymbol.getAllStyle(3, "#f40", 2, "#C0DB8D")
+          style: comSymbol.getAllStyle(3, "#f40", 5, "#00FFFF")
         })
       }
     },
 
     // TODO 上传专题图
     uploadThemLayer (limitFeature, sqlFilterStr) {
+      let range = limitFeature ? limitFeature.getGeometry().getCoordinates() : appconfig.initCenter
       let params = {
-        extent: limitFeature ? limitFeature.getGeometry().getExtent() : this.mapView.extent,
-        filter: sqlFilterStr,
-        name: this.themLayerName,
+        rangeValue: limitFeature ? JSON.stringify(range) : "",
+        range: limitFeature ? 1 : 0,
+        filterSql: sqlFilterStr,
+        mapName: this.themLayerName,
+        layerName: this.layerId,
+        userId: this.$store.state.user.userId
       }
       addThemLayer(params).then(res => {
         this.updateThemLayerTable()
@@ -395,27 +413,38 @@ export default {
 
     // TODO 更新专题图表格
     updateThemLayerTable () {
-      let  params = {}
+      let  params = { size: this.pageSize, current: this.currentPage }
       getThemLayer(params).then(res => {
+        console.log("取得数据")
+        if (res.code === 1) {
+          this.total = res.result.total
+          this.themLayerData = res.result.records
+        }
+      })
+    },
 
+    deleteThemLayer (row) {
+      this.$confirm('确定删除"' + row.mapName + '"图层信息', '提示',
+        { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }).then(_ => {
+          this.themLayer && this.themLayer.getSource().clear()
+          this.drawer && this.drawer.end()
+          deleteThemLayer(row.id).then(res => {
+            if (res.code == 1) {
+              this.$message.success(`已删除 ${row.mapName} 专题图`)
+              this.updateThemLayerTable()
+            }
+          })
       })
     },
 
     // TODO 删除专题图
-    deleteThemLayer () {
+    deleteThemLayers (row) {
       let selects = this.$refs.multipleTable.selection
       if (selects.length == 0) return this.$message('请选中至少一个专题图')
 
       let params = {}
       if(row.id && row.id > -1) {
-        this.$confirm('确定删除"' + row.name + '"图层信息', '提示',
-        { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }).then(_ => {
-          deleteThemLayer(params).then(res => {
-            if (res.code == 1) {
-              
-            }
-          })
-        })
+       
       }
     },
 
@@ -501,8 +530,15 @@ export default {
       })
     },
     jump(row) {
-      if(row.layer.fullExtent) this.mapView.extent = row.layer.fullExtent
-      this.$nextTick(() => this.mapView.zoom = this.mapView.zoom - 1)
+      let limitFeature = null
+      this.drawer && this.drawer.clear()
+      if (row.range) {
+        limitFeature = new GeoJSON().readFeature(turf.polygon(JSON.parse(row.rangeValue)))
+      } else {
+        this.mapView.getView().setZoom(15)
+      }
+      let { layerName, filterSql } = row
+      this.addThemLayer(limitFeature, layerName, filterSql)
     }
   },
   destroyed() {

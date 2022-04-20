@@ -11,7 +11,7 @@
       </el-tabs> 
       <div style="width:100%;height:calc(100% - 55px);display:flex;">
         <div ref="echart" style="flex:1;height:100%"></div>
-        <div ref="map" style="display:none;width:40%;height:100%"></div>
+        <div ref="map" class="map-view" style="display:none;flex:0.4;height:100%"></div>
       </div>
     </div>
   </div>
@@ -19,6 +19,14 @@
 
 <script>
 import Echarts from 'echarts'
+import Map from 'ol/Map'
+import View from 'ol/View'
+
+import TileLayer from 'ol/layer/Tile';
+import { Vector as VectorSource } from "ol/source";
+import { Vector as VectorLayer } from "ol/layer";
+import { TileSuperMapRest } from '@supermap/iclient-ol'
+
 export default {
   name: 'AnalysisBox',
   components: { Echarts },
@@ -30,6 +38,7 @@ export default {
       isFull:true,
       // paramL:null,
       // isStatistics:false,
+      fullEchart: true
     }
   },
   computed: {},
@@ -39,7 +48,7 @@ export default {
       },
   },
 
-  mounted: function() {    
+  mounted: function() {
     var tabs = []    
     for(let i=0,il=this.param.tabs,ii=il.length;i<ii;i++) {
       tabs.push({ label:il[i].name, index: i.toString(), option: il[i].option, hasMap: il[i].mapOptions })
@@ -47,9 +56,61 @@ export default {
     this.tabs = tabs
     
     this.myChart = Echarts.init(this.$refs.echart)
+    if (this.param.mapCenter) {
+      this.fullEchart = false
+      this.$nextTick(() => {
+        this.initMap(this.param.mapCenter)
+      })
+    }
     this.activeName = '0'
   },
   methods: {
+    initMap (mapCenter) {
+      console.log("初始化地图")
+      let mapDom = this.$refs.map, 
+          echartDom = this.$refs.echart,
+          rootMap = this.param.that.mapView
+      echartDom.style.flex = "0.6"
+      this.myChart.resize()
+      mapDom.style.display = ''
+      let map = new Map({
+        target: mapDom,
+        view: new View({
+          center: mapCenter,
+          zoom: rootMap.getView().getZoom(),
+          projection: 'EPSG:4326'
+        }),
+      })
+      console.log("图层树", rootMap.getLayers())
+      rootMap.getLayers().forEach(layer => {
+        let cloneLayer = clone(layer)
+        cloneLayer && map.addLayer(cloneLayer)
+      })
+
+      function clone (layer) {
+        if (layer instanceof TileLayer) {
+          if (layer.get("name") === "影像底图") return null
+          return new TileLayer({
+            source: new TileSuperMapRest({
+              url: layer.getSource()['_url'],
+              crossOrigin: 'anonymous', // 是否请求跨域操作
+              wrapX: true
+            }),
+            properties: {
+              projection: 'EPSG:4326'
+            }
+          })
+        } else if (layer instanceof VectorLayer) {
+          let clonelayer = new VectorLayer({
+            source: new VectorSource(),
+            style: layer.getStyle()
+          })
+          let features = layer.getSource().getFeatures()
+          features.forEach(fea => clonelayer.getSource().addFeature(fea.clone()))
+          return clonelayer
+        }
+      }
+    },
     getData() {
       var tab = this.tabs[this.activeName]
       this.myChart.clear()
@@ -88,3 +149,14 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+  .map-view {
+    /deep/ .ol-zoom {
+      display: none !important;
+    }
+    /deep/ .ol-attribution {
+      display: none !important;
+    }
+  }
+</style>

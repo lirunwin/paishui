@@ -62,69 +62,85 @@ import { unByKey } from 'ol/Observable';
 import { getLength, getDistance } from 'ol/sphere';
 import * as turf from '@turf/turf'
 import { getCenter } from 'ol/extent';
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import { appconfig } from 'staticPub/config';
+import { comSymbol } from '@/utils/comSymbol';
+import { CoverSoilStandard } from '@/views/zhpt/common/standard'
+
 export default {
   props: ['data'],
   data() {
     return {
       selectFlag: false,
       doLoading: false,
-      mapClickEvent: null,
       result: {
         pipeName: '',
         buryType: '',
         depth: '',
         standard: '',
         result: [true, true]
-      }
+      },
+      loading: false,
+      //
+      rootPage: null,
+      mapClickEvent: null,
+      mapView: null,
+      vectorLayer: null
     }
   },
   computed: {
-    // 获取点击查询状态
-    loading() {
-      if (this.selectFlag)
-        if (this.data.that.queryByClick.querying)
-          return this.data.that.queryByClick.querying
-        else return false
-      else return false
-    },
-    // 获取点击查询结果
-    resultInfo() {
-      return this.data.that.queryByClick.resultInfo
-    }
   },
   watch: {
-    // 监听面板是否被改变
-    '$store.state.map.P_editableTabsValue': function (val, oldVal) {
-      if (val != 'soilDepthAnalysis') {
-        this.selectFlag = false
-        this.data.that.popupWindowClose() // 清除地图视图点击选择的要素,关闭弹窗
-      }
-    },
-    loading(val, oldVal) {
-      if (this.selectFlag && !val) {
-        if (!this.resultInfo) {
-          this.$message.error('未选中管线！')
-        }
-        else {
-          this.selectInfo = JSON.parse(JSON.stringify(this.resultInfo))
-          this.getPipeSoilDepth(this.selectInfo.feature)
-        }
-      }
-    }
   },
   mounted() {
     this.loadChart()
+    this.rootPage = this.data.that
+    this.mapView = this.data.mapView
+    this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
+    this.mapView.addLayer(this.vectorLayer)
   },
   destroyed() {
-    this.data.that.popupWindowClose() // 清除地图视图点击选择的要素,关闭弹窗
+    this.rootPage.$refs.popupWindow.closePopup() // 清除地图视图点击选择的要素,关闭弹窗
+    this.mapClickEvent && this.mapView.removeInteraction(this.mapClickEvent)
+    this.vectorLayer && this.vectorLayer.getSource().clear()
+    this.mapView.removeLayer(this.vectorLayer)
+    this.mapClickEvent = this.vectorLayer = null
   },
   methods: {
     // 选择管线
     selectPipe() {
       this.clearResult()
-      this.data.that.map.getView().animate({ zoom: 20 });
+      this.setCursor('crosshair')
       this.selectFlag = true
+      this.mapClickEvent && this.mapView.removeInteraction(this.mapClickEvent)
+      this.vectorLayer.getSource().clear()
+
+      this.mapClickEvent = this.mapView.on("click", evt => {
+        let { coordinate } = evt
+        let dataServer = appconfig.gisResource.iserver_resource.dataServer
+        let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
+        const tolerateDis = 2 // 2m 模糊距离
+        let geometryJson = turf.buffer(turf.point(coordinate), tolerateDis / 1000, { units: 'kilometers' })
+        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(new GeoJSON().readFeature(geometryJson)).then(resArr => {
+          let featureObj = resArr.find(res => res.result.featureCount !== 0)
+          if (featureObj) {
+            this.mapView.removeInteraction(this.mapClickEvent)
+            this.setCursor()
+            let features = featureObj.result.features
+            this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(features))
+            this.rootPage.$refs.popupWindow.showPopup(coordinate, features.features[0])
+            this.getPipeSoilDepth(features.features[0])
+          } else this.$message.warning("该位置无管线")
+        })
+        // 
+      })
     },
+    setCursor (cursorStyle) {
+      if (this.mapView) {
+        this.mapView.getTargetElement().style.cursor = cursorStyle || 'auto'
+      }
+    },
+
     /**图表 */
     loadChart(xAxis, groundHeightArray, nodeHeightArray, standardValArry) {
       let chartDom = document.getElementById('main');
@@ -142,7 +158,6 @@ export default {
           color: 'black',
           textStyle: { color: '#3c4043' },
           formatter: param => {
-            console.log('param', param)
             const deepth1 = param[0].data - param[1].data // 实际深度
             const deepth2 = param[0].data - param[2].data // 标准深度
             return `
@@ -156,13 +171,13 @@ export default {
         },
         xAxis: {
           type: 'category',
-          name: '长度\n(m)',
+          name: '长\n度\nm',
           boundaryGap: false,
           data: xAxis
         },
         yAxis: {
           type: 'value',
-          name: '高度(m)',
+          name: '高度/m',
           scale: true
           // min: yMin,
           // max: yMax
@@ -220,7 +235,7 @@ export default {
       let result = []
       let standardDescrip = null
       let standardVal = null // 结果标准
-      mapConfig.coverSoilStandard.forEach(item => {
+      CoverSoilStandard.forEach(item => {
         if (item.subtype == feaType) {
           standard = item;
           return
@@ -253,7 +268,7 @@ export default {
       let endGroundHeight = parseFloat(feature.properties.END_HEIGHT) + parseFloat(feature.properties.END_DEPTH)
       let groundHeightArray = [startGroundHeight.toFixed(2), endGroundHeight.toFixed(2)]
       let nodeHeightArray = [feature.properties.START_HEIGHT, feature.properties.END_HEIGHT]
-      let proj = this.data.that.map.getView().getProjection()
+      let proj = this.mapView.getView().getProjection()
       let xAxis = [0, getLength(new GeoJSON().readFeature(feature).getGeometry(), { "projection": proj, "radius": 6378137 }).toFixed(2)]
       let standardValArry = [(startGroundHeight - standardVal).toFixed(2), (endGroundHeight - standardVal).toFixed(2)]
       this.loadChart(xAxis, groundHeightArray, nodeHeightArray, standardValArry)
@@ -271,7 +286,8 @@ export default {
         standard: '',
         result: [true, true]
       }
-      this.data.that.popupWindowClose() // 清除地图视图点击选择的要素,关闭弹窗
+      this.rootPage.$refs.popupWindow.closePopup()// 清除地图视图点击选择的要素,关闭弹窗
+      this.vectorLayer && this.vectorLayer.getSource().clear()
       this.selectFlag = false
     }
   }
