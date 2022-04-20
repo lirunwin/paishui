@@ -5,15 +5,16 @@
       <div class="top-tool">
         <div class="serch-engineering">
           <div class="title">关键字：</div>
-          <el-input placeholder="搜索工程编号" v-model="searchValue.prjNo" clearable class="serch-input"> </el-input>
-          <el-input
+          <el-input placeholder="搜索工程编号、工程名称" v-model="searchValue.prjNo" clearable class="serch-input">
+          </el-input>
+          <!-- <el-input
             placeholder="搜索工程名称"
             v-model="searchValue.prjName"
             style="margin-left: 12px"
             clearable
             class="serch-input"
           >
-          </el-input>
+          </el-input> -->
           <el-button class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
         </div>
         <div class="right-btn">
@@ -45,6 +46,7 @@
         tooltip-effect="dark"
         stripe
         style="width: 100%"
+        @row-dblclick="dblclickUpdata"
         @selection-change="handleSelectionChange"
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
@@ -319,7 +321,7 @@
 </template>
 
 <script>
-import { projectPagingQuery, addData, changeInfo, deleteData, deleteDatas, importFiles } from '@/api/pipelineManage'
+import { projectPagingQueryNew, addData, changeInfo, deleteData, deleteDatas, importFiles } from '@/api/pipelineManage'
 
 export default {
   data() {
@@ -575,9 +577,16 @@ export default {
       //   }
       // })
     },
+    // 双击修改
+    dblclickUpdata(row, column, event) {
+      console.log(row, column, event)
+      this.initForm = { ...this.form }
+      this.form = row
+      this.isEdit = true
+      this.dialogFormVisible = true
+    },
     // 修改信息
-    async updataInfo() {
-      // this.$message('修改功能暂未开放')
+    updataInfo() {
       this.initForm = { ...this.form }
       console.log('initForm', this.initForm)
       this.form = this.multipleSelection[0]
@@ -616,10 +625,10 @@ export default {
     async getDate(params) {
       let data = this.pagination
       if (params) {
-        data.prjName = params.prjName
+        // data.prjName = params.prjName
         data.prjNo = params.prjNo
       }
-      await projectPagingQuery(data).then((res) => {
+      await projectPagingQueryNew(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
         this.paginationTotal = res.result.total

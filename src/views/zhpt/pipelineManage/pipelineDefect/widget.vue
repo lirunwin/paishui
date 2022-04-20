@@ -45,7 +45,7 @@
         <el-table-column prop="date" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
         </el-table-column>
         <el-table-column
-          prop="name"
+          prop="expNo"
           min-width="150"
           header-align="center"
           label="管段编号"
@@ -54,7 +54,7 @@
         >
         </el-table-column>
         <el-table-column
-          prop="address"
+          prop="pipeType"
           min-width="150"
           header-align="center"
           label="管段类型"
@@ -63,7 +63,7 @@
         >
         </el-table-column>
         <el-table-column
-          prop="address"
+          prop="diameter"
           min-width="150"
           header-align="center"
           label="管径(mm)"
@@ -72,7 +72,7 @@
         >
         </el-table-column>
         <el-table-column
-          prop="address"
+          prop="material"
           min-width="150"
           header-align="center"
           label="材质"
@@ -81,7 +81,7 @@
         >
         </el-table-column>
         <el-table-column
-          prop="address"
+          prop="structDefect"
           min-width="150"
           header-align="center"
           label="结构性缺陷等级"
@@ -90,7 +90,7 @@
         >
         </el-table-column>
         <el-table-column
-          prop="address"
+          prop="structEstimate"
           min-width="150"
           header-align="center"
           label="结构性缺陷评价"
@@ -98,15 +98,27 @@
           show-overflow-tooltip
         >
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="缺陷数量" align="center" show-overflow-tooltip>
+        <el-table-column prop="defectNum" header-align="center" label="缺陷数量" align="center" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测照片" align="center" show-overflow-tooltip>
+        <!-- <el-table-column prop="address" header-align="center" label="检测照片" align="center" show-overflow-tooltip>
+        </el-table-column> -->
+        <el-table-column
+          prop="videoFileName"
+          header-align="center"
+          label="检测视频"
+          align="center"
+          show-overflow-tooltip
+        >
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测视频" align="center" show-overflow-tooltip>
+        <el-table-column
+          prop="checkAddress"
+          header-align="center"
+          label="检测地点"
+          align="center"
+          show-overflow-tooltip
+        >
         </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测地点" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测日期" align="center" show-overflow-tooltip>
+        <el-table-column prop="sampleTime" header-align="center" label="检测日期" align="center" show-overflow-tooltip>
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
@@ -151,7 +163,7 @@
 </template>
 
 <script>
-import { queryPageDefectinfo } from '@/api/pipelineManage'
+import { queryPageDefectInfo } from '@/api/pipelineManage'
 
 export default {
   data() {
@@ -192,7 +204,7 @@ export default {
         data.prjName = params.prjName
         data.prjNo = params.prjNo
       }
-      await queryPageDefectinfo(data).then((res) => {
+      await queryPageDefectInfo(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
         this.paginationTotal = res.result.total
@@ -252,7 +264,7 @@ export default {
           height: 34px;
         }
         .date-css {
-          width: 135px;
+          width: 140px;
         }
 
         .title {

@@ -249,47 +249,33 @@
           <el-tabs v-model="activeLeft" @tab-click="handleClick">
             <el-tab-pane label="统计汇总" name="first">
               <div class="releaseContent">
-                <div class="detailsTitle">管道缺陷数量统计表</div>
-                <table width="560" height="300" border="1" class="left-table" cellspacing="0" align="center">
-                  <thead>
-                    <tr height="34">
-                      <th rowspan="2" colspan="2">缺陷名称\缺陷数量\缺陷级别</th>
-                      <th>1级(轻微)</th>
-                      <th>2级(中等)</th>
-                      <th>3级(严重)</th>
-                      <th>4级(重大)</th>
-                      <th rowspan="2">小计</th>
-                    </tr>
-                    <tr height="34">
-                      <th>缺陷个数</th>
-                      <th>缺陷个数</th>
-                      <th>缺陷个数</th>
-                      <th>缺陷个数</th>
-                    </tr>
-                  </thead>
-                  <tr v-for="(v, i) in defectQuantityStatisticsA" :key="v.title">
-                    <td rowspan="10" v-if="i < 1">结构性缺陷</td>
-                    <td>{{ v.title }}</td>
-                    <td>{{ v.oneValue }}</td>
-                    <td>{{ v.twoValue }}</td>
-                    <td>{{ v.threeValue }}</td>
-                    <td>{{ v.fourValue }}</td>
-                    <td>{{ v.sum }}</td>
-                  </tr>
-                  <tr v-for="(v, i) in defectQuantityStatisticsB" :key="i">
-                    <td rowspan="6" v-if="i < 1">功能性缺陷</td>
-                    <td>{{ v.title }}</td>
-                    <td>{{ v.oneValue }}</td>
-                    <td>{{ v.twoValue }}</td>
-                    <td>{{ v.threeValue }}</td>
-                    <td>{{ v.fourValue }}</td>
-                    <td>{{ v.sum }}</td>
-                  </tr>
-                  <tr class="defectSum">
-                    <td colspan="2">合计</td>
-                    <td v-for="(key, i) in defectSumObj" :key="i">{{ key }}</td>
-                  </tr>
-                </table>
+                <el-table
+                  :data="defectQuantityStatistics"
+                  style="width: 100%"
+                  show-summary
+                  border
+                  :span-method="objectSpanMethod"
+                >
+                  <el-table-column label="分类"> </el-table-column>
+                  <el-table-column label="缺陷级别" align="center">
+                    <el-table-column label="缺陷数量" align="center">
+                      <el-table-column prop="address" label="缺陷名称" width="300" align="center"> </el-table-column>
+                    </el-table-column>
+                  </el-table-column>
+                  <el-table-column prop="address" label="1级(轻微)" width="300" align="center"
+                    ><el-table-column prop="zip" label="缺陷个数" width="120" align="center"> </el-table-column>
+                  </el-table-column>
+                  <el-table-column prop="address" label="1级(轻微)" width="300" align="center"
+                    ><el-table-column prop="zip" label="缺陷个数" width="120" align="center"> </el-table-column>
+                  </el-table-column>
+                  <el-table-column prop="address" label="1级(轻微)" width="300" align="center">
+                    <el-table-column prop="zip" label="缺陷个数" width="120" align="center"> </el-table-column
+                  ></el-table-column>
+                  <el-table-column prop="address" label="1级(轻微)" width="300" align="center">
+                    <el-table-column prop="zip" label="缺陷个数" width="120" align="center"> </el-table-column>
+                  </el-table-column>
+                  <el-table-column prop="name" label="小计" width="120" align="center"> </el-table-column>
+                </el-table>
               </div>
             </el-tab-pane>
             <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane>
@@ -327,27 +313,7 @@ import {
 export default {
   data() {
     return {
-      defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 },
-      defectQuantityStatisticsA: [
-        { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(BX)变形', type: 'BX', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(CK)错口', type: 'CK', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(CR)异物穿入', type: 'CR', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(FS)腐蚀', type: 'FS', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(PL)破裂', type: 'PL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(QF)起伏', type: 'QF', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(SL)渗透', type: 'SL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(TJ)脱节', type: 'TJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(TL)接口材料脱落', type: 'TL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 }
-      ], // 管道缺陷数量统计表
-      defectQuantityStatisticsB: [
-        { title: '(CJ)沉积', type: 'CJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(CQ)残墙、坝根', type: 'CQ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(FZ)浮渣', type: 'FZ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(JG)结垢', type: 'JG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(SG)树根', type: 'SG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(ZW)障碍物', type: 'ZW', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 }
-      ],
+      defectQuantityStatistics:[{title:"(AJ)支管暗接"},{title:"(BX)变形"},{title:"(CK)错口"},{title:"(CR)异物穿入"},{title:"(FS)腐蚀"},{title:"(PL)破裂"},{title:"(QF)起伏"},{title:"(SL)渗透"},{title:"(TJ)脱节"},{title:"(TL)接口材料脱落"},{title:"(CJ)沉积"},{title:"(CQ)残墙、坝根"},{title:"(FZ)浮渣"},{title:"(JG)结垢"},{title:"(SG)树根"},{title:"(ZW)障碍物"}],// 管道缺陷数量统计表
       batchReleaseDialog: false, // 批量发布弹框
       // 选择框分页参数
       selectParm: { current: 1, size: 30 },
@@ -359,7 +325,6 @@ export default {
         { label: '检测段数', name: 'jcnum' },
         { label: '检测长度', name: 'jclength' },
         { label: '工程名称', name: 'prjName' },
-        { label: '工程地点', name: '' },
         { label: '施工单位', name: 'sgunit' },
         { label: '检测日期', name: 'jcDate' },
         { label: '入库人', name: 'createUserName' },
@@ -420,67 +385,26 @@ export default {
   },
   mounted() {},
   methods: {
+    // 合并方法
+    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+      if (columnIndex === 0) {
+        if (rowIndex % 2 === 0) {
+          return {
+            rowspan: 2,
+            colspan: 1
+          }
+        } else {
+          return {
+            rowspan: 0,
+            colspan: 0
+          }
+        }
+      }
+    },
     // 单行管段详情
     async testReportDetails(id) {
       let res = await queryPipecheckDetails(id)
-      // this.defectQuantityStatisticsA
-      // 按缺陷名称给数据分类
-      res.result.forEach((resValue) => {
-        this.defectQuantityStatisticsA.forEach((sumValue) => {
-          // console.log("类型是否相等",typeof resValue.defectCode,sumValue.type);
-          if (resValue.defectCode == sumValue.type) {
-            if (resValue.defectLevel == '一级') {
-              sumValue.oneValue = resValue.defectNums
-              return
-            } else if (resValue.defectLevel == '二级') {
-              sumValue.twoValue = resValue.defectNums
-              return
-            } else if (resValue.defectLevel == '三级') {
-              sumValue.threeValue = resValue.defectNums
-              return
-            } else if (resValue.defectLevel == '四级') {
-              sumValue.fourValue = resValue.defectNums
-              return
-            }
-          }
-        })
-
-        this.defectQuantityStatisticsB.forEach((sumValue) => {
-          if (resValue.defectCode == sumValue.type) {
-            if (resValue.defectLevel == '一级') {
-              sumValue.oneValue = resValue.defectNums
-              return
-            } else if (resValue.defectLevel == '二级') {
-              sumValue.twoValue = resValue.defectNums
-              return
-            } else if (resValue.defectLevel == '三级') {
-              sumValue.threeValue = resValue.defectNums
-              return
-            } else if (resValue.defectLevel == '四级') {
-              sumValue.fourValue = resValue.defectNums
-              return
-            }
-          }
-        })
-      })
-
-      this.defectQuantityStatisticsA.forEach((v) => {
-        v.sum = v.oneValue + v.twoValue + v.threeValue + v.fourValue
-        this.defectSumObj.oneSum += v.oneValue
-        this.defectSumObj.twoSum += v.twoValue
-        this.defectSumObj.threeSum += v.threeValue
-        this.defectSumObj.fourSum += v.fourValue
-        this.defectSumObj.total += v.sum
-      })
-      this.defectQuantityStatisticsB.forEach((v) => {
-        v.sum = v.oneValue + v.twoValue + v.threeValue + v.fourValue
-        this.defectSumObj.oneSum += v.oneValue
-        this.defectSumObj.twoSum += v.twoValue
-        this.defectSumObj.threeSum += v.threeValue
-        this.defectSumObj.fourSum += v.fourValue
-        this.defectSumObj.total += v.sum
-      })
-
+      console.log('res', res)
       if (res.result) {
         this.dialogFormVisible3 = true
       }
@@ -754,10 +678,6 @@ export default {
           display: flex;
           align-items: center;
           white-space: nowrap;
-          margin-right: 5px;
-          .el-radio{
-            margin-right: 10px;
-          }
           .release-title {
             margin: 0 10px;
           }
@@ -859,6 +779,17 @@ export default {
     justify-content: space-between;
     .left,
     .right {
+      // 发布样式
+      /deep/ .el-table__header-wrapper {
+        .el-table__header,
+        .el-table__body {
+          width: 100%;
+        }
+        th.el-table__cell {
+          color: #666;
+          background: #eeece1;
+        }
+      }
       /deep/ .el-tabs__header {
         background: transparent;
         border-top: none;
@@ -881,34 +812,6 @@ export default {
       .releaseContent {
         border: 1px solid #9a9a9a;
         overflow: scroll;
-        .detailsTitle {
-          margin: 10px 0;
-            position: relative;
-          }
-          .detailsTitle::after {
-            position: absolute;
-            left: -10px;
-            content: '';
-            width: 4px;
-            height: 100%;
-            background-color: #2d74e7;
-          }
-        .left-table {
-          width: 100%;
-          font-weight: bold;
-          text-align: center;
-          th {
-            color: #666;
-            background: #eeece1;
-          }
-          tr {
-            height: 38px;
-          }
-          .defectSum {
-            height: 45px;
-            background-color: #eeece1;
-          }
-        }
       }
     }
     .right {

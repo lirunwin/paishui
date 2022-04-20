@@ -86,9 +86,9 @@
         <transition name="el-zoom-in-top">
           <div v-show="ShowThematicMap3" class="transition-box">
             <ul>
-              <li class="see-data">井盖缺失 ({{ '111个' }})</li>
-              <li class="see-data">井盖破损 ({{ '111个' }})</li>
-              <li class="see-data">井盖移位 ({{ '111个' }})</li>
+              <li class="see-data-triangle">井盖缺失 ({{ '111个' }})</li>
+              <li class="see-data-triangle">井盖破损 ({{ '111个' }})</li>
+              <li class="see-data-triangle">井盖移位 ({{ '111个' }})</li>
             </ul>
           </div>
         </transition>
@@ -146,9 +146,7 @@ export default {
       }
     }
   },
-  beforeCreate(){
-
-  },
+  beforeCreate() {},
   methods: {
     openDefect() {
       // 管道缺陷管理的信息
@@ -239,9 +237,41 @@ export default {
   width: 10px;
   height: 10px;
   border-radius: 50%;
+  border: 1px solid #999999;
   display: inline-block;
-  background-color: #e11111;
+  background-color: #f65252;
 }
+.see-data:nth-child(1):before {
+  background-color: #f405ff;
+}
+.see-data:nth-child(2):before {
+  background-color: #67c23a;
+}
+
+.see-data-triangle {
+  margin: 10px 0 10px 18px !important;
+}
+
+.see-data-triangle::before {
+  position: relative;
+  left: -10px;
+  top: 2px;
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 14px solid #f65252;
+  display: inline-block;
+}
+
+.see-data-triangle:nth-child(1):before {
+  border-bottom: 14px solid #f405ff;
+}
+.see-data-triangle:nth-child(2):before {
+  border-bottom: 14px solid #67c23a;
+}
+
 .see-data-line {
   margin: 10px 0 10px 18px !important;
 }
@@ -256,9 +286,9 @@ ul > .see-data-line::before {
   background-color: #f405ff;
 }
 ul > .see-data-line:nth-child(2):before {
-  background-color: #0c9923;
+  background-color: #67c23a;
 }
 ul > .see-data-line:nth-child(3):before {
-  background-color: #ff0000;
+  background-color: #f65252;
 }
 </style>
