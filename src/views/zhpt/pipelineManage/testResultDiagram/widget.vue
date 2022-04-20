@@ -26,7 +26,6 @@
     <div class="see-btn">
       <el-button type="primary" @click="showLayer">查看</el-button>
     </div>
-
     <p class="title">专题图列表</p>
     <div v-for="(item, index) in defectLegend" :key="index" class="thematicMap-list">
       <div>
@@ -54,6 +53,7 @@
       </div>
 
     </div>
+
     <!-- <button type="primary" @click="openDefect">打开管道缺陷管理模块</button> -->
   </div>
 </template>
@@ -172,7 +172,7 @@ export default {
       layers.forEach(layer => this.mapView.addLayer(layer))
     },
     initMap () {
-      let center = [104.74, 31.50]
+      let center = [104.75, 31.52]
       let colorBox = ["#ff0000", "#0c9923", "#f405ff"]
 
       let points = this.randomPoint(center, 0.025, 50)
@@ -188,8 +188,7 @@ export default {
       })
 
       // 检查井
-      let center2 = [104.75, 31.52]
-      let points2 = this.randomPoint(center2, 0.01, 50)
+      let points2 = this.randomPoint(center, 0.01, 50)
       let features2 = points2.map(item => new Feature({ geometry: new Point(item) }))
       features2.forEach((fea, index) => {
         let color = colorBox[index % 3]
@@ -226,7 +225,7 @@ export default {
         this.pipeHealthLayer.getSource().addFeatures(features)
       })
     },
-    // 在固定位置范围内随机获取点
+    
     randomPoint(center, range, num) {
       return new Array(num).fill(center).map(([centerX, centerY]) => {
         let x = Math.random() * range
@@ -257,7 +256,7 @@ export default {
         default: return
       }
       layer.setVisible(visible)
-      // visible && this.openDefect()
+      visible && this.openDefect()
     },
     changeArrow (index) {
       console.log('点击箭头')
