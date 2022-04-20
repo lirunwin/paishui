@@ -398,7 +398,8 @@ export default {
     uploadThemLayer (limitFeature, sqlFilterStr) {
       let range = limitFeature ? limitFeature.getGeometry().getCoordinates() : appconfig.initCenter
       let params = {
-        rangeValue: JSON.stringify(range),
+        rangeValue: limitFeature ? JSON.stringify(range) : "",
+        range: limitFeature ? 1 : 0,
         filterSql: sqlFilterStr,
         mapName: this.themLayerName,
         layerName: this.layerId,
@@ -529,15 +530,15 @@ export default {
       })
     },
     jump(row) {
-      let range = JSON.parse(row.rangeValue), limitFeature = null
+      let limitFeature = null
       this.drawer && this.drawer.clear()
-      if (range[0].length) {
-        limitFeature = new GeoJSON().readFeature(turf.polygon(range))
+      if (row.range) {
+        limitFeature = new GeoJSON().readFeature(turf.polygon(JSON.parse(row.rangeValue)))
       } else {
         this.mapView.getView().setZoom(15)
       }
       let { layerName, filterSql } = row
-      this.addThemLayer (limitFeature, layerName, filterSql)
+      this.addThemLayer(limitFeature, layerName, filterSql)
     }
   },
   destroyed() {

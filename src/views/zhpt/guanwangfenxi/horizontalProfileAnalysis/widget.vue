@@ -388,6 +388,7 @@ export default {
       widgetid: 'HalfPanel',
     });
     this.$store.dispatch('map/handelClose', {
+      box:'FloatPanel',
       pathId: 'analysisBox',
       widgetid: 'FloatPanel',
     })
