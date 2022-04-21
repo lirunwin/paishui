@@ -98,6 +98,7 @@
 import { queryPageDefectInfo } from '@/api/pipelineManage'
 
 export default {
+  props:{data},
   data() {
     return {
       searchValue: {
@@ -142,7 +143,7 @@ export default {
     }
   },
   mounted() {
-    // console.log("其它页面传来的参数",data);
+    console.log("其它页面传来的参数",data);
     let res = this.getDate()
   },
   methods: {
