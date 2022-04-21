@@ -153,6 +153,14 @@ export function changeInfo(data) {
     })
 }
 
+// 详情
+export function projectDetailsQuery(params) {
+    return request({
+        url: base + '/projectInfo/'+params,
+        method: 'get',
+    })
+}
+
 // 根据条件获取分页查询数据
 export function projectPagingQuery(params) {
     return request({

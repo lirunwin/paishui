@@ -288,7 +288,7 @@ export default {
         parentPathid: '/pipelineDefect',
         path: '',
         type: 'gis',
-        widgetid: 'HalfPanel',
+        widgetid: 'HalfPanel'
       }
       // 这是map里的跳转方法
       this.$store.dispatch('map/changeMethod', info)
