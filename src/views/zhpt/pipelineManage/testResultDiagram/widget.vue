@@ -5,21 +5,19 @@
     <el-form ref="form" :model="form" label-width="auto" :rules="rules">
       <el-form-item label="工程名称:" prop="name">
         <el-select v-model="form.project" placeholder="默认显示最新工程">
-          <el-option label="区域一" value="shanghai"></el-option>
-          <el-option label="区域二" value="beijing"></el-option>
+          <el-option v-for="(item, index) in projectOpt" :key="index" :label="item.label" :value="item.value"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="检测报告:">
         <el-select v-model="form.report" placeholder="请选择检测报告">
-          <el-option label="区域一" value="shanghai"></el-option>
-          <el-option label="区域二" value="beijing"></el-option>
+          <el-option v-for="(item, index) in reportOpt" :key="index" :label="item.label" :value="item.value"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="检测日期:">
         <el-col :span="11">
           <el-date-picker type="date" placeholder="选择日期" v-model="form.startDate" style="width: 100%"></el-date-picker>
         </el-col>
-        <el-col class="line" :span="2"> ~</el-col>
+        <el-col style="text-align:center;" :span="2">~</el-col>
         <el-col :span="11">
           <el-date-picker type="date" placeholder="选择日期" v-model="form.endDate" style="width: 100%"></el-date-picker>
         </el-col>
@@ -28,13 +26,12 @@
     <div class="see-btn">
       <el-button type="primary" @click="showLayer">查看</el-button>
     </div>
-
     <p class="title">专题图列表</p>
     <div v-for="(item, index) in defectLegend" :key="index" class="thematicMap-list">
       <div>
         <div class="thematicMap-title">
           <i style="cursor:pointer;"  @click="changeArrow(index)" :class="{'el-icon-caret-bottom': showThemBox[index], 'el-icon-caret-right': !showThemBox[index]  }"></i>
-          <el-checkbox @change="setThemLayerVisible(item.open)" v-model="item.open" :label="item.title"></el-checkbox>
+          <el-checkbox @change="setThemLayerVisible(index, item.open)" v-model="item.open" :label="item.title"></el-checkbox>
         </div>
         <transition>
           <div v-if="item.type === 'gradient' && showThemBox[index]" class="transition-box">
@@ -44,67 +41,7 @@
               <span>{{ item.end }}</span>
             </div>
           </div>
-<<<<<<< HEAD
-        </transition>
-      </div>
-      <div>
-        <div class="thematicMap-title">
-          <i
-            :class="{
-              'el-icon-caret-bottom': ShowThematicMap2,
-              'el-icon-caret-right': !ShowThematicMap2
-            }"
-            @click="ShowThematicMap2 = !ShowThematicMap2"
-          ></i>
-          <el-checkbox v-model="thematicMap2" label="管网缺陷分布专题图"></el-checkbox>
-        </div>
-        <transition name="el-zoom-in-top">
-          <div v-show="ShowThematicMap2" class="transition-box">
-            <ul>
-              <li class="see-data">1级 ({{ '111个' }})</li>
-              <li class="see-data">2级 ({{ '111个' }})</li>
-              <li class="see-data">3级 ({{ '111个' }})</li>
-            </ul>
-          </div>
-        </transition>
-      </div>
-      <div>
-        <div class="thematicMap-title">
-          <i
-            :class="{
-              'el-icon-caret-bottom': ShowThematicMap3,
-              'el-icon-caret-right': !ShowThematicMap3
-            }"
-            @click="ShowThematicMap3 = !ShowThematicMap3"
-          ></i>
-          <el-checkbox v-model="thematicMap3" label="检查井缺陷分布专题图"></el-checkbox>
-        </div>
-        <transition name="el-zoom-in-top">
-          <div v-show="ShowThematicMap3" class="transition-box">
-            <ul>
-              <li class="see-data-triangle">井盖缺失 ({{ '111个' }})</li>
-              <li class="see-data-triangle">井盖破损 ({{ '111个' }})</li>
-              <li class="see-data-triangle">井盖移位 ({{ '111个' }})</li>
-            </ul>
-          </div>
-        </transition>
-      </div>
-      <div>
-        <div class="thematicMap-title">
-          <i
-            :class="{
-              'el-icon-caret-bottom': ShowThematicMap4,
-              'el-icon-caret-right': !ShowThematicMap4
-            }"
-            @click="ShowThematicMap4 = !ShowThematicMap4"
-          ></i>
-          <el-checkbox v-model="thematicMap4" label="管网健康评估专题图"></el-checkbox>
-        </div>
-        <transition name="el-zoom-in-top">
-          <div v-show="ShowThematicMap4" class="transition-box">
-=======
           <div v-else-if="showThemBox[index]" class="transition-box">
->>>>>>> 48b28cad5696a96b5b21f586b14016cf200d1aef
             <ul>
               <li v-for="(level, i) in item.level" :key="i"
                 :class="comStyle(item.type, level.color)">
@@ -116,48 +53,63 @@
       </div>
 
     </div>
+
     <!-- <button type="primary" @click="openDefect">打开管道缺陷管理模块</button> -->
   </div>
 </template>
 
 <script>
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import Polygon from 'ol/geom/Polygon';
+import Heatmap from 'ol/layer/Heatmap';
+import VectorSource from 'ol/source/Vector';
+import VectorLayer from 'ol/layer/Vector';
+import { comSymbol } from '@/utils/comSymbol'
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import { appconfig } from 'staticPub/config'
+import GeoJSON from 'ol/format/GeoJSON'
+
 export default {
+  props: { data: Object },
   data() {
     return {
-      ShowThematicMap1: true,
-      ShowThematicMap2: true,
-      ShowThematicMap3: true,
-      ShowThematicMap4: true,
-      thematicMap1: false,
-      thematicMap2: false,
-      thematicMap3: false,
-      thematicMap4: false,
-      checkList: [],
-      form: {
-        project: '',
-        report: '',
-        startDate: '',
-        endDate: ''
-      },
       rules: {
         name: [
           { required: true, message: '不能为空', trigger: 'blur' },
           { max: 100, message: '内容不能超过100个字符串', trigger: 'blur' }
         ]
       },
+      form: {
+        project: "",
+        report: "",
+        startDate: "",
+        endDate: ""
+      },
       
       // 缺陷数据
+      reportOpt: [
+        { label: "区域一", value: "area1" },
+        { label: "区域二", value: "area2" }
+      ],
+      projectOpt: [
+        { label: "区域一", value: "area1" },
+        { label: "区域二", value: "area2" }
+      ],
       defectLegend: [
         {
           title: "管网缺陷密度图",
-          open: false,
+          layerName: "heatLayer",
+          open: true,
           type: "gradient",
-          start: "多",
-          end: "少"
+          start: "少",
+          end: "多"
         },
         { 
           title: "管网缺陷分布专题图",
-          open: true,
+          layerName: "pipeDefectLayer",
+          open: false,
           type: "circle",
           level: [
             { color: "green", label: "1级", num: 111, unit: "个" },
@@ -167,6 +119,7 @@ export default {
         },
         { 
           title: "检查井缺陷分布专题图",
+          layerName: "manholeDefectLayer",
           open: false,
           type: "square",
           level: [
@@ -177,6 +130,7 @@ export default {
         },
         { 
           title: "管网健康评估专题图",
+          layerName: "pipeHealthLayer",
           open: false,
           type: "line",
           level: [
@@ -186,29 +140,123 @@ export default {
           ]
         }
       ],
-
       showThemBox: [true, true, true, true],
 
+      mapView: null,
+      heatLayer: null,
+      pipeDefectLayer: null,
+      manholeDefectLayer: null,
+      pipeHealthLayer: null,
 
     }
   },
-<<<<<<< HEAD
-  beforeCreate() {},
-=======
-  beforeCreate(){
-
+  mounted(){
+    this.mapView = this.data.mapView
+    this.heatLayer = new Heatmap({ source: new VectorSource(), gradient: ["#3ce10f", "#ff0602"], radius: 16, visble: false })
+    this.pipeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
+    this.manholeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
+    this.pipeHealthLayer = new VectorLayer({ source: new VectorSource(), visible: false })
+    this.addLayers([this.heatLayer, this.pipeDefectLayer, this.manholeDefectLayer, this.pipeHealthLayer])
+  },
+  destroyed () {
+    this.heatLayer && this.mapView.removeLayer(this.heatLayer)
+    this.pipeDefectLayer && this.mapView.removeLayer(this.pipeDefectLayer)
+    this.manholeDefectLayer && this.mapView.removeLayer(this.manholeDefectLayer)
+    this.pipeHealthLayer && this.mapView.removeLayer(this.pipeHealthLayer)
   },
   watch: {
     
   },
->>>>>>> 48b28cad5696a96b5b21f586b14016cf200d1aef
   methods: {
+    addLayers (layers) {
+      layers.forEach(layer => this.mapView.addLayer(layer))
+    },
+    initMap () {
+      let center = [104.75, 31.52]
+      let colorBox = ["#ff0000", "#0c9923", "#f405ff"]
+
+      let points = this.randomPoint(center, 0.025, 50)
+      let features = points.map(item => new Feature({ geometry: new Point(item) }))
+      this.heatLayer.getSource().addFeatures(features)
+      
+      // 管网
+      features.forEach((fea, index) => {
+        let color = colorBox[index % 3]
+        let feature = fea.clone()
+        feature.setStyle(comSymbol.getPointStyle(5, color, 2, color))
+        this.pipeDefectLayer.getSource().addFeature(feature)
+      })
+
+      // 检查井
+      let points2 = this.randomPoint(center, 0.01, 50)
+      let features2 = points2.map(item => new Feature({ geometry: new Point(item) }))
+      features2.forEach((fea, index) => {
+        let color = colorBox[index % 3]
+        fea.setStyle(comSymbol.getPointStyle(5, "rgba(255,255,255,0)", 2, color))
+        this.manholeDefectLayer.getSource().addFeature(fea)
+      })
+      
+      // 管网
+      this.initPipeHealthLayer()
+    },
+    initPipeHealthLayer () {
+      let colorBox = ["#ff0000", "#0c9923", "#f405ff"]
+      // 查询的图形坐标
+      let polygonCoors = [
+        [
+          [104.75026032443446, 31.52579871191445],
+          [104.74952647739394, 31.5186207705493],
+          [104.75837850732029, 31.518230914309022],
+          [104.75723187131948, 31.526486693514943],
+          [104.75026032443446, 31.52579871191445]
+        ]
+      ]
+      let polygon = new Feature({ geometry: new Polygon(polygonCoors) })
+      let dataSetInfo = [{ name: "给水管线" }]
+      let queryTask = new iQuery({ ...appconfig.gisResource["iserver_resource"].dataServer, dataSetInfo })
+      queryTask.spaceQuery(polygon).then(resArr => {
+        let pipeFeaturesObj = resArr.find(res => res.result.featureCount !== 0)
+        let pipeFeatures = new GeoJSON().readFeatures(pipeFeaturesObj.result.features)
+        let features = pipeFeatures.map((fea, index) => {
+          let color = colorBox[index % 3]
+          fea.setStyle(comSymbol.getLineStyle(5, color))
+          return fea
+        })
+        this.pipeHealthLayer.getSource().addFeatures(features)
+      })
+    },
+    
+    randomPoint(center, range, num) {
+      return new Array(num).fill(center).map(([centerX, centerY]) => {
+        let x = Math.random() * range
+        let y = Math.random() * range
+        return [centerX + x, centerY + y]
+      })
+    },
+
     showLayer () {
       if (!this.form.project) return this.$message.warning("请先填写工程名称")
-      console.log(this.form)
+      this.initMap()
+      this.defectLegend.forEach(item => {
+        this[item.layerName].setVisible(item.open)
+      })
     },
-    setThemLayerVisible (visible) {
-      console.log("专题图显隐", visible)
+
+    setThemLayerVisible (index, visible) {
+      let legendParams = this.defectLegend[index], layer
+      switch(legendParams.layerName) {
+        case "pipeDefectLayer": layer = this.pipeDefectLayer
+          break;
+        case "manholeDefectLayer": layer = this.manholeDefectLayer
+          break;
+        case "pipeHealthLayer": layer = this.pipeHealthLayer
+          break;
+        case "heatLayer": layer = this.heatLayer
+          break;
+        default: return
+      }
+      layer.setVisible(visible)
+      visible && this.openDefect()
     },
     changeArrow (index) {
       console.log('点击箭头')
@@ -224,7 +272,7 @@ export default {
         case "line": className = "type-line";
           break
       }
-      return `${className} item-${color}`
+      return `item-${color} ${className}`
     },
     // 管道缺陷管理的信息
     openDefect() {
@@ -322,52 +370,6 @@ export default {
     display: inline-block;
   }
 }
-<<<<<<< HEAD
-.see-data::before {
-  position: relative;
-  left: -20px;
-  top: -2px;
-  content: '';
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1px solid #999999;
-  display: inline-block;
-  background-color: #f65252;
-}
-.see-data:nth-child(1):before {
-  background-color: #f405ff;
-}
-.see-data:nth-child(2):before {
-  background-color: #67c23a;
-}
-
-.see-data-triangle {
-  margin: 10px 0 10px 18px !important;
-}
-
-.see-data-triangle::before {
-  position: relative;
-  left: -10px;
-  top: 2px;
-  content: '';
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-bottom: 14px solid #f65252;
-  display: inline-block;
-}
-
-.see-data-triangle:nth-child(1):before {
-  border-bottom: 14px solid #f405ff;
-}
-.see-data-triangle:nth-child(2):before {
-  border-bottom: 14px solid #67c23a;
-}
-
-.see-data-line {
-=======
 .type-square {
     margin: 10px 0 10px 20px !important;
     &::before {
@@ -377,11 +379,12 @@ export default {
     content: '';
     width: 10px;
     height: 10px;
+    border-radius: 50%;
+    background-color: transparent !important;
     display: inline-block;
   }
 }
 .type-line {
->>>>>>> 48b28cad5696a96b5b21f586b14016cf200d1aef
   margin: 10px 0 10px 18px !important;
   &::before {
     position: relative;
@@ -396,24 +399,19 @@ export default {
 .item-green {
   &::before {
     background-color: #f405ff;
+    border: 1px solid #f405ff;
   }
 }
-<<<<<<< HEAD
-ul > .see-data-line:nth-child(2):before {
-  background-color: #67c23a;
-}
-ul > .see-data-line:nth-child(3):before {
-  background-color: #f65252;
-=======
 .item-pink{
   &::before {
     background-color: #0c9923;
+    border: 1px solid #0c9923;
   }
 }
 .item-red {
   &::before {
     background-color: #ff0000;
+    border: 1px solid #ff0000;
   }
->>>>>>> 48b28cad5696a96b5b21f586b14016cf200d1aef
 }
 </style>

@@ -172,13 +172,7 @@ export default {
       pagination: { current: 1, size: 30 }, // 分页参数信息
       radio: '',
       zero: '',
-      tableData: [
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
-      ],
+      tableData: [],
       //  报告上传数据
       rules: {
         name: [{ required: true, message: '不能为空', trigger: ['blur', 'change'] }],
