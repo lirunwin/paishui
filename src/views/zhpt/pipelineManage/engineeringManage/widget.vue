@@ -51,17 +51,15 @@
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
 
-        <el-table-column prop="prjNo" header-align="center" label="工程编号" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="prjName" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <!-- <el-table-column prop="area" header-align="center" label="行政区划" align="center" show-overflow-tooltip>
-        </el-table-column> -->
-        <el-table-column prop="sgunit" header-align="center" label="施工单位" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <!-- <el-table-column prop="null" header-align="center" label="工程简介" align="center" show-overflow-tooltip>
-        </el-table-column> -->
-        <el-table-column prop="createTime" header-align="center" label="创建时间" align="center" show-overflow-tooltip>
+        <el-table-column
+          :prop="v.name"
+          header-align="center"
+          :label="v.label"
+          align="center"
+          show-overflow-tooltip
+          v-for="v in tableContent"
+          :key="v.name"
+        >
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
@@ -84,7 +82,7 @@
       </div>
     </div>
     <!-- 添加卡片 -->
-    <el-dialog title="添加工程" :visible.sync="dialogFormVisible" @close="closeDialog">
+    <el-dialog title="工程内容" :visible.sync="dialogFormVisible" @close="closeDialog">
       <el-form ref="form" :rules="rules" :model="form" label-width="auto" label-position="right">
         <el-row>
           <el-col :span="12">
@@ -98,6 +96,7 @@
             </el-form-item>
           </el-col>
         </el-row>
+
         <el-row>
           <el-col :span="12"
             ><el-form-item label="检测单位" prop="principal">
@@ -225,19 +224,6 @@
         <el-form-item label="隐蔽管线点数量" prop="hpoints">
           <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails"></el-input>
         </el-form-item>
-
-        <!-- <el-row>
-          <el-col :span="12">
-            <el-form-item label="工程开始日期">
-              <el-date-picker v-model="form.startdate" placeholder="选择日期" type="date"> </el-date-picker>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="工程结束日期">
-              <el-date-picker v-model="form.finishdate" placeholder="选择日期" type="date"> </el-date-picker>
-            </el-form-item>
-          </el-col>
-        </el-row> -->
         <el-form-item label="工程日期范围">
           <el-date-picker
             :disabled="isDetails"
@@ -257,7 +243,7 @@
             type="textarea"
             resize="none"
             v-model="form.proIntroduction"
-            maxlength="1000"
+            maxlength="400"
             show-word-limit
             :disabled="isDetails"
           >
@@ -288,8 +274,9 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addTable('form')">确 定</el-button>
+        <el-button @click="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
+        <el-button type="primary" @click="addTable('form')" v-if="!isDetails">确 定</el-button>
+        <el-button @click="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
       </div>
     </el-dialog>
     <!-- 上传的对话框 -->
@@ -313,19 +300,43 @@
         <div slot="tip" class="el-upload__tip">只能上传docx/doc文件，且不超过500kb</div>
       </el-upload>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="updataDialog = false">取 消</el-button>
-        <el-button type="primary" @click="uploadWord">确 定</el-button>
+        <el-button  @click="updataDialog = false">取 消</el-button>
+        <el-button type="primary"  @click="uploadWord">确 定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { projectPagingQueryNew, addData, changeInfo, deleteData, deleteDatas, importFiles } from '@/api/pipelineManage'
+import {
+  projectPagingQueryNew,
+  addData,
+  changeInfo,
+  deleteData,
+  deleteDatas,
+  importFiles,
+  projectDetailsQuery
+} from '@/api/pipelineManage'
 
 export default {
   data() {
     return {
+      // 表格参数
+      tableContent: [
+        { label: '工程编号', name: 'prjNo' },
+        { label: '工程名称', name: 'prjName' },
+        { label: '行政区划', name: 'area' },
+        { label: '施工单位', name: 'sgunit' },
+        { label: '工程简介', name: '' },
+        { label: '创建时间', name: 'createTime' }
+      ],
+      // 表单参数
+      //  formContent: [
+      //   [{ label: '工程名称', prop: 'prjName' },{ label: '工程编号', prop: 'prjNo' }],
+      //   [{ label: '检测单位', prop: 'principal' },{ label: '勘察单位', name: 'prjNo' }],
+      //   [{ label: '工程编号', name: 'prjNo' },{ label: '工程编号', name: 'prjNo' }],
+      //   [{ label: '工程编号', name: 'prjNo' },{ label: '工程编号', name: 'prjNo' }],
+      // ],
       isDetails: false, // 判断是否是详情
       isEdit: false, // 判断是否是修改数据
       dateRange: '', // 日期范围
@@ -371,34 +382,6 @@ export default {
         startdate: '', // date
         finishdate: '', /// date
         proIntroduction: '' // 10
-        // area: 0, //
-        // createTime: '2022-04-11 09:56:30',
-        // createUserId: 0,
-        // createUserName: '入库人名称',
-        // ecoord: '高程系统',
-        // epoints: 0,
-        // finishdate: '2022-04-11 09:56:30',
-        // hpoints: 0,
-        // id: 0,
-        // jcunit: '检测单位',
-        // jpoints: 0,
-        // jsunit: '建设单位', // 长度4
-        // kcunit: '勘察单位',
-        // pcoord: '平面坐标系统',
-        // pllength: 0,
-        // plnumber: 0,
-        // principal: '探测单位项目负责人',
-        // prjName: '项目名称',
-        // prjNo: '项目编号',
-        // sgunit: '施工单位',
-        // sjunit: '设计单位', // 长度4
-        // startdate: '2022-04-11 09:56:30',
-        // superUnit: '测量员',
-        // supervisor: '检查员',
-        // tcunit: '探测单位', // 长度4
-        // updateTime: '2022-04-11 09:56:30',
-        // updateUserId: 0,
-        // updateUserName: '更新人名称'
       },
       rules: {
         prjName: [{ required: true, message: '不能为空', trigger: 'blur' }],
@@ -469,10 +452,12 @@ export default {
   },
   methods: {
     // 打开详情
-    openDetails(row) {
+    async openDetails(row) {
+      // 获得详情数据
+      let res = await projectDetailsQuery(row.id)
+      // console.log('当前列数据', x)
       this.initForm = { ...this.form }
-      console.log('当前列数据', row)
-      this.form = row
+      this.form = res.result
       this.isDetails = true
       this.dialogFormVisible = true
     },
@@ -547,35 +532,35 @@ export default {
     },
     // ----------
     async addTable(formName) {
-      // this.$refs[formName].validate(async (valid) => {
-      //   if (valid) {
-      // 将文件上传到服务器，先触发beforeUpload事件，对上传的文件进行校验，校验通过后才会上传
-      let res
-      if (this.isEdit) {
-        res = await changeInfo(this.form)
-        this.isEdit = false
-      } else {
-        res = await addData(this.form)
-      }
-      // await this.$refs.upload.submit()
-      if (res.result) {
-        this.$message({
-          message: '添加成功',
-          type: 'success'
-        })
-      } else {
-        this.$message.error('添加失败')
-      }
-      await this.getDate()
-      // 最后清空表单
-      this.form = { ...this.initForm }
-      this.dialogFormVisible = false
-      //     // this.$store.dispatch('app/toggleSideBarShow', true)
-      //   } else {
-      //     console.log('不能提交!!')
-      //     return false
-      //   }
-      // })
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          // 将文件上传到服务器，先触发beforeUpload事件，对上传的文件进行校验，校验通过后才会上传
+          let res
+          if (this.isEdit) {
+            res = await changeInfo(this.form)
+            this.isEdit = false
+          } else {
+            res = await addData(this.form)
+          }
+          // await this.$refs.upload.submit()
+          if (res.result) {
+            this.$message({
+              message: '添加成功',
+              type: 'success'
+            })
+          } else {
+            this.$message.error('添加失败')
+          }
+          await this.getDate()
+          // 最后清空表单
+          this.form = { ...this.initForm }
+          this.dialogFormVisible = false
+          // this.$store.dispatch('app/toggleSideBarShow', true)
+        } else {
+          console.log('不能提交!!')
+          return false
+        }
+      })
     },
     // 双击修改
     dblclickUpdata(row, column, event) {
@@ -592,23 +577,6 @@ export default {
       this.form = this.multipleSelection[0]
       this.isEdit = true
       this.dialogFormVisible = true
-      // this.form.createUserName = "李大钊"
-      // this.form.prjNo = "007"
-      // let parmas = {
-      //   id: 7,
-      //   prjNo: '007'
-      // }
-      // let res = await changeInfo(parmas)
-      // console.log('更新数据', res)
-      // if (res.result) {
-      //   this.$message({
-      //     message: '修改成功',
-      //     type: 'success'
-      //   })
-      //   this.getDate()
-      // } else {
-      //   this.$message.error('修改失败')
-      // }
     },
     // 分页触发的事件
     async handleSizeChange(val) {

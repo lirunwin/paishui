@@ -1,7 +1,6 @@
 <template>
   <div
     id="viewDiv"
-    ref="back_box"
     v-loading="loading"
     :element-loading-text="loadText"
     element-loading-spinner="el-icon-loading"
@@ -136,19 +135,14 @@
           <float-panels :panels="FloatPanels" :data="panels" />
           <div id="map-index-floatPanels" ref="floatPanels" />
           <!-- width: side_width, -->
-              <!-- 'user-drag': 'none', -->
           <el-aside
-            draggable="true"
-            @dragstart.native="dragstart($event)"
-            @dragend.native="dragend($event)"
-            @dragover.prevent
             :style="{
               width: $store.state.specialWidth || side_width,
-              height: '620px',
+              height: '570px',
               position: 'fixed',
-              right: elLeft+'px',
-              top: elTop+'px',
-              borderRadius: '5px',
+              right: '85px',
+              top: '120px',
+              borderRadius: '5px'
             }"
           >
             <side-panels
@@ -269,12 +263,6 @@ export default class BaseMap extends Vue {
   legendHide = true
   loading = true
   loadText = ''
-  initWidth= 0 // 父元素的宽-自适应值
-  initHeight= 0 // 父元素的高-自适应值
-  startclientX= 0 // 元素拖拽前距离浏览器的X轴位置
-  startclientY= 0 //元素拖拽前距离浏览器的Y轴位置
-  elLeft= 20 // 元素的左偏移量
-  elTop= 120 // 元素的右偏移量
   panels = {
     mapView: this.view,
     that: this,
@@ -329,30 +317,9 @@ export default class BaseMap extends Vue {
     console.log('=====', this.Comps)
   }
   mounted() {
-    this.initBodySize() // 初始化弹出框位置
     loadCss(esriConfig.baseCssUrl) // 本地css资源
     // this.registerEPSG4490(); // 注册 4490 坐标系
     this.initConfig() // 加载配置 ==> 加载地图
-  }
-  // 页面初始化
-  initBodySize() {
-    this.initWidth = document.body.clientWidth // 拿到父元素宽
-    // this.initHeight = this.initWidth * (1080 / 1920);
-    this.initHeight = this.initWidth * ((1080 * 0.88) / (1920 - 1080 * 0.02)) // 根据宽计算高实现自适应
-  }
-  // 拖拽开始事件
-  dragstart(e) {
-    // console.log("拖拽开始事件",e)
-    this.startclientX = e.clientX // 记录拖拽元素初始位置
-    this.startclientY = e.clientY
-  }
-  // 拖拽完成事件
-  dragend(e) {
-    // console.log("拖拽完成事件",e)
-    let x = e.clientX - this.startclientX // 计算偏移量
-    let y = e.clientY - this.startclientY
-    this.elLeft -= x // 实现拖拽元素随偏移量移动
-    this.elTop += y
   }
   handelClose() {
     this.show = false

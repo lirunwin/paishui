@@ -6,28 +6,27 @@
         <div class="serch-engineering">
           <el-input
             placeholder="支持搜索管段编号、材质、评价"
-            v-model="input"
+            v-model="searchValue.queryParams"
             clearable
             class="serch-input"
             suffix-icon="el-input__icon el-icon-search"
           >
           </el-input>
-          <el-date-picker v-model="value1" type="date" placeholder="入库时间" class="date-css"> </el-date-picker>
+          <el-date-picker v-model="searchValue.testTime" type="date" placeholder="入库时间" class="date-css">
+          </el-date-picker>
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="form.name" placeholder="全部">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="searchValue.funcClass" placeholder="全部">
+            <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="form.name" placeholder="全部">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="searchValue.structClass" placeholder="全部">
+            <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
           </el-select>
-          <el-button class="serch-btn" style="margin-left: 26px" type="primary"> 搜索 </el-button>
-          <el-button class="serch-btn" type="primary"> 重置 </el-button>
+          <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
+          <el-button class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
-          <el-button class="serch-btn" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
+          <el-button class="serch-btn" type="primary" @click="$message('该功能暂未开放')">导出<i class="el-icon-download el-icon--right"></i></el-button>
         </div>
       </div>
 
@@ -42,88 +41,21 @@
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
 
-        <el-table-column prop="date" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
-        </el-table-column>
         <el-table-column
-          prop="expNo"
-          min-width="150"
+          :prop="v.name"
           header-align="center"
-          label="管段编号"
+          :label="v.label"
           align="center"
           show-overflow-tooltip
+          v-for="v in tableContent"
+          :key="v.name"
         >
         </el-table-column>
-        <el-table-column
-          prop="pipeType"
-          min-width="150"
-          header-align="center"
-          label="管段类型"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="diameter"
-          min-width="150"
-          header-align="center"
-          label="管径(mm)"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="material"
-          min-width="150"
-          header-align="center"
-          label="材质"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="structDefect"
-          min-width="150"
-          header-align="center"
-          label="结构性缺陷等级"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="structEstimate"
-          min-width="150"
-          header-align="center"
-          label="结构性缺陷评价"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column prop="defectNum" header-align="center" label="缺陷数量" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <!-- <el-table-column prop="address" header-align="center" label="检测照片" align="center" show-overflow-tooltip>
-        </el-table-column> -->
-        <el-table-column
-          prop="videoFileName"
-          header-align="center"
-          label="检测视频"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="checkAddress"
-          header-align="center"
-          label="检测地点"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column prop="sampleTime" header-align="center" label="检测日期" align="center" show-overflow-tooltip>
-        </el-table-column>
+
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="zero = scope">报告</el-button>
-            <el-button type="text" size="small" @click="zero = scope">详情</el-button>
+            <el-button type="text" size="small" @click="$message('该功能暂未开放')">报告</el-button>
+            <el-button type="text" size="small" @click="$message('该功能暂未开放')">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -166,19 +98,36 @@
 import { queryPageDefectInfo } from '@/api/pipelineManage'
 
 export default {
+  props:{data},
   data() {
     return {
+      searchValue: {
+        testTime: '', // 检测日期
+        queryParams: '',
+        funcClass: '', // 功能型缺陷等级
+        structClass: '' // 结构型缺陷等级
+      }, // 搜索关键字的值
+      gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
+      // 表格参数
+      tableContent: [
+        { label: '工程名称', name: 'date' },
+        { label: '管段编号', name: 'expNo' },
+        { label: '管段类型', name: 'pipeType' },
+        { label: '管径(mm)', name: 'diameter' },
+        { label: '材质', name: 'material' },
+        { label: '结构性缺陷等级', name: 'structDefect' }, 
+        { label: '结构性缺陷评价', name: 'structEstimate' },
+        { label: '缺陷数量', name: 'defectNum' },
+        { label: '检测照片', name: 'picnum' },
+        { label: '检测视频', name: 'videoFileName' },
+        { label: '检测地点', name: 'checkAddress' },
+        { label: '检测日期', name: 'sampleTime' }
+      ],
       paginationTotal: 0, // 总页数
       pagination: { current: 1, size: 30 }, // 分页参数信息
       radio: '',
       zero: '',
-      tableData: [
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
-      ],
+      tableData: [],
       //  报告上传数据
       rules: {
         name: [{ required: true, message: '不能为空', trigger: ['blur', 'change'] }],
@@ -194,15 +143,33 @@ export default {
     }
   },
   mounted() {
+    console.log("其它页面传来的参数",data);
     let res = this.getDate()
   },
   methods: {
+      // 搜索
+    searchApi() {
+      this.getDate(this.searchValue)
+    },
+    // 重置
+    async resetBtn() {
+      this.pagination = { current: 1, size: 30 }
+      this.searchValue = {
+        testTime: '',
+        queryParams: '',
+        funcClass: '', // 功能型缺陷等级
+        structClass: '' // 结构型缺陷等级
+      }
+      await this.getDate()
+    },
     // 查询数据
     async getDate(params) {
       let data = this.pagination
       if (params) {
-        data.prjName = params.prjName
-        data.prjNo = params.prjNo
+        data.queryParams = params.queryParams
+        data.jcDate = params.testTime
+        data.funcClass = params.funcClass
+        data.structClass = params.structClass
       }
       await queryPageDefectInfo(data).then((res) => {
         // console.log('接口返回', res)

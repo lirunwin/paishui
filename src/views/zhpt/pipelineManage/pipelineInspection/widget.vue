@@ -14,31 +14,23 @@
           </el-input>
           <el-date-picker v-model="searchParams.jcDate" type="date" placeholder="检测日期" class="date-css">
           </el-date-picker>
-          <!-- <div class="release-radio">
-            <p class="release-title">检测状态:</p>
-            <el-checkbox-group v-model="searchParams.jcStatus" max="1">
-              <el-checkbox label="全部"></el-checkbox>
-              <el-checkbox label="未检测"></el-checkbox>
-              <el-checkbox label="已检测"></el-checkbox>
-            </el-checkbox-group>
-          </div> -->
           <div class="release-radio">
             <p class="release-title">检测状态:</p>
             <el-radio v-model="searchParams.jcStatus" label="0">未检测</el-radio>
             <el-radio v-model="searchParams.jcStatus" label="1">已检测</el-radio>
           </div>
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="searchParams.defectLevelA" placeholder="">
+          <el-select v-model="searchParams.funcClass" placeholder="">
             <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="searchParams.defectLevelB" placeholder="">
+          <el-select v-model="searchParams.structClass" placeholder="">
             <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
           </el-select>
         </div>
         <div class="right-btn">
           <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
-          <el-button class="serch-btn" type="primary"> 重置 </el-button>
+          <el-button class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
       </div>
 
@@ -53,117 +45,20 @@
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
 
-        <el-table-column prop="prjName" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
-        </el-table-column>
         <el-table-column
-          prop="expNo"
-          min-width="150"
+          :prop="v.name"
           header-align="center"
-          label="管段编号"
+          :label="v.label"
           align="center"
           show-overflow-tooltip
+          v-for="v in tableContent"
+          :key="v.name"
         >
         </el-table-column>
-        <el-table-column
-          prop="pipeType"
-          min-width="150"
-          header-align="center"
-          label="管段类型"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="diameter"
-          min-width="150"
-          header-align="center"
-          label="管径(mm)"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="material"
-          min-width="150"
-          header-align="center"
-          label="材质"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="address"
-          min-width="150"
-          header-align="center"
-          label="道路名称"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="checkAddress"
-          min-width="150"
-          header-align="center"
-          label="所属片区"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="jcNum"
-          min-width="150"
-          header-align="center"
-          label="检测次数"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="jcNewDate"
-          min-width="150"
-          header-align="center"
-          label="最近检测日期"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="newStructClass"
-          min-width="150"
-          header-align="center"
-          label="最新结构性缺陷等级"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="newStructEstimate"
-          min-width="150"
-          header-align="center"
-          label="最新结构性缺陷评价"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="newFuncClass"
-          header-align="center"
-          label="最新功能性缺陷等级"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="newFuncEstimate"
-          header-align="center"
-          label="最新功能性缺陷评价"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
+
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="zero = scope">详情</el-button>
+            <el-button type="text" size="small" @click="$message('该功能暂未开放')">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -208,12 +103,27 @@ import { queryPageHistory } from '@/api/pipelineManage'
 export default {
   data() {
     return {
+      // 表格参数
+      tableContent: [
+        { label: '工程名称', name: 'prjName' },
+        { label: '管段编号', name: 'expNo' },
+        { label: '管段类型', name: 'pipeType' },
+        { label: '管径(mm)', name: 'diameter' },
+        { label: '材质', name: 'material' },
+        { label: '道路名称', name: 'address' },
+        { label: '所属片区', name: 'checkAddress' },
+        { label: '检测次数', name: 'jcNum' },
+        { label: '最近检测日期', name: 'jcNewDate' },
+        { label: '最新结构性缺陷等级', name: 'newStructClass' },
+        { label: '最新结构性缺陷评价', name: 'newStructEstimate' },
+        { label: '最新功能性缺陷等级', name: 'newFuncClass' },
+        { label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
+      ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 搜索需要的参数
       searchParams: {
         keyword: '',
         jcDate: '',
-        jcStatus: '',
         defectLevelA: '',
         defectLevelB: ''
       },
@@ -237,6 +147,17 @@ export default {
     let res = this.getDate()
   },
   methods: {
+    // 重置
+    async resetBtn() {
+      this.pagination = { current: 1, size: 30 }
+      this.searchParams = {
+        keyword: '',
+        jcDate: '',
+        funcClass: '',
+        structClass: ''
+      }
+        await this.getDate()
+    },
     // 搜索
     searchApi() {
       this.getDate(this.searchParams)
@@ -262,9 +183,10 @@ export default {
       console.log('参数', params)
       if (params) {
         data.queryParams = params.keyword
-        data.jcDate = params.dateTime
+        data.jcDate = params.jcDate
         data.state = params.checkList
-        data.prjNo = params.serchValue
+        data.funcClass = params.funcClass
+        data.structClass = params.structClass
       }
       console.log('最后传进去的参数', data)
       await queryPageHistory(data).then((res) => {
@@ -325,7 +247,6 @@ export default {
         }
         .date-css {
           width: 140px;
-         
         }
 
         .title {

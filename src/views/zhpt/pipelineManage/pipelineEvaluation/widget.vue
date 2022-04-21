@@ -26,11 +26,11 @@
           >
           </el-date-picker>
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="searchValue.funcClass" placeholder="全部">
+          <el-select v-model="searchValue.structClass" placeholder="全部">
             <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="searchValue.structClass" placeholder="全部">
+          <el-select v-model="searchValue.funcClass" placeholder="全部">
             <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
           </el-select>
           <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
@@ -55,73 +55,20 @@
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
 
-        <el-table-column prop="prjName" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="prjNo" header-align="center" label="管段编号" align="center" show-overflow-tooltip>
+        <el-table-column
+          :prop="v.name"
+          header-align="center"
+          :label="v.label"
+          align="center"
+          show-overflow-tooltip
+          v-for="v in tableContent"
+          :key="v.name"
+        >
         </el-table-column>
 
-        <el-table-column prop="pipeType" header-align="center" label="管段类型" align="center" show-overflow-tooltip>
-        </el-table-column>
-
-        <el-table-column prop="diameter" header-align="center" label="管径(mm)" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column
-          prop="material"
-          header-align="center"
-          label="材质"
-          align="center"
-          min-width="150"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="structDefect"
-          header-align="center"
-          label="结构性缺陷等级"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="structEstimate"
-          header-align="center"
-          label="结构性缺陷评价"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column prop="defectNum" header-align="center" label="缺陷数量" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <!-- <el-table-column prop="address" header-align="center" label="检测照片" align="center" show-overflow-tooltip>
-        </el-table-column> -->
-        <el-table-column
-          prop="videoFileName"
-          header-align="center"
-          label="检测视频"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="checkAddress"
-          header-align="center"
-          label="检测地点"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="sampleTime"
-          header-align="center"
-          label="检测日期"
-          align="center"
-          min-width="150"
-          show-overflow-tooltip
-        >
-        </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="$message('该功能暂未开放')">报告</el-button>
+            <el-button type="text" size="small" @click="$message('该功能暂未开放', scope.row.prjName)">报告</el-button>
             <el-button type="text" size="small" @click="dialogFormVisible = !dialogFormVisible">详情</el-button>
           </template>
         </el-table-column>
@@ -277,6 +224,21 @@ import { queryPageAssessment } from '@/api/pipelineManage'
 export default {
   data() {
     return {
+      // 表格参数
+      tableContent: [
+        { label: '工程名称', name: 'prjName' },
+        { label: '管段编号', name: 'expNo' },
+        { label: '管段类型', name: 'pipeType' },
+        { label: '管径(mm)', name: 'diameter' },
+        { label: '材质', name: 'material' },
+        { label: '结构性缺陷等级', name: 'structClass' },
+        { label: '结构性缺陷评价', name: 'structEstimate' },
+        { label: '缺陷数量', name: 'defectnum' },
+        { label: '检测照片', name: 'picnum' },
+        { label: '检测视频', name: 'videoFileName' },
+        { label: '检测地点', name: 'checkAddress' },
+        { label: '检测日期', name: 'sampleTime' }
+      ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       searchValue: {
         testTime: '', // 检测日期
@@ -294,18 +256,7 @@ export default {
       paginationTotal: 0, // 总页数
       radio: '',
       zero: '',
-      tableData: [
-        {
-          date: '2016-05-03',
-          name: '王小虎11',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
-      ],
+      tableData: [],
       dialogTableVisible: false,
       form: {},
       formLabelWidth: '120px'

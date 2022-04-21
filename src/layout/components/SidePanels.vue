@@ -193,7 +193,18 @@ export default class SidePanels extends Vue {
   right: 0;
   width: 100%;
   height: 100%;
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
   
+  //  position: fixed;
+  // top: 100px;
+  // right: 20px;
+  // // width: 100%;
+  // min-width: 650px;
+  // // height: 100%;
+  // height: 570px;
+  // overflow-y: scroll;
+  // border-radius: 5px;
+  // z-index: 0;
   .close {
     position: absolute;
     top: 10px;

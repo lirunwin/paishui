@@ -84,7 +84,7 @@
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-popconfirm
+            <!-- <el-popconfirm
               confirm-button-text="确定"
               cancel-button-text="不用了"
               icon="el-icon-info"
@@ -94,7 +94,8 @@
               @confirm="oneRelease(scope.row.id)"
             >
               <el-button slot="reference" type="text" size="small" :wu="scope">发布</el-button>
-            </el-popconfirm>
+            </el-popconfirm> -->
+
             <el-popconfirm
               confirm-button-text="确定"
               cancel-button-text="取消"
@@ -114,7 +115,22 @@
               @click="$message('该功能暂未开放')"
               >撤回</el-button
             > -->
-            <el-button type="text" size="small" :wu="scope" @click="testReportDetails(scope.row.id)">详情</el-button>
+            <el-button
+              type="text"
+              size="small"
+              :wu="scope"
+              v-if="scope.row.state == '0'"
+              @click="testReportDetails(scope.row.id, true)"
+              >发布</el-button
+            >
+            <el-button
+              type="text"
+              size="small"
+              :wu="scope"
+              style="margin-left: 10px"
+              @click="testReportDetails(scope.row.id)"
+              >详情</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -242,7 +258,7 @@
       </div>
     </el-dialog>
     <!-- 发布 -->
-    <el-dialog title="检测报告发布" v-if="dialogFormVisible3" :visible.sync="dialogFormVisible3" fullscreen="true">
+    <el-dialog title="检测报告发布" :visible.sync="dialogFormVisible3" @close="closeRelease" fullscreen="true">
       <div class="releaseTop-box">
         <!-- 左边部分 -->
         <div class="left">
@@ -306,7 +322,7 @@
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogFormVisible3 = false">发 布</el-button>
+        <el-button type="primary" v-if="isRelease" @click="oneRelease">发 布</el-button>
         <el-button @click="dialogFormVisible3 = false">取 消</el-button>
       </div>
     </el-dialog>
@@ -327,7 +343,9 @@ import {
 export default {
   data() {
     return {
-      defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 },
+      id: '', // 发布时的id
+      isRelease: false, // 判断是否从发布按钮进入详情
+      defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }, // 合计
       defectQuantityStatisticsA: [
         { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
         { title: '(BX)变形', type: 'BX', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
@@ -420,8 +438,15 @@ export default {
   },
   mounted() {},
   methods: {
+    // 关闭发布弹框时触发
+    closeRelease() {
+      this.id = ''
+      this.isRelease = false
+    },
     // 单行管段详情
-    async testReportDetails(id) {
+    async testReportDetails(id, isRelease) {
+      this.id = id
+      isRelease ? (this.isRelease = true) : ''
       let res = await queryPipecheckDetails(id)
       // this.defectQuantityStatisticsA
       // 按缺陷名称给数据分类
@@ -486,8 +511,8 @@ export default {
       }
     },
     // 单个发布
-    async oneRelease(id) {
-      let res = await batchRelease(id)
+    async oneRelease() {
+      let res = await batchRelease(this.id)
       if (res.result) {
         this.$message({
           message: '发布成功',
@@ -495,6 +520,7 @@ export default {
         })
       }
       await this.getDate()
+      this.dialogFormVisible3 = false
     },
     // 单个撤回
     async withdrawBtn(id) {
@@ -755,7 +781,7 @@ export default {
           align-items: center;
           white-space: nowrap;
           margin-right: 5px;
-          .el-radio{
+          .el-radio {
             margin-right: 10px;
           }
           .release-title {
@@ -883,16 +909,16 @@ export default {
         overflow: scroll;
         .detailsTitle {
           margin: 10px 0;
-            position: relative;
-          }
-          .detailsTitle::after {
-            position: absolute;
-            left: -10px;
-            content: '';
-            width: 4px;
-            height: 100%;
-            background-color: #2d74e7;
-          }
+          position: relative;
+        }
+        .detailsTitle::after {
+          position: absolute;
+          left: -10px;
+          content: '';
+          width: 4px;
+          height: 100%;
+          background-color: #2d74e7;
+        }
         .left-table {
           width: 100%;
           font-weight: bold;
