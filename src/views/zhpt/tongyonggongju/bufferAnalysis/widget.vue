@@ -61,7 +61,8 @@
   </div>
 </template>
 
-<script>import { appconfig } from 'staticPub/config'
+<script>
+import { appconfig } from 'staticPub/config'
 import { SuperMap, FieldService, FeatureService } from '@supermap/iclient-ol';
 import Draw from 'ol/interaction/Draw'
 import { Vector as VectorSource } from 'ol/source';

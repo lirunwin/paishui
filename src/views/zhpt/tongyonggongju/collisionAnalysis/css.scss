@@ -38,13 +38,13 @@
         padding: 10px;
         .result-description {
             width: 100%;
-            min-height: 90px;
+            min-height: 150px;
             background: #f6f6f6;
             border-radius: 4px;
             .contant {
                 >div {
                     float: left;
-                    height: 50px;
+                    height: 150px;
                     &:first-child,
                     &:last-child {
                         width: calc(50% - 15px);
@@ -95,8 +95,8 @@
                 color: #fff;
                 font-size: 14px;
                 &:last-child {
-                    height: 35px;
-                    line-height: 35px;
+                    height: 70px;
+                    line-height: 70px;
                     font-weight: 600;
                 }
                 &:first-child {

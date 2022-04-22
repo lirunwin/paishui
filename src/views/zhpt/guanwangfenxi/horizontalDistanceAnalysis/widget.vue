@@ -41,12 +41,12 @@
     <div class="op-box">
       <div class="item-head">详细信息</div>
       <div class="result-total">
-          <el-table max-height='500' empty-text="无数据超过标准" @row-click='showPosition' :data="detailData" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+          <el-table max-height='500' empty-text="无分析结果/数据不符合分析条件" @row-click='showPosition' :data="detailData" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
             <el-table-column prop="pipeid" align="center" label="分析管线编号"></el-table-column>
-            <el-table-column prop="diameter" align="center" label="管径"></el-table-column>
+            <el-table-column prop="diameter" align="center" label="管径/mm"></el-table-column>
             <el-table-column prop="secpipeid" align="center" label="比较管线编号"></el-table-column>
-            <el-table-column prop="sdis" align="center" label="净距标准"></el-table-column>
-            <el-table-column prop="dis" align="center" label="水平净距"></el-table-column>
+            <el-table-column prop="sdis" align="center" label="净距标准/m"></el-table-column>
+            <el-table-column prop="dis" align="center" label="净距/m"></el-table-column>
           </el-table>
       </div>
     </div>
@@ -102,7 +102,7 @@ export default {
     drawType (nv, ov) {
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
-      if (this.drawType !== 'point') {
+      if (this.drawType && this.drawType !== 'point') {
         this.drawer = new iDraw(this.map, this.drawType, {
           endDrawCallBack: fea => {
             this.drawer.remove()
@@ -130,6 +130,7 @@ export default {
   destroyed() {
     this.vectorLayer && this.map.removeLayer(this.vectorLayer)
     this.drawer && this.drawer.end()
+    this.lightLayer && this.map.removeLayer(this.lightLayer)
   },
   methods: {
     select () {
@@ -192,38 +193,43 @@ export default {
     // 水平净距分析
     disAnalysis (data) {
       const diamaterFiled = 'DIAMETER'
-
+      const typeField = "BURYTYPE"
       let disAnalysis = new DisAnalysisTool()
       let dataBox = []
 
+      let featuresArr = []
       data.forEach(item => {
         let layerName = item.layerName
-        let features = item.resFeatures
+        item.resFeatures.forEach(fea => featuresArr.push({ layerName, feature: fea }))
+      })
+
+      // 两两比较
+      for(let len = featuresArr.length, i = 0; i < len; i++) {
+        let layerName = featuresArr[i].layerName
+        
         let standard = DisStandard.find(item => item.subtype === layerName)
-        let { hStandardDis, vStandardDis } = standard
+        if (!(standard && standard.vStandardDis)) return this.$message.error(`缺少${layerName}水平净距标准`)
+        let { hStandardDis } = standard
 
-        // 两两比较
-        for(let len = features.length, i = 0; i < len; i++) {
-          let comparePipe = new GeoJSON().readFeature(features[i])
+        let comparePipe = new GeoJSON().readFeature(featuresArr[i].feature)
+        if (!comparePipe.get(typeField) || comparePipe.get(typeField) !== '管埋') continue
+
+        for (let j = i + 1; j < len; j++) {
+          let pipe = new GeoJSON().readFeature(featuresArr[j].feature)
           let diameter1 = comparePipe.get(diamaterFiled)
-          if (!diameter1) return this.$message.error("管线属性数据不完整，无法执行分析")
-          if (!comparePipe.get("BURYTYPE") && comparePipe.get("BURYTYPE") !== '管埋') continue
-
-          for (let j = i + 1; j < len; j++) {
-            let pipe = new GeoJSON().readFeature(features[j])
-            let diameter2 = pipe.get(diamaterFiled)
-            if (!diameter2) return this.$message.error("管线属性数据不完整，无法执行分析")
-            if (!isConnect(comparePipe, pipe)) {
-              let res = disAnalysis.closetHzDis(comparePipe.getGeometry(), pipe.getGeometry(), diameter1, diameter2)
-              if (res.hasDis) {
-                dataBox.push({ comparePipe, pipe, standard: res.dis < hStandardDis, dis: res.dis, sdis: hStandardDis })
-              }
+          let diameter2 = pipe.get(diamaterFiled)
+          if (!(diameter1 && diameter2)) return this.$message.error("管线属性数据不完整，无法执行分析")
+          if (!pipe.get(typeField) || pipe.get(typeField) !== '管埋') continue
+          // 非连接管段
+          if (!isConnect(comparePipe, pipe)) {
+            let res = disAnalysis.closetHzDis(comparePipe.getGeometry(), pipe.getGeometry(), diameter1, diameter2)
+            if (res.hasDis) {
+              dataBox.push({ comparePipe, pipe, standard: res.dis < hStandardDis, dis: res.dis, sdis: hStandardDis })
             }
           }
         }
-      })
-      
-      console.log("净距分析结果", dataBox)
+      }
+
       this.detailData = dataBox.map(item => {
         return { 
           features: [item.comparePipe, item.pipe],
@@ -241,7 +247,7 @@ export default {
             eid1 = feature1.get("END_SID")
         let sid2 = feature2.get("START_SID"),
             eid2 = feature2.get("END_SID")
-        return sid1 === eid2 || eid1 === sid2
+        return sid1 === eid2 || eid1 === sid2 || sid1 === sid2 || eid1 === eid2
       }
       
     },
@@ -258,9 +264,11 @@ export default {
     clearResult () {
       this.layerData = []
       this.detailData = []
+      this.queryFeature = null
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
       this.lightLayer.getSource().clear()
+      this.drawType = ""
     }
 
   }
