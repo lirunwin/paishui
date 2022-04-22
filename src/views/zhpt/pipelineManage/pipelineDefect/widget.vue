@@ -72,25 +72,6 @@
         </el-pagination>
       </div>
     </div>
-    <!-- 添加卡片 -->
-    <el-dialog title="检测报告上传" v-if="dialogFormVisible" :visible.sync="dialogFormVisible">
-      <el-form ref="form" :model="form" :rules="rules">
-        <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
-          <el-select v-model="form.name" placeholder="请选择工程名称">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="检测报告" :label-width="formLabelWidth" class="hd-input" prop="report">
-          <el-input v-model="form.report" autocomplete="off"></el-input>
-          <el-button class="select-btn" type="primary">选择文件夹</el-button>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -98,7 +79,6 @@
 import { queryPageDefectInfo } from '@/api/pipelineManage'
 
 export default {
-  props:{data},
   data() {
     return {
       searchValue: {
@@ -125,25 +105,11 @@ export default {
       ],
       paginationTotal: 0, // 总页数
       pagination: { current: 1, size: 30 }, // 分页参数信息
-      radio: '',
-      zero: '',
       tableData: [],
-      //  报告上传数据
-      rules: {
-        name: [{ required: true, message: '不能为空', trigger: ['blur', 'change'] }],
-        report: [{ required: true, message: '不能为空', trigger: 'blur' }]
-      },
-      dialogTableVisible: false,
-      dialogFormVisible: false,
-      form: {
-        name: '',
-        report: ''
-      },
-      formLabelWidth: '120px'
     }
   },
   mounted() {
-    console.log("其它页面传来的参数",data);
+    // console.log("其它页面传来的参数",data);
     let res = this.getDate()
   },
   methods: {
@@ -270,17 +236,7 @@ export default {
       background-color: #dfeffe;
     }
   }
-
-  // 报告上传样式
-  /deep/ .el-dialog__header {
-    background-color: #2d74e7;
-    .el-dialog__title {
-      color: #fff;
-    }
-    .el-dialog__close {
-      color: #fff;
-    }
-  }
+  
   .hd-input {
     /deep/.el-input__inner {
       width: 70%;

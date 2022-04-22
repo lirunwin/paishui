@@ -62,7 +62,8 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
+        <el-table-column header-align="center" :selectable="checkSelect" align="center" type="selection" width="55">
+        </el-table-column>
 
         <el-table-column
           :prop="v.name"
@@ -155,7 +156,7 @@
         <el-button type="primary" @click="confirmRelease">确 定</el-button>
       </span>
     </el-dialog>
-    <!-- 添加卡片 -->
+    <!-- 报告上传 -->
     <el-dialog title="检测报告上传" v-if="dialogFormVisible" :visible.sync="dialogFormVisible">
       <el-form ref="form" :model="form" :rules="rules">
         <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
@@ -179,7 +180,7 @@
             ref="updataDocx"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://117.174.10.73:1114/psjc/pipeState/pipeStateUpload"
+            action="http://117.174.10.73:1114/psjc/wordInfo/wordInfoUpload"
             accept=".doc,.docx"
             :data="getData"
             multiple
@@ -245,7 +246,7 @@
             <div slot="tip" class="el-upload__tip">
               <p>只能上传mp4文件</p>
               <div class="upData-class">
-                <p style="flex: 6; text-align: center">报告名称</p>
+                <p style="flex: 6; text-align: center">视频名称</p>
                 <p style="flex: 1; text-align: center">上传进度</p>
               </div>
             </div>
@@ -258,7 +259,7 @@
       </div>
     </el-dialog>
     <!-- 发布 -->
-    <el-dialog title="检测报告发布" :visible.sync="dialogFormVisible3" @close="closeRelease" fullscreen="true">
+    <el-dialog title="检测报告发布" :visible.sync="dialogFormVisible3" @close="closeRelease" :fullscreen="true">
       <div class="releaseTop-box">
         <!-- 左边部分 -->
         <div class="left">
@@ -369,6 +370,7 @@ export default {
       batchReleaseDialog: false, // 批量发布弹框
       // 选择框分页参数
       selectParm: { current: 1, size: 30 },
+      selectLoadTotal: 0, // 选择框总页数
       selectArr: [], // 选择工程数组(报告上传)
       videoSelectArr: [], // 选择工程数组(视频上传)
       // 表格参数
@@ -377,7 +379,7 @@ export default {
         { label: '检测段数', name: 'jcnum' },
         { label: '检测长度', name: 'jclength' },
         { label: '工程名称', name: 'prjName' },
-        { label: '工程地点', name: '' },
+        { label: '工程地点', name: 'address' },
         { label: '施工单位', name: 'sgunit' },
         { label: '检测日期', name: 'jcDate' },
         { label: '入库人', name: 'createUserName' },
@@ -438,6 +440,17 @@ export default {
   },
   mounted() {},
   methods: {
+    // 判断表格当前行是否可被选中
+    checkSelect(row, index) {
+      let isChecked = true
+      if (row.state == '0') {
+        // 判断里面是否存在某个参数
+        isChecked = true
+      } else {
+        isChecked = false
+      }
+      return isChecked
+    },
     // 关闭发布弹框时触发
     closeRelease() {
       this.id = ''
@@ -571,10 +584,13 @@ export default {
     initSelectDate() {
       this.selectParm.current = 1
     },
-    // 选择工程下拉刷新加载更多数据
+    // 选择工程下拉刷新加载更多数据（报告上传）
     async selectLoadMore() {
+      if (this.selectParm.current * this.selectParm.size >= this.selectLoadTotal) return
       this.selectParm.current++
       let res = await projectPagingQuery(this.selectParm)
+      let data = res.result.records
+      console.log('data', data)
       data.forEach((v) => {
         this.selectArr.push({
           name: v.prjName,
@@ -585,8 +601,10 @@ export default {
     },
     // 视频上传
     async selectLoadMoreVideo() {
+      if (this.selectParm.current * this.selectParm.size >= this.selectLoadTotal) return
       this.selectParm.current++
       let res = await projectPagingQuery(this.selectParm)
+      let data = res.result.records
       data.forEach((v) => {
         this.videoSelectArr.push({
           name: v.prjName,
@@ -599,6 +617,7 @@ export default {
     async showUpdata() {
       // 选择工程名称的分页查询
       let res = await projectPagingQuery(this.selectParm)
+      this.selectLoadTotal = res.result.records
       let data = res.result.records
       this.selectArr = data.map((v) => {
         return {
@@ -615,6 +634,7 @@ export default {
       // 选择工程名称的分页查询
       let res = await projectPagingQuery(this.selectParm)
       let data = res.result.records
+      this.selectLoadTotal = res.result.records
       this.videoSelectArr = data.map((v) => {
         return {
           name: v.prjName,

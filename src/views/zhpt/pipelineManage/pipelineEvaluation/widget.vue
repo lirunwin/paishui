@@ -233,6 +233,7 @@ export default {
         { label: '材质', name: 'material' },
         { label: '结构性缺陷等级', name: 'structClass' },
         { label: '结构性缺陷评价', name: 'structEstimate' },
+        { label: '功能性缺陷等级', name: 'funcClass' },
         { label: '缺陷数量', name: 'defectnum' },
         { label: '检测照片', name: 'picnum' },
         { label: '检测视频', name: 'videoFileName' },

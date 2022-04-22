@@ -63,7 +63,8 @@ export default class FunctionVue extends Vue {
   width: 100%;
   height: 50px;
   line-height: 50px;
-  background: transparent;
+  // background: transparent;
+  background: #fff;
   text-align: center;
   overflow: hidden;
 

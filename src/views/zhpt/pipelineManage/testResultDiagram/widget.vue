@@ -1,5 +1,5 @@
 <template>
-  <div class="testResultDiagram i-scrollbar">
+  <div class="testResultDiagram i-scrollbar" :data="'这个是data'">
     <!-- 检测成果专题图 -->
     <p class="title">显示设置</p>
     <el-form ref="form" :model="form" label-width="auto" :rules="rules">

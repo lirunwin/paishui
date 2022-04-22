@@ -280,7 +280,7 @@
       </div>
     </el-dialog>
     <!-- 上传的对话框 -->
-    <el-dialog title="选择附带的文件" :visible.sync="updataDialog">
+    <!-- <el-dialog title="选择附带的文件" :visible.sync="updataDialog">
       <el-upload
         ref="updataDocx"
         class="upload-demo"
@@ -303,7 +303,7 @@
         <el-button  @click="updataDialog = false">取 消</el-button>
         <el-button type="primary"  @click="uploadWord">确 定</el-button>
       </div>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
@@ -536,6 +536,9 @@ export default {
         if (valid) {
           // 将文件上传到服务器，先触发beforeUpload事件，对上传的文件进行校验，校验通过后才会上传
           let res
+          // 获取入库人id和名称
+          this.form.createUserId = sessionStorage.getItem('userId')*1
+          this.form.createUserName = sessionStorage.getItem('username')
           if (this.isEdit) {
             res = await changeInfo(this.form)
             this.isEdit = false
