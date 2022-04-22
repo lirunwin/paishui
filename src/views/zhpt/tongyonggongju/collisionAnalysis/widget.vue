@@ -2,13 +2,13 @@
   <!-- <div>净距分析</div> -->
   <div class="panel-container">
     <div class="op-box">
-      <el-button type="primary" size="small" style="width:100%" :loading="loading" @click="select">选择分析管线</el-button>
+      <el-button type="primary" size="small" style="width:100%" @click="select">选择分析管线</el-button>
     </div>
 
     <!-- 分析结果 -->
     <div class="result-box">
       <div class="item-head">分析管线
-        <el-tooltip class="item" effect="dark" content="选择两段管线，分析两段管线的水平净距或垂直净距是否符合规定" placement="top">
+        <el-tooltip class="item" effect="dark" content="选择两段管线，分析两段管线是否碰撞" placement="top">
           <span class="el-icon-info" style="float: unset; font-weight: normal;"></span>
         </el-tooltip>
         <!-- <el-button type="text" style="padding:0;margin-left:10px">查看</el-button> -->
@@ -16,16 +16,16 @@
       <div class="result-description">
         <div class="contant" v-if="selectPipeLines.length>0">
           <div>
-            <p>{{selectPipeLines[0].feature.properties.TYPENAME}}</p>
-            <p>{{selectPipeLines[0].feature.properties.SID}}</p>
-            <p>{{selectPipeLines[0].feature.properties.BURYTYPE}}</p>
+            <p>{{selectPipeLines[0].properties.TYPENAME}}</p>
+            <p>{{selectPipeLines[0].properties.SID}}</p>
+            <p>{{selectPipeLines[0].properties.BURYTYPE}}</p>
             <!-- <p>{{selectPipeLines[0].feature.properties.PRESSURE}}</p> -->
           </div>
           <div>VS</div>
           <div v-if="selectPipeLines.length==2">
-            <p>{{selectPipeLines[1].feature.properties.TYPENAME}}</p>
-            <p>{{selectPipeLines[1].feature.properties.SID}}</p>
-            <p>{{selectPipeLines[1].feature.properties.BURYTYPE}}</p>
+            <p>{{selectPipeLines[1].properties.TYPENAME}}</p>
+            <p>{{selectPipeLines[1].properties.SID}}</p>
+            <p>{{selectPipeLines[1].properties.BURYTYPE}}</p>
             <!-- <p>{{selectPipeLines[1].feature.properties.PRESSURE}}</p> -->
           </div>
         </div>
@@ -37,8 +37,12 @@
     <div class="op-box">
       <div class="item-head">分析结果</div>
       <div class="result-total">
-        <div class="panel-item" :style="'background-color:'+ bgc" v-if="isCollsion">
-          <div>{{isCollsion}}</div>
+        <div class="panel-item" :style="'background-color:'+ bgc">
+          <div>{{ isCollsion }}</div>
+        </div>
+        <div class="panel-item">
+          <div>{{ resResult }}</div>
+          <div v-cloak>{{standard}}</div>
         </div>
       </div>
     </div>
@@ -50,31 +54,41 @@
 </template>
 
 <script>
-import { mapConfig } from '@/views/zhpt/map.config'
+import { appconfig } from 'staticPub/config'
 import { SuperMap, FeatureService } from '@supermap/iclient-ol';
-import { MultiPolygon, Point } from 'ol/geom';
+import { MultiPolygon, Point, LineString } from 'ol/geom';
 import { GeoJSON } from 'ol/format';
 import Feature from 'ol/Feature';
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Circle, Icon, Fill, RegularShape, Stroke, Text } from 'ol/style';
 import * as turf from '@turf/turf'
-import { getCenter } from 'ol/extent';
 
 import { getPipelineDistance } from '@/api/mainMap/analysis'
+import { comSymbol } from '@/utils/comSymbol';
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import DisAnalysis from '@/views/zhpt/common/mapUtil/disAnalysis'
+import { DisStandard } from '@/views/zhpt/common/standard'
+
+
 export default {
   props: ["data"],
   data() {
     return {
       bgc: "#02baaf",
       selectFlag: false,
-      selectPipeLines: [], // 选择的管线，只有两个
+
       vectorLayer: null,
-      resultDes: '合规',
       result: '',
       standard: '',
       // 
-      isCollsion: ""
+      isCollsion: "",
+      resResult: "",
+      map: null,
+      drawer: null,
+      vectorLayer: null,
+      selectPipeLines: [], // 选择的管线，只有两个
     }
   },
   computed: {
@@ -87,204 +101,116 @@ export default {
   mounted() {
     this.vectorLayer = new VectorLayer({
       source: new VectorSource(),
-      style: new Style({
-        stroke: new Stroke({
-          width: 5,
-          color: '#00ffff'
-        })
-      })
+      style: comSymbol.getLineStyle(5, '#00ffff')
     })
-    this.data.that.map.addLayer(this.vectorLayer)
+    this.map = this.data.mapView
+    this.map.addLayer(this.vectorLayer)
   },
   destroyed() {
-    this.data.that.map.removeLayer(this.vectorLayer)
+    this.map.removeLayer(this.vectorLayer)
+    this.drawer && this.drawer.end()
   },
   methods: {
-    select() {
-      this.clear()
-      this.data.that.map.getView().animate({ zoom: 20 });
-      this.selectFlag = true
+    // 选择管线
+    select () {
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.vectorLayer.getSource().clear()
+      this.drawer = new iDraw(this.map, "point", {
+        endDrawCallBack: feature => {
+          let fea = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 0.5 / 1000, { units: "kilometers" }))
+          this.getAnalysisPipe(fea).then(featuresJson => {
+            if (featuresJson) {
+              
+              if (this.selectPipeLines.length === 0) {
+                this.$set(this.selectPipeLines, 0, featuresJson.features[0])
+              } else {
+                if (this.selectPipeLines[0].properties.SID === featuresJson.features[0].properties.SID) return this.$message.error('同一条管线')
+                this.$set(this.selectPipeLines, 1, featuresJson.features[0])
+                this.drawer.remove()
+              }
+              this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(featuresJson))
+            } else {
+              this.drawer.clear()
+              this.$message.warning('该点无管线，请重新选择')
+            }
+          })
+        },
+        showCloser: false
+      })
+      this.drawer.start()
     },
-    /**
-     * 开始分析
-     */
-    start() {
-      let lineFeature1 = this.selectPipeLines[0].feature
-      let lineFeature2 = this.selectPipeLines[1].feature
-      // 先判断两条管线是否有投影交点；有交点：计算垂直净距，无交点：计算水平净距
-      const intersects = turf.lineIntersect(lineFeature1, lineFeature2);
-      // 有交点
-      if (intersects.features.length > 0) {
-        let iPointCoord = new GeoJSON().readFeature(intersects.features[0]).getGeometry().getCoordinates()
-        const verticalInterval = this.clacLineVerticalInterval(lineFeature1, lineFeature2, iPointCoord) // 垂直净距
-        this.result = "垂直净距：" + verticalInterval + ' m'
-        this.compareVerticalInterval(lineFeature1, lineFeature2, verticalInterval)
+    // 开始查询
+    start () {
+      if (this.selectPipeLines.length !== 2) return this.$message.error('请先选择两条管线')
+      let [feature1, feature2] = this.selectPipeLines
+      let pipe1 = new GeoJSON().readFeature(feature1)
+      let pipe2 = new GeoJSON().readFeature(feature2)
+      let layername1 = pipe1.get("TYPENAME"), layername2 = pipe2.get("TYPENAME")
+      let disAnalysisTool = new DisAnalysis()
+
+      // 判断管埋
+      let findPipes = [pipe1, pipe2].filter(pipe => pipe.get("BURYTYPE") !== "管埋")
+      if (findPipes.length !== 0) {
+        this.bgc = "#02baaf"
+        this.isCollsion = "不碰撞"
+        this.resResult = findPipes.map(pipe => pipe.get("SID")).join(",") + " 非管埋"
+        return
       }
-      // 无交点
-      else {
-        const levelInterval = this.clacLevelInterval(lineFeature1, lineFeature2) // 水平净距
-        this.result = "水平净距：" + levelInterval + ' m'
-        this.compareLevelInterval(lineFeature1, lineFeature2, levelInterval)
+
+      // 判断相连
+      if  (isConnect(pipe1, pipe2)) {
+        this.bgc = "#FF6401"
+        this.isCollsion = "碰撞"
+        this.resResult = [pipe1, pipe2].map(pipe => pipe.get("SID")).join(",") + " 相连"
+        return
+      }
+      
+      // 判断相交
+      let insectPoint = disAnalysisTool.isIntersect(pipe1.getGeometry(), pipe2.getGeometry())
+      
+      if (insectPoint.isIntersect) {
+        // 垂直净距
+        let res = disAnalysisTool.closetVcDis(pipe1, pipe2)
+        this.isCollsion = res.dis < 0 ? "碰撞" : "不碰撞"
+        this.bgc = res.dis < 0 ? "#FF6401" : "#02baaf"
+        this.resResult = `垂直净距${res.dis}m`
+      } else {
+        // 水平净距
+        let sdiameter = pipe1.get("DIAMETER")
+        let cdiameter = pipe2.get("DIAMETER")
+        let res = disAnalysisTool.closetHzDis(pipe1.getGeometry(), pipe2.getGeometry(), sdiameter, cdiameter)
+        this.isCollsion = "不碰撞"
+        this.bgc = "#02baaf"
+        this.resResult = `水平净距${res.dis}m`
+      }
+
+      // 判断是否是前后连接的管段
+      function isConnect(feature1, feature2) {
+        let sid1 = feature1.get("START_SID"),
+            eid1 = feature1.get("END_SID")
+        let sid2 = feature2.get("START_SID"),
+            eid2 = feature2.get("END_SID")
+        return sid1 === eid2 || eid1 === sid2 || sid1 === sid2 || eid1 === eid2
       }
     },
-    /**
-     * 计算交点的高程
-     */
-    calcIpointHeight(startPoint, endPoint, iPoint) {
-      // 利用空间直线两点式方程得到交点高程,即交点z坐标
-      return (endPoint.z - startPoint.z) * (iPoint.x - startPoint.x) / (endPoint.x - startPoint.x) + startPoint.z
-    },
-    /**
-     * 计算两条线段之间的最小距离，即水平净距
-     */
-    clacLevelInterval(line1, line2) {
-      let distance = []
-      const point1 = turf.point(new GeoJSON().readFeature(line1).getGeometry().getFirstCoordinate())
-      const point2 = turf.point(new GeoJSON().readFeature(line1).getGeometry().getLastCoordinate())
-      const point3 = turf.point(new GeoJSON().readFeature(line2).getGeometry().getFirstCoordinate())
-      const point4 = turf.point(new GeoJSON().readFeature(line2).getGeometry().getLastCoordinate())
-      distance.push(turf.pointToLineDistance(point1, line2, { units: 'kilometers' }))
-      distance.push(turf.pointToLineDistance(point2, line2, { units: 'kilometers' }))
-      distance.push(turf.pointToLineDistance(point3, line1, { units: 'kilometers' }))
-      distance.push(turf.pointToLineDistance(point4, line1, { units: 'kilometers' }))
-      distance.sort((a, b) => { return a - b }) //升序排序
-      // 水平净距
-      return (distance[0] * 1000).toFixed(2)
-    },
-    /**
-     * 计算垂直距离，即垂直净距
-     */
-    clacLineVerticalInterval(line1, line2, iPointCoord) {
-      const startPoint1 = {
-        x: line1.geometry.coordinates[0][0],
-        z: parseFloat(line1.properties.START_HEIGHT) - parseFloat(line1.properties.START_DEPTH)
-      }
-      const endPoint1 = {
-        x: line1.geometry.coordinates[1][0],
-        z: parseFloat(line1.properties.END_HEIGHT) - parseFloat(line1.properties.END_DEPTH)
-      }
-      const startPoint2 = {
-        x: line2.geometry.coordinates[0][0],
-        z: parseFloat(line2.properties.START_HEIGHT) - parseFloat(line2.properties.START_DEPTH)
-      }
-      const endPoint2 = {
-        x: line2.geometry.coordinates[1][0],
-        z: parseFloat(line2.properties.END_HEIGHT) - parseFloat(line2.properties.END_DEPTH)
-      }
-      const iPoint = { x: parseFloat(iPointCoord[0]) }
-      const iPointZ1 = this.calcIpointHeight(startPoint1, endPoint1, iPoint)
-      const iPointZ2 = this.calcIpointHeight(startPoint2, endPoint2, iPoint)
-      // 垂直净距
-      return Math.abs(iPointZ1 - iPointZ2).toFixed(2)
-    },
-    /**
-     * 水平净距比较
-     */
-    compareLevelInterval(line1, line2, value) {
-      const lineAttr1 = getLevelIntervalParam(line1)
-      const lineAttr2 = getLevelIntervalParam(line2)
-      let data = {
-        pipeType: lineAttr1.type,
-        pipeTypeAttr: lineAttr1.attr,
-        comparePipeType: lineAttr2.type,
-        comparePipeTypeAttr: lineAttr2.attr,
-        compareType: 1
-      }
-      getPipelineDistance(data).then(res => {
-        if (res.result.length == 0) {
-          this.$message.warning("未找到相应的水平净距标准，无法进行分析！")
-          return
-        }
-        let resVal = res.result[0].distanceValue.toString().split('-')
-        // 标准是范围区间
-        if (resVal.length == 2) {
-          this.standard = '≥ ' + resVal[0] + ' m , ≤' + resVal[1] + ' m'
-          const min = parseFloat(resVal[0]).toFixed(2)
-          const max = parseFloat(resVal[1]).toFixed(2)
-          if (value >= min && value <= max) {
-            this.bgc = '#02baaf'
-            this.resultDes = '合规'
-          } else {
-            this.bgc = '#f40'
-            this.resultDes = '不合规'
-          }
-        }
-        // 标准是单个值
-        else {
-          this.standard = '≥ ' + resVal.toString() + " m"
-          if (value < parseFloat(resVal.toString()).toFixed(2)) {
-            this.bgc = '#f40'
-            this.resultDes = '不合规'
-          }
-          else {
-            this.bgc = '#02baaf'
-            this.resultDes = '合规'
-          }
-        }
+    getAnalysisPipe (fea) {
+      let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
+      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      return new Promise(resolve => {
+        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {
+          let featuresArr = resArr.find(res => res && res.result.featureCount !== 0)
+          if (featuresArr) resolve(featuresArr.result.features)
+          else resolve(null)
+        })
       })
     },
-    /**
-     * 垂直净距比较
-     */
-    compareVerticalInterval(line1, line2, value) {
-      const lineAttr1 = getVerticalInterval(line1)
-      const lineAttr2 = getVerticalInterval(line2)
-      let data = {
-        pipeType: lineAttr1.type,
-        pipeTypeAttr: lineAttr1.attr,
-        comparePipeType: lineAttr2.type,
-        comparePipeTypeAttr: lineAttr2.attr,
-        compareType: 2
-      }
-      getPipelineDistance(data).then(res => {
-        if (res.result.length == 0) {
-          this.$message.warning("未找到相应的垂直净距标准，无法进行分析！")
-          return
-        }
-        let resVal = res.result[0].distanceValue.toString().split('-')
-        // 标准是范围区间
-        if (resVal.length == 2) {
-          this.standard = '≥ ' + resVal[0] + ' m , ≤' + resVal[1] + ' m'
-          const min = parseFloat(resVal[0]).toFixed(2)
-          const max = parseFloat(resVal[1]).toFixed(2)
-          if (value >= min && value <= max) {
-            this.bgc = '#02baaf'
-            this.resultDes = '合规'
-          } else {
-            this.bgc = '#f40'
-            this.resultDes = '不合规'
-          }
-        }
-        // 标准是单个值
-        else {
-          this.standard = '≥ ' + resVal.toString() + " m"
-          if (value < parseFloat(resVal.toString()).toFixed(2)) {
-            this.bgc = '#f40'
-            this.resultDes = '不合规'
-          }
-          else {
-            this.bgc = '#02baaf'
-            this.resultDes = '合规'
-          }
-        }
-      })
-    },
-    /**
-     * 清除结果
-     */
-    clearResult() {
-      this.selectFlag = false
-      this.clear()
-    },
-    /**
-     * 清除
-     */
-    clear() {
+    clearResult () {
       this.selectPipeLines = []
+      this.resResult = ""
+      this.isCollsion = ""
+      this.drawer && this.drawer.end()
+      this.bgc = "#02baaf"
       this.vectorLayer.getSource().clear()
-      this.bgc = '#02baaf'
-      this.result = ''
-      this.standard = ''
     }
   }
 }

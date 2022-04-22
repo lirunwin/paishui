@@ -101,7 +101,7 @@ export default {
   },
   destroyed() {
     this.rootPage.$refs.popupWindow.closePopup() // 清除地图视图点击选择的要素,关闭弹窗
-    this.mapClickEvent && this.mapView.removeInteraction(this.mapClickEvent)
+    this.mapClickEvent && unByKey(this.mapClickEvent)
     this.vectorLayer && this.vectorLayer.getSource().clear()
     this.mapView.removeLayer(this.vectorLayer)
     this.mapClickEvent = this.vectorLayer = null
@@ -119,7 +119,7 @@ export default {
         let { coordinate } = evt
         let dataServer = appconfig.gisResource.iserver_resource.dataServer
         let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
-        const tolerateDis = 2 // 2m 模糊距离
+        const tolerateDis = 0.5 // 模糊距离
         let geometryJson = turf.buffer(turf.point(coordinate), tolerateDis / 1000, { units: 'kilometers' })
         new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(new GeoJSON().readFeature(geometryJson)).then(resArr => {
           let featureObj = resArr.find(res => res.result.featureCount !== 0)
@@ -127,7 +127,7 @@ export default {
             this.mapView.removeInteraction(this.mapClickEvent)
             this.setCursor()
             let features = featureObj.result.features
-            this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(features))
+            this.vectorLayer.getSource().addFeature(new GeoJSON().readFeature(features.features[0]))
             this.rootPage.$refs.popupWindow.showPopup(coordinate, features.features[0])
             this.getPipeSoilDepth(features.features[0])
           } else this.$message.warning("该位置无管线")

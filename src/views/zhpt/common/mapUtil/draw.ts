@@ -97,13 +97,13 @@ export default class iDraw {
     }
     // 移除事件
     remove () {
-        this.map.removeInteraction(this.drawer)
+        this.map && this.map.removeInteraction(this.drawer)
         this.drawer = null
     }
     // 清除绘制图形
     clear () {
         this.vectorSource && this.vectorSource.clear()
-        this.map.removeLayer(this.vectorLayer)
+        this.map && this.map.removeLayer(this.vectorLayer)
         this.overlay && this.overlay.setPosition(null)
         this.vectorSource = this.vectorLayer = this.overlay = null
     }

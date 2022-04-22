@@ -147,13 +147,13 @@
                           v-model="form.prjName"
                           maxlength="100"
                           show-word-limit
-                          :disabled="isDetails"
+                        
                         ></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
                       ><el-form-item label="管段类型" prop="prjNo">
-                        <el-input v-model="form.prjNo" maxlength="20" show-word-limit :disabled="isDetails"></el-input>
+                        <el-input v-model="form.prjNo" maxlength="20" show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -164,13 +164,13 @@
                           v-model="form.prjName"
                           maxlength="100"
                           show-word-limit
-                          :disabled="isDetails"
+                        
                         ></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
                       ><el-form-item label="终点埋深" prop="prjNo">
-                        <el-input v-model="form.prjNo" maxlength="20" show-word-limit :disabled="isDetails"></el-input>
+                        <el-input v-model="form.prjNo" maxlength="20" show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -181,13 +181,13 @@
                           v-model="form.prjName"
                           maxlength="100"
                           show-word-limit
-                          :disabled="isDetails"
+                        
                         ></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
                       ><el-form-item label="材质" prop="prjNo">
-                        <el-input v-model="form.prjNo" maxlength="20" show-word-limit :disabled="isDetails"></el-input>
+                        <el-input v-model="form.prjNo" maxlength="20" show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -198,13 +198,13 @@
                           v-model="form.prjName"
                           maxlength="100"
                           show-word-limit
-                          :disabled="isDetails"
+                        
                         ></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
                       ><el-form-item label="长度" prop="prjNo">
-                        <el-input v-model="form.prjNo" maxlength="20" show-word-limit :disabled="isDetails"></el-input>
+                        <el-input v-model="form.prjNo" maxlength="20" show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>

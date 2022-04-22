@@ -219,6 +219,11 @@ import popupWindow from '@/components/PopupWindow/popupWindow.vue'
 import { Projection, addProjection, get as getProjection, fromLonLat, transform } from 'ol/proj'
 import { register as olRegisterProj } from 'ol/proj/proj4'
 import proj4 from 'proj4'
+import { Feature } from 'ol'
+import { LineString } from 'ol/geom'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
+import { comSymbol } from '@/utils/comSymbol'
 
 @Component({
   components: {
@@ -242,6 +247,8 @@ import proj4 from 'proj4'
   }
 })
 export default class BaseMap extends Vue {
+  // 用于管线定位
+  vectorLayer = null
   // 空间参考
   projection = null
 
@@ -412,6 +419,28 @@ export default class BaseMap extends Vue {
     //@ts-ignore
     this.$refs.legend_close.innerHTML = whichP[2]
   }
+  // 定位某条管线
+  setPipesView (pipes) {
+    console.log('定位')
+    let coors = pipes || [[104.75527467557153, 31.524098782069018], [104.75489471757147, 31.524367191069018]]
+    let feature = new Feature({ geometry: new LineString(coors) })
+    if (!this.vectorLayer) {
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00ffff") })
+      this.view.addLayer(this.vectorLayer)
+    }
+    this.vectorLayer.getSource().clear()
+    this.vectorLayer.getSource().addFeature(feature)
+    //
+    let extent = feature.getGeometry().getExtent()
+    this.view.getView().setCenter([(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2])
+    this.view.getView().setZoom(20)
+  }
+  // 清除地图
+  clearMap () {
+    this.vectorLayer && this.view.removeLayer(this.vectorLayer)
+    this.vectorLayer = null
+  }
+
   closeAny() {
     //@ts-ignore
     this.$refs.any.style.display = 'none'

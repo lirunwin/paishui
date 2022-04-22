@@ -200,7 +200,7 @@ export default {
       layers.forEach((layer) => this.mapView.addLayer(layer))
     },
     initMap() {
-      let center = [104.75, 31.52]
+      let center = [104.74, 31.51]
       let colorBox = ['#ff0000', '#0c9923', '#f405ff']
 
       let points = this.randomPoint(center, 0.025, 50)

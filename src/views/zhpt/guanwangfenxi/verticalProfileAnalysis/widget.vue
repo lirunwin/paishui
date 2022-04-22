@@ -478,6 +478,7 @@ export default {
     this.mapView.removeLayer(this.vectorLayer)
     this.mapView.removeLayer(this.lightLayer)
     this.closePanel()
+    this.tip && this.tip.setPosition(null)
   }
 }
 </script>
