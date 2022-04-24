@@ -38,6 +38,8 @@ export default class iDraw {
     } // 绘制类型
 
     constructor (map, type, { startDrawCallBack = null, conditionCallBack = null, endDrawCallBack = null, showCloser = true, maxLength = 1e3 }) {
+        if (!map) throw new Error("绘制器没有地图对象")
+        if (!type) throw new Error("无绘制类型")
         this.map = map
         this.type = type
         this.startDrawCallBack = startDrawCallBack
