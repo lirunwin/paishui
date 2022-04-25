@@ -114,7 +114,9 @@ export default {
   watch: {
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
-      
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
+      this.lightLayer && this.mapView.removeLayer(this.lightLayer)
     },
     drawType(val, oldVal) {
       this.initDraw()

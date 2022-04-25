@@ -10,7 +10,7 @@ export default class DisAnalysisTool {
         sdeppField: "START_DEPTH"
     }
     /**
-     * 水平净距
+     * 是否相交
      * @param firstGeometry 要素1 linegeometry
      * @param secendGeometry 要素2 linegeometry
      */

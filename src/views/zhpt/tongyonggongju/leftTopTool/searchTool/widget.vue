@@ -8,6 +8,12 @@
       </el-select>
       <el-button class='buttonDiv' slot="append" @click="searchInfo" icon="el-icon-search"></el-button>
     </el-input>
+    <div v-show="resData.length !== 0" class="res-box i-scrollbar">
+      <div v-for="(item, index) in resData" :key="index" class="res-box-item">
+        <span style="">{{ item.name }}</span>
+        <span style="font-size:12px;float:right;color:#bbb">{{ item.mark}}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -40,6 +46,10 @@ export default {
           value:"4",
         }
       ],
+      // 查询结果
+      resData: [
+
+      ],
       select:'1',
       searchInput:'',
       title:"地名",
@@ -68,6 +78,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+  @import "~@/styles/mixin.scss";
   .searchTool{
   height: 40px;
   position: relative;
@@ -84,6 +95,24 @@ export default {
   }
   /deep/ .el-icon-search{
     color: white !important;
+  }
+  .res-box {
+    width: 100%;
+    max-height: 300px;
+    background-color: #fff;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    .i-scrollbar {
+      overflow: auto;
+      @include scrollBar;
+    }
+  }
+  .res-box-item {
+    font-size: 15px;
+    height: 20px;
+    line-height: 20px;
   }
 }
 </style>

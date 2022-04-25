@@ -129,6 +129,15 @@
             <span id="mapView_close" ref="legend_close" title="收缩" @click="legendClick">▼</span>
             <div id="mapView_legend" ref="legend" style="height: 350px" />
           </div>
+          <!-- 公共图例 -->
+          <div v-show="showMapLengend" class="map-legend">
+            <div class="map-legend-title"><span>图例</span><span ref="legendCloser" style="float:right;cursor:pointer;" title="收缩" @click="legendChange">▼</span></div>
+            <div v-show="showLegendBox" class="map-legend-item" v-for="(item, index) in legendData" :key="index">
+              <div :class="'map-legend-' + item.type" :style="'background-color:' + item.color"></div>
+              <div class="map-legend-label">{{ item.label }}</div>
+            </div>
+          </div>
+          <div></div>
           <!-- 鼠标位置 -->
           <!-- <MouseLocation :map-view="view" /> -->
           <!-- 快捷查询 -->
@@ -224,6 +233,7 @@ import { LineString } from 'ol/geom'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { comSymbol } from '@/utils/comSymbol'
+import { LegendConfig } from '@/views/zhpt/common/legendConfig'
 
 @Component({
   components: {
@@ -247,6 +257,12 @@ import { comSymbol } from '@/utils/comSymbol'
   }
 })
 export default class BaseMap extends Vue {
+  rootMapViewExtent =  null
+  showMapLengend = false
+  //
+  showLegendBox = true
+  // 图例数据
+  legendData = []
   // 用于管线定位
   vectorLayer = null
   // 空间参考
@@ -383,6 +399,17 @@ export default class BaseMap extends Vue {
 
     this.loading = false
     this.$nextTick(this.controlToolDisplay)
+
+    let timer = null, time = 1000
+    this.view.getView().on("change", evt => {
+      timer && clearTimeout(timer)
+      timer = null
+      timer = setTimeout(() => {
+        let center = evt.target.getCenter()
+        this.rootMapViewExtent = center
+        console.log('地图变化')
+      }, time)
+    })
   }
 
   addLayers(layers) {
@@ -419,6 +446,7 @@ export default class BaseMap extends Vue {
     //@ts-ignore
     this.$refs.legend_close.innerHTML = whichP[2]
   }
+
   // 定位某条管线
   setPipesView (pipes) {
     console.log('定位')
@@ -437,8 +465,21 @@ export default class BaseMap extends Vue {
   }
   // 清除地图
   clearMap () {
-    this.vectorLayer && this.view.removeLayer(this.vectorLayer)
+    this.vectorLayer.getSource().clear()
     this.vectorLayer = null
+  }
+  // 显示图例
+  showLegend (legendName, visible) {
+    if (!legendName) return
+    if (visible) {
+      this.legendData = LegendConfig[legendName]
+    }
+    this.showMapLengend = visible
+  }
+  legendChange () {
+    this.showLegendBox = !this.showLegendBox
+    let dom : any = this.$refs.legendCloser
+    dom.innerHTML = this.showLegendBox ? "▼" : "▲"
   }
 
   closeAny() {
@@ -780,5 +821,40 @@ export default class BaseMap extends Vue {
       color: #2d74e7;
     }
   }
+}
+
+// 
+.map-legend {
+  background: #fffc;
+  position: absolute;
+  bottom: 40px;
+  left: 10px;
+  min-height: 30px;
+  width: 200px;
+  border: 1px solid rgb(13, 186, 255);
+}
+
+.map-legend-title {
+  color: #fff;
+  font-weight: 600;
+  padding: 3px 10px;
+  height: 30px;
+  font-size: 15px;
+  line-height: 25px;
+  background-color: rgb(13, 186, 255);
+}
+.map-legend-item {
+  display: flex;
+  height: 20px;
+  line-height: 20px;
+  font-size: 13px;
+  margin: 15px 10px;
+}
+.map-legend-label {
+  margin-left: 5px;
+}
+.map-legend-rect {
+  width: 30px;
+  height: 100%;
 }
 </style>

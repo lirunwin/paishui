@@ -506,7 +506,7 @@ export default {
         } else {
           if (routeStr.indexOf(',') != -1) {
             const routeFirst = routeStr.split(',')[0].toLowerCase()
-            if (['map', 'xjxt', 'whxt'].indexOf(routeFirst) > -1) {
+            if (['map', 'xjxt', 'whxt','monitor'].indexOf(routeFirst) > -1) {
               const _index = routeStr.indexOf(',')
               const _params = routeStr.substring(_index + 1)
               console.log('参数：' + _params)

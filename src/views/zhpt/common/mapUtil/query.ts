@@ -28,7 +28,8 @@ export default class iQuery {
     spatialQueryMode: {
         CROSS : "CROSS",
         INTERSECT: "INTERSECT",
-        NONE: "NONE"
+        NONE: "NONE",
+        CONTAIN: "CONTAIN"
     }
     
     // 空间查询
@@ -47,7 +48,7 @@ export default class iQuery {
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesByGeometryParameters({
                     toIndex: -1,
-                    maxFeatures: 1e3,
+                    maxFeatures: 1e5,
                     datasetNames: [this.dataSource + ':' + info.name],
                     geometry: queryFeature.getGeometry(),
                     spatialQueryMode: "INTERSECT" // 相交空间查询模式
@@ -66,12 +67,12 @@ export default class iQuery {
 
     // 属性查询
     sqlQuery (sqlStr) {
-        console.log("sql过滤条件", sqlStr)
+        // console.log("sql过滤条件", sqlStr)
         let queryPromises = this.dataSetInfo.map(info => {
             let layerName = info.name
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesBySQLParameters({
-                    maxFeatures: 1e4,
+                    maxFeatures: 1e5,
                     toIndex: -1,
                     datasetNames: [this.dataSource + ':' + info.name],
                     queryParameter: { attributeFilter: sqlStr }
@@ -94,7 +95,6 @@ export default class iQuery {
 
     // 缓冲区查询
     bufferQuery (bufferFeature, bufferDis) {
-        console.log("sql过滤条件", bufferDis)
         if (!(bufferFeature instanceof Feature)) {
             bufferFeature = new GeoJSON().readFeature(bufferFeature)
         } else if (bufferFeature.getGeometry() instanceof Circle) {

@@ -5,34 +5,38 @@
         <el-button size="mini" type="primary" style="width: 100%" @click="choosePipe" :disabled="chooseDisable">
           <i ref="chooseLoad"/>选取管线</el-button>
       </el-row>
-      <!-- <el-col :span="24">
+      <el-col :span="24">
         <el-table :data="selectedPipe" stripe style="width: 100%" max-height="200px" row-class-name="selectRowC">
           <el-table-column prop="oid" label="管线编号" />
           <el-table-column prop="STARTSID" label="起点编号" />
           <el-table-column prop="ENDSID" label="终点编号" />
         </el-table>
-      </el-col> -->
+      </el-col>
       <!-- <el-row style="padding-top: 8px; clear: both;">
         <el-checkbox v-model="isApplystop" style="margin-right: 4px;float:right;">使用障碍图层</el-checkbox>
       </el-row> -->
-      <!-- <el-row style="padding-top: 8px;">
+      <el-row style="padding-top: 8px;">
         <el-button size="mini" type="primary" style="width: 100%" @click="analysis" :disabled="analysisDisable">
           <i ref="analysisLoad" style="display:none;" class="el-icon-loading"/>开始分析</el-button>
-      </el-row> -->
+      </el-row>
     </tf-legend>
     <div id="Legend" class="Legend">
       <div class="label" @click="openstate = !openstate">分析结果
         <el-tooltip class="item" effect="dark" content="分析的结果展示。将会自动在地图上高亮显示结果，点击查看更多可显示表格。" placement="right">
           <i ref="info" class="el-icon-info" />
-        </el-tooltip><el-checkbox v-model="ractSelect" style="margin-left: 4px;">地图显示</el-checkbox>
+        </el-tooltip>
       </div>
       <div v-show="openstate" class="content">
         <el-table :data="layerData" stripe style="width: 100%" height="250">
           <el-table-column prop="name" label="图层" ></el-table-column>
-          <el-table-column prop="value" label="数量" ></el-table-column>          
+          <el-table-column prop="num" label="数量/条" ></el-table-column>
+          <el-table-column prop="length" label="总长/m" ></el-table-column>     
           <el-table-column label="操作">
             <template slot-scope="scope">
-              <el-link type="primary" @click="showLayer(scope.row)">详情</el-link>
+                <el-button type="text" @click="showQueryResultData(scope.row)">详情</el-button>
+                <download-excel class="export-btn" :data="scope.row.data" :fields="scope.row.fields" type="xls" :name="scope.row.name" style="display: inline;">
+                  <el-button type="text" @click="beforeExport(scope.row.data)">导出</el-button>
+                </download-excel>
             </template>
           </el-table-column>
         </el-table>
@@ -57,10 +61,7 @@ import { GeoJSON } from 'ol/format'
 import iNetAnalysis from '@/views/zhpt/common/mapUtil/netAnalysis'
 import { fieldDoc } from '@/views/zhpt/common/doc'
 import { Feature } from 'ol'
-import { LineString, Point } from 'ol/geom'
-import { Style } from 'ol/style'
-import Icon from 'ol/style/Icon';
-import arrowImg from '@/assets/images/arrow-right.png'
+import { LineString } from 'ol/geom'
 
 export default {
   name: 'ConnectivityAnalysis',
@@ -80,16 +81,12 @@ export default {
       vectorLayer: null,
       lightLayer: null,
       layerData: [],
-      ractSelect: false,  //是否分析结果地图显示
       resFeatures: []
     }
   },
   computed: { 
   },
   watch: {
-    ractSelect (nv, ov) {
-      
-    }
   },
   mounted: function() {
     this.map = this.data.mapView
@@ -106,24 +103,28 @@ export default {
         endDrawCallBack: drawFea => {
           let fea = new GeoJSON().readFeature(turf.buffer(turf.point(drawFea.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
           this.getAnalysisPipe(fea).then(resObj => {
-            this.drawer.clear()
             if (resObj) {
               let featureJson = resObj.result.features.features[0]
               let feature = new GeoJSON().readFeature(featureJson)
               this.vectorLayer.getSource().addFeature(feature)
-              // 
-              let lineCoors = feature.getGeometry().getCoordinates()
-              let centerPoint = new Feature({ geometry: new Point([(lineCoors[0][0] + lineCoors[1][0]) / 2, (lineCoors[0][1] + lineCoors[1][1]) / 2]) })
-              let style = this.getIconStyle(feature)
-              centerPoint.setStyle(style)
-              this.vectorLayer.getSource().addFeature(centerPoint)
-            } else return this.$message.error("无管线数据")
+              let sid = feature.get("SID"), startid = feature.get("START_SID"), endid = feature.get("END_SID")
+
+              if (this.selectedPipe.length === 0) {
+                this.selectedPipe.push({ oid: sid, STARTSID: startid, ENDSID: endid, feature })
+              } else {
+                if (this.selectedPipe[0].oid === sid) return this.$message.error("同一条管线")
+                this.selectedPipe.push({ oid: sid, STARTSID: startid, ENDSID: endid, feature })
+                this.drawer.remove()
+              }
+            } else {
+              this.drawer.clear()
+              return this.$message.error("无管线数据")
+            }
           })
         },
         showCloser: false
       })
       this.drawer.start()
-      
     },
     getAnalysisPipe (fea) {
       let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
@@ -149,16 +150,39 @@ export default {
             let pathList = res.result.pathList
             let pathFeatures = []
             pathList.forEach(item => {
-              this.ractSelect && this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(item.edgeFeatures))
+              this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(item.edgeFeatures))
               pathFeatures = [ ...pathFeatures, ...item.edgeFeatures.features ]
             })
-            this.
-            this.layerData = [{ name: "给水管线", value: pathFeatures.length, pathFeatures }]
+            this.addTableData([{ pathFeatures }])
           }
         } else this.$message.error("分析失败, 管线间不连通")  
       })
     },
-    showLayer (row) {
+    addTableData (data) {
+      let keys = Object.keys(fieldDoc)
+      keys.length = 15
+      let fields = {}
+      keys.forEach(key => {
+        fields[fieldDoc[key]] = key
+      })
+      console.log("表格数据")
+      let length = 0
+      this.layerData = data.map(item => {
+            let pathFeatures = item.pathFeatures
+            let data = pathFeatures.map(fea => fea.properties)
+            let lengthBox = pathFeatures.map(fea => fea.properties["SMLENGTH"] ? fea.properties["SMLENGTH"] : 0)
+            length = lengthBox.reduce((prev, next) => prev + Number(next), length).toFixed(3)
+            return {
+                name: "给水管线",
+                num: pathFeatures.length,
+                data: data,
+                length,
+                fields,
+                pathFeatures
+            }
+      })
+    },
+    showQueryResultData (row) {
       let features = row.pathFeatures
       let colsData = []
       for (let field in fieldDoc) {
@@ -187,32 +211,8 @@ export default {
       this.layerData = []
       this.lightLayer.getSource().clear()
       this.vectorLayer.getSource().clear()
-      this.ractSelect = false
       this.resFeatures = []
-    },
-    getIconStyle (feature) {
-      let coors = feature.getGeometry().getCoordinates()
-      let [ startPoint, endPoint ] = coors
-      let rotation = 0
-      let imgRt = Math.PI / 2 // 图片资源相对于竖直向上方向的旋转角度
-
-      if (endPoint[0] === startPoint[0]) { // 竖直
-        rotation = endPoint[1] > startPoint[1] ? -imgRt : Math.PI - imgRt
-      } else if (endPoint[1] === startPoint[1]) { // 水平
-        rotation = endPoint[1] > startPoint[1] ? Math.PI / 2 - imgRt : Math.PI * 3 / 2 - imgRt
-      } else { // 其他角度
-        rotation = Math.atan((endPoint[0] - startPoint[0]) / (endPoint[1] - startPoint[1])) - imgRt
-      }
-      
-      return new Style({
-        image: new Icon({
-          src: arrowImg,
-          scale: 0.6,
-          size: [48, 48],
-          rotation
-        })
-      }) 
-    },
+    }
   },
   destroyed() {
     this.resFeatures = []
