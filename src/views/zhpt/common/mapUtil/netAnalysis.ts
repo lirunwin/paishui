@@ -51,15 +51,4 @@ export default class iNetAnalysis {
             })
         })
     }
-    // 连通分析
-    connetAnalysis (startPoint, endPoint) {
-        let params = {
-            connected: true,
-            returnFeatures: true,
-            edgeIDs: JSON.stringify([startPoint, endPoint])
-        }
-        $.get(this.analysisUrl, params, res => {
-            console.log("连通性查询结果", res)
-        })
-    }
 }
