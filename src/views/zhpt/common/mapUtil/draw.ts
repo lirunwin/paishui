@@ -17,13 +17,17 @@ export default class iDraw {
 
     vectorLayer = null // 绘制图层
 
-    startDrawCallBack = null
+    startDrawCallBack = null // 开始绘制时回调
 
-    endDrawCallback = null
+    conditionCallBack = null // 
 
-    showCloser = true
+    endDrawCallback = null // 结束绘制时回调
 
-    overlay = null
+    showCloser = true // 是否显示关闭
+
+    overlay = null // 绘制图形关闭
+
+    maxLength = 1e3 // 最多绘制点数
 
     drawType = {
         line: "LineString", // 线
@@ -31,14 +35,18 @@ export default class iDraw {
         point: "Point", // 点
         rect: "Circle", // 框
         circle: "Circle" // 圆
-    }
+    } // 绘制类型
 
-    constructor (map, type, { startDrawCallBack = null, endDrawCallBack = null, showCloser = true }) {
+    constructor (map, type, { startDrawCallBack = null, conditionCallBack = null, endDrawCallBack = null, showCloser = true, maxLength = 1e3 }) {
+        if (!map) throw new Error("绘制器没有地图对象")
+        if (!type) throw new Error("无绘制类型")
         this.map = map
         this.type = type
         this.startDrawCallBack = startDrawCallBack
         this.endDrawCallback = endDrawCallBack
+        this.conditionCallBack = conditionCallBack
         this.showCloser = showCloser
+        this.maxLength = maxLength
         this.init()
     }
 
@@ -46,7 +54,7 @@ export default class iDraw {
         this.vectorSource = new VectorSource({ wrapX: false })
         this.vectorLayer = new VectorLayer({ 
             source: this.vectorSource,
-            style: comSymbol.getAllStyle(7, "#f40", 5, "#7BDCFE")
+            style: comSymbol.getAllStyle(7, "#f40", 5, "#C0DB8D")
         })
         this.map.addLayer(this.vectorLayer);
         this.vectorLayer.setZIndex(99)
@@ -60,9 +68,10 @@ export default class iDraw {
         this.drawer = new Draw({
             source: this.vectorSource,
             type: this.drawType[this.type],
-            maxPoints: null,
-            style: comSymbol.getDrawStyle(7, "#f40", 5, "#7BDCFE"),
+            maxPoints: this.maxLength,
+            style: comSymbol.getDrawStyle(7, "#f40", 5, "#C0DB8D"),
             condition: evt => {
+                this.conditionCallBack && this.conditionCallBack(evt)
                 return true
             },
             ...geometryFunction
@@ -90,13 +99,13 @@ export default class iDraw {
     }
     // 移除事件
     remove () {
-        this.map.removeInteraction(this.drawer)
+        this.map && this.map.removeInteraction(this.drawer)
         this.drawer = null
     }
     // 清除绘制图形
     clear () {
-        this.vectorSource.clear()
-        this.map.removeLayer(this.vectorLayer)
+        this.vectorSource && this.vectorSource.clear()
+        this.map && this.map.removeLayer(this.vectorLayer)
         this.overlay && this.overlay.setPosition(null)
         this.vectorSource = this.vectorLayer = this.overlay = null
     }

@@ -54,6 +54,7 @@ export default class FloatPanels extends Vue {
   color: black;
 }
 .floatpanels {
+  z-index: 99;
   width: 100%;
   height: 100%;
   position: absolute;

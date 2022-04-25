@@ -12,20 +12,26 @@
     <tf-legend class="legend_dept" label="我的书签" isopen="true" title="查看所有已保存的地图书签。">      
       <el-row>
         <el-col :span="24">
-          <el-table ref="markTable" :data="list" stripe style="width: 100%;" max-height="calc(100vh - 431px)" row-class-name="selectRowC" @row-click="rowClick">
-            <el-table-column type="selection" width="55" />
-            <el-table-column prop="name" label="名称" width="80">
+          <el-table ref="markTable" :data="list" stripe style="width: 100%;" max-height="calc(100vh - 431px)" row-class-name="selectRowC">
+            <!-- <el-table-column type="selection" width="55" /> -->
+            <el-table-column prop="markName" label="名称" width="120">
               <template slot-scope="scope">
-                <el-tooltip class="item" effect="dark" :content="scope.row.mark" placement="top-start">
-                  <span>{{ scope.row.name }}</span>
+                <el-tooltip class="item" effect="dark" :content="scope.row.markName" placement="top-start">
+                  <span>{{ scope.row.markName }}</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="date" label="创建时间" width="">
+            <el-table-column prop="remark" label="书签描述" >
               <template slot-scope="scope">
-                <el-tooltip class="item" effect="dark" :content="scope.row.mark" placement="top-start">
-                  <span>{{ scope.row.date }}</span>
+                <el-tooltip class="item" effect="dark" :content="scope.row.remark" placement="top-start">
+                  <span>{{ scope.row.remark }}</span>
                 </el-tooltip>
+              </template>
+            </el-table-column>
+            <el-table-column prop="center" label="操作" width="100">
+              <template slot-scope="scope">
+                <el-link type="primary" @click="jump(scope.row)">跳转</el-link>
+                <el-link type="primary" @click="deleteMark(scope.row)">删除</el-link>
               </template>
             </el-table-column>
           </el-table>
@@ -33,16 +39,14 @@
       </el-row>
       <el-row style="margin-top: 8px">
         <el-col :span="20">
-          <el-pagination ref="pagination" small background layout="total, sizes, prev, next" :page-sizes="[5, 10, 50, 100]" :total="total"
+          <el-pagination ref="pagination" small background layout="total, sizes, prev, next" 
+          :page-size.sync='pageSize' :current-page.sync='currentPage' :page-sizes="[5, 10, 50, 100]" :total="total"
           @current-change="listRefersh" @size-change="listRefersh" />
         </el-col>
-        <el-col :span="4">
-          <span ref='pageLength' style="font-size: 13px;" class="el-pagination__total">1/10 页</span>
-        </el-col>
       </el-row>
-      <el-row style="margin-top: 8px" >
+      <!-- <el-row style="margin-top: 8px" >
         <el-button size="mini" style="width: 100%;" type="primary" @click="deleteMarks">删除选定书签</el-button>
-      </el-row>
+      </el-row> -->
     </tf-legend>
   </div>
 </template>
@@ -62,30 +66,58 @@ export default {
       queMark: '',
       list: [],
       total: 0,
+      
+      currentPage: 1,
+      pageSize: 10
     }
   },
   mounted() {
     this.mapView = this.$attrs.data.mapView
-    console.log("初始化表格")
-    this.listRefersh(1, 10)
+    this.listRefersh()
   },
   methods: {
+    jump (row) {
+      console.log("跳转")
+      let view = this.mapView.getView()
+      view.setCenter(row.center.split(","))
+      view.setZoom(row.zoom)
+    },
     addMark() {
-      var view = this.mapView
-      var markName = this.queName
-      var mark = this.queMark
+      let view = this.mapView.getView()
+      let markName = this.queName
+      let remark = this.queMark
       if(!markName) return this.$message.error('请输入书签名称');
-      if(!mark) return this.$message.error('请输入书签描述');
-      var center = view.center
+      if(!remark) return this.$message.error('请输入书签描述');
 
-      // TODO
-      addMark({}).then(res => {
+      let param = {
+        markName,
+        imgLink: '',
+        remark,
+        zoom: view.getZoom(),
+        center: view.getCenter().toString(),
+        userId: this.$store.state.user.userId
+      }
+      addMapMark(param).then(res => {
         if (res.code === 1) {
           let mark = this.queMark
           this.$message.success('添加书签：' + markName + ' 成功');
           this.queName = this.queMark = ''
           this.listRefersh()
         }
+      })
+    },
+    deleteMark (row) {
+      this.$confirm(
+        `是否删除 ${row.markName} 书签？`, '提示',
+        { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }
+      ).then(() => {
+        deleteMapMark(row.id).then(res => {
+          if(res.code == 1) {
+            this.$message(`${row.markName}已删除`);
+            this.$refs.pagination.internalCurrentPage = 1
+            this.listRefersh()
+          } else this.$message(res.message)
+        })
       })
     },
     deleteMarks() {
@@ -96,9 +128,8 @@ export default {
         '确定删除选中的 ' + selects.length + '条书签？', '提示',
         { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }
       ).then(() => {
-        // TODO
         deleteMapMark({}).then(res => {
-          if(res.code == 1) {            
+          if(res.code == 1) {
             this.$message("已删除");
             this.$refs.pagination.internalCurrentPage = 1
             this.listRefersh()
@@ -107,20 +138,20 @@ export default {
       })
     },
     listRefersh() {
+      console.log('更新列表')
       var pages = this.$refs.pagination
-      getMapMark().then(res => {
+      let param = { size: this.pageSize, current: this.currentPage }
+      getMapMark(param).then(res => {
         if(res.code == 1) {
           res = res.result
           this.total = res.total
-          var list = []
-          for(let i=0,il=res.records,ii=il.length;i<ii;i++) {
-            var ni = il[i]
-            var extent = JSON.parse(ni.extent)
-            list.push({ id: ni.id, name: ni.name, date: ni.createTime, center: extent.center, zoom: extent.zoom, mark: ni.notes })
-          }
+          let list = res.records.map(item => {
+            return { id: item.id, markName: item.markName, center: item.center, zoom: item.zoom, remark: item.remark }
+          })
           this.list = list
-          this.$refs.pageLength.innerHTML = pages.internalCurrentPage + '/' + Math.ceil(res.total / pages.internalPageSize)
-        } else this.$message(res.message)
+        } else {
+          res.message && this.$message(res.message)
+        }
       })
     },
     rowClick(row) {

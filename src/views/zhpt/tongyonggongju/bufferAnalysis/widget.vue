@@ -14,11 +14,11 @@
     <!-- 绘制方式 -->
     <div class="op-box">
       <div class="item-head" style="margin-top:0">几何类型</div>
-      <el-radio v-model="drawType" label="Point">点</el-radio>
-      <el-radio v-model="drawType" label="LineString">线</el-radio>
-      <el-radio v-model="drawType" label="Circle">圆</el-radio>
-      <el-radio v-model="drawType" label="Box">矩形</el-radio>
-      <el-radio v-model="drawType" label="Polygon">多边形</el-radio>
+      <el-radio v-model="drawType" label="point">点</el-radio>
+      <el-radio v-model="drawType" label="line">线</el-radio>
+      <el-radio v-model="drawType" label="circle">圆</el-radio>
+      <el-radio v-model="drawType" label="rect">矩形</el-radio>
+      <el-radio v-model="drawType" label="polygon">多边形</el-radio>
     </div>
     <div class="op-box">
       <div class="item-head" style="margin-top:0">缓冲距离</div>
@@ -31,7 +31,7 @@
       </el-form>
     </div>
     <div class="op-box">
-      <el-button type="primary" size="small" style="width:100%" @click="doQuery" :loading="queryStatus">开始查询</el-button>
+      <el-button type="primary" size="small" style="width:100%" @click="doQuery_new" :loading="queryStatus">开始查询</el-button>
     </div>
     <!-- 查询结果 -->
     <div class="query-result">
@@ -46,7 +46,7 @@
             <el-table-column prop="number" align="center" label="数量(个)"></el-table-column>
             <el-table-column align="center" label="操作">
               <template slot-scope="scope">
-                <el-button type="text" @click="showQueryResultData()">查看</el-button>
+                <el-button type="text" @click="showQueryResultData(scope.row.data)">查看</el-button>
                 <download-excel class="export-btn" :data="scope.row.data" :fields="scope.row.fields" type="xls" :name="scope.row.layer"
                                 style="display: inline;">
                   <el-button type="text" @click="beforeExport(scope.row.data)">导出</el-button>
@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import { mapConfig } from '@/views/zhpt/map.config'
+import { appconfig } from 'staticPub/config'
 import { SuperMap, FieldService, FeatureService } from '@supermap/iclient-ol';
 import Draw from 'ol/interaction/Draw'
 import { Vector as VectorSource } from 'ol/source';
@@ -73,27 +73,40 @@ import { getFields } from '@/api/mainMap/analysis'
 import { createBox } from 'ol/interaction/Draw';
 import * as turf from '@turf/turf'
 import { fromCircle as circleToPolygon } from 'ol/geom/Polygon';
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import { comSymbol } from '@/utils/comSymbol';
+import { fieldDoc } from '@/views/zhpt/common/doc'
+import { Feature } from 'ol';
+
 export default {
   props: ['data'],
   data() {
     return {
       selectLayer: '',
-      drawType: 'Point',
+      
       bufferDistance: 50,
       draw: null,
-      drawFeature: null,
-      vectorLayer: null,
+      
+      
       resultData: [],
       resFeatures: [],
       queryStatus: false,
+
+      // 
+      drawType: '',
+      drawer: null,
+      vectorLayer: null,
+      drawFeature: null,
+      lightFeature: null,
+      lightLayer: null
     }
   },
   computed: {
     // 图层选项
     datasetOptions() {
-      const dataSetInfo = mapConfig.iServerUrl.pipelineDataServer.dataSetInfo
-      let datasetOptions = JSON.parse(JSON.stringify(dataSetInfo))
-      return datasetOptions.map(item => {
+      const dataSetInfo = appconfig.gisResource['iserver_resource'].dataServer.dataSetInfo
+      return dataSetInfo.map(item => {
         return { label: item.label, value: item.name, type: item.type }
       })
     }
@@ -101,125 +114,110 @@ export default {
   watch: {
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
-      if (val == 'bufferQuery') {
-        this.vectorLayer.setVisible(true)
-        if (this.selectLayer) {
-          // this.initDraw()
-        }
-      }
-      else {
-        this.vectorLayer.setVisible(false)
-        if (this.draw) this.data.that.map.removeInteraction(this.draw)
-      }
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
+      this.lightLayer && this.mapView.removeLayer(this.lightLayer)
     },
     drawType(val, oldVal) {
-      if (this.selectLayer) {
-        this.initDraw()
-      }
+      this.initDraw()
     }
   },
   destroyed() {
-    if (this.draw) this.data.that.map.removeInteraction(this.draw)
-    this.data.that.map.removeLayer(this.vectorLayer)
-    this.$store.dispatch('map/delHalfPanels', 'bufferQueryResult');
+    this.drawer && this.drawer.end()
+    this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
+    this.lightLayer && this.mapView.removeLayer(this.lightLayer)
+    this.drawer = this.vectorLayer = this.lightLayer = null
+    this.$store.dispatch('map/handelClose', {
+      box:'HalfPanel',
+      pathId: 'queryResultMore',
+      widgetid: 'HalfPanel',
+    });
   },
   mounted() {
-    // 初始化显示图层
-    this.vectorLayer = new VectorLayer({
-      source: new VectorSource(),
-      style: new Style({
-        stroke: new Stroke({
-          width: 5,
-          color: '#ed1941'
-        }),
-        image: new Circle({
-          radius: 6,
-          stroke: new Stroke({
-            width: 2,
-            color: '#ed1941'
-          }),
-          fill: new Fill({
-            color: '#FFF'
-          })
-        })
-      })
-    })
-    this.data.that.map.addLayer(this.vectorLayer)
+    this.mapView = this.data.mapView
   },
   methods: {
-    checkBufferDistance() {
-      if (!this.bufferDistance) { this.bufferDistance = 50 }
-    },
     /**
     * 初始化绘制组件
     */
-    initDraw() {
-      // this.vectorLayer.getSource().clear()
-      if (this.draw) this.data.that.map.removeInteraction(this.draw)
-      this.drawFeature = null
-      // 绘制组件
-      this.draw = new Draw({
-        source: this.vectorLayer.getSource(),
-        type: this.drawType == 'Box' ? 'Circle' : this.drawType,
-        geometryFunction: this.drawType == 'Box' ? createBox() : null,
-        style: new Style({
-          stroke: new Stroke({
-            lineDash: [10, 10],
-            color: '#0099ff',
-            width: 3
-          }),
-          fill: new Fill({
-            color: 'rgba(255, 255, 255,0.6)'
-          })
-        })
+    initDraw () {
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.vectorLayer.getSource().clear()
+      this.drawer = new iDraw(this.data.mapView, this.drawType, {
+        endDrawCallBack: feature => {
+          this.drawer.remove()
+          this.drawFeature = feature
+        },
+        showCloser: false
       })
-      this.data.that.map.addInteraction(this.draw)
-      //结束绘制
-      this.draw.on("drawend", evt => {
-        this.data.that.map.removeInteraction(this.draw)
-        evt.feature.setStyle(new Style({
-          stroke: new Stroke({
-            color: '#0099ff',
-            width: 3
-          }),
-          fill: new Fill({
-            color: 'rgba(255, 255, 255,0.6)'
-          }),
-          image: new Circle({
-            radius: 7,
-            stroke: new Stroke({
-              width: 3,
-              color: '#0099ff'
-            }),
-            fill: new Fill({
-              color: '#fff'
-            })
-          })
-        }))
-        this.drawFeature = evt.feature
+      this.drawer.start()
+    },
+
+    doQuery_new () {
+      if (!this.selectLayer) return this.$message.error('请先选择要分析的图层!')
+      if (!this.drawFeature) return this.$message.error('请先绘制缓冲区图形!')
+      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      let dataSetInfo = [{ name: this.selectLayer.value }]
+
+      if (!this.vectorLayer) {
+        this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
+        this.mapView.addLayer(this.vectorLayer)
+      }
+      let bufferFeature = this.getBufferFeature(this.drawFeature)
+      this.vectorLayer.getSource().addFeature(bufferFeature)
+
+      new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(bufferFeature).then(resArr => {
+        console.log("空间查询信息", resArr)
+        let tableData = []
+        resArr.forEach(res => {
+          if (res.result.featureCount !== 0) {
+            let featuresJson = res.result.features
+            let features = new GeoJSON().readFeatures(featuresJson)
+            this.vectorLayer.getSource().addFeatures(features)
+            tableData.push({ name: res.layerName, data: features.map(fea => fea.values_) })
+          }
+        })
+        this.addTableData(tableData)
       })
     },
+
+    addTableData (data) {
+      let keys = Object.keys(fieldDoc)
+      keys.length = 15
+      let fields = {}
+      keys.forEach(key => {
+        fields[fieldDoc[key]] = key
+      })
+      this.resultData = data.map(item => {
+        return { 
+          layer: item.name, 
+          number: item.data.length,
+          data: item.data,
+          fields
+        }
+      })
+    },
+
+    checkBufferDistance() {
+      if (!this.bufferDistance) { this.bufferDistance = 50 }
+    },
+
+
     /**
      * 选择图层
      */
     selectLayerChange() {
-      console.log('噢噢噢噢噢噢', this.selectLayer)
-      this.initDraw()
+      // 
     },
     /**
      * 要素缓冲
      */
-    getBufferFeature() {
-      if (!this.drawFeature) {
-        this.queryStatus = false
-        this.$message.error("请先绘制图形！")
-        return
-      }
-      let geometry = this.drawFeature.getGeometry()
+    getBufferFeature(drawFeature) {
+      let geometry = drawFeature.getGeometry()
       let fea = null
-      if (this.drawType == 'Point') { fea = turf.point(geometry.getCoordinates()) } // turf的点要素
-      else if (this.drawType == 'LineString') { fea = turf.lineString(geometry.getCoordinates()) } // turf的线要素
-      else if (this.drawType == 'Circle') { fea = turf.polygon(circleToPolygon(geometry).getCoordinates()) }
+      if (this.drawType == 'point') { fea = turf.point(geometry.getCoordinates()) } // turf的点要素
+      else if (this.drawType == 'line') { fea = turf.lineString(geometry.getCoordinates()) } // turf的线要素
+      else if (this.drawType == 'circle') { fea = turf.polygon(circleToPolygon(geometry).getCoordinates()) }
       else { fea = turf.polygon(geometry.getCoordinates()) } // turf的面要素
       let resultFeature = new GeoJSON().readFeature(turf.buffer(fea, this.bufferDistance / 1000, { units: 'kilometers' }))
       resultFeature.setStyle(new Style({
@@ -304,28 +302,38 @@ export default {
     },
     clearResult() {
       this.vectorLayer.getSource().clear()
-      if (this.draw) this.data.that.map.removeInteraction(this.draw)
-      this.drawFeature = null
-      this.resultData=[]
       this.initDraw()
+      this.drawFeature = null
+      this.resultData = []
     },
     /**
      *  展示查询结果
      */
-    showQueryResultData() {
-      var info = {
-        path: 'bufferQueryResult',
-        name: 'bufferQueryResult',
-        pathId: 'bufferQueryResult',
+    showQueryResultData(data) {
+      if (data.length === 0) return 
+      let colsData = []
+      for (let key in fieldDoc) {
+        colsData.push({ prop: key, label: fieldDoc[key]})
+      }
+      colsData.length = 15
+      this.$store.dispatch('map/changeMethod', {
+        pathId: 'queryResultMore',
         widgetid: 'HalfPanel',
-        type: 'gis',
-        component: () => import('@/views/zhpt/tongyonggongju/bufferAnalysis/bufferQueryResult/widget'),
-        label: '缓冲查询结果',
-        meta: { title: '缓冲结果' },
-        param: { dataType: this.selectLayer.type, features: this.resFeatures }
-      };
-      this.$store.dispatch('map/delHalfPanels', 'bufferQueryResult');
-      this.$store.dispatch('map/changeMethod', info);
+        label: '详细信息',
+        param: { data, colsData, rootPage: this }
+      })
+      
+    },
+    gotoGeometry (geometry) {
+      console.log("定位")
+      if (!this.lightLayer) {
+        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#FFFFB6') })
+        this.lightLayer.setZIndex(999)
+        this.mapView.addLayer(this.lightLayer)
+      }
+      this.lightLayer.getSource().clear()
+      this.lightFeature = new Feature({ geometry })
+      this.lightLayer.getSource().addFeature(this.lightFeature)
     }
   }
 }

@@ -71,7 +71,7 @@
           </el-row>
         </el-form-item>
         <!-- 动态添加的条件 -->
-        <div v-for="(item,i) in filterArr" :key="i">
+        <!-- <div v-for="(item,i) in filterArr" :key="i">
           <el-row style="height:40px;line-height: 40px;">
             <el-col :span="7" style="padding-right:5px">
               <el-select v-model="filterArr[i].field" placeholder="字段名" size="small" @change="fieldChange(i,filterArr[i].field)">
@@ -94,15 +94,15 @@
               <span class="el-icon-circle-close item-close" style="vertical-align:middle;" title="移除条件" @click="deleteParamItem(i)"></span>
             </el-col>
           </el-row>
-        </div>
+        </div> -->
 
       </el-form>
-      <el-button type="primary" size="small" style="width:100%;margin-top:10px" @click="addNewParam">新增条件</el-button>
+      <!-- <el-button type="primary" size="small" style="width:100%;margin-top:10px" @click="addNewParam">新增条件</el-button> -->
     </div>
     <div class="op-box">
       <div class="item-head">预警范围</div>
-      <el-radio v-model="radio" label="1">全图分析</el-radio>
-      <el-radio v-model="radio" label="2">绘制区域分析</el-radio>
+      <el-radio v-model="warningExtent" label="1">全图分析</el-radio>
+      <el-radio v-model="warningExtent" label="2">绘制区域分析</el-radio>
     </div>
     <div class="op-box">
       <el-button type="primary" size="small" style="width:100%" @click="execute" :loading="loading">预警分析</el-button>
@@ -111,13 +111,12 @@
     <div class="table-chart">
       <div class="item-head">预警结果</div>
       <div class="table-container">
-        <el-table :data="totalResultTable" v-loading="loading" stripe max-height="200"
-                  :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+        <el-table :data="totalResultTable" v-loading="loading" stripe max-height="200" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
           <el-table-column prop="name" label="图层" align="center" show-overflow-tooltip></el-table-column>
           <el-table-column prop="num" label="数量" align="center" show-overflow-tooltip></el-table-column>
           <el-table-column label="操作" align="center">
             <template slot-scope="scope">
-              <el-button type="text" @click="viewDetails">查看</el-button>
+              <el-button type="text" @click="viewDetails(scope.row.data)">查看</el-button>
               <download-excel style="display: inline-block;" :data="scope.row.data" :fields="scope.row.fields" type="xls"
                               :name="scope.row.name">
                 <el-button type="text">导出</el-button>
@@ -134,23 +133,30 @@
 </template>
 
 <script>
-import { mapConfig } from '@/views/zhpt/map.config'
+import { appconfig } from 'staticPub/config'
 import Draw from 'ol/interaction/Draw'
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Circle, Icon, Fill, RegularShape, Stroke, Text } from 'ol/style';
 import { SuperMap, FeatureService } from '@supermap/iclient-ol';
-import { GeoJSON, WFS } from 'ol/format';
+import { GeoJSON } from 'ol/format';
+import { comSymbol } from '@/utils/comSymbol';
+import iDraw from '@/views/zhpt/common/mapUtil/draw';
+import iQuery from '../../common/mapUtil/query';
+import { Point, LineString } from 'ol/geom';
+import { fieldDoc } from '@/views/zhpt/common/doc'
+import * as turf from '@turf/turf'
+import Feature from 'ol/Feature'
+
 export default {
   props: ["data"],
   data() {
     return {
       loading: false,
-      radio: '1',
       selectLayer: '',
-      totalResultTable: [],
+
       draw: null,
-      vectorLayer: null,
+
       datasetOptions: [],
       filterArr: [],
       fieldKeys: [],
@@ -166,107 +172,81 @@ export default {
         { label: '>', value: '>' },
         { label: '<', value: '<' },
       ],
-      queryExtent: null
+      queryExtent: null,
+      // 
+      totalResultTable: [],
+      mapView: null,
+      vectorLayer: null,
+      warningExtent: "1",
+      drawer: null,
+      limitFeature: null,
+      vectorLayer: null,
+      lightLayer: null
     }
   },
   watch: {
-    radio(val, oldVal) {
-      /**开启关闭绘制预警范围 */
-      if (val == '2') {
-        this.drawExtent()
+    warningExtent (val, oldVal) {
+      if (val === '2') {
+        this.drawer  = this.drawer || new iDraw(this.mapView, 'polygon', {
+          endDrawCallBack: this.drawFunc,
+          showCloser: false
+        })
+        this.drawer.start()
       } else {
-        this.queryExtent = null
-        if (this.draw) this.data.that.map.removeInteraction(this.draw)
+        this.drawer && this.drawer.end()
+        this.drawer = null
       }
-      this.vectorLayer.getSource().clear()
     },
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
-      if (val == 'warningAnalysis') {
-        this.vectorLayer.setVisible(true)
-      }
-      else {
-        this.vectorLayer.setVisible(false)
-        if (this.draw) this.data.that.map.removeInteraction(this.draw)
-      }
+      this.drawer.end()
+      this.drawer = null
+      this.vectorLayer.getSource().clear()
+      this.limitFeature = null
+      this.closeHalfPanel()
     }
   },
   mounted() {
-    this.initData()
+    this.init()
   },
   destroyed() {
-    this.data.that.map.removeLayer(this.vectorLayer)
-    if (this.draw) this.data.that.map.removeInteraction(this.draw)
+    this.closeHalfPanel()
+    this.drawer && this.drawer.end()
+    this.drawer = null
+    this.vectorLayer.getSource().clear()
+    this.lightLayer.getSource().clear()
   },
   methods: {
-    initData() {
+    init() {
       // 初始化显示图层
-      this.vectorLayer = new VectorLayer({
-        source: new VectorSource(),
-        style: new Style({
-          stroke: new Stroke({
-            width: 5,
-            color: '#1c78c2'
-          }),
-          image: new Circle({
-            radius: 7,
-            stroke: new Stroke({
-              width: 3,
-              color: '#ffce44'
-            }),
-            fill: new Fill({
-              color: '#FFF'
-            })
-          })
-        })
+      this.mapView = this.data.mapView
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, "#f00", 5, "#f00") })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, "#f00", 5, "#0ff") })
+      this.mapView.addLayer(this.vectorLayer)
+      this.mapView.addLayer(this.lightLayer)
+      
+      this.dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      let { dataSet } = this.dataServer
+      this.datasetOptions = dataSet.map(item => {
+        return { value: item, label: item }
       })
-      this.data.that.map.addLayer(this.vectorLayer)
-
-      this.datasetOptions = []
-      // 数据集获取
-      mapConfig.iServerUrl.pipelineDataServer.dataSetInfo.forEach(item => {
-        this.datasetOptions.push({ label: item.label, value: item.name, type: item.type })
-      });
+      // 
+      this.drawer = new iDraw(this.mapView, 'polygon', {
+        endDrawCallBack: this.drawFunc,
+        showCloser: false
+      })
     },
-    /**
-     * 绘制范围
-     */
-    drawExtent() {
-      this.draw = new Draw({
-        source: this.vectorLayer.getSource(),
-        type: 'Polygon',
-        style: new Style({
-          stroke: new Stroke({
-            lineDash: [10, 10],
-            color: '#fc5531',
-            width: 3
-          }),
-          fill: new Fill({
-            color: 'rgba(252, 85, 49,0.2)'
-          })
-        })
-      })
-      this.data.that.map.addInteraction(this.draw)
-      //结束绘制
-      this.draw.on("drawend", evt => {
-        this.data.that.map.removeInteraction(this.draw)
-        evt.feature.setStyle(new Style({
-          stroke: new Stroke({
-            color: '#fc5531',
-            width: 3
-          }),
-          fill: new Fill({
-            color: 'rgba(252, 85, 49,0.2)'
-          })
-        }))
-        this.queryExtent = evt.feature.getGeometry()
-      })
+    // 绘制完成
+    drawFunc (feature) {
+      this.limitFeature = feature
+      this.drawer.remove()
+      console.log("绘制的图形")
     },
     /**选择分析图层 */
     selectLayerChange() {
-      if (this.selectLayer.type == 'line') this.fieldKeys = this.$store.state.common.PipeLineFields
-      else this.fieldKeys = this.$store.state.common.PipePointFields
-      console.log('999', this.fieldKeys)
+      // if (this.selectLayer.type == 'line') this.fieldKeys = this.$store.state.common.PipeLineFields
+      // else this.fieldKeys = this.$store.state.common.PipePointFields
+      // console.log('999', this.fieldKeys)
     },
     /**新增条件 */
     addNewParam() {
@@ -391,15 +371,13 @@ export default {
         }
       })
     },
+    // 获取过滤条件
     checkQueryParams() {
       let sqlStr = ''
       // 拼接固定字段
       for (const key in this.queryForm) {
         if (Object.keys(this.queryForm[key]).length == 2) {
           let operator, field, val = null
-          // if (this.queryForm[key][Object.keys(this.queryForm[key])[0]]
-          //   && this.queryForm[key][Object.keys(this.queryForm[key])[1]])
-
           for (const k in this.queryForm[key]) {
             if (k == 'calc') operator = this.queryForm[key][k]
             else { val = this.queryForm[key][k]; field = k }
@@ -426,27 +404,44 @@ export default {
       // console.log('查询条件：', sqlStr)
       return sqlStr
     },
-    /**执行分析 */
+    // 分析
     execute() {
-      this.loading = true
-      if (!this.selectLayer.value) {
-        this.$message.error('未选择图层数据集！')
-        this.loading = false
-        return
-      }
-      // this.vectorLayer.getSource().clear()
-      if (this.radio == '1') {
-        this.vectorLayer.getSource().clear()
-        this.attributeQuery() // 全图预警分析
-      } else {
-        // 指定范围预警分析
-        if (this.queryExtent) this.geoQuery()
-        else {
-          this.loading = false
-          this.$message.error('请先绘制分析范围！');
-        }
-      }
-      console.log('输出///：', mapConfig.iServerUrl.pipelineDataServer.dataSource, this.selectLayer)
+      if (this.warningExtent === "2" && !this.limitFeature) return this.$message.error("请先绘制查询范围")
+        if (!this.selectLayer) return this.$message.error("请选择查询图层")
+      let dataSetInfo = [{ name: this.selectLayer.value }]
+      let sqlStr = this.checkQueryParams()
+      new iQuery({ ...this.dataServer, dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
+          let featuresObj = resArr.find(item => item && item.result.featureCount !== 0)
+          if (featuresObj) {
+            let featuresJson = featuresObj.result.features
+            let features = new GeoJSON().readFeatures(featuresJson)
+            if (this.limitFeature) {
+                features = features.filter(feature => {
+                let limitGeometry = turf.polygon(this.limitFeature.getGeometry().getCoordinates())
+                let geomtry = feature.getGeometry(), inGeometry
+                if (geomtry instanceof Point) {
+                  inGeometry = turf.point(geomtry.getCoordinates())
+                } else if (geomtry instanceof LineString) {
+                  inGeometry = turf.lineString(geomtry.getCoordinates())
+                } else return false
+                return turf.booleanContains(limitGeometry, inGeometry)
+              })
+            }
+
+            this.vectorLayer.getSource().addFeatures(features)
+            //
+            let data = features.map(fea => fea.values_)
+            let keys = Object.keys(fieldDoc)
+            keys.length = 15
+            let fields = {}
+            keys.forEach(key => {
+              fields[fieldDoc[key]] = key
+            })
+            this.totalResultTable = [
+              { name: featuresObj.layerName, num: features.length, features, fields, data }
+            ]
+          }
+      })
     },
     /**
      * 获取字段，Excel导出时使用
@@ -467,26 +462,55 @@ export default {
     /**清除结果 */
     clearReasult() {
       this.vectorLayer.getSource().clear()
-      Object.assign(this.$data, this.$options.data());
-      this.initData()
-      this.loading = false
+      this.selectLayer = ""
+      this.queryForm = {
+        completionDate: {},
+        changeDate: {},
+        expiredDate: {},
+        maintainNum: { REPAIRNUM: 0 }
+      }
+      this.totalResultTable = []
+      this.drawer && this.drawer.clear()
+      this.warningExtent = ""
+      this.closeHalfPanel()
     },
     /**查看详情 */
-    viewDetails() {
-      if (this.totalResultTable.length == 0) return
-      let panel = {
-        path: 'warningReasult',
-        name: 'warningReasult',
-        pathId: 'warningReasult',
-        widgetid: 'HalfPanel',
-        type: 'gis',
-        component: () => import('@/views/zhpt/tongyonggongju/warningAnalysis/warningReasult/widget'),
-        label: '相交管线',
-        meta: { title: '相交管线' },
-        param: { dataType: this.selectLayer.type, features: this.features }
+    viewDetails(data) {
+      if (data.length === 0) return 
+      let colsData = []
+      for (let key in fieldDoc) {
+        colsData.push({ prop: key, label: fieldDoc[key]})
       }
-      this.$store.dispatch('map/delHalfPanels', 'warningReasult');
-      this.$store.dispatch('map/changeMethod', panel);
+      colsData.length = 15
+      this.closeHalfPanel()
+      this.$store.dispatch('map/changeMethod', {
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+        label: '详细信息',
+        param: { data, colsData, rootPage: this }
+      })
+    },
+    gotoGeometry (geometry) {
+      if (!this.lightLayer) {
+        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#FFFFB6') })
+        this.lightLayer.setZIndex(999)
+        this.mapView.addLayer(this.lightLayer)
+      }
+      this.lightLayer.getSource().clear()
+      this.lightFeature = new Feature({ geometry })
+      this.lightLayer.getSource().addFeature(this.lightFeature)
+
+      let extent = geometry.getExtent()
+      let center = [(extent[0] + extent[2]) / 2, (extent[1] + extent[3]) / 2]
+      this.mapView.getView().setCenter(center)
+      this.mapView.getView().setZoom(20)
+    },
+    closeHalfPanel () {
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+      });
     }
   }
 }

@@ -75,6 +75,7 @@ export default {
       flg: false,
       infoObject: {},
       afterClosePopup: null,
+      popup: null
     }
   },
   mounted() {
@@ -94,7 +95,6 @@ export default {
      * 打开弹窗 
      * */
     showPopup(position, infoObject, afterClosePopup) {
-      console.log("打开弹窗")
       this.afterClosePopup = afterClosePopup
       this.infoObject = infoObject
       this.flg = true
@@ -104,7 +104,7 @@ export default {
      * 关闭弹窗 
      * */
     closePopup() {
-      this.popup.setPosition(undefined);
+      this.popup && this.popup.setPosition(undefined);
       this.afterClosePopup && this.afterClosePopup()
     }
   }

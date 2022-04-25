@@ -38,6 +38,7 @@ export default {
 <style lang="scss">
 @import url("./assets/font/font.css");
 
+
 // 设置进度条颜色
 #nprogress .bar {
   background: #409eff !important; //自定义颜色

@@ -96,12 +96,29 @@ export default class SidebarItem extends Vue {
     return path.resolve(this.basePath, routePath)
   }
   handleMap(info) {
+    // debugger
     const currentRouter = this.$route.path
     const jumpRouter = '/map' // '/map/mapFun/funMap'
     if (jumpRouter != null && jumpRouter !== currentRouter) {
       this.$router.push(jumpRouter)
     }
+    // {
+    //   icon: 'iconfont '
+    //   id: 'pipelineDefect'
+    //   label: '管道缺陷管理'
+    //   meta: {
+    //     title: '管道缺陷管理'
+    //   }
+    //   name: 'PipelineDefect'
+    //   noShowingChildren: true
+    //   parentPathid: '/pipelineDefect'
+    //   path: ''
+    //   type: 'gis'
+    //   widgetid: 'HalfPanel'
+    // }
+    // 这是map里的跳转方法
     this.$store.dispatch('map/changeMethod', info)
+    console.log(info)
     if (info.widgetid !== 'FullPanel' && this.$store.state.map.fullPanels.length > 0) {
       this.$store.dispatch('map/delAllFull')
     }

@@ -20,7 +20,7 @@ import BaiduMap from 'vue-baidu-map'
 import '@/assets/iconfont/iconfont.js'
 import '@/assets/iconfont/iconfont.css'
 
-import Moment  from 'vue-moment'
+import Moment from 'vue-moment'
 
 // import htmlToPdf from './utils/htmlToPdf'
 // Vue.use(htmlToPdf)
@@ -49,6 +49,8 @@ import echarts from 'echarts'
 //     $comMethod:dStore.utils.comMethod
 //   }
 // }
+import JsonExcel from "vue-json-excel";
+Vue.component("downloadExcel", JsonExcel);
 
 Vue.prototype.$echarts = echarts
 Vue.prototype.$comMethod = comMethod
@@ -65,6 +67,22 @@ Vue.use(BaiduMap, {
 
 // 全局引入moment
 Vue.prototype.$moment = Moment//挂载Vue上
+
+/**
+  * select 下拉框 底部触发指令
+ */
+Vue.directive('selectLoadMore', {
+  bind(el, binding) {
+    // 获取element-ui定义好的scroll盒子
+    const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap')
+    SELECTWRAP_DOM.addEventListener('scroll', function () {
+      if (this.scrollHeight - this.scrollTop < this.clientHeight + 1) {
+        binding.value()
+      }
+    })
+  }
+})
+
 /**
  * mock数据
  */

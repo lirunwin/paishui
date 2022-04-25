@@ -1,27 +1,34 @@
 <template>
-  <div class="engineering-manage">
+  <div class="engineering-manage" @keyup.enter="searchApi">
     <!-- 管道缺陷管理 -->
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
-          <el-input placeholder="支持搜索管段编号、材质、评价" v-model="input" clearable class="serch-input" suffix-icon="el-input__icon el-icon-search">
+          <el-input
+            placeholder="支持搜索管段编号、材质、评价"
+            v-model="searchValue.queryParams"
+            clearable
+            class="serch-input"
+            suffix-icon="el-input__icon el-icon-search"
+          >
           </el-input>
-          <el-date-picker v-model="value1" type="date" placeholder="入库时间" class="date-css"> </el-date-picker>
+          <el-date-picker v-model="searchValue.testTime" type="date" placeholder="入库时间" class="date-css">
+          </el-date-picker>
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="form.name" placeholder="全部">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="searchValue.funcClass" placeholder="全部">
+            <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="form.name" placeholder="全部">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="searchValue.structClass" placeholder="全部">
+            <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
           </el-select>
-          <el-button class="serch-btn" style="margin-left: 26px" type="primary"> 搜索 </el-button>
-          <el-button class="serch-btn" type="primary"> 重置 </el-button>
+          <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
+          <el-button class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
-          <el-button class="serch-btn" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
+          <el-button class="serch-btn" type="primary" @click="$message('该功能暂未开放')"
+            >导出<i class="el-icon-download el-icon--right"></i
+          ></el-button>
         </div>
       </div>
 
@@ -32,80 +39,26 @@
         height="250"
         stripe
         style="width: 100%"
+        @row-click="viewPipe"
         @selection-change="handleSelectionChange"
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
 
-        <el-table-column prop="date" header-align="center" label="工程名称" align="center" show-overflow-tooltip>
-        </el-table-column>
         <el-table-column
-          prop="name"
-          min-width="150"
+          :prop="v.name"
           header-align="center"
-          label="管段编号"
+          :label="v.label"
           align="center"
           show-overflow-tooltip
+          v-for="v in tableContent"
+          :key="v.name"
         >
         </el-table-column>
-        <el-table-column
-          prop="address"
-          min-width="150"
-          header-align="center"
-          label="管段类型"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="address"
-          min-width="150"
-          header-align="center"
-          label="管径(mm)"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="address"
-          min-width="150"
-          header-align="center"
-          label="材质"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="address"
-          min-width="150"
-          header-align="center"
-          label="结构性缺陷等级"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column
-          prop="address"
-          min-width="150"
-          header-align="center"
-          label="结构性缺陷评价"
-          align="center"
-          show-overflow-tooltip
-        >
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="缺陷数量" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测照片" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测视频" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测地点" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测日期" align="center" show-overflow-tooltip>
-        </el-table-column>
+
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="zero = scope">报告</el-button>
-            <el-button type="text" size="small" @click="zero = scope">详情</el-button>
+            <el-button type="text" size="small" @click.stop="$message('该功能暂未开放')">报告</el-button>
+            <el-button type="text" size="small" @click.stop="$message('该功能暂未开放')">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -113,157 +66,105 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="currentPage4"
+          :current-page="pagination.current"
           :page-sizes="[10, 20, 30, 50, 100, 1000]"
-          :page-size="30"
+          :page-size="pagination.size"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
+          :total="paginationTotal"
         >
         </el-pagination>
       </div>
     </div>
-    <!-- 添加卡片 -->
-    <el-dialog title="检测报告上传" v-if="dialogFormVisible" :visible.sync="dialogFormVisible">
-      <el-form ref="form" :model="form" :rules="rules">
-        <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
-          <el-select v-model="form.name" placeholder="请选择工程名称">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="检测报告" :label-width="formLabelWidth" class="hd-input" prop="report">
-          <el-input v-model="form.report" autocomplete="off"></el-input>
-          <el-button class="select-btn" type="primary">选择文件夹</el-button>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
+import { queryPageDefectInfo } from '@/api/pipelineManage'
+
 export default {
+  props: ['data'],
   data() {
     return {
-      // 分页需要的值
-      currentPage4: 4,
-      // ------------
-      radio: '',
-      zero: '',
-      tableData: [
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }
+      searchValue: {
+        testTime: '', // 检测日期
+        queryParams: '',
+        funcClass: '', // 功能型缺陷等级
+        structClass: '' // 结构型缺陷等级
+      }, // 搜索关键字的值
+      gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
+      // 表格参数
+      tableContent: [
+        { label: '工程名称', name: 'date' },
+        { label: '管段编号', name: 'expNo' },
+        { label: '管段类型', name: 'pipeType' },
+        { label: '管径(mm)', name: 'diameter' },
+        { label: '材质', name: 'material' },
+        { label: '结构性缺陷等级', name: 'structDefect' },
+        { label: '结构性缺陷评价', name: 'structEstimate' },
+        { label: '缺陷数量', name: 'defectNum' },
+        { label: '检测照片', name: 'picnum' },
+        { label: '检测视频', name: 'videoFileName' },
+        { label: '检测地点', name: 'checkAddress' },
+        { label: '检测日期', name: 'sampleTime' }
       ],
-      //  报告上传数据
-      rules: {
-        name: [{ required: true, message: '不能为空', trigger: ['blur', 'change'] }],
-        report: [{ required: true, message: '不能为空', trigger: 'blur' }]
-      },
-      dialogTableVisible: false,
-      dialogFormVisible: false,
-      form: {
-        name: '',
-        report: ''
-      },
-      formLabelWidth: '120px'
+      paginationTotal: 0, // 总页数
+      pagination: { current: 1, size: 30 }, // 分页参数信息
+      tableData: []
     }
   },
+  mounted() {
+    console.log('其它页面传来的参数', this.data)
+    let res = this.getDate()
+  },
   methods: {
+    viewPipe() {
+      console.log("走了地图高亮功能");
+      this.data.that.setPipesView()
+    },
+    // 搜索
+    searchApi() {
+      this.getDate(this.searchValue)
+    },
+    // 重置
+    async resetBtn() {
+      this.pagination = { current: 1, size: 30 }
+      this.searchValue = {
+        testTime: '',
+        queryParams: '',
+        funcClass: '', // 功能型缺陷等级
+        structClass: '' // 结构型缺陷等级
+      }
+      await this.getDate()
+    },
+    // 查询数据
+    async getDate(params) {
+      let data = this.pagination
+      if (params) {
+        data.queryParams = params.queryParams
+        data.jcDate = params.testTime
+        data.funcClass = params.funcClass
+        data.structClass = params.structClass
+      }
+      await queryPageDefectInfo(data).then((res) => {
+        // console.log('接口返回', res)
+        this.tableData = res.result.records
+        this.paginationTotal = res.result.total
+        // this.$message.success("上传成功");
+      })
+    },
     // 表格多选事件
     handleSelectionChange(val) {
       this.multipleSelection = val
     },
-    // 分页的事件
-    handleSizeChange(val) {
+    // 分页触发的事件
+    async handleSizeChange(val) {
+      this.pagination.size = val
+      await this.getDate()
       console.log(`每页 ${val} 条`)
     },
-    handleCurrentChange(val) {
+    async handleCurrentChange(val) {
+      this.pagination.current = val
+      await this.getDate()
       console.log(`当前页: ${val}`)
     }
   }
@@ -277,6 +178,7 @@ export default {
   padding: 20px 0;
   box-sizing: border-box;
   position: relative;
+  font-size: 12px;
   // 表格样式
   .table-box {
     width: 96%;
@@ -289,7 +191,7 @@ export default {
       justify-content: space-between;
       flex-direction: row;
       // flex-wrap: wrap;
-      font-size: 14px;
+      font-size: 12px;
       /deep/ .serch-engineering {
         display: flex;
         // justify-content: space-around;
@@ -304,7 +206,7 @@ export default {
           height: 34px;
         }
         .date-css {
-          width: 135px;
+          width: 140px;
         }
 
         .title {
@@ -344,16 +246,6 @@ export default {
     }
   }
 
-  // 报告上传样式
-  /deep/ .el-dialog__header {
-    background-color: #2d74e7;
-    .el-dialog__title {
-      color: #fff;
-    }
-    .el-dialog__close {
-      color: #fff;
-    }
-  }
   .hd-input {
     /deep/.el-input__inner {
       width: 70%;

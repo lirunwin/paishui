@@ -17,12 +17,20 @@ const modules = modulesFiles.keys().reduce((modules, modulePath) => {
 const state = {
   topNavState: 'home',
   leftNavState: 'home',
-  jumpText: ''
+  jumpText: '',
+  specialWidth: "480px"
 }
+const mutations = {
+  setSpecialWidth(state, value) {
+    state.specialWidth += value;
+  }
+}
+// store.commit('increment', { amount: 10 });
 
 const store = new Vuex.Store({
   modules,
   getters,
+  mutations,
   state
 })
 

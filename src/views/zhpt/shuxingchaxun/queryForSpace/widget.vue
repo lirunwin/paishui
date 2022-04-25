@@ -135,7 +135,7 @@ export default {
       drawer: null,
       queryService: null,
       queryLayer: null,
-      fields: ['SID', 'START_DEPTH', 'END_DEPTH', 'MATERIAL'],
+      fields: ['SID', 'START_SID', 'END_SID', 'MATERIAL'],
       rowData: null
     }
   },
@@ -184,10 +184,10 @@ export default {
             } else {
             }
           })
-          features.forEach((fea) => {
-            let features = new GeoJSON().readFeatures(fea)
+          features.forEach(feaJson => {
+            let feas = new GeoJSON().readFeatures(feaJson)
             !that.queryLayer && that.initLayer()
-            that.queryLayer.getSource().addFeatures(features)
+            that.queryLayer.getSource().addFeatures(feas)
           })
         })
       }
@@ -509,6 +509,11 @@ export default {
     this.drawer && this.drawer.end()
     this.queryLayer && this.queryLayer.getSource().clear()
     this.drawer = this.queryLayer = null
+    this.$store.dispatch('map/handelClose', {
+      box:'HalfPanel',
+      pathId: 'queryResultMore',
+      widgetid: 'HalfPanel',
+    });
   }
 }
 </script>

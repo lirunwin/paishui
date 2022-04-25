@@ -38,6 +38,7 @@
               <div style="margin-bottom: 3px">
                 <el-button size="mini" type="primary" plain @click="addText('= ', 2)" style="width:56px">＝</el-button>
                 <el-button size="mini" type="primary" plain @click="addText('like \'%%\'', 7)" style="width:56px">模糊</el-button>
+
               </div>
               <div style="margin-bottom: 3px">
                 <el-button size="mini" type="primary" plain @click="addText('> ', 2)" style="width:56px">＞</el-button>
@@ -69,8 +70,8 @@
           <el-row style="margin-bottom: 8px">
             <el-col :span="6"><el-radio v-model="space" label="all" style="margin-right: 0;">全图</el-radio></el-col>
             <el-col :span="8"><el-radio v-model="space" label="draw" style="margin-right: 0;">绘制范围</el-radio></el-col>
-            <el-col :span="5"><el-radio v-model="space" label="TF_JSJS_REGION_B" style="margin-right: 0;">片区</el-radio></el-col>
-            <el-col :span="5"><el-radio v-model="space" label="TF_JSQT_DISTRICT_B">行政区</el-radio></el-col>
+            <!-- <el-col :span="5"><el-radio v-model="space" label="TF_JSJS_REGION_B" style="margin-right: 0;">片区</el-radio></el-col>
+            <el-col :span="5"><el-radio v-model="space" label="TF_JSQT_DISTRICT_B">行政区</el-radio></el-col> -->
           </el-row>
           <el-select 
             v-if="['TF_JSQT_DISTRICT_B', 'TF_JSJS_REGION_B'].indexOf(space) > -1" 
@@ -85,7 +86,7 @@
       </div>
     </tf-legend>
     <el-row style="margin-top: 8px">
-      <el-button style="width:100%;" size="mini" type="primary" @click="analysis" :disabled="analysisDisable">
+      <el-button style="width:100%;" size="mini" type="primary" @click="analysis_new" :disabled="analysisDisable">
           <i v-if="analysisDisable" class="el-icon-loading"/>统计</el-button>
     </el-row>
   </div>
@@ -94,6 +95,19 @@
 <script>
 import { esriConfig, appconfig } from 'staticPub/config'
 import tfLegend from '@/views/zhpt/common/Legend'
+
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import GeoJSON from 'ol/format/GeoJSON';
+import { Vector as VectorSource } from "ol/source";
+import { Vector as VectorLayer } from "ol/layer";
+import { comSymbol } from "@/utils/comSymbol";
+import { Polygon, LineString, Point } from 'ol/geom';
+import * as turf from '@turf/turf';
+import { pointFieldDoc } from '@/views/zhpt/common/doc'
+import { getThemLayer, addThemLayer, deleteThemLayer } from '@/api/mainMap/themMap'
+import { SuperMap, FieldService, FeatureService, FieldParameters } from '@supermap/iclient-ol';
+
 export default {
   name: 'countStat',
   components: { tfLegend },
@@ -102,17 +116,17 @@ export default {
       if (typeof bind.value === 'function') bind.value(el.children[0])
     }
   },
-  props: { param: Object },
+  props: { data: Object },
   data() {
     return {
       panel: { pathId: 'analysisResult', widgetid: 'HalfPanel', label: '统计分析', param: {} },
       show3: false,
-      attList: [],
+
       queText: '',
       elements: {},
       layerFix: [],
       layersAtt: [],
-      layerList: [],
+
       titleName: '',
       layerId: '',
       lastRange: [0, 0],
@@ -127,6 +141,22 @@ export default {
       attLoading: false,
       fixLoading: false,
       queTextName:'',
+
+      // 
+      layerList: [
+        { name: "检修井" },
+        { name: "消防栓" },
+        { name: "阀门" },
+        { name: "闸阀" },
+        { name: "闸阀井" }
+      ],
+      attList: [
+        { name: "所在道路", field: "LANE_WAY" },
+        { name: "权属单位", field: "OWNERUNIT" },
+        { name: "探测单位", field: "DETECTUNIT" },
+      ],
+      limitFeature: null,
+      drawer: null
     }
   },
   computed: { 
@@ -134,53 +164,11 @@ export default {
     sidePanelOn() { return this.$store.state.map.P_editableTabsValue },
   },
   mounted() {
-    this.usertoken = appconfig.usertoken
-    var business = appconfig.gisResource.business_map.config[0].url
-    var mapView = this.mapView = this.$attrs.data.mapView
-    var idsdata    
-    for (let i=0,il=mapView.map.basemap.baseLayers.items,ii=il.length,sublayerids = [];i<ii; i++) {
-      if(il[i].url && il[i].url == business) {
-        for(let j=0,jl=il[i].allSublayers.items,jj=jl.length;j<jj;j++){
-          var layer = jl[j]
-          if(!layer.sublayers && layer.title != '图幅框') sublayerids.push(layer.id)
-        }
-        idsdata = sublayerids.sort((a, b) => a - b)
-        break 
-      }
-    }
-    if (idsdata.length == 0) return this.$message.error('管线图层无数据！')      
-    var url = appconfig.gisResource.layer_name.config[0].url
-    $.ajax({
-      url: url,
-      type: "POST",
-      data: {
-        usertoken: appconfig.usertoken,
-        layerids: JSON.stringify(idsdata),
-        f: "pjson"
-      },
-      dataType: "json",
-      success: (data) => {
-        if (data.code == 10000) {
-          var layersData = []
-          var layerIndex = {}
-          for (let i=0,il=data.result.rows,ii=il.length;i<ii; i++) {
-            var layer = il[i]
-            if (['管线', '立管','节点','控制阀门','非控制阀','消防栓','检查井','监测点','水泵','水表'].indexOf(layer.layername) > -1) layersData.push(layer)
-            if (['TF_JSQT_DISTRICT_B', 'TF_JSJS_REGION_B'].indexOf(layer.layerdbname) > -1) layerIndex[layer.layerdbname] = layer.layerid
-          }
-          this.layerIndex = layerIndex
-          this.layerList = layersData.map((e) => { return { name: e.layername, value: e.layerdbname, id: e.layerid} })
-          this.getPolygon()
-        }
-      }
-    })
-    this.printRect = new mapView.TF_graphic({
-      geometry: { type: 'polygon', rings: [[[0, 0]]], spatialReference: mapView.spatialReference },
-      symbol: { type: 'simple-fill', color: [0, 0, 0, 0.1], outline: { color: [45, 116, 231, 1], width: "1px" } }
-    })
-    mapView.graphics.add(this.printRect)
+    this.initLayer()
   },
   watch: {
+
+
     queText(nv,ov){
       if(this.queText.length == 0 ) this.queTextName = '';
     },
@@ -188,63 +176,27 @@ export default {
       this.titleName = this.param.type
     },
     layerSelectList(e) {
-      if(e.length == 0) return this.attList = []
-      this.layersAtt = e.map((n) => { return { label: n.name, value: n.id}})
-      var url = appconfig.gisResource.field_intersect.config[0].url
-      $.ajax({
-        url: url,
-        type: "POST",
-        data: {
-          usertoken: appconfig.usertoken,
-          layerids: JSON.stringify(e.map((n) => {return n.id})),
-          f: "pjson"
-        },
-        dataType: "json",
-        success: (data) => {
-          if (data.code == 10000) {
-            var fise = [
-              'AREANO','ASPECTTYPE','BURYTYPE','BURYYEAR','BARRELDIAMETER','DIAMETER','DISTRICT',
-              'DRIVEMATERIAL','FIXTURETYPE','FILATUREDIAMETER','LANEWAY','MAINTAINEDUNIT','MAINVALVETYPE',
-              'MANHOLEMATERIAL','MANHOLETYPE','MANUFACTURER','MONITORWELLTYPE','MONITORTYPE','MATERIAL',
-              'MODAL','OWNERUNIT','SEATDIAMETER','PUMPTYPE','SURVEYUNIT','THICKNESS','USESTATUS','VALVECLASS',
-              'VALVEDEEP','VALVETYPE','VALVETYPE','WELLMATEIAL','WELLTYPE','VALVEMODEL'
-            ]
-            var showAtts = []
-            var index = {}
-            for (let i=0,il=data.result.rows,ii=il.length;i<ii; i++) {
-              var value = il[i]
-              if(fise.indexOf(value.name) > -1) showAtts.push({ name: value.alias, value: value.name})
-              index[value.name] = value.alias
-            }
-            this.attList = showAtts
-            this.attListIndex = index
-          } else {
-            this.$message.error('查询共有字段出错！请检查')
-            console.log(data.error)
-          }
-        }
-      })
+      if (e.length !== 0) {
+        this.layersAtt = this.layerSelectList.map(layer => {
+          return { value: layer.name, label: layer.name }
+        })
+      } else {
+        this.layersAtt = []
+      }
     },
-    layerId(e) {      
+    layerId(e) {
       if(!e) return
-      let seed = new Date().getTime()
-      this.layerLoadSeed = seed
-      this.analysisAtt = []
-      this.attLoading = true
-      $.ajax({
-        url: appconfig.gisResource.business_map.config[0].url + "/" + e + "/?f=pjson",
-        type: 'GET',
-        success: (data) => {
-          if(this.layerLoadSeed != seed) return
-          this.attLoading = false
-          this.layerLoadSeed = undefined
-          data = JSON.parse(data).fields
-          if(!data) return this.$message.error('图层信息获取失败')
-          this.analysisAtt = data.map((df) => { return { value: df.name, label: df.alias } });
-        },
-        error: (error) => this.$message.error(error)
+      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      this.getServerFields(dataServer, "给水管线节点").then(fields => {
+        if (fields) {
+          this.analysisAtt = fields.map(field => {
+            return { label: pointFieldDoc[field] || field, value: field }
+          })
+        } else this.$message.error("获取字段失败")
       })
     },
+
+
     // spaceSetting(e) {
     //   if(e === '') return this.printRect.geometry = { type: 'polygon', rings: [[[0,0]]], spatialReference: this.mapView.spatialReference } 
     //   var rings = this.spaceSettings[this.space][e].rings
@@ -254,29 +206,162 @@ export default {
     //   }
     // },
     space(value) {
-      this.printRect.geometry = { type: 'polygon', rings: [[[0, 0]]], spatialReference: this.mapView.spatialReference }
-      if(value == 'draw') this.drawPolygon()
-      else {
-        var draw = this.mapView.TF_draw
-        if(draw.activeAction) draw.reset()
-        this.spaceSetting = ''
+      if (value === 'draw') {
+        this.drawer = new iDraw(this.mapView, "polygon", {
+          showCloser: false,
+          endDrawCallBack: featrue => {
+            this.limitFeature = featrue
+            this.drawer.remove()
+          }
+        })
+        this.drawer.start()
       }
     },
     sidePanelOn(newTab, oldTab) {
-      if(newTab == oldTab) return
-      if(newTab == 'countStat') {
-        this.$nextTick(() => this.printRect.visible = true)  
-      } 
-      if(oldTab == 'countStat') {
-        var view = this.mapView
-        var draw = view.TF_draw
-        if(draw.activeAction) draw.reset()
-        view.container.style.cursor = ''
-        this.printRect.visible = false
-      }
     }
   },
   methods: {
+    initLayer () {
+      var mapView = this.mapView = this.data.mapView
+    },
+    getServerFields ({ dataServiceUrl, dataSource }, dataSet) {
+      return new Promise(resolve => {
+        // 设置数据集，数据源
+        var param = new SuperMap.FieldParameters({
+          datasource: dataSource,
+          dataset: dataSet
+        });
+        // 创建字段查询实例
+        new FieldService(dataServiceUrl).getFields(param, serviceResult => {
+          if (serviceResult.type === "processFailed") resolve(null) 
+          else resolve(serviceResult.result.fieldNames)
+        });
+      })
+    },
+
+    analysis_new () {
+      console.log("管线查询")
+      if (!this.layerId) return this.$message.error('请选择查询图层名称')
+      if (this.layerSelectList.length === 0) this.$message.error('请选择管网统计的类型')
+
+      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      let dataSetInfo = dataServer.dataSetInfo.filter(info => info.name === "给水管线节点")
+      
+      let queryTask = new iQuery({...dataServer, dataSetInfo })
+      queryTask.sqlQuery(this.queText).then(resArr => {
+        if (!resArr) return this.$message.error("服务器请求失败!")
+
+        let featruesData = resArr.filter(item => {
+          return item && item.result.featureCount !== 0
+        })
+        
+        // 绘制图层
+        if (featruesData.length !== 0) {
+
+          featruesData.forEach(featrueObj => {
+            let features = featrueObj.result.features.features
+            let queryFeatures = features.map(feature => new GeoJSON().readFeature(feature))
+
+            let layerName = featrueObj.layerName
+            // 范围限制
+            if (this.limitFeature) {
+              queryFeatures = queryFeatures.filter(feature => {
+                let limitGeometry = turf.polygon(this.limitFeature.getGeometry().getCoordinates())
+                let geomtry = feature.getGeometry(), inGeometry
+                if (geomtry instanceof Point) {
+                  inGeometry = turf.point(geomtry.getCoordinates())
+                } else if (geomtry instanceof LineString) {
+                  inGeometry = turf.lineString(geomtry.getCoordinates())
+                } else return false
+                return turf.booleanContains(limitGeometry, inGeometry)
+              })
+            }
+            //
+            this.addResData(queryFeatures)
+          })
+        } else return this.$message.error("无符合过滤条件数据")
+      })
+    },
+
+    // TODO 多种类型 选择过滤
+    addResData (features) {
+      console.log(features)
+      console.log(this.attSelectList, this.layerSelectList)
+      
+      // 表格信息
+      let tableData = [], columns = [], tableRows = [];
+      columns = this.attSelectList.map(att => {
+        return { name: att.name, value: att.field }
+      })
+      tableRows = this.layerSelectList.map(layer => {
+        let selectedFeatures = features.filter(fea => fea.values_['ADJUNCT'] === layer.name)
+        return selectedFeatures.map(fea => {
+          fea.values_["statistic_num"] = 1
+          return fea.values_
+        })
+      })
+      // 添加合计数据
+      
+      tableData = this.layerSelectList.map((layer, index) => {
+        let total = { "statistic_num": tableRows[index].length }
+        columns.forEach((item, index) => {
+          total[item.value] = index === 0 ? "合计" : "-"
+        })
+        return { name: layer.name, columns: [...columns, { name: '数量/个', value: "statistic_num" }], rows: [total, ...tableRows[index]] }
+      })
+      this.$store.dispatch('map/changeMethod', {
+        pathId: 'analysisResult',
+        widgetid: 'HalfPanel',
+        label: '统计结果表',
+        param: { that: this, title: '长度统计', tables: tableData }
+      })
+
+      // echart
+      let chartData = this.layerSelectList.map(layer => { 
+        let dataX = [], dataY = [];
+        let dataBox = new Map() // 以选择的属性的值为 x 轴
+        let selectedFeatures = features.filter(fea => fea.values_['ADJUNCT'] === layer.name)
+        selectedFeatures.forEach(fea => {
+          let values = this.attSelectList.map(att => {
+            return fea.values_[att.field]
+          })
+          
+          let key = values.toString()
+          if (dataBox.has(key)) {
+            dataBox.set(key, dataBox.get(key) + 1)
+          } else {
+            dataBox.set(key, 1)
+          }
+        })
+
+        dataBox.forEach((value, key) => {
+          dataX.push(key)
+          dataY.push(value)
+        })
+        return {
+          name: layer.name,
+          option: {
+            title: { text: '数量统计', 
+            subtext: this.attSelectList.map(e => e.name).join('、'), left: 'center' },
+            tooltip: { trigger: 'axis' }, color: 'rgb(19, 66, 151)',
+            xAxis: { type: 'category', data: dataX }, yAxis: { name: '数量(个)', type: 'value' },
+            dataZoom: [{ minSpan:1, type: 'slider' }],
+            toolbox: { feature: { saveAsImage: {} } },
+            series: [{ data: dataY, type: 'bar', label: { show: true, position: 'top' }}]
+          }
+        }
+      })
+
+      this.$store.dispatch('map/changeMethod', {
+        pathId: 'analysisBox',
+        widgetid: 'FloatPanel',
+        label: '分析结果统计',
+        param: { that: this, title: '统计结果图', tabs: chartData }
+      })
+      
+    },
+
+
     wayFun(flag) { return (el) => this.elements[flag] = el },
     addText(text, length, isField) {
       this.languageChange(text, length, isField);
@@ -288,7 +373,7 @@ export default {
         myField.selectionStart = myField.selectionEnd = startL + length
         myField.focus()
       })
-      if(isField) this.getAtt(text.replace(/(\s*$)/g,""))
+      // if(isField) this.getAtt(text.replace(/(\s*$)/g,""))
     },
     /**
      * select下拉框出现或者隐藏时触发  
@@ -547,6 +632,7 @@ export default {
     }
   },
   destroyed() {    
+    this.drawer && this.drawer.end()
     this.mapView.graphics.remove(this.printRect);
     //销毁所有浮动框
     this.$store.dispatch('map/handelClose', {

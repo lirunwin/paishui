@@ -1,6 +1,6 @@
 <template>
   <div class="engineering-manage">
-    <!-- 管道缺陷汇总 -->
+    <!-- 管道评估汇总 -->
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
@@ -17,7 +17,7 @@
           <div class="title">检测日期：</div>
           <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker> ~
           <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
-            <div class="title">缺陷等级：</div>
+          <div class="title">缺陷等级：</div>
           <el-select v-model="form.name" placeholder="--选择等级--">
             <el-option label="区域一" value="shanghai"></el-option>
             <el-option label="区域二" value="beijing"></el-option>
@@ -33,12 +33,13 @@
         </div>
         <div class="right-btn"></div>
       </div>
-
+      <!-- 表格 -->
       <el-table
         ref="multipleTable"
         :data="tableData"
         tooltip-effect="dark"
         stripe
+        :default-sort = "{prop: 'length', order: 'descending'}"
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
@@ -49,21 +50,21 @@
         </el-table-column>
         <el-table-column prop="address" header-align="center" label="终止井号" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="管径(mm)" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="管径(mm)" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="管段长度" align="center" show-overflow-tooltip>
+        <el-table-column prop="length" sortable header-align="center" label="管段长度" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="检测长度" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="检测长度" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="缺陷名称" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="缺陷名称" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="缺陷等级" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="缺陷等级" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="整改建议" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="整改建议" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="结构性缺陷" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="结构性缺陷" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="功能性缺陷" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="功能性缺陷" align="center" show-overflow-tooltip>
         </el-table-column>
         <el-table-column prop="address" header-align="center" label="起点埋深(m)" align="center" show-overflow-tooltip>
         </el-table-column>
@@ -73,11 +74,11 @@
         </el-table-column>
         <el-table-column prop="address" header-align="center" label="管段材质" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="管段直径" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="管段直径" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="检测方向" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="检测方向" align="center" show-overflow-tooltip>
         </el-table-column>
-          <el-table-column prop="address" header-align="center" label="检测人员" align="center" show-overflow-tooltip>
+        <el-table-column prop="address" header-align="center" label="检测人员" align="center" show-overflow-tooltip>
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
@@ -85,6 +86,19 @@
           </template>
         </el-table-column>
       </el-table>
+      <!-- 分页 -->
+      <div>
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="currentPage4"
+          :page-sizes="[10, 20, 30, 50, 100, 1000]"
+          :page-size="30"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="400"
+        >
+        </el-pagination>
+      </div>
     </div>
     <!-- 添加卡片 -->
     <el-dialog title="添加工程" :visible.sync="dialogFormVisible">
@@ -154,37 +168,45 @@ export default {
         {
           date: '2016-05-03',
           name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
+          address: '上海市普陀区金沙江路 1518 弄',
+          length:151,
         },
         {
           date: '2016-05-02',
           name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
+          address: '上海市普陀区金沙江路 1518 弄',
+          length:199,
+
         },
         {
           date: '2016-05-04',
           name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
+          address: '上海市普陀区金沙江路 1518 弄',
+          length:10,
         },
         {
           date: '2016-05-01',
           name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
+          address: '上海市普陀区金沙江路 1518 弄',
+          length:100,
         },
         {
           date: '2016-05-08',
           name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
+          address: '上海市普陀区金沙江路 1518 弄',
+          length:85,
         },
         {
           date: '2016-05-06',
           name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
+          address: '上海市普陀区金沙江路 1518 弄',
+          length:63,
         },
         {
           date: '2016-05-07',
           name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
+          address: '上海市普陀区金沙江路 1518 弄',
+          length:530,
         }
       ],
       form: {
@@ -226,15 +248,18 @@ export default {
 
 <style lang="scss" scoped>
 .engineering-manage {
-  height: 100vh;
   margin: 0;
   padding: 20px 0;
   box-sizing: border-box;
   position: relative;
   // 表格样式
   .table-box {
+    height: 100%;
     width: 96%;
     margin: auto;
+    display: flex;
+    margin: auto;
+    flex-direction: column;
     .top-tool {
       display: flex;
       justify-content: space-between;
@@ -286,10 +311,14 @@ export default {
         // flex-wrap: wrap;
       }
     }
-    /deep/ .el-table th.el-table__cell > .cell {
-      height: 40px;
-      line-height: 40px;
-      background-color: #dfeffe;
+    /deep/ .el-table {
+      flex: 1;
+      // overflow-y: scroll;
+      th.el-table__cell > .cell {
+        height: 40px;
+        line-height: 40px;
+        background-color: #dfeffe;
+      }
     }
   }
 

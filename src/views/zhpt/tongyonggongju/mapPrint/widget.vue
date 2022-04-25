@@ -43,7 +43,7 @@
         <el-form-item label="段数">
           <!-- <el-input v-model="mapPrintPraram.intervals" size="small" placeholder="输入比例尺段数"></el-input> -->
           <el-input-number size="small" v-model="mapPrintPraram.intervals" placeholder="输入比例尺段数" controls-position="right" :step="1"
-                           :min="3" :max="10" style="width:100%" @blur="intervalsChange"></el-input-number>
+                           :min="3" :max="10" style="width:100%" @blur="intervalsChange">
           </el-input-number>
         </el-form-item>
         <el-form-item label="单位">
@@ -121,7 +121,7 @@ export default {
     // 初始化参数选项
     this.initMapPrintParam()
     // 地图监听中心点和比例尺
-    this.initMapCenterAndDPi()
+    this.initMapCenterAndScale()
     
   },
   // 组件销毁时
@@ -131,18 +131,21 @@ export default {
   methods: {
 
     initMapCenterAndScale () {
-        let map = this.data.mapView;
-        this.mapViewChangeEvent = map.on('moveend', res => {
-            let center = map.getView().getCenter()
-            this.mapPrintPraram.mapCenterPoint = center[0].toFixed(6) + '，' + center[1].toFixed(6)
-            this.mapPrintPraram.zoom = map.getView().getZoom()
+      let that = this
+      let map = that.data.mapView;
+        reset()
+        this.mapViewChangeEvent = map.on('moveend', res => reset);
+        function reset () {
+          let center = map.getView().getCenter()
+            that.mapPrintPraram.mapCenterPoint = center[0].toFixed(6) + '，' + center[1].toFixed(6)
+            that.mapPrintPraram.zoom = map.getView().getZoom()
             // 分辨率
             const resolution = map.getView().getResolution()
             // 计算比例尺
-            this.mapPrintPraram.exportScale = (3779.5 * resolution).toFixed(6)
-            this.mapPrintPraram.scale = (3779.5 * resolution * 2).toFixed(6)
-        });
-      },
+            that.mapPrintPraram.exportScale = (3779.5 * resolution).toFixed(6)
+            that.mapPrintPraram.scale = (3779.5 * resolution * 2).toFixed(6)
+      }
+    },
     handleChange(val) {
       console.log(val);
     },
@@ -166,8 +169,7 @@ export default {
      * 初始化地图打印参数
      */
     initMapPrintParam() {
-        const iServerBaseUrl = appconfig.gisResource.printer.url
-        
+      const iServerBaseUrl = appconfig.gisResource.printer.url
       this.webPrintingJobService = new WebPrintingJobService(iServerBaseUrl, { withCredentials: false })
       // 获取打印模板信息
       this.webPrintingJobService.getLayoutTemplates(e => {

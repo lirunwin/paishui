@@ -63,7 +63,7 @@
               </div>
             </transition>
           </i> -->
-          <i class="el-icon-close" @click="handelClose" />
+          <i class="el-icon-close" @click="handelClose" style="cursor: pointer" />
         </div>
       </div>
       <div class="cus-content">
@@ -84,75 +84,74 @@
 </template>
 
 <script lang='ts'>
-import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import Comps from "./loadComps";
-import { log } from "util";
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import Comps from './loadComps'
+import { log } from 'util'
 @Component({
-  name: "SidePanels",
+  name: 'SidePanels'
 })
 export default class SidePanels extends Vue {
-  @Prop({ default: [] }) panels: any[];
-  @Prop({ default: null }) data: any;
-  @Prop() panelVisible: boolean;
-  @Prop() sideWidth: string;
+  @Prop({ default: [] }) panels: any[]
+  @Prop({ default: null }) data: any
+  @Prop() panelVisible: boolean
+  @Prop() sideWidth: string
 
-  Comps = Comps;
-  restListShow = false;
+  Comps = Comps
+  restListShow = false
 
   get currentTab() {
-    return this.$store.state.map.P_editableTabsValue;
+    return this.$store.state.map.P_editableTabsValue
   }
   get splitList() {
     const outer = this.panels.filter((item, index) => {
-      if (index <= 1) return item;
-      else return;
-    });
+      if (index <= 1) return item
+      else return
+    })
     const rest = this.panels.filter((item, index) => {
-      if (index > 1) return item;
-      else return;
-    });
-    if (rest.length === 0) this.restListShow = false;
-    return { outer, rest };
+      if (index > 1) return item
+      else return
+    })
+    if (rest.length === 0) this.restListShow = false
+    return { outer, rest }
   }
-  @Watch("panels")
+  @Watch('panels')
   panelsChange() {
     if (this.panels.length > 0) {
-      if (this.panelVisible) return;
-      this.$emit("update:panelVisible", true);
-      this.$emit("update:sideWidth", "350px");
+      if (this.panelVisible) return
+      this.$emit('update:panelVisible', true)
+      this.$emit('update:sideWidth', '350px')
     } else {
-      if (!this.panelVisible) return;
-      this.$emit("update:panelVisible", false);
-      this.$emit("update:sideWidth", "0%");
-      this.$emit("updateMapSize")
+      if (!this.panelVisible) return
+      this.$emit('update:panelVisible', false)
+      this.$emit('update:sideWidth', '0%')
+      this.$emit('updateMapSize')
     }
   }
-  @Watch("panelVisible")
+  @Watch('panelVisible')
   panelVisibleChange(val) {
     if (val) {
-      this.$store.dispatch("map/delAllFull");
+      this.$store.dispatch('map/delAllFull')
     }
   }
   toggleMore(pos) {
-    if (this.splitList.rest.length === 0) return;
-    if (pos === "trigger") this.restListShow = !this.restListShow;
-    else if (pos === "container") this.restListShow = false;
+    if (this.splitList.rest.length === 0) return
+    if (pos === 'trigger') this.restListShow = !this.restListShow
+    else if (pos === 'container') this.restListShow = false
   }
   handelClose() {
     // this.$store.dispatch('map/handelClose', data)
-    this.$store.dispatch("map/delAllPanel");
-    this.$emit("handelClose");
-    this.$emit("updateMapSize") // 更新地图尺寸
+    this.$store.dispatch('map/delAllPanel')
+    this.$emit('handelClose')
+    this.$emit('updateMapSize') // 更新地图尺寸
   }
   removeTab(targetName) {
     // console.log('333', targetName)
-    this.$store.dispatch("map/delPanels", targetName.com);
+    this.$store.dispatch('map/delPanels', targetName.com)
     // this.$store.state.map.panels.length !== 0 && this.clickTab(this.$store.state.map.panels[this.$store.state.map.panels.length - 1]);
   }
   clickTab(targetName) {
-    console.log("切换tab时触发")
-    this.$store.dispatch("map/changeTab", targetName.com);
-
+    console.log('切换tab时触发')
+    this.$store.dispatch('map/changeTab', targetName.com)
   }
 }
 </script>
@@ -192,8 +191,19 @@ export default class SidePanels extends Vue {
   top: 0;
   right: 0;
   width: 100%;
-  height: 100%;
-  
+  height: 620px;
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
+
+  //  position: fixed;
+  // top: 100px;
+  // right: 20px;
+  // // width: 100%;
+  // min-width: 650px;
+  // // height: 100%;
+  // height: 570px;
+  // overflow-y: scroll;
+  // border-radius: 5px;
+  // z-index: 0;
   .close {
     position: absolute;
     top: 10px;
@@ -250,6 +260,9 @@ export default class SidePanels extends Vue {
       flex: 1;
       display: flex;
       justify-content: space-between;
+      flex-flow: row-reverse;
+      padding-right: 15px;
+      box-sizing: border-box;
       .tools-viewed-trigger {
         position: relative;
         cursor: pointer;
@@ -325,7 +338,7 @@ export default class SidePanels extends Vue {
     overflow: hidden;
   }
 }
-.el-icon-close{
+.el-icon-close {
   color: #fff;
 }
 .fade-enter-active,
