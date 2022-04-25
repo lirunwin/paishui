@@ -57,7 +57,7 @@ const map = {
   viewSwitch: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/viewSwitch/widget.vue'), // 视图切换
   mapCompass: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/mapCompass/widget.vue'), // 指北针
 
-  // 监控中心
+  // 监测中心
   //    检测配置
   //设备类型配置
   '/monitoring/settings/device/types': () => import('@/views/monitoring/settings/device/types/index.vue'),
@@ -70,7 +70,15 @@ const map = {
   //图标管理
   '/monitoring/settings/icons': () => import('@/views/monitoring/settings/icons/index.vue'),
   //指标标准配置
-  '/monitoring/settings/standards': () => import('@/views/monitoring/settings/standards/index.vue')
+  '/monitoring/settings/standards': () => import('@/views/monitoring/settings/standards/index.vue'),
+
+  // 监控中心
+  '/monitoring/monitor': () => import('@/views/monitoring/monitor/index.vue'),
+  // 指标实时监测
+  '/monitoring/monitor/points': () => import('@/views/monitoring/monitor/points/index.vue'),
+  // 站点实时监测
+  '/monitoring/monitor/sites': () => import('@/views/monitoring/monitor/sites/index.vue')
+
   // 设施评估
   // 管道检测数据管理
   // EngineeringManage: () => import('@/views/facilityEvaluation/pipelineManage/engineeringManage/index.vue'), // 工程管理

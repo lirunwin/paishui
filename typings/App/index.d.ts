@@ -12,10 +12,22 @@ declare module '*.scss'
 //vue.config.js中指定staticPub为 Public文件目录
 declare module 'staticPub/config' {
   /**
- * 轮询时机设置
- */
-  export const notificationInterval:number
-  export const homeInterval:number
-  export const esriConfig:any
-  export const appconfig:any
+   * 轮询时机设置
+   */
+  export const notificationInterval: number
+  export const homeInterval: number
+  export const esriConfig: any
+  export const appconfig: any
+}
+
+declare global {
+  namespace JSX {
+    // tslint:disable no-empty-interface
+    interface Element extends VNode {}
+    // tslint:disable no-empty-interface
+    interface ElementClass extends Vue {}
+    interface IntrinsicElements {
+      [elem: string]: any
+    }
+  }
 }

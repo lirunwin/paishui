@@ -2,12 +2,12 @@
   <div class="page-container">
     <div class="actions">
       <div>
-        <el-button type="primary" size="small">新增设备类型</el-button>
-        <el-button type="primary" size="small">删除设备类型</el-button>
+        <el-button type="primary" size="small" @click="onTypeAdd">新增设备类型</el-button>
+        <el-button type="primary" size="small" :disabled="!selected.type.length">删除设备类型</el-button>
       </div>
       <div>
-        <el-button type="primary" size="small">新增参数</el-button>
-        <el-button type="primary" size="small">删除参数</el-button>
+        <el-button type="primary" size="small" @click="onParamAdd">新增参数</el-button>
+        <el-button type="primary" size="small" :disabled="!selected.param.length">删除参数</el-button>
       </div>
     </div>
     <el-row :gutter="15">
@@ -15,32 +15,40 @@
         <div class="table-container">
           <BaseTable
             :columns="settingDeviceTypeCols"
-            :data="[
-              { name: '测试', code: '1231', time: 'ss' },
-              { name: '测试1', code: '1232', time: 'ss' },
-              { name: '测试2', code: '1233', time: 'ss' }
-            ]"
+            :data="types"
+            @row-dblclick="onTypeRowDblClick"
+            @selection-change="onTypeSelectionChange"
           /></div
       ></el-col>
       <el-col :span="12">
         <div class="table-container">
           <BaseTable
             :columns="settingDeviceTypeParamCols"
-            :data="[
-              { name: '测试', code: '1231', time: 'ss' },
-              { name: '测试1', code: '1232', time: 'ss' },
-              { name: '测试2', code: '1233', time: 'ss' }
-            ]"
+            :data="params"
+            @row-dblclick="onParamRowDblClick"
+            @selection-change="onParamSelectionChange"
           /></div
       ></el-col>
     </el-row>
+    <TypeForm
+      :visible.sync="visible.type"
+      :title="`${current.type.id ? '修改' : '新增'}设备类型`"
+      :data="current.type"
+    />
+    <ParamForm
+      :visible.sync="visible.param"
+      :title="`${current.param.id ? '修改' : '新增'}设备参数`"
+      :data="current.param"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch } from 'vue-property-decorator'
+import { Vue, Component } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingDeviceTypeCols, settingDeviceTypeParamCols } from '@/views/monitoring/utils'
+import TypeForm from './TypeForm.vue'
+import ParamForm from './ParamForm.vue'
 
 // import {
 //   // getJournalList,
@@ -48,75 +56,55 @@ import { settingDeviceTypeCols, settingDeviceTypeParamCols } from '@/views/monit
 //   // getCountLogType
 // } from '@/api/base'
 
-@Component({ name: 'DeviceTypes', components: { BaseTable } })
+@Component({ name: 'DeviceTypes', components: { BaseTable, TypeForm, ParamForm } })
 export default class DeviceTypes extends Vue {
-  test: string = 'DeviceTypes'
   settingDeviceTypeCols = settingDeviceTypeCols
   settingDeviceTypeParamCols = settingDeviceTypeParamCols
-  // /**
-  //  * @description
-  //  * 控制表格显示 summary: 表示日志统计表格， table: 表示该部门下的记录
-  //  */
-  // display: 'summary' | 'table' = 'summary'
 
-  // /**
-  //  * @description
-  //  * 部门Id, 记录当前选择的部门
-  //  */
-  // deptId: string = ''
+  visible = { type: false, param: false }
 
-  // /**
-  //  * @description
-  //  * 查询条件
-  //  */
-  // query: Query = null
+  current = { type: {}, param: {} }
 
-  // /**
-  //  * @description
-  //  * 分组后的日志统计
-  //  */
-  // groupedLogs: GroupedRecords[] = []
+  selected = { type: [], param: [] }
 
-  // /**
-  //  * @description
-  //  * 日志类型
-  //  */
-  // logTypeNames: LogTypeNames = {}
+  types = [
+    { id: '1', name: '测试', code: '1231', time: 'ss' },
+    { id: '2', name: '测试1', code: '1232', time: 'ss' },
+    { id: '3', name: '测试2', code: '1233', time: 'ss' }
+  ]
+  params = [
+    { id: '1', name: '测试', code: '1231', time: 'ss' },
+    { id: '2', name: '测试1', code: '1232', time: 'ss' },
+    { id: '3', name: '测试2', code: '1233', time: 'ss' }
+  ]
 
-  // onQueryChange(query: Query) {
-  //   this.query = query
-  // }
+  onTypeAdd() {
+    this.visible.type = true
+    this.current = { ...this.current, type: {} }
+  }
 
-  // /**
-  //  * @description
-  //  * 获取日志同
-  //  */
-  // async fetchLogSummary() {
-  //   const { startDate, endDate } = this.query || {}
-  //   const { result = {} } =
-  //     (await getCountLogType({
-  //       startDate: '',
-  //       endDate: ''
-  //     })) || {}
+  onParamAdd() {
+    this.visible.param = true
+    this.current = { ...this.current, param: {} }
+  }
 
-  //   const [groupedLogs, logTypeNames] = groupLogs(result || [])
-  //   this.groupedLogs = groupedLogs
-  //   this.logTypeNames = logTypeNames
-  // }
+  onTypeRowDblClick(row) {
+    this.current = { ...this.current, type: { ...row } }
+    this.visible.type = true
+  }
 
-  // /**
-  //  * @description
-  //  * 当deptId为空的时候获取日志统计， 为空代表当前正显示日志统计
-  //  */
-  // @Watch('deptId', { immediate: true })
-  // async onDeptIdChange(val: string) {
-  //   if (!val) {
-  //     this.fetchLogSummary()
-  //     this.display = 'summary'
-  //   } else {
-  //     this.display = 'table'
-  //   }
-  // }
+  onParamRowDblClick(row) {
+    this.current = { ...this.current, param: { ...row } }
+    this.visible.param = true
+  }
+
+  onTypeSelectionChange(selections) {
+    this.selected = { ...this.selected, type: selections }
+  }
+
+  onParamSelectionChange(selections) {
+    this.selected = { ...this.selected, param: selections }
+  }
 }
 </script>
 

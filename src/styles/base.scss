@@ -282,3 +282,26 @@ div:focus {
   position: absolute;
   background-color: #f5f5f6;
 }
+.el-dialog__wrapper.dialog .el-dialog__body {
+  max-height: 75vh;
+  overflow: hidden auto;
+}
+
+.el-table__body-wrapper,
+.el-dialog__wrapper.dialog .el-dialog__body {
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(#aaa, 0.7);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(#aaa, 0.4);
+    border-radius: 2px;
+  }
+}

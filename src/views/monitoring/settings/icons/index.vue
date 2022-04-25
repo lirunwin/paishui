@@ -1,9 +1,35 @@
 <template>
-  <div class="page-container">{{ test }}</div>
+  <div class="page-container">
+    <div class="actions">
+      <el-row type="flex" justify="space-between" align="middle">
+        <div>
+          关键字:
+          <el-input v-model="keyword" placeholder="请输入关键字" size="small" style="width: 200px" />
+          <el-button type="primary" size="small" style="margin-left: 10px" icon="el-icon-search">搜索</el-button>
+        </div>
+        <div>
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="onAdd">添加</el-button>
+          <el-button type="danger" size="small" icon="el-icon-delete" @click="onDel">删除</el-button>
+        </div>
+      </el-row>
+    </div>
+    <div class="table-container">
+      <BaseTable
+        :columns="settingIconCols"
+        :data="archives"
+        @row-dblclick="onDblClick"
+        @selection-change="onSelectionChange"
+      />
+    </div>
+    <IconForm :visible.sync="visible" :title="`${current.id ? '修改' : '新增'}采集设备`" :data="current" />
+  </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch } from 'vue-property-decorator'
+import { Vue, Component } from 'vue-property-decorator'
+import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
+import { settingIconCols } from '@/views/monitoring/utils'
+import IconForm from './IconForm.vue'
 
 // import {
 //   // getJournalList,
@@ -11,77 +37,62 @@ import { Vue, Component, Watch } from 'vue-property-decorator'
 //   // getCountLogType
 // } from '@/api/base'
 
-@Component({
-  name: 'MonitoringIcons',
-  components: {}
-})
+@Component({ name: 'MonitoringIcons', components: { BaseTable, IconForm } })
 export default class MonitoringIcons extends Vue {
-  test: string = 'MonitoringIcons'
-  // /**
-  //  * @description
-  //  * 控制表格显示 summary: 表示日志统计表格， table: 表示该部门下的记录
-  //  */
-  // display: 'summary' | 'table' = 'summary'
+  settingIconCols = settingIconCols
 
-  // /**
-  //  * @description
-  //  * 部门Id, 记录当前选择的部门
-  //  */
-  // deptId: string = ''
+  visible = false
 
-  // /**
-  //  * @description
-  //  * 查询条件
-  //  */
-  // query: Query = null
+  keyword = ''
 
-  // /**
-  //  * @description
-  //  * 分组后的日志统计
-  //  */
-  // groupedLogs: GroupedRecords[] = []
+  current = {}
 
-  // /**
-  //  * @description
-  //  * 日志类型
-  //  */
-  // logTypeNames: LogTypeNames = {}
+  selected = []
 
-  // onQueryChange(query: Query) {
-  //   this.query = query
-  // }
+  archives = [
+    { id: '1', name: '测试', code: '1231', time: ['00:00', '23:59'] },
+    { id: '2', name: '测试1', code: '1232', time: ['00:00', '23:59'] },
+    { id: '3', name: '测试2', code: '1233', time: ['00:00', '23:59'] }
+  ]
 
-  // /**
-  //  * @description
-  //  * 获取日志同
-  //  */
-  // async fetchLogSummary() {
-  //   const { startDate, endDate } = this.query || {}
-  //   const { result = {} } =
-  //     (await getCountLogType({
-  //       startDate: '',
-  //       endDate: ''
-  //     })) || {}
+  onQuery(query) {
+    console.log(query)
+  }
 
-  //   const [groupedLogs, logTypeNames] = groupLogs(result || [])
-  //   this.groupedLogs = groupedLogs
-  //   this.logTypeNames = logTypeNames
-  // }
+  onAdd() {
+    this.visible = true
+    this.current = {}
+  }
 
-  // /**
-  //  * @description
-  //  * 当deptId为空的时候获取日志统计， 为空代表当前正显示日志统计
-  //  */
-  // @Watch('deptId', { immediate: true })
-  // async onDeptIdChange(val: string) {
-  //   if (!val) {
-  //     this.fetchLogSummary()
-  //     this.display = 'summary'
-  //   } else {
-  //     this.display = 'table'
-  //   }
-  // }
+  async onDel() {
+    const ids = this.selected.map((item) => item.id)
+    console.log(ids)
+    await this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', { type: 'error' })
+    this.$message({ type: 'success', message: '删除成功!' })
+
+    // this.$message({ type: 'info', message: '已取消删除' })
+  }
+
+  onDblClick(row) {
+    this.current = { ...row }
+    this.visible = true
+  }
+
+  onSelectionChange(selections) {
+    this.selected = [...selections]
+  }
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.actions {
+  padding: 22px 15px 22px;
+  margin-bottom: 15px;
+  background: #fff;
+}
+
+.table-container {
+  padding: 15px;
+  background-color: #fff;
+}
+</style>
