@@ -1,5 +1,5 @@
 <template>
-  <div class="engineering-manage">
+  <div class="engineering-manage" @keyup.enter="searchApi">
     <!-- 管道缺陷管理 -->
     <div class="table-box">
       <div class="top-tool">
@@ -26,7 +26,9 @@
           <el-button class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
-          <el-button class="serch-btn" type="primary" @click="$message('该功能暂未开放')">导出<i class="el-icon-download el-icon--right"></i></el-button>
+          <el-button class="serch-btn" type="primary" @click="$message('该功能暂未开放')"
+            >导出<i class="el-icon-download el-icon--right"></i
+          ></el-button>
         </div>
       </div>
 
@@ -37,6 +39,7 @@
         height="250"
         stripe
         style="width: 100%"
+        @row-click="viewPipe"
         @selection-change="handleSelectionChange"
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
@@ -54,8 +57,8 @@
 
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="$message('该功能暂未开放')">报告</el-button>
-            <el-button type="text" size="small" @click="$message('该功能暂未开放')">详情</el-button>
+            <el-button type="text" size="small" @click.stop="$message('该功能暂未开放')">报告</el-button>
+            <el-button type="text" size="small" @click.stop="$message('该功能暂未开放')">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -79,6 +82,7 @@
 import { queryPageDefectInfo } from '@/api/pipelineManage'
 
 export default {
+  props: ['data'],
   data() {
     return {
       searchValue: {
@@ -95,7 +99,7 @@ export default {
         { label: '管段类型', name: 'pipeType' },
         { label: '管径(mm)', name: 'diameter' },
         { label: '材质', name: 'material' },
-        { label: '结构性缺陷等级', name: 'structDefect' }, 
+        { label: '结构性缺陷等级', name: 'structDefect' },
         { label: '结构性缺陷评价', name: 'structEstimate' },
         { label: '缺陷数量', name: 'defectNum' },
         { label: '检测照片', name: 'picnum' },
@@ -105,15 +109,19 @@ export default {
       ],
       paginationTotal: 0, // 总页数
       pagination: { current: 1, size: 30 }, // 分页参数信息
-      tableData: [],
+      tableData: []
     }
   },
   mounted() {
-    // console.log("其它页面传来的参数",data);
+    console.log('其它页面传来的参数', this.data)
     let res = this.getDate()
   },
   methods: {
-      // 搜索
+    viewPipe() {
+      console.log("走了地图高亮功能");
+      this.data.that.setPipesView()
+    },
+    // 搜索
     searchApi() {
       this.getDate(this.searchValue)
     },
@@ -170,6 +178,7 @@ export default {
   padding: 20px 0;
   box-sizing: border-box;
   position: relative;
+  font-size: 12px;
   // 表格样式
   .table-box {
     width: 96%;
@@ -182,7 +191,7 @@ export default {
       justify-content: space-between;
       flex-direction: row;
       // flex-wrap: wrap;
-      font-size: 14px;
+      font-size: 12px;
       /deep/ .serch-engineering {
         display: flex;
         // justify-content: space-around;
@@ -236,7 +245,7 @@ export default {
       background-color: #dfeffe;
     }
   }
-  
+
   .hd-input {
     /deep/.el-input__inner {
       width: 70%;

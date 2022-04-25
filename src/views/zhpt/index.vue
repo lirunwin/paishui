@@ -137,6 +137,7 @@
           <div id="map-index-floatPanels" ref="floatPanels" />
           <!-- width: side_width, -->
               <!-- 'user-drag': 'none', -->
+              <!-- height: '620px', -->
           <el-aside
             draggable="true"
             @dragstart.native="dragstart($event)"
@@ -144,7 +145,6 @@
             @dragover.prevent
             :style="{
               width: $store.state.specialWidth || side_width,
-              height: '620px',
               position: 'fixed',
               right: elLeft+'px',
               top: elTop+'px',

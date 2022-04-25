@@ -1,5 +1,5 @@
 <template>
-  <div class="engineering-manage">
+  <div class="engineering-manage" @keyup.enter="searchApi">
     <!-- 工程管理 -->
     <div class="table-box">
       <div class="top-tool">
@@ -15,7 +15,7 @@
             class="serch-input"
           >
           </el-input> -->
-          <el-button class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
+          <el-button class="serch-btn" icon="el-icon-search" type="primary"  @click="searchApi">搜索</el-button>
         </div>
         <div class="right-btn">
           <el-button @click="showForm" class="serch-btn" icon="el-icon-plus" type="primary">添加</el-button>
@@ -250,26 +250,26 @@
           </el-input>
         </el-form-item>
         <el-form-item label="附件:" v-show="!isDetails">
-          <!-- <el-col :span="12">
-            <el-input v-model="form.name"></el-input>
-          </el-col>
-          <el-button type="primary" style="margin-left: 10px">选择文件</el-button> -->
+          <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
           <el-upload
+            show-file-list
+            ref="updataDocx"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://192.168.2.78:1111/psjc/wordInfo/projectInfo"
+            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
             accept=".doc,.docx"
-            :data="{ prjNo: form.prjNo }"
+            :data="getIdData"
             multiple
-            :limit="1"
             :before-remove="beforeRemove"
+            :on-progress="beforeUpload"
             :on-exceed="handleExceed"
             :file-list="fileList"
             :auto-upload="false"
-            :destroy-on-close="true"
           >
-            <el-button size="small" type="primary">点击上传</el-button><span> 只能上传docx/doc文件，且不超过500kb</span>
-            <!-- <div slot="tip" class="el-upload__tip"></div> -->
+            <el-button size="small" type="primary">选择文件夹</el-button>
+            <div slot="tip" class="el-upload__tip">
+              <p>只能上传docx/doc文件</p>
+            </div>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -279,31 +279,6 @@
         <el-button @click="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
       </div>
     </el-dialog>
-    <!-- 上传的对话框 -->
-    <!-- <el-dialog title="选择附带的文件" :visible.sync="updataDialog">
-      <el-upload
-        ref="updataDocx"
-        class="upload-demo"
-        :headers="uploadHeaders"
-        action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload"
-        accept=".doc,.docx"
-        :data="{ prjNo: UpdataList }"
-        multiple
-        :limit="1"
-        :before-remove="beforeRemove"
-        :on-progress="beforeUpload"
-        :on-exceed="handleExceed"
-        :file-list="fileList"
-        :auto-upload="false"
-      >
-        <el-button size="small" type="primary">点击上传</el-button>
-        <div slot="tip" class="el-upload__tip">只能上传docx/doc文件，且不超过500kb</div>
-      </el-upload>
-      <div slot="footer" class="dialog-footer">
-        <el-button  @click="updataDialog = false">取 消</el-button>
-        <el-button type="primary"  @click="uploadWord">确 定</el-button>
-      </div>
-    </el-dialog> -->
   </div>
 </template>
 
@@ -315,12 +290,18 @@ import {
   deleteData,
   deleteDatas,
   importFiles,
-  projectDetailsQuery
+  queryDictionariesId,
+  projectDetailsQuery,
 } from '@/api/pipelineManage'
 
 export default {
   data() {
     return {
+      updataParamsId: {
+        itemId: '',
+        uploadFileTypeDicId: '',
+        uploadItemDictId: ''
+      }, // 上传附件需要的参数id
       // 表格参数
       tableContent: [
         { label: '工程编号', name: 'prjNo' },
@@ -341,7 +322,6 @@ export default {
       isEdit: false, // 判断是否是修改数据
       dateRange: '', // 日期范围
       UpdataList: '', // 上传文件携带的参数
-      updataDialog: false, // 上传对话框
       uploadHeaders: {
         Authorization: 'bearer ' + sessionStorage.getItem('token')
       }, // token值
@@ -446,11 +426,38 @@ export default {
       }
     }
   },
-  computed: {},
+  computed: {
+    // 动态设置上传携带参数
+    getIdData() {
+      return this.updataParamsId
+    }
+  },
   created() {
+  
     let res = this.getDate()
   },
   methods: {
+    // 获取字典id
+    async getParamsId() {
+      // 获取字典id
+      // uploadFileType
+      let uploadFileTypeDicId = await queryDictionariesId({ keys: 'uploadFileType' })
+      // uploadItem
+      let uploadItemDictId = await queryDictionariesId({ keys: 'uploadItem' })
+      uploadFileTypeDicId = uploadFileTypeDicId.result.uploadFileType
+      uploadItemDictId = uploadItemDictId.result.uploadItem
+      // await this.$refs.upload.submit()
+      uploadFileTypeDicId.forEach((v) => {
+        if (v.codeValue == 'projectInfoDoc') {
+          this.updataParamsId.uploadFileTypeDicId = v.id
+        }
+      })
+      uploadItemDictId.forEach((v) => {
+        if (v.codeValue == 'tf_ywpn_prjinfo_w') {
+          this.updataParamsId.uploadItemDictId = v.id
+        }
+      })
+    },
     // 打开详情
     async openDetails(row) {
       // 获得详情数据
@@ -479,17 +486,6 @@ export default {
       this.initForm = { ...this.form }
       console.log('initForm', this.initForm)
       this.dialogFormVisible = true
-    },
-    // 显示上传表单
-    showUpdata() {
-      this.UpdataList = this.multipleSelection[0].prjNo
-      this.updataDialog = true
-    },
-    // 上传按钮
-    async uploadWord() {
-      console.log(this.multipleSelection)
-      await this.$refs.updataDocx.submit()
-      this.updataDialog = false
     },
     // 搜索
     searchApi() {
@@ -532,12 +528,16 @@ export default {
     },
     // ----------
     async addTable(formName) {
+      // 上传附件
+      // async uploadWord() {
+      //   await this.$refs.updataDocx.submit()
+      // },
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           // 将文件上传到服务器，先触发beforeUpload事件，对上传的文件进行校验，校验通过后才会上传
           let res
           // 获取入库人id和名称
-          this.form.createUserId = sessionStorage.getItem('userId')*1
+          this.form.createUserId = sessionStorage.getItem('userId') * 1
           this.form.createUserName = sessionStorage.getItem('username')
           if (this.isEdit) {
             res = await changeInfo(this.form)
@@ -545,7 +545,12 @@ export default {
           } else {
             res = await addData(this.form)
           }
-          // await this.$refs.upload.submit()
+          // console.log('工程添加成功后', res)
+          this.updataParamsId.itemId = res.result.id
+          // 获得字典id
+          await this.getParamsId()
+          // console.log('附件参数', this.updataParamsId)
+          await this.$refs.updataDocx.submit()
           if (res.result) {
             this.$message({
               message: '添加成功',
@@ -620,6 +625,8 @@ export default {
   padding: 20px 0;
   box-sizing: border-box;
   position: relative;
+      font-size: 12px;
+
   // 表格样式
   .table-box {
     height: 100%;
@@ -631,7 +638,6 @@ export default {
     .top-tool {
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
       margin-bottom: 20px;
 
       .serch-engineering {
@@ -675,7 +681,7 @@ export default {
   // 卡片样式
   /deep/ .el-dialog {
     margin-top: 9vh !important;
-    font-size: 14px;
+    font-size: 12px;
     .el-dialog__body {
       padding: 10px 0px !important;
     }

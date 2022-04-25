@@ -1,5 +1,5 @@
 <template>
-  <div class="engineering-manage">
+  <div class="engineering-manage" @keyup.enter="searchApi">
     <!-- 检测报告管理 -->
     <div class="table-box">
       <div class="top-tool">
@@ -14,14 +14,23 @@
           >
           </el-input>
           <div class="title">检测日期：</div>
-          <el-date-picker
+          <!-- <el-date-picker
             v-model="searchValue.dateTime"
             type="date"
             class="date-css"
             value-format="yyyy-MM-dd"
             placeholder="检测日期"
           >
-            <!-- value-format="yyyy-MM-dd HH:mm:ss" -->
+          </el-date-picker> -->
+          <!-- value-format="yyyy-MM-dd HH:mm:ss" -->
+          <el-date-picker
+            v-model="searchValue.dateTime"
+            type="daterange"
+            value-format="yyyy-MM-dd"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+          >
           </el-date-picker>
           <div class="release-radio">
             <p class="release-title">发布状态:</p>
@@ -157,7 +166,7 @@
       </span>
     </el-dialog>
     <!-- 报告上传 -->
-    <el-dialog title="检测报告上传" v-if="dialogFormVisible" :visible.sync="dialogFormVisible">
+    <el-dialog title="检测报告上传" @close="closeDialog" :visible.sync="dialogFormVisible">
       <el-form ref="form" :model="form" :rules="rules">
         <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
           <el-select
@@ -176,14 +185,14 @@
           <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
           <el-upload
             :on-change="getFile"
-            show-file-list
             ref="updataDocx"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://117.174.10.73:1114/psjc/wordInfo/wordInfoUpload"
+            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
             accept=".doc,.docx"
             :data="getData"
             multiple
+            :show-file-list="false"
             :on-success="handleAvatarSuccess"
             :before-remove="beforeRemove"
             :on-progress="beforeUpload"
@@ -194,10 +203,25 @@
             <el-button size="small" type="primary">选择文件夹</el-button>
             <div slot="tip" class="el-upload__tip">
               <p>只能上传docx/doc文件</p>
-              <div class="upData-class">
-                <p style="flex: 6; text-align: center">报告名称</p>
-                <p style="flex: 1; text-align: center">上传进度</p>
-              </div>
+              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%">
+                <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
+                <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
+                </el-table-column>
+                <el-table-column property="size" label="视频大小" align="center" width="80"> </el-table-column>
+                <el-table-column property="status" label="上传进度" align="center" width="80">
+                  <!-- filter_schedule -->
+                  <template slot-scope="scope">
+                    <p
+                      :class="{
+                        'font-green': scope.row.status == 'success',
+                        'font-blue': scope.row.status == 'uploading'
+                      }"
+                    >
+                      {{ scope.row.status | filter_schedule }}
+                    </p>
+                  </template>
+                </el-table-column>
+              </el-table>
             </div>
           </el-upload>
         </el-form-item>
@@ -208,7 +232,7 @@
       </div>
     </el-dialog>
     <!-- 视频上传 -->
-    <el-dialog title="检测视频上传" v-if="dialogFormVisible2" :visible.sync="dialogFormVisible2">
+    <el-dialog title="附件视频上传" @close="closeDialog" :visible.sync="dialogFormVisible2">
       <el-form ref="form" :model="form" :rules="rules">
         <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
           <el-select
@@ -222,16 +246,15 @@
             <el-option v-for="(item, i) in videoSelectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
           </el-select>
         </el-form-item>
-
         <el-form-item label="检测视频" :label-width="formLabelWidth" class="hd-input" prop="report">
           <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
           <el-upload
             :on-change="getFile"
-            show-file-list
+            :show-file-list="false"
             ref="updataVideo"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://192.168.2.78:1111/psjc/wordInfo/uploadViedoFile"
+            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
             accept=".mp4"
             :data="getVideoData"
             multiple
@@ -245,10 +268,25 @@
             <el-button size="small" type="primary">选择文件夹</el-button>
             <div slot="tip" class="el-upload__tip">
               <p>只能上传mp4文件</p>
-              <div class="upData-class">
-                <p style="flex: 6; text-align: center">视频名称</p>
-                <p style="flex: 1; text-align: center">上传进度</p>
-              </div>
+              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%">
+                <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
+                <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
+                </el-table-column>
+                <el-table-column property="size" label="视频大小" align="center" width="80"> </el-table-column>
+                <el-table-column property="status" label="上传进度" align="center" width="80">
+                  <!-- filter_schedule -->
+                  <template slot-scope="scope">
+                    <p
+                      :class="{
+                        'font-green': scope.row.status == 'success',
+                        'font-blue': scope.row.status == 'uploading'
+                      }"
+                    >
+                      {{ scope.row.status | filter_schedule }}
+                    </p>
+                  </template>
+                </el-table-column>
+              </el-table>
             </div>
           </el-upload>
         </el-form-item>
@@ -259,7 +297,13 @@
       </div>
     </el-dialog>
     <!-- 发布 -->
-    <el-dialog title="检测报告发布" :visible.sync="dialogFormVisible3" @close="closeRelease" :fullscreen="true">
+    <el-dialog
+      title="检测报告发布"
+      :visible.sync="dialogFormVisible3"
+      @open="openRelease"
+      @close="closeRelease"
+      :fullscreen="true"
+    >
       <div class="releaseTop-box">
         <!-- 左边部分 -->
         <div class="left">
@@ -338,12 +382,20 @@ import {
   projectPagingQuery,
   batchRelease,
   withdrawReport,
-  queryPipecheckDetails
+  queryPipecheckDetails,
+  queryDictionariesId
 } from '@/api/pipelineManage'
 
 export default {
   data() {
     return {
+      // 上传文件表格
+      upDataTable: [],
+      updataParamsId: {
+        itemId: '',
+        uploadFileTypeDicId: '',
+        uploadItemDictId: ''
+      }, // 上传视频需要的参数id
       id: '', // 发布时的id
       isRelease: false, // 判断是否从发布按钮进入详情
       defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }, // 合计
@@ -420,7 +472,7 @@ export default {
       dialogFormVisible3: false,
       form: {
         name: '',
-        report: ''
+        report: '1'
       },
 
       formLabelWidth: '120px'
@@ -432,14 +484,42 @@ export default {
   computed: {
     // 动态设置上传携带参数
     getData() {
-      return { prjNo: this.form.name }
+      return this.updataParamsId
     },
     getVideoData() {
-      return { prjId: this.form.name }
+      return this.updataParamsId
     }
   },
   mounted() {},
   methods: {
+    // 打开上传弹框时
+    closeDialog() {
+      this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
+      this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
+      this.upDataTable = []
+      console.log('关闭了弹框')
+    },
+    // 获取字典id
+    async getParamsId(type) {
+      // 获取字典id
+      // uploadFileType
+      let uploadFileTypeDicId = await queryDictionariesId({ keys: 'uploadFileType' })
+      // uploadItem
+      let uploadItemDictId = await queryDictionariesId({ keys: 'uploadItem' })
+      uploadFileTypeDicId = uploadFileTypeDicId.result.uploadFileType
+      uploadItemDictId = uploadItemDictId.result.uploadItem
+      // await this.$refs.upload.submit()
+      uploadFileTypeDicId.forEach((v) => {
+        if (v.codeValue == type) {
+          this.updataParamsId.uploadFileTypeDicId = v.id
+        }
+      })
+      uploadItemDictId.forEach((v) => {
+        if (v.codeValue == 'tf_ywpn_prjinfo_w') {
+          this.updataParamsId.uploadItemDictId = v.id
+        }
+      })
+    },
     // 判断表格当前行是否可被选中
     checkSelect(row, index) {
       let isChecked = true
@@ -451,15 +531,22 @@ export default {
       }
       return isChecked
     },
+    // 打开弹框时
+    openRelease() {
+      console.log('打开了弹框')
+    },
     // 关闭发布弹框时触发
     closeRelease() {
       this.id = ''
+      this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }
       this.isRelease = false
+      console.log('关闭了弹框')
     },
     // 单行管段详情
     async testReportDetails(id, isRelease) {
       this.id = id
       isRelease ? (this.isRelease = true) : ''
+      console.log('是不是发布', this.isRelease)
       let res = await queryPipecheckDetails(id)
       // this.defectQuantityStatisticsA
       // 按缺陷名称给数据分类
@@ -563,9 +650,18 @@ export default {
     },
     // 文件发生变化时触发
     getFile(file, fileList) {
+      let num = 1024.0 //byte
       // console.log('file', file)
       console.log('上传file的状态', file.status)
       console.log('fileList', fileList)
+      this.upDataTable = fileList.map((v) => {
+        return {
+          name: v.name,
+          size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
+          status: v.status
+        }
+      })
+      console.log('this.upDataTable', this.upDataTable)
     },
     // 重置
     async resetDate() {
@@ -583,6 +679,7 @@ export default {
     // 失去焦点时
     initSelectDate() {
       this.selectParm.current = 1
+      console.log("选择的选项值",this.form.name);
     },
     // 选择工程下拉刷新加载更多数据（报告上传）
     async selectLoadMore() {
@@ -647,40 +744,93 @@ export default {
     },
     // 上传按钮
     async uploadWord() {
-      await this.$refs.updataDocx.submit()
+      this.$refs['form'].validate(async (valid) => {
+        if (valid) {
+          // 获取字典id
+          await this.getParamsId('wordInfoDoc')
+          this.updataParamsId.itemId = this.form.name
+          await this.$refs.updataDocx.submit()
+        } else {
+          console.log('不能提交!!')
+          return false
+        }
+      })
     },
     async uploadVideoWord() {
-      await this.$refs.updataVideo.submit()
+      this.$refs['form'].validate(async (valid) => {
+        if (valid) {
+          // 获取字典id
+          await this.getParamsId('pipeVideo')
+          this.updataParamsId.itemId = this.form.name
+          await this.$refs.updataVideo.submit()
+        } else {
+          console.log('不能提交!!')
+          return false
+        }
+      })
     },
     // 上传触发的方法
-    handleAvatarSuccess(res, file) {
+    handleAvatarSuccess(res, file,fileList) {
       // this.imageUrl = URL.createObjectURL(file.raw)
-      if (res.code) {
-        this.$message({
-          message: '上传成功',
-          type: 'success'
-        })
-        this.getDate()
-      }
-      this.form.name = ''
-      this.dialogFormVisible = false
-      console.log('上传后的code码', res)
+      fileList.forEach((v) => {
+        if (v.status == 'ready' || v.status == 'uploading') {
+          return false
+        } else {
+          if (res.code) {
+            this.$message({
+              message: '上传成功',
+              type: 'success'
+            })
+            this.getDate()
+          }
+          let timeId = setTimeout(() => {
+            this.dialogFormVisible = false
+            this.form.name = ''
+            clearTimeout(timeId)
+          }, 2000)
+          console.log('上传后的code码', res)
+          console.log('上传后的文件信息', file)
+        }
+      })
     },
     // 视频
-    handleAvatarSuccessVideo(res, file) {
+    handleAvatarSuccessVideo(res, file, fileList) {
       // this.imageUrl = URL.createObjectURL(file.raw)
-      if (res.code) {
-        this.$message({
-          message: '上传成功',
-          type: 'success'
-        })
-        this.getDate()
-      }
-      this.form.name = ''
-      this.dialogFormVisible2 = false
-      console.log('上传后的code码', res)
+      fileList.forEach((v) => {
+        if (v.status == 'ready' || v.status == 'uploading') {
+          return false
+        } else {
+          if (res.code) {
+            this.$message({
+              message: '上传成功',
+              type: 'success'
+            })
+            this.getDate()
+          }
+          let timeId = setTimeout(() => {
+            this.dialogFormVisible2 = false
+            this.form.name = ''
+            clearTimeout(timeId)
+          }, 2000)
+          console.log('上传后的code码', res)
+          console.log('上传后的文件信息', file)
+        }
+      })
     },
-    beforeUpload() {},
+    beforeUpload(event, file, fileList) {
+      let num = 1024.0 //byte
+      // console.log('file', file)
+      console.log('上传file的状态', file.status)
+      console.log('fileList', fileList)
+      this.upDataTable = fileList.map((v) => {
+        return {
+          name: v.name,
+          size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
+          status: v.status
+        }
+      })
+      console.log('文件上传时', this.upDataTable)
+    },
     handleExceed(files, fileList) {
       this.$message.warning(`本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
     },
@@ -721,7 +871,8 @@ export default {
       let data = { ...this.pagination }
       console.log('参数', params)
       if (params) {
-        data.jcDate = params.dateTime
+        data.jcStartDate = params.dateTime[0]
+        data.jcEndDate = params.dateTime[1]
         data.state = params.checkList
         data.prjNo = params.serchValue
       }
@@ -755,8 +906,21 @@ export default {
   },
   // 过滤器
   filters: {
+    // 过滤发布状态
     filter_state(value) {
       return value == 0 ? '未发布' : '已发布'
+    },
+    // 过滤上传进度
+    filter_schedule(value) {
+      if (value == 'ready') {
+        return '未开始'
+      } else if (value == 'uploading') {
+        return '进行中...'
+      } else if (value == 'success') {
+        return '√'
+      } else {
+        return value
+      }
     }
   }
 }
@@ -764,13 +928,14 @@ export default {
 
 
 <style lang="scss" scoped>
+// 上传进度样式
+.font-green {
+  color: #26b54b;
+}
+.font-blue {
+  color: #2d9eeb;
+}
 .engineering-manage {
-  height: 100vh;
-  margin: 0;
-  padding: 20px 0;
-  box-sizing: border-box;
-  position: relative;
-
   // 表格样式
   .table-box {
     width: 96%;
@@ -790,7 +955,7 @@ export default {
       justify-content: space-between;
       flex-direction: row;
       flex-wrap: wrap;
-      font-size: 14px;
+      font-size: 12px;
       /deep/ .serch-engineering {
         display: flex;
         // justify-content: space-around;
@@ -846,13 +1011,18 @@ export default {
         // flex-wrap: wrap;
       }
     }
-
-    /deep/ .el-table th.el-table__cell > .cell {
-      height: 40px;
-      line-height: 40px;
-      background-color: #dfeffe;
-    }
   }
+  /deep/ .el-table th.el-table__cell > .cell {
+    height: 40px;
+    line-height: 40px;
+    background-color: #dfeffe;
+  }
+  height: 100vh;
+  margin: 0;
+  padding: 20px 0;
+  box-sizing: border-box;
+  position: relative;
+  font-size: 12px;
 
   // 报告上传样式
   /deep/ .el-dialog__header {
@@ -872,7 +1042,7 @@ export default {
       height: 40px;
       display: flex;
       align-items: center;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: bold;
       background-color: #dfeffe;
     }

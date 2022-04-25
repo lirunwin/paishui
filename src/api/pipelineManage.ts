@@ -6,23 +6,52 @@ import request from '@/utils/request'
   * get和delete传值用params,
   * post和put传值用data
   */
-let base = "/psjc"
+let psjc = "/psjc"
+let base = "/base"
 
-// 管道评估结果管理接口
-// 分页查询
-// 
-export function queryPageAssessment(params) {
+
+// 导出 / 下载附件
+export function downloadFile(params) {
     return request({
-        url: base + '/pipeState/page',
+        url: psjc + '/sysUploadFile/downloadFile/' + params,
+        method: 'get',
+    })
+}
+
+// 系统码表接口
+// 通过key查询系统码表
+export function queryDictionariesId(params) {
+    return request({
+        url: base + '/code/getByKeys',
         method: 'get',
         params
     })
 }
 
+// 管道评估结果管理接口
+// 分页查询
+export function queryPageAssessment(params) {
+    return request({
+        url: psjc + '/pipeState/page',
+        method: 'get',
+        params
+    })
+}
+
+// 附件分页查询接口
+export function queryPageEnclosure(params) {
+    return request({
+        url: psjc + '/sysUploadFile/page',
+        method: 'get',
+        params
+    })
+}
+
+
 // 管道内窥检测数据导入(文件导入) / 检测报告管理
 // export function importFiles(params) {
 //     return request({
-//         url: base + '/pipeState/pipeStateUpload',
+//         url: psjc + '/pipeState/pipeStateUpload',
 //         method: 'POST',
 //         params
 //     })
@@ -32,7 +61,7 @@ export function queryPageAssessment(params) {
 // 管道内窥检测缺陷数据信息分页查询
 export function queryPageDefectInfo(params) {
     return request({
-        url: base + '/pipeDefect/page',
+        url: psjc + '/pipeDefect/page',
         method: 'get',
         params
     })
@@ -41,7 +70,7 @@ export function queryPageDefectInfo(params) {
 // 报告上传
 export function importFiles(params) {
     return request({
-        url: base + '/wordInfo/wordInfoUpload',
+        url: psjc + '/wordInfo/wordInfoUpload',
         method: 'POST',
         params
     })
@@ -50,7 +79,7 @@ export function importFiles(params) {
 // 批量发布 ids(字符串)
 export function batchRelease(data) {
     return request({
-        url: base + '/wordInfo/publishByIds?ids=' + data,
+        url: psjc + '/wordInfo/publishByIds?ids=' + data,
         method: 'post',
     })
 }
@@ -58,14 +87,14 @@ export function batchRelease(data) {
 // 通过ID删除管道内窥检测报告信息
 export function deleteIdData(params) {
     return request({
-        url: base + "/wordInfo/" + params,
+        url: psjc + "/wordInfo/" + params,
         method: 'delete',
     })
 }
 // 分页查询
 export function queryPageTestReport(params) {
     return request({
-        url: base + '/wordInfo/page',
+        url: psjc + '/wordInfo/page',
         method: 'get',
         params
     })
@@ -73,7 +102,7 @@ export function queryPageTestReport(params) {
 // 分页查询(可模糊查询)
 export function queryPageTestReportNew(params) {
     return request({
-        url: base + '/wordInfo/pageNew',
+        url: psjc + '/wordInfo/pageNew',
         method: 'get',
         params
     })
@@ -82,7 +111,7 @@ export function queryPageTestReportNew(params) {
 // 通过IDS删除管道内窥检测报告信息
 export function deleteTestReport(params) {
     return request({
-        url: base + "/wordInfo/removeByIds",
+        url: psjc + "/wordInfo/removeByIds",
         method: 'delete',
         params
     })
@@ -94,7 +123,7 @@ export function deleteTestReport(params) {
 // 新增管段检测缺陷与评估成果信息表
 export function addDefectinfo(data) {
     return request({
-        url: base + '/defectinfo',
+        url: psjc + '/defectinfo',
         method: 'post',
         data
     })
@@ -110,17 +139,27 @@ export function addDefectinfo(data) {
 // 分页查询
 export function queryPageDefectinfo(params) {
     return request({
-        url: base + '/defectinfo/page',
+        url: psjc + '/defectinfo/page',
         method: 'get',
         params
     })
 }
 
 // --工程管理--
+// 上传附件
+// export function uploadFile(data) {
+//     return request({
+//         url: psjc + '/sysUploadFile/uploadFile',
+//         method: 'post',
+//         data
+//     })
+// }
+
+
 // 根据条件新增数据
 export function addData(data) {
     return request({
-        url: base + '/projectInfo',
+        url: psjc + '/projectInfo',
         method: 'post',
         data
     })
@@ -129,7 +168,7 @@ export function addData(data) {
 // 删除数据(单个)
 export function deleteData(params) {
     return request({
-        url: base + "/projectInfo/" + params,
+        url: psjc + "/projectInfo/" + params,
         method: 'delete',
     })
 }
@@ -137,7 +176,7 @@ export function deleteData(params) {
 // 删除数据(多个)
 export function deleteDatas(params) {
     return request({
-        url: base + "/projectInfo/removeByIds/",
+        url: psjc + "/projectInfo/removeByIds/",
         method: 'delete',
         params
     })
@@ -147,7 +186,7 @@ export function deleteDatas(params) {
 // 修改数据
 export function changeInfo(data) {
     return request({
-        url: base + '/projectInfo',
+        url: psjc + '/projectInfo',
         method: 'put',
         data
     })
@@ -156,7 +195,7 @@ export function changeInfo(data) {
 // 详情
 export function projectDetailsQuery(params) {
     return request({
-        url: base + '/projectInfo/'+params,
+        url: psjc + '/projectInfo/' + params,
         method: 'get',
     })
 }
@@ -164,7 +203,7 @@ export function projectDetailsQuery(params) {
 // 根据条件获取分页查询数据
 export function projectPagingQuery(params) {
     return request({
-        url: base + '/projectInfo/page',
+        url: psjc + '/projectInfo/page',
         method: 'get',
         params
     })
@@ -173,7 +212,7 @@ export function projectPagingQuery(params) {
 // 根据条件获取分页查询数据(可模糊查询)
 export function projectPagingQueryNew(params) {
     return request({
-        url: base + '/projectInfo/pageNew',
+        url: psjc + '/projectInfo/pageNew',
         method: 'get',
         params
     })
@@ -182,7 +221,7 @@ export function projectPagingQueryNew(params) {
 // 根据条件获取数据库表名及描述
 export function projectDataQuery(params) {
     return request({
-        url: base + '/commonInter/getDBTable',
+        url: psjc + '/commonInter/getDBTable',
         method: 'get',
         params
     })
@@ -191,7 +230,7 @@ export function projectDataQuery(params) {
 // 根据条件获取
 export function projectIdQuery(params) {
     return request({
-        url: base + '/projectInfo/page',
+        url: psjc + '/projectInfo/page',
         method: 'get',
         params
     })
@@ -202,7 +241,7 @@ export function projectIdQuery(params) {
 // 管段历史分页查询 queryParams（管段，道路）
 export function queryPageHistory(params) {
     return request({
-        url: base + '/pipeState/histroyPage',
+        url: psjc + '/pipeState/histroyPage',
         method: 'get',
         params
     })
@@ -213,7 +252,7 @@ export function queryPageHistory(params) {
 // /wordInfo/pipeDefectCount/{id}
 export function queryPipecheckDetails(params) {
     return request({
-        url: base + '/wordInfo/pipeDefectCount/'+params,
+        url: psjc + '/wordInfo/pipeDefectCount/' + params,
         method: 'get',
     })
 }
@@ -222,7 +261,7 @@ export function queryPipecheckDetails(params) {
 // 批量撤回检测报告
 export function withdrawReport(data) {
     return request({
-        url: base + '/wordInfo/returnByIds?ids=' + data,
+        url: psjc + '/wordInfo/returnByIds?ids=' + data,
         method: 'post',
     })
 }
@@ -230,7 +269,7 @@ export function withdrawReport(data) {
 // 新增管段检测信息表
 export function addPipecheck(data) {
     return request({
-        url: base + '/pipecheck',
+        url: psjc + '/pipecheck',
         method: 'post',
         data
     })
@@ -239,7 +278,7 @@ export function addPipecheck(data) {
 // 修改管段检测信息表
 export function updataPipecheck(data) {
     return request({
-        url: base + '/pipecheck',
+        url: psjc + '/pipecheck',
         method: 'put',
         data
     })
@@ -249,7 +288,7 @@ export function updataPipecheck(data) {
 // 通过ID查询
 export function queryPipecheck(params) {
     return request({
-        url: base + '/pipecheck',
+        url: psjc + '/pipecheck',
         method: 'get',
         params
     })
@@ -258,7 +297,7 @@ export function queryPipecheck(params) {
 // 通过分页查询
 export function queryPagePipecheck(params) {
     return request({
-        url: base + '/pipecheck/page',
+        url: psjc + '/pipecheck/page',
         method: 'get',
         params
     })

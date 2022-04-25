@@ -1,5 +1,5 @@
 <template>
-  <div class="engineering-manage">
+  <div class="engineering-manage" @keyup.enter="searchApi">
     <!-- 管道评估结果管理 -->
     <div class="table-box">
       <div class="top-tool">
@@ -37,9 +37,27 @@
           <el-button class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
-          <el-button class="serch-btn" type="primary" @click="$message('该功能暂未开放')"
+          <el-popconfirm
+            confirm-button-text="确定"
+            cancel-button-text="取消"
+            icon="el-icon-info"
+            icon-color="##FFDF84"
+            title="确定要导出吗?"
+            @confirm="$message('该功能暂未开放', scope.row.prjName)"
+          >
+            <el-button
+              slot="reference"
+              class="serch-btn"
+              type="primary"
+              size="small"
+              :disabled="multipleSelection.length != 1"
+              :wu="scope"
+              >导出<i class="el-icon-download el-icon--right"></i
+            ></el-button>
+          </el-popconfirm>
+          <!-- <el-button class="serch-btn" type="primary" @click="openDialogEnclosure" :disabled="multipleSelection.length != 1"
             >导出<i class="el-icon-download el-icon--right"></i
-          ></el-button>
+          ></el-button> -->
         </div>
       </div>
 
@@ -102,7 +120,7 @@
               "
             >
               <p style="font-weight: bold">功能性缺陷：(BX)变形</p>
-              <a style="font-size: 13px; color: #2d74e7; text-decoration: underline">详情</a>
+              <a style="font-size: 12px; color: #2d74e7; text-decoration: underline">详情</a>
             </div>
             <div>管径：400mm 材质：HDPE双壁波纹管</div>
             <div class="content-info">
@@ -143,12 +161,7 @@
                   <el-row>
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item label="管段编号" prop="prjName">
-                        <el-input
-                          v-model="form.prjName"
-                          maxlength="100"
-                          show-word-limit
-                        
-                        ></el-input>
+                        <el-input v-model="form.prjName" maxlength="100" show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
@@ -160,12 +173,7 @@
                   <el-row>
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item label="起点埋深" prop="prjName">
-                        <el-input
-                          v-model="form.prjName"
-                          maxlength="100"
-                          show-word-limit
-                        
-                        ></el-input>
+                        <el-input v-model="form.prjName" maxlength="100" show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
@@ -177,12 +185,7 @@
                   <el-row>
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item label="管径" prop="prjName">
-                        <el-input
-                          v-model="form.prjName"
-                          maxlength="100"
-                          show-word-limit
-                        
-                        ></el-input>
+                        <el-input v-model="form.prjName" maxlength="100" show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
@@ -194,12 +197,7 @@
                   <el-row>
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item label="敷设年代" prop="prjName">
-                        <el-input
-                          v-model="form.prjName"
-                          maxlength="100"
-                          show-word-limit
-                        
-                        ></el-input>
+                        <el-input v-model="form.prjName" maxlength="100" show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
@@ -215,15 +213,51 @@
         </el-card>
       </div>
     </transition>
+    <!-- 导出弹框 -->
+    <el-dialog title="附件列表" :visible.sync="dialogEnclosure">
+      <el-table :data="enclosureGridData">
+        <el-table-column property="address" label="地址"></el-table-column>
+        <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
+          <template slot-scope="scope">
+            <el-button type="text" size="small" @click="$message('该功能暂未开放', scope.row.prjName)">报告</el-button>
+            <el-button type="text" size="small" @click="dialogEnclosure = false">退出</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div>
+        <el-pagination
+          @size-change="handleSizeChangeEnclosure"
+          @current-change="handleCurrentChangeEnclosure"
+          :current-page="paginationEnclosure.current"
+          :page-sizes="[10, 20, 30, 50, 100, 1000]"
+          :page-size="paginationEnclosure.size"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="paginationEnclosureTotal"
+        >
+        </el-pagination>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { queryPageAssessment } from '@/api/pipelineManage'
+import { queryPageAssessment, downloadFile, queryPageEnclosure, queryDictionariesId } from '@/api/pipelineManage'
 
 export default {
   data() {
     return {
+      // 查询附件列表需要的参数id
+      updataParamsId: {
+        itemId: '',
+        uploadFileTypeDicId: '',
+        uploadItemDictId: ''
+      },
+      // 附件弹框参数
+      enclosureGridData: [], // 表格数据
+      dialogEnclosure: false, // 显示隐藏
+      paginationEnclosure: { current: 1, size: 30 }, // 分页参数信息
+      paginationEnclosureTotal: 0, // 总页数
+      // -------->
       // 表格参数
       tableContent: [
         { label: '工程名称', name: 'prjName' },
@@ -255,18 +289,59 @@ export default {
       tableVisible: false, // 表格当前列信息弹出框
       pagination: { current: 1, size: 30 }, // 分页参数信息
       paginationTotal: 0, // 总页数
-      radio: '',
-      zero: '',
       tableData: [],
+      multipleSelection: [], // 表格被选中的数据
       dialogTableVisible: false,
-      form: {},
-      formLabelWidth: '120px'
+      form: {}
     }
   },
   created() {
     let res = this.getDate()
   },
   methods: {
+    // 获取字典id
+    // async getParamsId() {
+    //   // 获取字典id
+    //   // uploadFileType
+    //   let uploadFileTypeDicId = await queryDictionariesId({ keys: 'uploadFileType' })
+    //   // uploadItem
+    //   let uploadItemDictId = await queryDictionariesId({ keys: 'uploadItem' })
+    //   uploadFileTypeDicId = uploadFileTypeDicId.result.uploadFileType
+    //   uploadItemDictId = uploadItemDictId.result.uploadItem
+    //   // await this.$refs.upload.submit()
+    //   uploadFileTypeDicId.forEach((v) => {
+    //     if (v.codeValue == 'wordInfoDoc') {
+    //       this.updataParamsId.uploadFileTypeDicId = v.id
+    //     }
+    //   })
+    //   uploadItemDictId.forEach((v) => {
+    //     if (v.codeValue == 'tf_ywpn_wordinfo_w') {
+    //       this.updataParamsId.uploadItemDictId = v.id
+    //     }
+    //   })
+    // },
+    // 打开附件列表对话框
+    // async openDialogEnclosure() {
+    //   this.updataParamsId.itemId = this.multipleSelection[0].id
+    //   // console.log("this.updataParamsId",this.updataParamsId);
+    //   await this.getParamsId()
+    //   let params = {
+    //     current: this.paginationEnclosure.current,
+    //     size: this.paginationEnclosure.size,
+    //     itemId: this.updataParamsId.itemId,
+    //     uploadFileTypeDicId: this.updataParamsId.uploadFileTypeDicId,
+    //     uploadItemDictId: this.updataParamsId.uploadItemDictId
+    //   }
+    //   let res = await queryPageEnclosure(params)
+    //   this.dialogEnclosure = true
+    // },
+    // 导出
+    // async exportFile() {
+    //   console.log('选择列信息', this.multipleSelection)
+    //   let id = this.multipleSelection[0].id
+    //   let res = await downloadFile(id)
+    //   console.log('res', res)
+    // },
     // 重置
     async resetBtn() {
       this.pagination = { current: 1, size: 30 }
@@ -309,13 +384,24 @@ export default {
         // this.$message.success("上传成功");
       })
     },
-    // 分页触发的事件
+    // 分页触发的事件(主表格)
     async handleSizeChange(val) {
       this.pagination.size = val
       await this.getDate()
       console.log(`每页 ${val} 条`)
     },
     async handleCurrentChange(val) {
+      this.pagination.current = val
+      await this.getDate()
+      console.log(`当前页: ${val}`)
+    },
+    // 分页触发的事件(附件列表)
+    async handleSizeChangeEnclosure(val) {
+      this.pagination.size = val
+      await this.getDate()
+      console.log(`每页 ${val} 条`)
+    },
+    async handleCurrentChangeEnclosure(val) {
       this.pagination.current = val
       await this.getDate()
       console.log(`当前页: ${val}`)
@@ -331,6 +417,32 @@ export default {
   padding: 20px 0;
   box-sizing: border-box;
   position: relative;
+  font-size: 12px;
+  // 卡片样式
+  /deep/ .el-dialog {
+    margin-top: 9vh !important;
+    font-size: 12px;
+    .el-dialog__body {
+      padding: 20px 36px !important;
+      box-sizing: border-box;
+      .el-table__body-wrapper {
+        min-height: 400px;
+      }
+    }
+    .el-dialog__header {
+      background-color: #2d74e7;
+      .el-dialog__title {
+        color: #dfeffe;
+      }
+      .el-icon-close:before {
+        color: #fff;
+      }
+    }
+
+    .el-dialog__footer {
+      padding: 0 20px 5px !important;
+    }
+  }
   // 表格样式
   .table-box {
     width: 96%;
@@ -343,7 +455,6 @@ export default {
       justify-content: space-between;
       flex-direction: row;
       // flex-wrap: wrap;
-      font-size: 14px;
       /deep/ .serch-engineering {
         display: flex;
         // justify-content: space-around;
@@ -371,7 +482,6 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #2d74e7;
         // margin-left: 14px;
         padding: 12px;
         border: none !important;
@@ -460,7 +570,7 @@ export default {
       .table-content {
         padding: 15px;
         .content-info {
-          font-size: 14px;
+          font-size: 12px;
           display: flex;
           justify-content: space-between;
           .detailsTitle {

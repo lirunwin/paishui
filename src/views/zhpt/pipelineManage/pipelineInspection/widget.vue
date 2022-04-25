@@ -1,5 +1,5 @@
 <template>
-  <div class="engineering-manage">
+  <div class="engineering-manage" @keyup.enter="searchApi">
     <!-- 管道检测历史管理 -->
     <div class="table-box">
       <div class="top-tool">
@@ -178,6 +178,7 @@ export default {
   padding: 20px 0;
   box-sizing: border-box;
   position: relative;
+  font-size: 12px;
   // 表格样式
   .table-box {
     width: 96%;
@@ -190,7 +191,7 @@ export default {
       justify-content: space-between;
       flex-direction: row;
       // flex-wrap: wrap;
-      font-size: 14px;
+      font-size: 12px;
       /deep/ .serch-engineering {
         display: flex;
         // justify-content: space-around;
