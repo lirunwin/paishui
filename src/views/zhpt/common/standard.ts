@@ -1,4 +1,4 @@
-// 最小覆土深度标准
+// 覆土深度标准
 export const CoverSoilStandard = [{
     subtype: '电力线缆',
     direct: 0.6, // 直埋
@@ -41,7 +41,7 @@ export const CoverSoilStandard = [{
 }
 ]
 
-// 净距标准
+// 水平垂直净距标准
 export const DisStandard = [
     {
         subtype: '给水管线',

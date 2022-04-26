@@ -236,6 +236,7 @@ import { comSymbol } from '@/utils/comSymbol'
 import { LegendConfig } from '@/views/zhpt/common/legendConfig'
 
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import { Polygon } from 'ol/geom';
 
 @Component({
@@ -416,21 +417,8 @@ export default class BaseMap extends Vue {
 
   addLayers(layers) {
     layers.forEach((layerConfig) => {
-      let { name, url, parentname, id, visible = true } = layerConfig
-      let layer = new TileLayer({
-        name,
-        parentname,
-        id,
-        visible,
-        source: new TileSuperMapRest({
-          url,
-          crossOrigin: 'anonymous', // 是否请求跨域操作
-          wrapX: true
-        }),
-        properties: {
-          projection: 'EPSG:4326'
-        }
-      } as any)
+      let { name, type, url, parentname, id, visible = true } = layerConfig
+      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
       this.view.addLayer(layer)
     })
   }
