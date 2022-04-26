@@ -199,24 +199,24 @@ export default {
     },
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
-      this.drawer.end()
-      this.drawer = null
-      this.vectorLayer.getSource().clear()
-      this.limitFeature = null
-      this.closeHalfPanel()
+      if (val !== 'warningAnalysis') this.removeAll()
+      else this.init()
     }
   },
   mounted() {
     this.init()
   },
   destroyed() {
-    this.closeHalfPanel()
-    this.drawer && this.drawer.end()
-    this.drawer = null
-    this.vectorLayer.getSource().clear()
-    this.lightLayer.getSource().clear()
+    this.removeAll()
   },
   methods: {
+    removeAll () {
+      this.drawer.end()
+      this.mapView.removeLayer(this.vectorLayer)
+      this.mapView.removeLayer(this.lightLayer)
+      this.closeHalfPanel()
+      this.drawer = this.vectorLayer = this.lightLayer = null
+    },
     init() {
       // 初始化显示图层
       this.mapView = this.data.mapView

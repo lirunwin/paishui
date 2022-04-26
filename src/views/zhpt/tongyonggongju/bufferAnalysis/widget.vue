@@ -114,29 +114,30 @@ export default {
   watch: {
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
-      this.drawer && this.drawer.end()
-      this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
-      this.lightLayer && this.mapView.removeLayer(this.lightLayer)
+      if (val !== "bufferAnalysis") this.removeAll()
     },
     drawType(val, oldVal) {
       this.initDraw()
     }
   },
   destroyed() {
-    this.drawer && this.drawer.end()
-    this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
-    this.lightLayer && this.mapView.removeLayer(this.lightLayer)
-    this.drawer = this.vectorLayer = this.lightLayer = null
-    this.$store.dispatch('map/handelClose', {
-      box:'HalfPanel',
-      pathId: 'queryResultMore',
-      widgetid: 'HalfPanel',
-    });
+    this.removeAll()
   },
   mounted() {
     this.mapView = this.data.mapView
   },
   methods: {
+    removeAll () {
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
+      this.lightLayer && this.mapView.removeLayer(this.lightLayer)
+      this.drawer = this.vectorLayer = this.lightLayer = null
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+      });
+    },
     /**
     * 初始化绘制组件
     */

@@ -66,16 +66,21 @@ export default {
   computed: { sidePanelOn() { return this.$store.state.map.P_editableTabsValue } },
   watch: {
     sidePanelOn(newTab, oldTab) {
+      if (newTab !== 'verticalProfileAnalysis') this.removeAll()
+      else this.init()
     }
   },
   mounted: function() {
-    this.mapView = this.data.mapView
-    this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#f00") })
-    this.mapView.addLayer(this.vectorLayer)
-    this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00FFFF") })
-    this.mapView.addLayer(this.lightLayer) 
+    this.init()
   },
   methods: {
+    init () {
+      this.mapView = this.data.mapView
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#f00") })
+      this.mapView.addLayer(this.vectorLayer)
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00FFFF") })
+      this.mapView.addLayer(this.lightLayer) 
+    },
     drawPoint () {
       this.drawer && this.drawer.end()
       this.startLine = this.endLine = null
@@ -254,16 +259,23 @@ export default {
     },
 
     closePanel () {
-    this.$store.dispatch('map/handelClose', {
-      box:'HalfPanel',
-      pathId: 'queryResultMore',
-      widgetid: 'HalfPanel',
-    });
-    this.$store.dispatch('map/handelClose', {
-      box:'FloatPanel',
-      pathId: 'analysisBox',
-      widgetid: 'FloatPanel',
-    })
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+      });
+      this.$store.dispatch('map/handelClose', {
+        box:'FloatPanel',
+        pathId: 'analysisBox',
+        widgetid: 'FloatPanel',
+      })
+    },
+    removeAll () {
+      this.drawer && this.drawer.end()
+      this.mapView.removeLayer(this.vectorLayer)
+      this.mapView.removeLayer(this.lightLayer)
+      this.closePanel()
+      this.tip && this.tip.setPosition(null)
     },
 
     query(xy) {
@@ -472,13 +484,7 @@ export default {
     }
   },
   destroyed() {
-    this.drawer && this.drawer.end()
-    this.vectorLayer && this.vectorLayer.getSource().clear()
-    this.lightLayer && this.lightLayer.getSource().clear()
-    this.mapView.removeLayer(this.vectorLayer)
-    this.mapView.removeLayer(this.lightLayer)
-    this.closePanel()
-    this.tip && this.tip.setPosition(null)
+    this.removeAll()
   }
 }
 </script>

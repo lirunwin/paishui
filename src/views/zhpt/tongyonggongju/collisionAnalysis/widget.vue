@@ -96,21 +96,24 @@ export default {
   watch: {
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
+      if (val !== 'collisionAnalysis') this.removeAll()
+      else this.init()
     }
   },
   mounted() {
-    this.vectorLayer = new VectorLayer({
-      source: new VectorSource(),
-      style: comSymbol.getLineStyle(5, '#00ffff')
-    })
     this.map = this.data.mapView
-    this.map.addLayer(this.vectorLayer)
   },
   destroyed() {
-    this.map.removeLayer(this.vectorLayer)
-    this.drawer && this.drawer.end()
+    this.removeAll()
   },
   methods: {
+    init () {
+      this.vectorLayer = new VectorLayer({
+        source: new VectorSource(),
+        style: comSymbol.getLineStyle(5, '#00ffff')
+      })
+      this.map.addLayer(this.vectorLayer)
+    },
     // 选择管线
     select () {
       this.drawer && this.drawer.end()
@@ -211,6 +214,11 @@ export default {
       this.drawer && this.drawer.end()
       this.bgc = "#02baaf"
       this.vectorLayer.getSource().clear()
+    },
+    removeAll () {
+      this.map.removeLayer(this.vectorLayer)
+      this.drawer && this.drawer.end()
+      this.drawer = this.vectorLayer = null
     }
   }
 }

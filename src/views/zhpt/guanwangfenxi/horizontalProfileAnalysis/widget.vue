@@ -58,6 +58,8 @@ export default {
   computed: { sidePanelOn() { return this.$store.state.map.P_editableTabsValue } },
   watch: {
     sidePanelOn(newTab, oldTab) {
+      console.log("新标签", newTab)
+      if (newTab !== 'horizontalProfileAnalysis') this.removeAll()
     }
   },
   mounted: function() {    
@@ -218,7 +220,6 @@ export default {
         ]
       }
 
-
       this.$store.dispatch('map/changeMethod', {
         pathId: 'analysisBox',
         widgetid: 'FloatPanel',
@@ -228,7 +229,6 @@ export default {
 
     },
     
-
     drawLine: function() {      
       var view = this.mapView
       var sp = view.spatialReference
@@ -376,22 +376,24 @@ export default {
             showId: 'HorizontalProfileAnalysis'
           } })
       }
+    },
+    removeAll () {
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+      });
+      this.$store.dispatch('map/handelClose', {
+        box:'FloatPanel',
+        pathId: 'analysisBox',
+        widgetid: 'FloatPanel',
+      })
     }
   },
   destroyed() {
-    this.drawer && this.drawer.end()
-    this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
-
-    this.$store.dispatch('map/handelClose', {
-      box:'HalfPanel',
-      pathId: 'queryResultMore',
-      widgetid: 'HalfPanel',
-    });
-    this.$store.dispatch('map/handelClose', {
-      box:'FloatPanel',
-      pathId: 'analysisBox',
-      widgetid: 'FloatPanel',
-    })
+    this.removeAll()
   }
 }
 </script>
