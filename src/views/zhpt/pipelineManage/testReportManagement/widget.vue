@@ -227,8 +227,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="uploadWord">确 定</el-button>
-        <el-button @click="hideUpdataDocx">取 消</el-button>
+        <el-button type="primary" :icon="isLoading" @click="uploadWord" :disabled="isLoading">确 定</el-button>
+        <el-button @click="hideUpdataDocx" >取 消</el-button>
       </div>
     </el-dialog>
     <!-- 视频上传 -->
@@ -292,8 +292,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="uploadVideoWord">确 定</el-button>
-        <el-button @click="hideUpdataDocx">取 消</el-button>
+        <el-button type="primary" :icon="isLoading" @click="uploadVideoWord" :disabled="isLoading">确 定</el-button>
+        <el-button @click="hideUpdataDocx" >取 消</el-button>
       </div>
     </el-dialog>
     <!-- 发布 -->
@@ -474,14 +474,18 @@ export default {
         name: '',
         report: '1'
       },
-
-      formLabelWidth: '120px'
+      formLabelWidth: '120px',
+      loadingBool: false // 加载按钮显隐
     }
   },
   created() {
     let res = this.getDate()
   },
   computed: {
+    // 加载按钮
+    isLoading() {
+      if (this.loadingBool) return 'el-icon-loading'
+    },
     // 动态设置上传携带参数
     getData() {
       return this.updataParamsId
@@ -494,10 +498,12 @@ export default {
   methods: {
     // 打开上传弹框时
     closeDialog() {
+      this.loadingBool = false
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
       this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
       this.upDataTable = []
       console.log('关闭了弹框')
+      return false
     },
     // 获取字典id
     async getParamsId(type) {
@@ -675,11 +681,12 @@ export default {
       this.form.name = ''
       this.dialogFormVisible = false
       this.dialogFormVisible2 = false
+      return false
     },
     // 失去焦点时
     initSelectDate() {
       this.selectParm.current = 1
-      console.log("选择的选项值",this.form.name);
+      console.log('选择的选项值', this.form.name)
     },
     // 选择工程下拉刷新加载更多数据（报告上传）
     async selectLoadMore() {
@@ -746,6 +753,7 @@ export default {
     async uploadWord() {
       this.$refs['form'].validate(async (valid) => {
         if (valid) {
+          this.loadingBool = true
           // 获取字典id
           await this.getParamsId('wordInfoDoc')
           this.updataParamsId.itemId = this.form.name
@@ -759,6 +767,7 @@ export default {
     async uploadVideoWord() {
       this.$refs['form'].validate(async (valid) => {
         if (valid) {
+          this.loadingBool = true
           // 获取字典id
           await this.getParamsId('pipeVideo')
           this.updataParamsId.itemId = this.form.name
@@ -770,7 +779,7 @@ export default {
       })
     },
     // 上传触发的方法
-    handleAvatarSuccess(res, file,fileList) {
+    handleAvatarSuccess(res, file, fileList) {
       // this.imageUrl = URL.createObjectURL(file.raw)
       fileList.forEach((v) => {
         if (v.status == 'ready' || v.status == 'uploading') {
@@ -787,9 +796,9 @@ export default {
             this.dialogFormVisible = false
             this.form.name = ''
             clearTimeout(timeId)
-          }, 2000)
-          console.log('上传后的code码', res)
-          console.log('上传后的文件信息', file)
+          }, 1000)
+          // console.log('上传后的code码', res)
+          // console.log('上传后的文件信息', file)
         }
       })
     },
@@ -820,8 +829,8 @@ export default {
     beforeUpload(event, file, fileList) {
       let num = 1024.0 //byte
       // console.log('file', file)
-      console.log('上传file的状态', file.status)
-      console.log('fileList', fileList)
+      // console.log('上传file的状态', file.status)
+      // console.log('fileList', fileList)
       this.upDataTable = fileList.map((v) => {
         return {
           name: v.name,
@@ -829,7 +838,7 @@ export default {
           status: v.status
         }
       })
-      console.log('文件上传时', this.upDataTable)
+      // console.log('文件上传时', this.upDataTable)
     },
     handleExceed(files, fileList) {
       this.$message.warning(`本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)

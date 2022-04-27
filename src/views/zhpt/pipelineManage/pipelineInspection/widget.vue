@@ -21,11 +21,11 @@
           </div>
           <div class="title">结构性缺陷等级：</div>
           <el-select v-model="searchParams.funcClass" placeholder="">
-            <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
+            <el-option v-for="(item,i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
           <el-select v-model="searchParams.structClass" placeholder="">
-            <el-option v-for="item in gradeArr" :key="item" :label="item" :value="item"></el-option>
+            <el-option v-for="(item,i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
         </div>
         <div class="right-btn">
@@ -58,7 +58,7 @@
 
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="$message('该功能暂未开放')">详情</el-button>
+            <el-button type="text" size="small" @click="openDetails(scope.row)">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -75,15 +75,177 @@
         </el-pagination>
       </div>
     </div>
+    <!-- 详情卡片 -->
+    <transition name="el-fade-in-linear">
+      <div class="detailsCrad" v-show="dialogFormVisible">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>管道检测详情 ({{ detailsTitle.pipeType + detailsTitle.expNo }})</span>
+            <span style="float: right; padding: 3px 0; cursor: pointer;user-select: none;">
+              <i class="el-icon-caret-left" type="text" @click="lastPage"></i>
+              {{ currentIndex + 1 }}/{{ cardTable.length }}
+              <i class="el-icon-caret-right" type="text" @click="nextPage"></i>
+              <i class="el-icon-close" type="text" @click="dialogFormVisible = false"></i>
+            </span>
+          </div>
+          <div class="content">
+            <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+              <el-menu-item index="1">检测信息</el-menu-item>
+              <el-menu-item index="2">功能性缺陷</el-menu-item>
+              <el-menu-item index="3">结构性缺陷</el-menu-item>
+            </el-menu>
+            <div class="content-info">
+              <div class="box1" v-show="activeIndex == '1'">
+                <div class="detailsTitle">管段信息</div>
+                <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
+                  <el-row v-for="(v,i) in cardTableContent" :key="i">
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item :label="v[0].label">
+                        <el-input v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item :label="v[1].label">
+                        <el-input v-model="tableForm[v[1].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <div class="detailsTitle">检测信息</div>
+                  <el-row>
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item label="检测方向">
+                        <el-input v-model="tableForm.detectDir" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item label="检测长度">
+                        <el-input v-model="tableForm.checkLength" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item label="修复指数">
+                        <el-input v-model="tableForm.repairIndex" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item label="养护指数">
+                        <el-input v-model="tableForm.maintainIndex" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </el-form>
+              </div>
+              <div class="box1" v-show="activeIndex == '2'">
+                <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
+                  <div class="detailsTitle">功能性缺陷评价(等级：{{ tableForm.funcClass }})</div>
+                  <el-row>
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item label="平均值S">
+                        <el-input v-model="tableForm.funcYmean" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item label="最大值Smax">
+                        <el-input v-model="tableForm.funcYmax" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item label="缺陷密度">
+                        <el-input v-model="tableForm.funcDensity" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item label="养护指数MI">
+                        <el-input v-model="tableForm.maintainIndex" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="24" style="padding-right: 15px">
+                      <el-form-item label="评价">
+                        <el-input v-model="tableForm.funcEstimate" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </el-form>
+              </div>
+              <div class="box1" v-show="activeIndex == '3'">
+                <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
+                  <div class="detailsTitle">结构性缺陷评价(等级：{{ tableForm.structClass }})</div>
+                  <el-row>
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item label="平均值S">
+                        <el-input v-model="tableForm.structYmean" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item label="最大值Smax">
+                        <el-input v-model="tableForm.structYmax" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item label="缺陷密度">
+                        <el-input v-model="tableForm.structDensity" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item label="修复指数RI">
+                        <el-input v-model="tableForm.repairIndex" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="24" style="padding-right: 15px">
+                      <el-form-item label="评价">
+                        <el-input v-model="tableForm.structEstimate" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                </el-form>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
-import { queryPageHistory } from '@/api/pipelineManage'
+import { queryPageHistory, histroyPipeData } from '@/api/pipelineManage'
 
 export default {
   data() {
     return {
+      detailsTitle: {}, // 详情头部信息
+      cardTableContent: [
+        [
+          { label: '管段编号', name: 'expNo' },
+          { label: '管段类型', name: 'pipeType' }
+        ],
+        [
+          { label: '起点埋深', name: 'startDepth' },
+          { label: '终点埋深', name: 'endDepth' }
+        ],
+        [
+          { label: '管径', name: 'diameter' },
+          { label: '材质', name: 'material' }
+        ],
+        [
+          { label: '敷设年代', name: 'constr' },
+          { label: '长度', name: 'pipeLength' }
+        ]
+      ], // 详情表格参数
+      currentIndex: 0, // 详情页数
+      cardTable: [], // 详情表格数据
+      activeIndex: '1', // 详情导航索引
+      dialogFormVisible: false, // 详情弹框显影
       // 表格参数
       tableContent: [
         { label: '工程名称', name: 'prjName' },
@@ -112,13 +274,55 @@ export default {
       pagination: { current: 1, size: 30 }, // 分页参数信息
       paginationTotal: 0, // 总页数
       tableData: [],
-   
+        isPromptBox: {}, // 当前列信息
+      form: {}
     }
   },
   created() {
     let res = this.getDate()
   },
+  computed: {
+    tableForm() {
+      return this.cardTable[this.currentIndex] || {}
+    }
+  },
   methods: {
+    // 上一页
+    lastPage() {
+      if (this.currentIndex <= 0) {
+        this.currentIndex = 0
+        return
+      }
+      this.currentIndex--
+      // this.openDetails(this.isPromptBox)
+    },
+    // 下一页
+     nextPage() {
+      if (this.currentIndex + 1 >= this.cardTable.length) {
+        this.currentIndex = this.cardTable.length - 1
+        return
+      }
+      this.currentIndex++
+      // this.openDetails(this.isPromptBox)
+    },
+    // 详情导航选择事件
+    handleSelect(key, keyPath) {
+      this.activeIndex = key
+      console.log(key, keyPath)
+      console.log(this.activeIndex)
+    },
+    // 详情
+    async openDetails(row) {
+      console.log("详情触发");
+      this.isPromptBox = {...row}
+      let res = await histroyPipeData({ expNo: row.expNo })
+      this.detailsTitle = {
+        expNo: row.expNo,
+        pipeType: row.pipeType
+      }
+      this.cardTable = res.result
+      this.dialogFormVisible = true
+    },
     // 重置
     async resetBtn() {
       this.pagination = { current: 1, size: 30 }
@@ -128,7 +332,7 @@ export default {
         funcClass: '',
         structClass: ''
       }
-        await this.getDate()
+      await this.getDate()
     },
     // 搜索
     searchApi() {
@@ -255,7 +459,6 @@ export default {
     }
   }
 
- 
   .hd-input {
     /deep/.el-input__inner {
       width: 70%;
@@ -270,6 +473,85 @@ export default {
       position: absolute;
       top: 0;
       left: 72%;
+    }
+  }
+
+  // 详情卡片的样式
+  .detailsCrad {
+    position: fixed;
+    top: 100px;
+    right: 45px;
+    z-index: 9;
+    .clearfix:before,
+    .clearfix:after {
+      display: table;
+      content: '';
+    }
+    .clearfix:after {
+      clear: both;
+    }
+
+    /deep/ .box-card {
+      width: 500px;
+      max-height: 80vh;
+      .el-card__header {
+        height: 48px;
+        color: #fff;
+        background-color: #2d74e7;
+      }
+      .el-card__body {
+        padding: 0;
+        .el-menu-item {
+          height: 45px;
+        }
+      }
+      .content {
+        /deep/ .content-info {
+          overflow-y: scroll;
+          max-height: 545px;
+          padding: 10px 20px;
+          .el-textarea__inner,
+          .el-input__inner {
+            color: #666;
+          }
+          .detailsTitle {
+            position: relative;
+            font-size: 16px;
+            padding: 5px 0;
+            box-sizing: border-box;
+          }
+          .detailsTitle::after {
+            position: absolute;
+            top: 5px;
+            left: -10px;
+            content: '';
+            width: 4px;
+            height: 65%;
+            background-color: #2d74e7;
+          }
+        }
+      }
+      .table-content {
+        padding: 15px;
+        .content-info {
+          font-size: 12px;
+          display: flex;
+          justify-content: space-between;
+          .detailsTitle {
+            position: relative;
+            padding-left: 10px;
+            box-sizing: border-box;
+          }
+          .detailsTitle::after {
+            position: absolute;
+            left: 0;
+            content: '';
+            width: 4px;
+            height: 100%;
+            background-color: #2d74e7;
+          }
+        }
+      }
     }
   }
 }

@@ -16,10 +16,12 @@ declare module 'axios' {
     code: number
     message: string
   }
+  
 }
 // 创建axios实例
 // export const IP = 'http://192.168.2.231:1111'
 export const IP = 'http://117.174.10.73:1114'
+// export const IP = 'http://localhost:1111'
 // export const IP = 'http://192.168.2.78:1111'
 // export const IP = 'http://192.168.2.78:1111'
 // export const IP = 'http://117.174.10.73:1114'
