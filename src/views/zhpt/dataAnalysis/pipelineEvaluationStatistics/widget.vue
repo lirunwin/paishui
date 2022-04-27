@@ -66,6 +66,7 @@ require('echarts/lib/chart/pie')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 export default {
+  props: ["data"],
   data() {
     return {
       radio: '1', // 单选框的值
@@ -98,15 +99,21 @@ export default {
         ],
         workUnit: [{ max: 255, message: '内容不能超过255个字符串', trigger: 'blur' }],
         projectIntroduction: [{ max: 1000, message: '内容不能超过1000个字符串', trigger: 'blur' }]
-      }
+      },
+      value1: ""
     }
   },
   mounted() {
     this.initData()
+    this.data.that.showLegend("pipelineEvaluate", true)
+  },
+  destroyed () {
+    this.data.that.showLegend("pipelineEvaluate", false)
+    this.data.that.clearMap()
   },
   beforeCreate() {
     console.log('销毁echatrs')
-    document.getElementById('mainB').removeAttribute('_echarts_instance_')
+    // document.getElementById('mainB').removeAttribute('_echarts_instance_')
   },
   methods: {
     //初始化数据(饼状图)
@@ -186,11 +193,27 @@ export default {
       }
     }
   },
+  computed: {
+    mapExtent () {
+      return this.$store.state.gis.mapExtent
+    }
+  },
   watch: {
     radio: function (newValue, old) {
       if (old != newValue) {
         this.initData()
       }
+    },
+    mapExtent: {
+      handler (nv, ov) {
+        if (this.data.mapView.getView().getZoom() > 17) {
+          this.data.that.queryForExtent(nv)
+        } else { // 在地图界别较小时，移除管网
+          this.data.that.clearMap()
+        }
+      },
+      deep: true,
+      immediate: true
     }
   }
 }

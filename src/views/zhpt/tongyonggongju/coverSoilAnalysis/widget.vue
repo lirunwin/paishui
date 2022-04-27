@@ -91,22 +91,31 @@ export default {
   computed: {
   },
   watch: {
+    '$store.state.map.P_editableTabsValue': function (val, oldVal) {
+      if (val !== "coverSoilAnalysis") this.removeAll()
+      else this.init()
+    },
   },
   mounted() {
     this.loadChart()
     this.rootPage = this.data.that
     this.mapView = this.data.mapView
-    this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
-    this.mapView.addLayer(this.vectorLayer)
+    this.init()
   },
   destroyed() {
-    this.rootPage.$refs.popupWindow.closePopup() // 清除地图视图点击选择的要素,关闭弹窗
-    this.mapClickEvent && unByKey(this.mapClickEvent)
-    this.vectorLayer && this.vectorLayer.getSource().clear()
-    this.mapView.removeLayer(this.vectorLayer)
-    this.mapClickEvent = this.vectorLayer = null
+    this.remveAll()
   },
   methods: {
+    init () {
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
+      this.mapView.addLayer(this.vectorLayer)
+    },
+    remveAll () {
+      this.rootPage.$refs.popupWindow.closePopup() // 清除地图视图点击选择的要素,关闭弹窗
+      this.mapClickEvent && unByKey(this.mapClickEvent)
+      this.mapView.removeLayer(this.vectorLayer)
+      this.mapClickEvent = this.vectorLayer = null
+    },
     // 选择管线
     selectPipe() {
       this.clearResult()

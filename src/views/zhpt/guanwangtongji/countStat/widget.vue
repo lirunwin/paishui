@@ -168,7 +168,6 @@ export default {
   },
   watch: {
 
-
     queText(nv,ov){
       if(this.queText.length == 0 ) this.queTextName = '';
     },
@@ -196,7 +195,6 @@ export default {
       })
     },
 
-
     // spaceSetting(e) {
     //   if(e === '') return this.printRect.geometry = { type: 'polygon', rings: [[[0,0]]], spatialReference: this.mapView.spatialReference } 
     //   var rings = this.spaceSettings[this.space][e].rings
@@ -218,6 +216,7 @@ export default {
       }
     },
     sidePanelOn(newTab, oldTab) {
+      if (newTab !== "countStat") this.removeAll()
     }
   },
   methods: {
@@ -498,154 +497,24 @@ export default {
         view.container.style.cursor = ''
       })
     },
-    analysis() {
-      var statField = 'OBJECTID'
-      if(this.layerSelectList.length == 0) return this.$message.error('请选择统计图层')
-      if(['TF_JSQT_DISTRICT_B', 'TF_JSJS_REGION_B'].indexOf(this.space) > -1 && this.spaceSetting.length < 1){
-        return this.$message.error('请选择' + (this.space === 'TF_JSQT_DISTRICT_B' ? '行政区':'片区'))
-      }
-      // if(this.attSelectList.length == 0) return this.$message.error('请选择统计字段')
-      this.analysisDisable = true
-      $.ajax({
-        url: appconfig.gisResource.statistic.config[0].url,
-        type: 'POST',
-        data:  {
-          usertoken: this.usertoken,
-          layerids: JSON.stringify(this.layerSelectList.map((e) => e.id)),
-          group_fields: JSON.stringify(this.attSelectList.map((e) => e.value)),
-          statistic_field: statField,
-          statistic_type: 1,
-          where: this.queText,
-          geometry: this.space == 'all' ? '' : JSON.stringify(this.printRect.geometry.toJSON()),
-          f: "pjson"
-        },
-        dataType: "json",
-        success: (data) => {
-          this.analysisDisable = false
-          if(data.code == 10000) {
-            data = data.result.rows
-            var tabs = []
-            var tables = []
-            var isOneValue = []
-            for(let i=0,ii=data.length;i<ii;i++) {
-              var rows = data[i].rows
-              let dataTable = { x: [], y: []}
-              var tableColumns = []
-              var tableRows = []
-              var OneValue = rows.length == 1
-              var sit = 0, firstC
-              for(let j=0,jj=rows.length;j<jj;j++) {
-                var dataX = [], dataY = 0
-                var row = rows[j]
-                var tableRow = {}
-                for(var fie in row) {
-                  var t = (row[fie] || '').toString()
-                  if(t !== '') OneValue = false
-                  if(fie == statField) {
-                    dataY = row[fie]
-                    tableRow['length'] = t.replace(/(\s*$)/g,"") || '（空值）'
-                  }
-                  else {
-                    if(!firstC) firstC = fie
-                    dataX.push(t.replace(/(\s*$)/g,""))
-                    tableRow[fie] = t.replace(/(\s*$)/g,"") || '（空值）'
-                  }
-                  if(j == 0) tableColumns.push(fie == statField ? {value: 'length', name: '数量（个）'} : {value: fie, name: this.attListIndex[fie]})                  
-                }
-                tableRows.push(tableRow)
-                dataX = dataX.join(',')
-                dataTable.x.push(dataX)
-                dataTable.y.push(dataY)
-                sit += parseInt(dataY)
-              }
-              var oneRow = { 'length': sit }
-              if(!firstC) oneRow['length'] = '合计：' + oneRow['length'] 
-              else oneRow[firstC] = '合计'
-              tableRows.splice(0, 0, oneRow)
-              if(OneValue) {
-                isOneValue.push(data[i].layername)
-                continue
-              }
-              tabs.push({ id: data[i].layerid, name: data[i].layername, data: dataTable, option: {
-                title: { text: '数量统计', subtext: this.attSelectList.map((e) => e.name).join('、'), left: 'center' },
-                grid:{ left:'45px', right:'10px' },
-                tooltip: { trigger: 'axis' }, color: 'rgb(19, 66, 151)',
-                xAxis: { type: 'category', data: dataTable.x }, yAxis: { name: '数量(个)', type: 'value' },
-                dataZoom: [{ minSpan:1, type: 'slider' }],
-                toolbox: { feature: { saveAsImage: {} } },
-                series: [{ data: dataTable.y, type: 'bar', label: { show: true, position: 'top' }}]
-              }}) 
-              tables.push({ id: data[i].layerid, name: data[i].layername, columns: tableColumns, rows: tableRows})
-            }
-            if(isOneValue.length > 0) {
-              this.$message.error(isOneValue.join('、') + ' 无查询结果')
-              if(isOneValue.length == data.length) return
-            }
-            var showResult = this.$store.state.map.analysisResult
-            var [showBoxs, showTables] = showResult ? [showResult.box, showResult.table] : []
-            if(showBoxs) {
-              showBoxs.clear()
-              this.$nextTick(() => {
-                var firstI = showBoxs.tabs.length
-                for(let i=0,ii=tabs.length;i<ii;i++) {
-                  showBoxs.tabs.push({ label:tabs[i].name, index: (firstI++).toString(), option: tabs[i].option })
-                }
-                showBoxs.activeName = (firstI - tabs.length).toString()
-              })
-            } else {              
-              this.$store.dispatch('map/changeMethod', {
-                pathId: 'analysisBox',
-                widgetid: 'FloatPanel',
-                label: '分析结果统计',
-                param: { that: this, title: '统计结果图', tabs: tabs }
-              })
-            }
-            if(showTables) {
-              showTables.clear()
-              this.$nextTick(() => {
-                var firstI = showTables.tabs.length
-                for(let i=0,ii=tables.length;i<ii;i++) {                
-                  showTables.tabs.push({ label:tables[i].name, index: (firstI++).toString(), columns: tables[i].columns, rows: tables[i].rows, })
-                }
-                showTables.activeName = (firstI - tables.length).toString()
-              })
-            } else {
-              this.$store.dispatch('map/changeMethod', {
-                pathId: 'analysisResult',
-                widgetid: 'HalfPanel',
-                label: '统计结果表',
-                param: { that: this, title: '数量统计', tables: tables }
-              })
-            }
-          } else {
-            var e = data.error
-            this.$message.error(
-              e.indexOf('Invalid SQL syntax') > -1 ? 
-              '查询语句错误' :
-              '无查询结果'
-            )
-            console.log(e)
-          }
-        },
-        error: (error) => { console.log(error) }
-      })
+    removeAll () {
+      this.drawer && this.drawer.end()
+      //销毁浮动框
+      this.$store.dispatch('map/handelClose', {
+        box:'FloatPanel',
+        pathId: 'analysisBox',
+        widgetid: 'FloatPanel',
+      });
+      //销毁底部窗口
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'analysisResult',
+        widgetid: 'HalfPanel',
+      });
     }
   },
   destroyed() {    
-    this.drawer && this.drawer.end()
-    this.mapView.graphics.remove(this.printRect);
-    //销毁所有浮动框
-    this.$store.dispatch('map/handelClose', {
-      box:'FloatPanel',
-      pathId: 'analysisBox',
-      widgetid: 'FloatPanel',
-    });
-    //销毁底部窗口
-     this.$store.dispatch('map/handelClose', {
-      box:'HalfPanel',
-      pathId: 'analysisResult',
-      widgetid: 'HalfPanel',
-    });
+    this.removeAll()
   }
 }
 </script>

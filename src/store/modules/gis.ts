@@ -1,6 +1,7 @@
 const state = {
   view: null,
-  evts: []
+  evts: [],
+  mapExtent: []
 }
 
 const mutations = {

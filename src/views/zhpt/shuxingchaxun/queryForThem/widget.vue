@@ -86,7 +86,7 @@ import { Feature } from 'ol';
 import { boundingExtent } from 'ol/extent';
 
 export default {
-  name: "QueryForSQL",
+  name: "queryForThem",
   components: { tfLegend },
   props: { data: Object },
   data() {
@@ -132,7 +132,7 @@ export default {
       })
     },
     sidePanelOn(newTab, oldTab) {
-
+      if (newTab !== "queryForThem") this.clearAll()
     },
     queText(newValue,oldValue){
       if(newValue.length < oldValue.length || newValue=="") this.queTextName = '';
@@ -221,7 +221,13 @@ export default {
       this.layerFix = []
       this.queText = ''
       this.queryLayer && this.mapView.removeLayer(this.queryLayer)
-      this.queryLayer = null
+      this.drawer && this.drawer.end()
+      this.drawer = this.queryLayer = null
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+      });
     },
     
     /**
@@ -317,14 +323,7 @@ export default {
     }
   },
   destroyed() {
-    this.drawer && this.drawer.end()
-    this.queryLayer && this.mapView.removeLayer(this.queryLayer)
-    this.drawer = this.queryLayer = null
-    this.$store.dispatch('map/handelClose', {
-      box:'HalfPanel',
-      pathId: 'queryResultMore',
-      widgetid: 'HalfPanel',
-    });
+    this.clearAll()
   }
 };
 </script>

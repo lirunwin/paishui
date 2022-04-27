@@ -163,7 +163,13 @@ export default {
   },
   watch: {
     sidePanelOn(newTab, oldTab) {
-      
+      if (newTab !== "themMap") {
+        this.drawer && this.drawer.end()
+        this.drawer = null
+        this.themLayer && this.mapView.removeLayer(this.themLayer)
+      } else {
+
+      }
     },
     layerId(e) {
       if(!e) return
@@ -286,23 +292,6 @@ export default {
         this.printRect.geometry = { type: 'polygon', rings: [[[0, 0]]], spatialReference: this.mapView.spatialReference } 
       }
     },
-    drawRect() {
-      var view = this.mapView
-      var sp = view.spatialReference
-      var draw = view.TF_draw
-      if(draw.activeAction) draw.reset()
-      view.TF_drawPolygon(() => { view.container.style.cursor = 'crosshair'}, () => {}, 
-      (evt) => {
-        var v = evt.vertices
-        if (v.length > 1)
-          this.printRect.geometry = {
-            type: 'polygon', rings: v, spatialReference: sp
-          } 
-      }, () => {
-        draw.reset()
-        view.container.style.cursor = ''
-      })
-    },
 
     addText(text, length, isField) {
       var myField = this.$refs.textBox.$el.children[0]
@@ -394,7 +383,7 @@ export default {
       }
     },
 
-    // TODO 上传专题图
+    // 上传专题图
     uploadThemLayer (limitFeature, sqlFilterStr) {
       let range = limitFeature ? limitFeature.getGeometry().getCoordinates() : appconfig.initCenter
       let params = {
@@ -415,7 +404,6 @@ export default {
     updateThemLayerTable () {
       let  params = { size: this.pageSize, current: this.currentPage }
       getThemLayer(params).then(res => {
-        console.log("取得数据")
         if (res.code === 1) {
           this.total = res.result.total
           this.themLayerData = res.result.records
@@ -491,7 +479,6 @@ export default {
       
     },
     deleteFeas(row, index) {
-      console.log("删除专题图")
       if(row.id && row.id > -1) {
         this.$confirm('确定删除"' + row.name + '"图层信息', '提示',
         { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }).then(_ => {

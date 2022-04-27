@@ -112,27 +112,38 @@ export default {
         })
         this.drawer.start()
       }
+    },
+    '$store.state.map.P_editableTabsValue': function (val, oldVal) {
+      if (val !== 'horizontalDistanceAnalysis') this.removeAll()
+      else this.init()
     }
   },
   mounted() {
     this.map = this.data.mapView
-    this.vectorLayer = new VectorLayer({
-      source: new VectorSource(),
-      style: comSymbol.getAllStyle(2, "f00", 5, '#00FFFF', 'rgba(255,255,255,0.3)')
-    })
-    this.map.addLayer(this.vectorLayer)
-    this.lightLayer = new VectorLayer({
-      source: new VectorSource(),
-      style: comSymbol.getLineStyle(5, "#f00")
-    })
-    this.map.addLayer(this.lightLayer)
+    this.int()
   },
   destroyed() {
-    this.vectorLayer && this.map.removeLayer(this.vectorLayer)
-    this.drawer && this.drawer.end()
-    this.lightLayer && this.map.removeLayer(this.lightLayer)
+    this.removeAll()
   },
   methods: {
+    init () {
+      this.vectorLayer = new VectorLayer({
+        source: new VectorSource(),
+        style: comSymbol.getAllStyle(2, "f00", 5, '#00FFFF', 'rgba(255,255,255,0.3)')
+      })
+      this.map.addLayer(this.vectorLayer)
+      this.lightLayer = new VectorLayer({
+        source: new VectorSource(),
+        style: comSymbol.getLineStyle(5, "#f00")
+      })
+      this.map.addLayer(this.lightLayer)
+    },
+    removeAll (){
+      this.vectorLayer && this.map.removeLayer(this.vectorLayer)
+      this.drawer && this.drawer.end()
+      this.lightLayer && this.map.removeLayer(this.lightLayer)
+      this.drawer = this.vectorLayer = this.lightLayer = null
+    },
     select () {
       this.drawer && this.drawer.end()
       this.drawer = new iDraw(this.map, this.drawType, {
@@ -270,7 +281,6 @@ export default {
       this.lightLayer.getSource().clear()
       this.drawType = ""
     }
-
   }
 }
 </script>

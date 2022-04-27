@@ -1,4 +1,5 @@
 export const LegendConfig = {
+    // 管道评估
     pipelineEvaluate: [
         { type: "rect", color: "#f00", label: "立即处理", showCheckBox: false },
         { type: "rect", color: "#ff0", label: "制定计划", showCheckBox: false },

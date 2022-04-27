@@ -133,16 +133,11 @@ export default {
       mapDiv: undefined,
       antP: undefined,
       mapView: undefined,
-      mapView2: undefined,
       showImageBase: false,
       showVectorBase: true,
       showLabel: true,
       baseMaps: undefined,
       baseMapsNum: [0, 0, 0],
-      defaultProps: {
-        children: 'children',
-        label: 'label'
-      },
       followExtentC: true,
       followExtentZ: true,
       layerTable: [],
