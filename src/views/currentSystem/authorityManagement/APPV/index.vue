@@ -109,7 +109,7 @@
         </el-row>
         <el-row class="info-row">
           <el-col class="info-col" :span="12">
-            <span>状态:</span><span>{{ detailInfo.releasestatus === '1' ? '未发布' : '已发布' }}</span>
+            <span>状态:</span><span>{{ detailInfo.releasestatus === '2' ? '已发布' : '未发布' }}</span>
           </el-col>
           <el-col class="info-col" :span="12">
             <span>发布人:</span><span>{{ detailInfo.releaserName }}</span>
@@ -206,7 +206,7 @@ import { recordList, upLoadFiles, deleteRecord, publishRecord } from '@/api/base
 export default class APPV extends Vue {
   pagination = { current: 1, size: 30 } // 分页参数信息
   total = 1
-  appClassfication = ''
+  appClassfication = '2'
   publishStatus = ''
   publishTime = {
     startTime: '',
@@ -230,10 +230,10 @@ export default class APPV extends Vue {
   }
 
   options1 = [
-    {
-      id: '1',
-      name: 'APP'
-    },
+    // {
+    //   id: '1',
+    //   name: 'APP'
+    // },
     {
       id: '2',
       name: '前端平台'
@@ -331,7 +331,7 @@ export default class APPV extends Vue {
   }
   get deleteDisabled() {
     const selAry = this.multipleSelection
-    const newAry = selAry.filter((item) => item.releasestatus === '1')
+    const newAry = selAry.filter((item) => item.releasestatus !== '2')
 
     const enableFlag = selAry.length > 0 && newAry.length === selAry.length
 
@@ -382,11 +382,10 @@ export default class APPV extends Vue {
   }
   // 上传文件之前进行文件类型验证
   verificationFileType(data) {
-    debugger
     // this.fileList.push(data.raw);
     if (
       data.raw.type === 'text/plain' ||
-      data.raw.type === 'application/vnd.android.package-archive' ||
+      // data.raw.type === 'application/vnd.android.package-archive' ||
       data.raw.type === 'application/x-zip-compressed'
     ) {
       this.fileList.push(data.raw)
