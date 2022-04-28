@@ -1,0 +1,70 @@
+{
+    "column":[
+        {
+            "prop":"expNo",
+            "label":"排水户编号"
+        },
+        {
+            "prop":"sortName",
+            "label":"排水户类别"
+        },
+        {
+            "prop":"address",
+            "label":"地址"
+        },
+        {
+            "prop":"sort",
+            "label":"排水户分类"
+        },
+        {
+            "prop":"waterDischargeQuantity",
+            "label":"总排水量"
+        },
+        {
+            "prop":"codeid",
+            "label":"组织机构代码"
+        },
+        {
+            "prop":"representative",
+            "label":"法人代表"
+        },
+        {
+            "prop":"tel",
+            "label":"联系电话"
+        },
+        {
+            "prop":"manager",
+            "label":"主管单位"
+        },
+        {
+            "prop":"licenceId",
+            "label":"排水许可证编号"
+        },
+        {
+            "prop":"business",
+            "label":"主要业务活动"
+        },
+        {
+            "prop":"pollutantName",
+            "label":"主要污染物名称"
+        },
+        {
+            "prop":"prjName",
+            "label":"项目名称"
+        },
+        {
+            "prop":"updatetime",
+            "label":"更新时间"
+        },
+        {
+            "label": "操作",
+            "slotScoped": "action",
+            "width":150,
+            "acts": [
+                { "emitWay": "modify", "operation": "修改", "color": "blue" },
+                {"emitWay": "delete", "operation": "删除", "color": "blue" },
+                {"emitWay": "detail", "operation": "详情", "color": "blue" }
+            ]
+        }
+    ]
+}

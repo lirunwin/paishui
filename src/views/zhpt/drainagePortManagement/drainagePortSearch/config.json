@@ -1,63 +1,63 @@
 {
     "column":[
         {
-            "prop":"date",
+            "prop":"expNo",
             "label":"排放口编号"
         },
         {
-            "prop":"date",
+            "prop":"outfalltype",
             "label":"排放口类别"
         },
         {
-            "prop":"date",
+            "prop":"outfallshape",
             "label":"排放口径"
         },
         {
-            "prop":"date",
+            "prop":"sewagesystemId",
             "label":"所在污水分区"
         },
         {
-            "prop":"date",
+            "prop":"stormsystemId",
             "label":"所在雨水分区"
         },
         {
-            "prop":"date",
+            "prop":"receivewater",
             "label":"受纳水体"
         },
         {
-            "prop":"date",
+            "prop":"address",
             "label":"地址"
         },
         {
-            "prop":"date",
+            "prop":"datasource",
             "label":"数据来源"
         },
         {
-            "prop":"date",
+            "prop":"visibility",
             "label":"可见性"
         },
         {
-            "prop":"date",
+            "prop":"type",
             "label":"管点类别"
         },
         {
-            "prop":"date",
+            "prop":"status",
             "label":"现状"
         },
         {
-            "prop":"date",
+            "prop":"belong",
             "label":"权属单位"
         },
         {
-            "prop":"date",
+            "prop":"sunit",
             "label":"探测单位"
         },
         {
-            "prop":"date",
+            "prop":"prjName",
             "label":"项目名称"
         },
         {
-            "prop":"date",
+            "prop":"updateTime",
             "label":"更新时间"
         }
     ]
