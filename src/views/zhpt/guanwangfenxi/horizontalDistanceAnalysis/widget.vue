@@ -120,7 +120,7 @@ export default {
   },
   mounted() {
     this.map = this.data.mapView
-    this.int()
+    this.init()
   },
   destroyed() {
     this.removeAll()

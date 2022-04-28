@@ -425,7 +425,7 @@ export default {
     /**清除结果 */
     clearResult() {
       this.rootPage.$refs.popupWindow.closePopup()
-      this.vectorLayer.getSource().clear()
+      this.vectorLayer && this.vectorLayer.getSource().clear()
       Object.assign(this.$data.selectPipelineInfo, this.$options.data().selectPipelineInfo) // 清空选择管线信息
       this.distence = 50
       this.queryResult = []

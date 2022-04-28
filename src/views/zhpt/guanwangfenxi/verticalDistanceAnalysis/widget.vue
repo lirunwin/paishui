@@ -93,7 +93,8 @@ export default {
       drawer: null,
       queryFeature: null,
       detailData: [],
-      layerData: []
+      layerData: [],
+      map: null
     }
   },
   computed: {
@@ -119,6 +120,7 @@ export default {
     }
   },
   mounted() {
+    this.map = this.data.mapView
     this.init()
   },
   destroyed() {
