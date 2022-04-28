@@ -287,8 +287,7 @@ div:focus {
   overflow: hidden auto;
 }
 
-.el-table__body-wrapper,
-.el-dialog__wrapper.dialog .el-dialog__body {
+@mixin base-scroll-bar {
   -webkit-overflow-scrolling: touch;
   &::-webkit-scrollbar {
     width: 10px;
@@ -304,4 +303,13 @@ div:focus {
     background: rgba(#aaa, 0.4);
     border-radius: 2px;
   }
+
+  &::-webkit-scrollbar-track-piece {
+    background: rgba(#aaa, 0.4);
+  }
+}
+
+.el-table__body-wrapper,
+.el-dialog__wrapper.dialog .el-dialog__body {
+  @include base-scroll-bar();
 }

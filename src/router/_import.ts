@@ -77,7 +77,11 @@ const map = {
   // 指标实时监测
   '/monitoring/monitor/points': () => import('@/views/monitoring/monitor/points/index.vue'),
   // 站点实时监测
-  '/monitoring/monitor/sites': () => import('@/views/monitoring/monitor/sites/index.vue')
+  '/monitoring/monitor/sites': () => import('@/views/monitoring/monitor/sites/index.vue'),
+  '/monitoring/report/detail': () => import('@/views/monitoring/report/detail/index.vue'),
+  '/monitoring/report/points': () => import('@/views/monitoring/report/points/index.vue'),
+  '/monitoring/report/sites': () => import('@/views/monitoring/report/sites/index.vue'),
+  '/monitoring/report/warnings': () => import('@/views/monitoring/report/warnings/index.vue')
 
   // 设施评估
   // 管道检测数据管理

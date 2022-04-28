@@ -98,7 +98,8 @@ module.exports = {
         $: 'jquery',
         jQuery: 'jquery',
         'windows.jQuery': 'jquery',
-        'vue-moment': 'vue-moment'
+        'vue-moment': 'vue-moment',
+        'vue-echarts': 'vue-echarts'
       })
     ]
   },
@@ -161,6 +162,16 @@ module.exports = {
             name: 'chunk-elementUI', // 将elementUI拆分为一个包
             priority: 20, // 重量必须大于libs和app，否则将打包成libs或app
             test: /[\\/]node_modules[\\/]_?element-ui(.*)/ // 为了适应cnpm
+          },
+          monent: {
+            name: 'chunk-moment',
+            priority: 20,
+            test: /[\\/]node_modules[\\/]_?vue-moment(.*)/
+          },
+          echarts: {
+            name: 'chunk-echarts',
+            priority: 20,
+            test: /[\\/]node_modules[\\/]_?vue-echarts(.*)/
           },
           commons: {
             name: 'chunk-commons',

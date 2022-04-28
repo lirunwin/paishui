@@ -3,6 +3,8 @@ import Print from 'vue-print-nb'
 
 import 'normalize.css/normalize.css'
 
+import echarts from 'echarts'
+import ECharts from 'vue-echarts'
 import ElementUI from 'element-ui'
 import '../theme/index.css'
 import 'element-ui/lib/theme-chalk/index.css'
@@ -26,12 +28,11 @@ import Moment from 'vue-moment'
 // Vue.use(htmlToPdf)
 // dialog拖动
 import './utils/dialog'
-import '@/assets/font/al_font/iconfont.css'// 阿里的icon图标
-import '@/assets/font/other_font/iconfont.css'//
+import '@/assets/font/al_font/iconfont.css' // 阿里的icon图标
+import '@/assets/font/other_font/iconfont.css' //
 // 全局修改默认配置，点击空白处不能关闭弹窗
 // @ts-ignore
 ElementUI.Dialog.props.closeOnClickModal.default = false
-import echarts from 'echarts'
 
 // declare module 'vue/types/vue'{
 //   interface Vue{
@@ -49,8 +50,10 @@ import echarts from 'echarts'
 //     $comMethod:dStore.utils.comMethod
 //   }
 // }
-import JsonExcel from "vue-json-excel";
-Vue.component("downloadExcel", JsonExcel);
+
+// @ts-ignore
+import JsonExcel from 'vue-json-excel'
+Vue.component('downloadExcel', JsonExcel)
 
 Vue.prototype.$echarts = echarts
 Vue.prototype.$comMethod = comMethod
@@ -66,16 +69,16 @@ Vue.use(BaiduMap, {
 // })
 
 // 全局引入moment
-Vue.prototype.$moment = Moment//挂载Vue上
+Vue.prototype.$moment = Moment //挂载Vue上
 
 /**
-  * select 下拉框 底部触发指令
+ * select 下拉框 底部触发指令
  */
 Vue.directive('selectLoadMore', {
   bind(el, binding) {
     // 获取element-ui定义好的scroll盒子
     const SELECTWRAP_DOM = el.querySelector('.el-select-dropdown .el-select-dropdown__wrap')
-    SELECTWRAP_DOM.addEventListener('scroll', function () {
+    SELECTWRAP_DOM.addEventListener('scroll', function() {
       if (this.scrollHeight - this.scrollTop < this.clientHeight + 1) {
         binding.value()
       }
@@ -94,6 +97,7 @@ Vue.directive('selectLoadMore', {
 Vue.use(ElementUI)
 Vue.use(Print)
 Vue.use(<any>Moment)
+Vue.component('v-chart', ECharts)
 
 Vue.config.productionTip = false
 
@@ -101,5 +105,5 @@ new Vue({
   el: '#app',
   router,
   store,
-  render: h => h(App)
+  render: (h) => h(App)
 })
