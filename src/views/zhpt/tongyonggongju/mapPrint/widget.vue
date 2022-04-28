@@ -129,21 +129,22 @@ export default {
     unByKey(this.mapViewChangeEvent) // 销毁视图变化监听
   },
   methods: {
-
+    // 初始化地图中心点比例尺
     initMapCenterAndScale () {
       let that = this
       let map = that.data.mapView;
-        reset()
-        this.mapViewChangeEvent = map.on('moveend', res => reset);
-        function reset () {
-          let center = map.getView().getCenter()
-            that.mapPrintPraram.mapCenterPoint = center[0].toFixed(6) + '，' + center[1].toFixed(6)
-            that.mapPrintPraram.zoom = map.getView().getZoom()
-            // 分辨率
-            const resolution = map.getView().getResolution()
-            // 计算比例尺
-            that.mapPrintPraram.exportScale = (3779.5 * resolution).toFixed(6)
-            that.mapPrintPraram.scale = (3779.5 * resolution * 2).toFixed(6)
+      reset()
+      this.mapViewChangeEvent = map.on('moveend', res => reset);
+
+      function reset () {
+        let center = map.getView().getCenter()
+        that.mapPrintPraram.mapCenterPoint = center[0].toFixed(6) + '，' + center[1].toFixed(6)
+        that.mapPrintPraram.zoom = map.getView().getZoom()
+        // 分辨率
+        const resolution = map.getView().getResolution()
+        // 计算比例尺
+        that.mapPrintPraram.exportScale = (3779.5 * resolution).toFixed(6)
+        that.mapPrintPraram.scale = (3779.5 * resolution * 2).toFixed(6)
       }
     },
     handleChange(val) {

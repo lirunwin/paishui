@@ -1,5 +1,4 @@
 import { SuperMap, NetworkAnalystService } from '@supermap/iclient-ol';
-import $ from 'jquery'
 
 // 网络分析
 export default class iNetAnalysis {

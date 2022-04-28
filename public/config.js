@@ -55,9 +55,34 @@ export const appconfig = {
         ]
       },
       'layers': [
+        // {
+        //   'parentname': "底图", 
+        //   'name': '矢量底图',
+        //   'type': 'tdtlayer',
+        //   'url': 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
+        //   'visible': true,
+        //   "id": 2
+        // },
+        // {
+        //   'parentname': "底图", 
+        //   'name': '影像底图',
+        //   'type': 'tdtlayer',
+        //   'url': 'http://t3.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=',
+        //   'visible': false,
+        //   "id": 3
+        // },
+        // {
+        //   'parentname': "底图", 
+        //   'name': '标注底图',
+        //   'type': 'tdtlayer',
+        //   'url': 'http://t4.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
+        //   'visible': true,
+        //   "id": 4
+        // },
         {
           'parentname': '底图',
-          'name': '矢量底图', 
+          'name': '矢量底图',
+          'type': 'smlayer',
           'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_vec',
           'visible': true,
           'id': 2
@@ -66,23 +91,26 @@ export const appconfig = {
           'parentname': '底图',
           'name': '影像底图', 
           'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_img',
+          'type': 'smlayer',
           'visible': false,
           'id': 3
         },
         { 
           'parentname': '管线',
-          'name': '广电线缆', 
+          'name': '广电线缆',
+          'type': 'smlayer',
           'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/广电线缆',
           'visible': true,
-          'id': 4
+          'id': 5
         },
         { 
           'parentname': '管线',
-          'name': '给水管线', 
+          'name': '给水管线',
+          'type': 'smlayer',
           'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/给水管线',
           'visible': true,
           'legendUrl': 'http://117.174.10.73:8090/iserver/services/map-kxcgw/rest/maps/%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF/layers/%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF@kxcgw.1@@%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF/legend',
-          'id': 5
+          'id': 6
         }
       ]
     },
@@ -91,7 +119,7 @@ export const appconfig = {
       'groupname': '天地图在线矢量服务',
       'type': 'webTiled',
       'config': [
-        { 'name': '矢量地图', 'url': 'https://iserver.supermap.io/iserver/services/map-world/rest/maps/World' }
+        // { 'name': '矢量地图', 'url': 'https://iserver.supermap.io/iserver/services/map-world/rest/maps/World' }
         // { 'name': '矢量地图', 'url': 'http://{subDomain}.tianditu.com/DataServer?T=vec_c&x={col}&y={row}&l={level}&tk=' }
       ]
     },

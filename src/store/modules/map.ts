@@ -90,7 +90,7 @@ const mutations = {
     if (state.fullPanels.length > 0) { state.fullP_editableTabsValue = state.fullPanels[state.fullPanels.length - 1].com }
   },
   DEL_BOX: (state:dStore.map.state, data) => {
-    state.halfPanels = delOne(state.halfPanels, data)
+    state.halfPanels = delOne(state.halfPanels, data.pathId)
     if (state.halfPanels.length > 0) { state.halfP_editableTabsValue = state.halfPanels[state.halfPanels.length - 1].com }
   },
   DEL_FLOAT: (state:dStore.map.state, data) => {

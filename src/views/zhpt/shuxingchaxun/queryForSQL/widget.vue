@@ -85,7 +85,7 @@ import { getThemLayer, addThemLayer, deleteThemLayer } from '@/api/mainMap/themM
 import { SuperMap, FieldService, FeatureService, FieldParameters } from '@supermap/iclient-ol';
 
 export default {
-  name: "QueryForSQL",
+  name: "queryForSQL",
   components: { tfLegend },
   props: { data: Object },
   data() {
@@ -131,7 +131,7 @@ export default {
       })
     },
     sidePanelOn(newTab, oldTab) {
-
+      if (newTab !== "queryForSQL") this.clearAll()
     },
     queText(newValue,oldValue){
       if(newValue.length < oldValue.length || newValue=="") this.queTextName = '';
@@ -212,7 +212,6 @@ export default {
     clearRect: function () {
       this.drawer && this.drawer.end()
     },
-
     clearAll() {
       this.layerId = ''
       this.analysisAtt = []
@@ -220,6 +219,12 @@ export default {
       this.queText = ''
       this.queryLayer && this.mapView.removeLayer(this.queryLayer)
       this.queryLayer = null
+      this.drawer && this.drawer.end()
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+      });
     },
     
     /**
@@ -407,13 +412,7 @@ export default {
     },
   },
   destroyed() {
-    this.drawer && this.drawer.end()
-    this.drawer = null
-     this.$store.dispatch('map/handelClose', {
-      box:'HalfPanel',
-      pathId: 'queryResultMore',
-      widgetid: 'HalfPanel',
-    });
+    this.clearAll()
   }
 };
 </script>

@@ -97,9 +97,7 @@ export default {
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
         if (val !== "facilitySearch") {
-            this.drawer && this.drawer.end()
-            this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
-            this.lightLayer && this.mapView.removeLayer(this.lightLayer)
+            this.removeAll()
         } else {
             this.init()
         }
@@ -114,27 +112,30 @@ export default {
     }
   },
   destroyed() {
-    this.drawer && this.drawer.end()
-    this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
-    this.lightLayer && this.mapView.removeLayer(this.lightLayer)
-    this.drawer = this.vectorLayer = this.lightLayer = null
-    this.$store.dispatch('map/handelClose', {
-      box:'HalfPanel',
-      pathId: 'queryResultMore',
-      widgetid: 'HalfPanel',
-    });
+    this.removeAll()
   },
   mounted() {
     this.mapView = this.data.mapView
     this.init()
   },
   methods: {
-      init() {
-        this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#f00') })
-        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#00FFFF', 5, '#00FFFF') })
-        this.mapView.addLayer(this.vectorLayer)
-        this.mapView.addLayer(this.lightLayer)
-      },
+    removeAll() {
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
+      this.lightLayer && this.mapView.removeLayer(this.lightLayer)
+      this.drawer = this.vectorLayer = this.lightLayer = null
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+      });
+    },
+    init() {
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#f00') })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#00FFFF', 5, '#00FFFF') })
+      this.mapView.addLayer(this.vectorLayer)
+      this.mapView.addLayer(this.lightLayer)
+    },
     /**
     * 初始化绘制组件
     */
@@ -213,13 +214,13 @@ export default {
       if (data.length == 0) this.$message.warning('无数据导出！')
     },
     clearResult() {
-        this.drawFeature = null
-        this.resultData = []
-        this.drawType = ''
-        this.selectLayer = ""
-        this.drawer && this.drawer.end()
-        this.vectorLayer.getSource().clear()
-        this.lightLayer.getSource().clear()
+      this.drawFeature = null
+      this.resultData = []
+      this.drawType = ''
+      this.selectLayer = ""
+      this.drawer && this.drawer.end()
+      this.vectorLayer.getSource().clear()
+      this.lightLayer.getSource().clear()
     },
     /**
      *  展示查询结果

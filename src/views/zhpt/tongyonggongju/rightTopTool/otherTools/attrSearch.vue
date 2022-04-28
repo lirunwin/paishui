@@ -5,7 +5,7 @@
 <script>
 import Overlay from 'ol/Overlay';
 import { unByKey } from 'ol/Observable';
-import { Logo, TileSuperMapRest, SuperMap, FeatureService } from '@supermap/iclient-ol';
+import { SuperMap, FeatureService } from '@supermap/iclient-ol';
 import * as turf from '@turf/turf';
 import GeoJSON from 'ol/format/GeoJSON';
 import { appconfig } from "staticPub/config";
@@ -15,6 +15,7 @@ import { Image as ImageLayer, Vector as VectorLayer, Tile as TileLayer } from 'o
 import { Polygon, Point, LineString, MultiLineString, Geometry } from 'ol/geom';
 import { Style, Stroke, Fill, Circle } from 'ol/style';
 import Feature from 'ol/Feature';
+import { comSymbol } from '@/utils/comSymbol';
 
 export default {
     props: {
@@ -124,48 +125,14 @@ export default {
         lightGeometry (feature) {
             let vectorLayer = new VectorLayer({
                 source: new VectorSource(),
-                style: new Style({
-                    fill: new Fill({
-                        color: "#fff"
-                    }),
-                    stroke: new Stroke({
-                        color: "#C0DB8D",
-                        width: 5
-                    }),
-                    image: new Circle({
-                        radius: 7,
-                        stroke: new Stroke({
-                        width: 2,
-                        color: "#f40"
-                    }),
-                    fill: new Fill({
-                        color: '#00ffff'
-                    })
-                    })
-                })
+                style: comSymbol.getAllStyle(3, "#f00", 5, "#0ff", "rgba(255, 255, 255, 0.6)")
             })
-            let ifeature = new Feature({
-                geometry: new GeoJSON().readGeometry(feature.geometry)
-            })
+            let ifeature = new GeoJSON().readFeature(feature)
             if (ifeature) {
                 vectorLayer.getSource().addFeature(ifeature)
                 this.lightLayer = vectorLayer
                 this.map.addLayer(vectorLayer)
             }
-        },
-        formatFeature (feature) {
-            let { type, coordinates } = feature.geometry, geo;
-            if (!(type && coordinates)) return null
-            switch(type) {
-                case "Point": geo = new Point(coordinates)
-                    break
-                case "LineString": geo = new LineString(coordinates)
-                    break
-                case "Polygon": geo = new Polygon(coordinates)
-                    break
-                default: return null
-            }
-            return new Feature({ geometry: geo })
         },
         closeAll () {
             this.tipOverlay && this.tipOverlay.setPosition(null)

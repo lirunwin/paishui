@@ -9,3 +9,5 @@
 [0414/091747.691:ERROR:directory_reader_win.cc(43)] FindFirstFile: 系统找不到指定的路径。 (0x3)
 [0415/090916.643:ERROR:directory_reader_win.cc(43)] FindFirstFile: 系统找不到指定的路径。 (0x3)
 [0420/085900.531:ERROR:directory_reader_win.cc(43)] FindFirstFile: 系统找不到指定的路径。 (0x3)
+[0427/091237.279:ERROR:directory_reader_win.cc(43)] FindFirstFile: 系统找不到指定的路径。 (0x3)
+[0427/091237.295:ERROR:filesystem_win.cc(129)] GetFileAttributes C:\Users\LQ\AppData\Local\ChromeCore\User Data\Crashpad\attachments\fba651fd-0abc-4df0-b56c-fd1c96d7638e: 系统找不到指定的路径。 (0x3)

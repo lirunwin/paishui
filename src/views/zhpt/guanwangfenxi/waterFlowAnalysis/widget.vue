@@ -84,21 +84,39 @@ export default {
       resFeatures: []
     }
   },
-  computed: { 
+  computed: {
+    // 监听面板是否被改变
+    '$store.state.map.P_editableTabsValue': function (val, oldVal) {
+      if (val == 'waterFlowAnalysis') this.removeAll() 
+      else this.init()
+    }
   },
   watch: {
     ractSelect (nv, ov) {
-      
     }
   },
   mounted: function() {
     this.map = this.data.mapView
-    this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#f00") })
-    this.map.addLayer(this.vectorLayer)
-    this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00ffff") })
-    this.map.addLayer(this.lightLayer)
+    this.init()
   },
   methods: {
+    init () {
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#f00") })
+      this.map.addLayer(this.vectorLayer)
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00ffff") })
+      this.map.addLayer(this.lightLayer)
+    },
+    removeAll () {
+      this.resFeatures = []
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.vectorLayer.getSource().clear()
+      this.lightLayer && this.lightLayer.getSource().clear()
+      this.$store.dispatch('map/handelClose', {
+        pathId: 'queryResultMore', 
+        widgetid: 'HalfPanel',
+        box: "HalfPanel"
+      })
+    },
     choosePipe () {
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
@@ -189,13 +207,15 @@ export default {
       this.vectorLayer.getSource().clear()
       this.ractSelect = false
       this.resFeatures = []
+      this.drawer && this.drawer.end()
     },
     getIconStyle (feature) {
       let coors = feature.getGeometry().getCoordinates()
       let [ startPoint, endPoint ] = coors
       let rotation = 0
-      let imgRt = Math.PI / 2 // 图片资源相对于竖直向上方向的旋转角度
+      let imgRt = Math.PI / 2 // 图片资源箭头方向相对于竖直向上方向的旋转角度
 
+      // 计算旋转弧度
       if (endPoint[0] === startPoint[0]) { // 竖直
         rotation = endPoint[1] > startPoint[1] ? -imgRt : Math.PI - imgRt
       } else if (endPoint[1] === startPoint[1]) { // 水平
@@ -208,22 +228,14 @@ export default {
         image: new Icon({
           src: arrowImg,
           scale: 0.6,
-          size: [48, 48],
-          rotation
+          size: [48, 48], // 对应图片大小
+          rotation // 旋转弧度
         })
       }) 
     },
   },
   destroyed() {
-    this.resFeatures = []
-    this.drawer && this.drawer.end()
-    this.vectorLayer && this.vectorLayer.getSource().clear()
-    this.lightLayer && this.lightLayer.getSource().clear()
-    this.$store.dispatch('map/handelClose', {
-      pathId: 'queryResultMore', 
-      widgetid: 'HalfPanel',
-      box: "HalfPanel"
-    })
+    this.removeAll()
   }
 }
 </script>

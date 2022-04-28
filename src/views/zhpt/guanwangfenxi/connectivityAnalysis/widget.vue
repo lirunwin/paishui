@@ -81,22 +81,40 @@ export default {
       resFeatures: []
     }
   },
-  computed: { 
+  computed: {
+    sidePanelOn () {
+      return this.$store.state.map.P_editableTabsValue
+    }
   },
   watch: {
+    sidePanelOn(newTab, oldTab) {
+      if (newTab !== "connectivityAnalysis") this.removeAll()
+      else this.init()
+    },
     ractSelect (nv, ov) {
       
     }
   },
   mounted: function() {
-    this.map = this.data.mapView
-    this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#f00") })
-    this.map.addLayer(this.vectorLayer)
-    this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00ffff") })
-    this.map.addLayer(this.lightLayer)
+    this.init()
   },
   methods: {
+    removeAll () {
+      this.resFeatures = []
+      this.drawer && this.drawer.end()
+      this.map.removeLayer(this.vectorLayer)
+      this.map.removeLayer(this.lightLayer)
+      this.$store.dispatch('map/handelClose', { box: "HalfPanel", pathId: "queryResultMore" })
+    },
+    init () {
+      this.map = this.data.mapView
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#f00") })
+      this.map.addLayer(this.vectorLayer)
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#0ff") })
+      this.map.addLayer(this.lightLayer)
+    },
     choosePipe () {
+      this.selectedPipe = []
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
       this.drawer = new iDraw(this.map, "point", {
@@ -192,15 +210,7 @@ export default {
     }
   },
   destroyed() {
-    this.resFeatures = []
-    this.drawer && this.drawer.end()
-    this.vectorLayer && this.vectorLayer.getSource().clear()
-    this.lightLayer && this.lightLayer.getSource().clear()
-    this.$store.dispatch('map/handelClose', {
-      pathId: 'queryResultMore', 
-      widgetid: 'HalfPanel',
-      box: "HalfPanel"
-    })
+    this.removeAll()
   }
 }
 </script>

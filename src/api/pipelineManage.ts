@@ -38,6 +38,22 @@ export function queryPageAssessment(params) {
     })
 }
 
+// 通过id查询管段检测信息（详情）
+// /pipeState/{id}
+export function assessmentDetails(params) {
+    return request({
+        url: psjc + '/pipeState/' + params,
+        method: 'get',
+    })
+}
+// 通过id查询管段缺陷信息(缩略提示框)
+export function assessmentDefect(params) {
+    return request({
+        url: psjc + '/pipeState/getDefectById/' + params,
+        method: 'get',
+    })
+}
+
 // 附件分页查询接口
 export function queryPageEnclosure(params) {
     return request({
@@ -64,6 +80,14 @@ export function queryPageDefectInfo(params) {
         url: psjc + '/pipeDefect/page',
         method: 'get',
         params
+    })
+}
+
+// 通过ID查询管道内窥检测缺陷数据信息 (详情)
+export function queryDefectdetails(params) {
+    return request({
+        url: psjc + '/pipeDefect/'+params,
+        method: 'get',
     })
 }
 
@@ -242,6 +266,15 @@ export function projectIdQuery(params) {
 export function queryPageHistory(params) {
     return request({
         url: psjc + '/pipeState/histroyPage',
+        method: 'get',
+        params
+    })
+}
+
+// 详情(根据管段编号查询历史检测列表（包含缺陷数据）)
+export function histroyPipeData(params) {
+    return request({
+        url: psjc + '/pipeState/histroyPipeData',
         method: 'get',
         params
     })

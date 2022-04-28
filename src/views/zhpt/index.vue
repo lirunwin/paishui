@@ -205,7 +205,7 @@ import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
 import axios from 'axios'
 import Comps from '@/layout/components/loadComps'
 import { HalfPanels, FullPanels, FloatPanels, SidePanels } from '@/layout/components/index'
-import { esriConfig, appconfig } from 'staticPub/config'
+import { appconfig } from 'staticPub/config'
 import { loadModules } from 'esri-loader'
 import { loadCss } from '@/utils/loadResources'
 import request from '@/utils/request'
@@ -235,6 +235,10 @@ import VectorSource from 'ol/source/Vector'
 import { comSymbol } from '@/utils/comSymbol'
 import { LegendConfig } from '@/views/zhpt/common/legendConfig'
 
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
+import { Polygon } from 'ol/geom';
+
 @Component({
   components: {
     HalfPanels,
@@ -257,7 +261,6 @@ import { LegendConfig } from '@/views/zhpt/common/legendConfig'
   }
 })
 export default class BaseMap extends Vue {
-  rootMapViewExtent =  null
   showMapLengend = false
   //
   showLegendBox = true
@@ -353,7 +356,6 @@ export default class BaseMap extends Vue {
   }
   mounted() {
     this.initBodySize() // 初始化弹出框位置
-    loadCss(esriConfig.baseCssUrl) // 本地css资源
     // this.registerEPSG4490(); // 注册 4490 坐标系
     this.initConfig() // 加载配置 ==> 加载地图
   }
@@ -400,35 +402,23 @@ export default class BaseMap extends Vue {
     this.loading = false
     this.$nextTick(this.controlToolDisplay)
 
-    let timer = null, time = 1000
+    // 触发地图视野变化
+    let timer = null, time = 300
     this.view.getView().on("change", evt => {
       timer && clearTimeout(timer)
-      timer = null
       timer = setTimeout(() => {
-        let center = evt.target.getCenter()
-        this.rootMapViewExtent = center
-        console.log('地图变化')
+        let extent = new mapUtil(this.view).getCurrentViewExtent()
+        this.$store.state.gis.mapExtent = extent
       }, time)
     })
+    this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, "f00", 5, "#00ffff", "rgba(255, 255, 255, 0.6)") })
+    this.view.addLayer(this.vectorLayer)
   }
 
   addLayers(layers) {
     layers.forEach((layerConfig) => {
-      let { name, url, parentname, id, visible = true } = layerConfig
-      let layer = new TileLayer({
-        name,
-        parentname,
-        id,
-        visible,
-        source: new TileSuperMapRest({
-          url,
-          crossOrigin: 'anonymous', // 是否请求跨域操作
-          wrapX: true
-        }),
-        properties: {
-          projection: 'EPSG:4326'
-        }
-      } as any)
+      let { name, type, url, parentname, id, visible = true } = layerConfig
+      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
       this.view.addLayer(layer)
     })
   }
@@ -453,7 +443,7 @@ export default class BaseMap extends Vue {
     let coors = pipes || [[104.75527467557153, 31.524098782069018], [104.75489471757147, 31.524367191069018]]
     let feature = new Feature({ geometry: new LineString(coors) })
     if (!this.vectorLayer) {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00ffff") })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, "f00", 5, "#00ffff", "fff6") })
       this.view.addLayer(this.vectorLayer)
     }
     this.vectorLayer.getSource().clear()
@@ -466,7 +456,10 @@ export default class BaseMap extends Vue {
   // 清除地图
   clearMap () {
     this.vectorLayer.getSource().clear()
-    this.vectorLayer = null
+  }
+  // 根据 extent 查询 数据
+  queryForExtent (extent) {
+    new mapUtil(this.view).queryForExtent(extent, this.vectorLayer)
   }
   // 显示图例
   showLegend (legendName, visible) {

@@ -15,7 +15,7 @@ export default {
     this.setScreenFull();
   },
   methods: {
-    // 截图方法
+    // 全屏
     setScreenFull() {
       const isFullScreen=document.fullscreenElement;
       if(isFullScreen){
@@ -46,6 +46,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-</style>

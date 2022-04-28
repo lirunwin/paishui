@@ -38,7 +38,6 @@
         v-loading="queryLoading"
         style="margin-bottom: 8px;"
         row-class-name="selectRowC"
-        @row-click="getFeatures"
       >
         <el-table-column prop="layer" label="图层名称" width="100" />
         <el-table-column prop="num" label="数量" />
@@ -147,6 +146,7 @@ export default {
   mounted() {},
   watch: {
     sidePanelOn(newTab, oldTab) {
+      if (newTab !== "queryForSpace") this.removeAll()
     }
   },
   methods: {
@@ -256,85 +256,6 @@ export default {
       this.featureData = []
       this.layerData = []
     },
-    getFeatures(row, a, b, cb) {
-      var callback = cb
-      if (this.lastFeatures == row.id && !callback) {
-        this.secondResultFeatures.removeAll()
-        return
-      }
-      this.lastFeatures = row.id
-      var layerNName = this.layerIndex[row.id].layerdbname
-      var fields = ['OBJECTID']
-      if (attAllConfig.hasOwnProperty(layerNName)) fields = attAllConfig[layerNName]
-      this.featuresLoading = true
-      this.secondResultFeatures.removeAll()
-      if (!callback) {
-        this.queryFeature.geometry = undefined
-
-        var view = this.mapView
-        var Graphic = view.TF_graphic
-        var sp = view.spatialReference
-        var symbol
-        switch (row.type) {
-          case 'esriGeometryPoint':
-            symbol = {
-              type: 'simple-marker',
-              color: [255, 255, 255],
-              size: 8,
-              outline: { color: [0, 255, 255], width: 2 }
-            }
-            break
-          case 'esriGeometryPolyline':
-            symbol = { type: 'simple-line', color: [0, 255, 255], cap: 'square', width: '3px' }
-            break
-          case 'esriGeometryPolygon':
-            symbol = { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: { color: [0, 255, 255], width: '3px' } }
-            break
-        }
-
-        var feas = []
-        for (var i = 0, il = this.allResultFeatures.graphics.items, ii = il.length, oids = row.objects; i < ii; i++) {
-          if (oids.includes(il[i].oid)) {
-            var di = il[i]
-            feas.push(
-              new Graphic({
-                geometry: di.geometry,
-                symbol: symbol,
-                spatialReference: sp
-              })
-            )
-          }
-        }
-        this.secondResultFeatures.addMany(feas)
-      }
-
-      $.ajax({
-        url: appconfig.gisResource.business_map.config[0].url + '/' + row.id + '/query',
-        type: 'POST',
-        data: {
-          objectIds: row.objects.join(','),
-          outFields: fields.join(',') + ',OBJECTID',
-          returnGeometry: false,
-          f: 'pjson'
-        },
-        success: (data) => {
-          this.featuresLoading = false
-          if (!data) return this.$message.error('查询错误')
-          data = JSON.parse(data)
-          if (data.error) return this.$message.error('查询错误:' + data.message)
-          this.columns = data.fields
-            .filter((e) => e.name != 'OBJECTID')
-            .map((e) => {
-              return { prop: e.name, label: e.alias }
-            })
-          this.featureData = data.features.map((e) => e.attributes)
-          if (callback) callback()
-        },
-        error: (error) => {
-          console.log(error)
-        }
-      })
-    },
     getFeature(row) {
       var layerId = this.lastFeatures
       if (!layerId) return this.$message.error('请选中图层')
@@ -417,47 +338,6 @@ export default {
         }
       })
     },
-    addEvent() {
-      var view = this.mapView
-      var mapdiv = view.container
-      var graphics = this.allResultFeatures
-      var draw = view.TF_draw
-      if (draw.activeAction) draw.reset()
-      if (this.click) {
-        this.click.remove()
-        this.click = undefined
-      }
-      this.eventMove = view.on('pointer-move', (evt) =>
-        view.hitTest(evt, graphics).then((re) => {
-          var isShow = ''
-          re = re.results
-          if (re.length && re[0].graphic.oid) isShow = 'pointer'
-          mapdiv.style.cursor = isShow
-        })
-      )
-      var that = this
-      this.eventClick = view.on('immediate-click', (evt) => {
-        view.hitTest(evt, graphics).then((re) => {
-          re = re.results
-          if (!re.length) return
-          var gra = re[0].graphic
-          // this.lastFeatures = gra.layerId
-          for (var i = 0, il = that.layerData, ii = il.length; i < ii; i++) {
-            if (il[i].id == gra.layerId) {
-              var di = il[i]
-              that.getFeatures(di, undefined, undefined, () => {
-                that.getFeature({ OBJECTID: gra.oid })
-                for (var j = 0, jl = that.featureData, jj = jl.length; j < jj; j++) {
-                  if (jl[j].OBJECTID == gra.oid) that.$refs.featuresTable.setCurrentRow(jl[j])
-                }
-              })
-              that.$refs.featureTable.setCurrentRow(di)
-              break
-            }
-          }
-        })
-      })
-    },
     removeEvent() {
       if (this.eventMove) this.eventMove.remove()
       if (this.eventClick) this.eventClick.remove()
@@ -503,17 +383,20 @@ export default {
         label: '更多信息',
         param: { data: [this.rowData], colsData }
       })
+    },
+    removeAll () {
+      this.drawer && this.drawer.end()
+      this.queryLayer && this.queryLayer.getSource().clear()
+      this.drawer = this.queryLayer = null
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'queryResultMore',
+        widgetid: 'HalfPanel',
+      });
     }
   },
   destroyed() {
-    this.drawer && this.drawer.end()
-    this.queryLayer && this.queryLayer.getSource().clear()
-    this.drawer = this.queryLayer = null
-    this.$store.dispatch('map/handelClose', {
-      box:'HalfPanel',
-      pathId: 'queryResultMore',
-      widgetid: 'HalfPanel',
-    });
+    this.removeAll()
   }
 }
 </script>
