@@ -12,8 +12,7 @@ export class TF_Layer {
         this.projection = projection
     }
 
-
-    createLayer ({ properties, type, visible, url}) {
+    createLayer ({ properties = {}, type, visible = true, url}) {
         let layer = null
         switch (type) {
             case "smlayer" : layer = this.SM_Layer(url)
@@ -26,14 +25,17 @@ export class TF_Layer {
                 break
         }
         // 加入属性
-        for (let i in properties) {
-            layer.set(i, properties[i])
+        if (layer) {
+            for (let i in properties) {
+                layer.set(i, properties[i])
+            }
         }
         layer.setVisible(visible)
         return layer
     }
     // 超图切片图层
-    SM_Layer (url) {
+    SM_Layer (url = "") {
+        if (!url) return null
         return new TileLayer({
             source: new TileSuperMapRest({
               url,
@@ -46,7 +48,8 @@ export class TF_Layer {
         })
     }
     // 天地图
-    TDT_Layer (url) {
+    TDT_Layer (url = "") {
+        if (!url) return null
         return new TileLayer({ source: new XYZ({ url: url + appconfig.tianMapKey }) })
     }
     // 矢量图层

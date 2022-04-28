@@ -2,7 +2,7 @@
   <!-- 追踪分析 -->
   <div class="panel-container i-scrollbar">
     <div class="op-box">
-      <el-button type="primary" size="small" style="width:100%" @click="selectPipe" :loading="loading">选择分析管线</el-button>
+      <el-button type="primary" size="small" style="width:100%" @click="selectPipe">选择分析管线</el-button>
     </div>
     <!-- 分析结果 -->
     <div class="result-box">
@@ -13,7 +13,7 @@
       </div>
       <div class="result-description">
         <div class="result-title" v-cloak>{{selectPipelineInfo.name}}</div>
-        <div v-cloak style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">{{selectPipelineInfo.position}}</div>
+        <div v-cloak style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">{{selectPipelineInfo.id}}</div>
       </div>
     </div>
     <div class="op-box">
@@ -74,16 +74,19 @@
 
 <script>
 import echarts from 'echarts'
-import { mapConfig } from '@/views/zhpt/map.config'
+import { appconfig } from 'staticPub/config'
 import { SuperMap, FeatureService } from '@supermap/iclient-ol';
 import { GeoJSON } from 'ol/format';
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Style, Circle, Icon, Fill, RegularShape, Stroke, Text } from 'ol/style';
 import { unByKey } from 'ol/Observable';
-
 import { trackingAnalysis } from '@/api/mainMap/analysis'
-import { async } from 'q';
+import iDraw from '@/views/zhpt/common/mapUtil/draw';
+import iQuery from '@/views/zhpt/common/mapUtil/query';
+import * as turf from '@turf/turf'
+import { comSymbol } from '../../../../utils/comSymbol';
+
 export default {
   props: ['data'],
   data() {
@@ -91,99 +94,99 @@ export default {
       doLoading: false,
       selectFlag: false,
       selectPipeline: null,
-      selectInfo: null,
-      selectPipelineInfo: {
-        name: '',
-        position: ''
-      },
+
       distence: 50,
       vectorLayer: null,
-      queryResult: []
+      queryResult: [],
+      // 
+      map: null,
+      drawer: null,
+      selectFeature: null,
+      selectPipelineInfo: {
+        name: '',
+        position: '',
+        type: ''
+      },
     }
   },
   computed: {
-    // 获取点击查询状态
-    loading() {
-      if (this.selectFlag)
-        if (this.data.that.queryByClick.querying)
-          return this.data.that.queryByClick.querying
-        else return false
-      else return false
-    },
-    // 获取点击查询结果
-    resultInfo() {
-      return this.data.that.queryByClick.resultInfo
-    }
   },
   watch: {
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
       if (val == 'trackingAnalysis') {
-        this.vectorLayer.setVisible(true)
-      }
-      else {
-        this.data.that.popupWindowClose() // 清除地图视图点击选择的要素,关闭弹窗
-        this.vectorLayer.setVisible(false)
-        this.selectFlag = false
-      }
-    },
-    loading(val, oldVal) {
-      if (this.selectFlag && !val) {
-        // 点击查询结束
-        // console.log('zz分析点击查询结束', this.resultInfo)
-        if (!this.resultInfo) {
-          this.$message.error('未选中管线！')
-        }
-        else {
-          this.selectInfo = JSON.parse(JSON.stringify(this.resultInfo))
-          this.loadSelectPipe(this.selectInfo)
-        }
+        this.removeAll()
+      } else {
+        this.init()
       }
     }
   },
   destroyed() {
-    this.data.that.popupWindowClose() // 清除地图视图点击选择的要素,关闭弹窗
-    this.data.that.map.removeLayer(this.vectorLayer)
+    this.removeAll()
   },
   mounted() {
-    this.vectorLayer = new VectorLayer({
-      source: new VectorSource(),
-      style: new Style({
-        stroke: new Stroke({
-          width: 5,
-          color: '#ed1941'
-        }),
-        image: new Circle({
-          radius: 6,
-          stroke: new Stroke({
-            width: 2,
-            color: '#ed1941'
-          }),
-          fill: new Fill({
-            color: '#FFF'
-          })
-        })
-      })
-    })
-    this.data.that.map.addLayer(this.vectorLayer)
+    this.map = this.data.mapView
+    this.rootPage = this.data.that
+    this.init()
   },
   methods: {
-    loadSelectPipe(selectPipeline) {
-      this.selectPipelineInfo = {
-        name: '选择管线：' + selectPipeline.feature.dataType.label + '-' + selectPipeline.feature.properties.SID,
-        position: "坐标：" + parseFloat(selectPipeline.coordinate[0]).toFixed(3) + ',' + parseFloat(selectPipeline.coordinate[1]).toFixed(3)
-      }
-      this.vectorLayer.getSource().clear()
-      this.showReswultInMap(null) // 显示选中管线
+    init () {
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#0ff") })
+      this.map.addLayer(this.vectorLayer)
     },
-    /**
-     * 选择管线
-     * 这里选择管线直接调用的主页面地图气泡查询
-     */
-    selectPipe() {
+    removeAll () {
+      this.drawer && this.drawer.end()
+      this.map.removeLayer(this.vectorLayer)
+      this.drawer = this.vectorLayer = null
       this.clearResult()
-      this.selectFlag = true // 开启选择
-      this.data.that.map.getView().animate({ zoom: 20 });
+    },
+    openPopup (position, featureJson) {
+      this.rootPage.$refs.popupWindow.showPopup(position, featureJson, this.afterClosePopup)
+    },
+    afterClosePopup () {
+      this.vectorLayer.getSource().clear()
+    },
+    selectPipe() {
+      this.drawer && this.drawer.end()
+      this.vectorLayer && this.vectorLayer.getSource().clear()
+      this.drawer = new iDraw(this.map, "point", {
+        endDrawCallBack: drawFea => {
+          let fea = new GeoJSON().readFeature(turf.buffer(turf.point(drawFea.getGeometry().getCoordinates()), 0.3 / 1000, { units: 'kilometers' }))
+          this.getAnalysisPipe(fea).then(resObj => {
+            if (resObj) {
+              let attachName = resObj.attachName
+              let featureJson = resObj.result.features.features[0]
+              let feature = new GeoJSON().readFeature(featureJson)
+              this.vectorLayer.getSource().addFeature(feature)
+              this.selectPipelineInfo.name = feature.get("TYPENAME")
+              this.selectPipelineInfo.id = feature.get("SID")
+              //
+              this.openPopup(drawFea.getGeometry().getCoordinates(), featureJson)
+              //
+              feature.set("attachName", attachName)
+              this.selectFeature = feature.clone()
+              console.log("选择管段", featureJson)
+              this.drawer.end()
+            } else {
+              this.drawer.clear()
+              return this.$message.error("无管线数据")
+            }
+          })
+        },
+        showCloser: false
+      })
+      this.drawer.start()
+    },
+    getAnalysisPipe (fea) {
+      let dataSetInfo = [{ name: "给水管线", attachName: "给水管线节点" }]
+      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      return new Promise(resolve => {
+        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {
+          let featuresObj = resArr.find(res => res && res.result.featureCount !== 0)
+          if (featuresObj) resolve(featuresObj)
+          else resolve(null)
+        })
+      })
     },
     // 确定table的row唯一的key值
     getRowKeys(row) {
@@ -193,7 +196,7 @@ export default {
      * 开始分析
      */
     async doQuery() {
-      if (!this.selectInfo) {
+      if (!this.selectFeature) {
         this.$message.error("还未选择管线，不能进行分析！")
         return
       }
@@ -201,15 +204,16 @@ export default {
       this.selectFlag = false
       let data = {
         pipeLength: this.distence,
-        dataSetName: this.selectInfo.feature.dataType.name,
-        pipePointNo: this.selectInfo.feature.properties.SMID
+        dataSetName: this.selectFeature.get("TYPENAME"),
+        pipePointNo: this.selectFeature.get("SMID")
       }
       let resultTable = []
-      let result = null
-      await trackingAnalysis(data).then(res => {
-        result = res.result;
-      })// 接口返回结果
-      for (const key in result) {
+      let result = await trackingAnalysis(data)// 接口返回结果
+      
+      console.log("追踪分析", result)
+      this.doLoading = false
+      return
+      for (const key in result.result) {
         await this.queryPipes(result[key].pathValue).then(async res => {
           await this.queryPoint(res.features.features).then(res2 => {
             res['facilities'] = res2
@@ -243,7 +247,7 @@ export default {
         toIndex: -1,
         maxFeatures: 10000000,
         datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':'
-          + this.selectInfo.feature.dataType.name],
+          + this.selectFeature.get("TYPENAME")],
         queryParameter: { attributeFilter: "SMID in " + str }
       })
       return sqlQueryParam
@@ -281,7 +285,7 @@ export default {
         toIndex: -1,
         maxFeatures: 10000000,
         datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':'
-          + this.selectInfo.feature.dataType.attachName],
+          + this.selectFeature.get("attachName")],
         queryParameter: { attributeFilter: "SID in " + str }
       })
       let url = mapConfig.iServerUrl.pipelineDataServer.url
@@ -409,7 +413,7 @@ export default {
           this.data.that.map.getView().fit(this.vectorLayer.getSource().getExtent(), { duration: 600 })
         }, 200);
       }
-      let sFeature = new GeoJSON().readFeature(this.selectInfo.feature)
+      let sFeature = this.selectFeature
       sFeature.setStyle(new Style({
         stroke: new Stroke({
           width: 5,
@@ -420,11 +424,12 @@ export default {
     },
     /**清除结果 */
     clearResult() {
-      this.data.that.popupWindowClose() // 清除地图视图点击选择的要素,关闭弹窗
+      this.rootPage.$refs.popupWindow.closePopup()
       this.vectorLayer.getSource().clear()
       Object.assign(this.$data.selectPipelineInfo, this.$options.data().selectPipelineInfo) // 清空选择管线信息
       this.distence = 50
       this.queryResult = []
+      this.selectFeature = null
       this.selectFlag = false
     }
   }

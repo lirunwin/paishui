@@ -1,5 +1,5 @@
 import Feature from 'ol/Feature';
-import { Polygon, LineString,  Point } from 'ol/geom';
+import { Polygon, LineString, Point } from 'ol/geom';
 import iQuery from './query';
 import { appconfig } from 'staticPub/config'
 import { GeoJSON } from 'ol/format';
@@ -9,31 +9,36 @@ export class mapUtil {
 
     private projection = 'EPSG:4326'
 
-     map = null
+    map = null
 
-    constructor (map) {
+    constructor(map) {
         this.map = map
     }
-    addLayers (layers) {
+    addLayers(layers) {
         if (!(layers instanceof Array)) this.map.addLayer(layers)
         layers.forEach(layer => {
             this.map.addLayer(layer)
         })
     }
-    removeLayers (layers) {
+    removeLayers(layers) {
         if (!(layers instanceof Array)) this.map.removeLayer(layers)
         layers.forEach(layer => {
             this.map.removeLayer(layer)
         })
     }
-    getCenter (feature) {
-        let extent = feature.getGeometry().getExtent()
-        return [(extent[0] + extent[1]) / 2, (extent[1] + extent[3]) / 2]
+    // 获取要素范围中心
+    getCenter(feature) {
+        let center = []
+        if (feature instanceof Feature) {
+            let [xmin, ymin, xmax, ymax] = feature.getGeometry().getExtent()
+            center = [(xmin + xmax) / 2, (ymin + ymax) / 2]
+        }
+        return center
     }
     // 获取当前地图 extent
-    getCurrentViewExtent () {
+    getCurrentViewExtent() {
         let mapDom = this.map.getTargetElement()
-        let top = 0,  left = 0,  right = mapDom.clientWidth + left, bottom = mapDom.clientHeight + top
+        let top = 0, left = 0, right = mapDom.clientWidth + left, bottom = mapDom.clientHeight + top
         let topLeftPoint = this.map.getCoordinateFromPixel([left, top])
         let bottomRightPoint = this.map.getCoordinateFromPixel([right, bottom])
         let [xmin, ymax] = topLeftPoint
@@ -42,29 +47,30 @@ export class mapUtil {
         // let feature = new Feature({ geometry: new Polygon(coors) })
         return [xmin, ymin, xmax, ymax]
 
-        function getOffsetTop (el) {
+        function getOffsetTop(el) {
             return el.offsetParent ? el.offsetTop + getOffsetTop(el.offsetParent) : el.offsetTop
         }
-        function getOffsetLeft (el) {
+        function getOffsetLeft(el) {
             return el.offsetParent ? el.offsetLeft + getOffsetLeft(el.offsetParent) : el.offsetLeft
         }
     }
     // 当前范围内空间查询
-    queryForExtent (extent, layer) {
+    queryForExtent(extent, layer) {
         let [xmin, ymin, xmax, ymax] = extent
-        let coors = [[ [xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax], ]]
+        let coors = [[[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax],]]
         let feature = new Feature({ geometry: new Polygon(coors) })
         let dataSetInfo = [{ name: '给水管线' }]
-        new iQuery({... appconfig.gisResource['iserver_resource'].dataServer, dataSetInfo }).spaceQuery(feature).then(resArr => {
+        new iQuery({ ...appconfig.gisResource['iserver_resource'].dataServer, dataSetInfo }).spaceQuery(feature).then(resArr => {
             let resFeaturesObj = resArr.filter((res: any) => res && res.result.featureCount !== 0)
             let features = []
             if (resFeaturesObj.length !== 0) {
-                resFeaturesObj.forEach((obj : any) => {
+                resFeaturesObj.forEach((obj: any) => {
                     let feas = new GeoJSON().readFeatures(obj.result.features)
                     features = [...features, ...feas]
                 })
                 let colorBox = ["#f00", "#ff0", "#008000", "#00f", "#000"]
                 features = features.map((fea, index) => {
+                    // 随机给一个颜色
                     let color = colorBox[index % 5], style
                     if (fea.getGeometry() instanceof LineString) {
                         style = comSymbol.getLineStyle(5, color)

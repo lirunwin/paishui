@@ -104,20 +104,17 @@ export default {
       this.drawer && this.drawer.end()
       this.map.removeLayer(this.vectorLayer)
       this.map.removeLayer(this.lightLayer)
-      this.$store.dispatch('map/handelClose', {
-        pathId: 'queryResultMore', 
-        widgetid: 'HalfPanel',
-        box: "HalfPanel"
-      })
+      this.$store.dispatch('map/handelClose', { box: "HalfPanel", pathId: "queryResultMore" })
     },
     init () {
       this.map = this.data.mapView
       this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#f00") })
       this.map.addLayer(this.vectorLayer)
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00ffff") })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#0ff") })
       this.map.addLayer(this.lightLayer)
     },
     choosePipe () {
+      this.selectedPipe = []
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
       this.drawer = new iDraw(this.map, "point", {
