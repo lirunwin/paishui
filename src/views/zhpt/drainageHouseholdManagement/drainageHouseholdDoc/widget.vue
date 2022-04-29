@@ -41,7 +41,7 @@
                     <el-button type="primary" icon="el-icon-plus" size="mini" @click="addOperation()">添加</el-button>
                     <el-button type="primary" icon="el-icon-edit" size="mini" @click="modifyOperation()">修改</el-button>
                     <el-button type="primary" icon="el-icon-upload" size="mini">导入</el-button>
-                    <el-button type="primary" icon="el-icon-download" size="mini" @click="exportOperation()">导出</el-button>
+                    <el-button type="primary" icon="el-icon-download" size="mini" @click="exportConfirm()">导出</el-button>
                     <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteOPeration()">删除</el-button>
                 </div>
             </el-col>
@@ -254,6 +254,20 @@ export default {
                     type: 'warning'
             }).then(() => {
                 this.deleteDrainfageHh({ids:ids})
+            }).catch(() => {});
+        },
+        //导出前确认
+        exportConfirm(){
+            if(this.total<=1000){
+                this.exportOperation();
+                return
+            }
+            this.$confirm('仅支持导出前1000条数据，是否确认导出？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+            }).then(() => {
+                this.exportOperation()
             }).catch(() => {});
         },
         exportOperation(){

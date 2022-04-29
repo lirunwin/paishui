@@ -18,6 +18,7 @@ import Overlay from 'ol/Overlay';
 export default {
     name:"commonPopup",//公共地图信息弹窗
     props: {
+        mapView:{required:true},//地图对象
         popupPosition: { type: Array },//弹窗位置(经纬度)
         popupShow: { type: Boolean },//弹窗显示
         popupTitle: {type: String },//弹窗标题
@@ -58,7 +59,7 @@ export default {
         //显示弹窗
         showPopup(){
             if(this.dialogOverlay) {
-                this.$parent.$data.view.removeOverlay(this.dialogOverlay)
+                this.mapView.removeOverlay(this.dialogOverlay)
             }
             this.dialogOverlay= new Overlay({
                 element: this.$refs.commonPopup,
@@ -70,19 +71,19 @@ export default {
                     },
                 },
             });
-            this.$parent.$data.view.addOverlay(this.dialogOverlay)
+            this.mapView.addOverlay(this.dialogOverlay)
             this.dialogOverlay.setPosition(this.popupPosition)
             if(this.isSetCenter) this.setCenter()
         },
         //设置视图定位
         setCenter(){
-            this.$parent.$data.view.getView().setCenter(this.popupPosition)
-            this.$parent.$data.view.getView().setZoom(20)
+            this.mapView.getView().setCenter(this.popupPosition)
+            this.mapView.getView().setZoom(20)
         },
         //弹窗关闭
         closePopup(){
             this.dialogOverlay.setPosition(undefined);
-            this.$parent.$data.view.removeOverlay(this.dialogOverlay)
+            this.mapView.removeOverlay(this.dialogOverlay)
             return false;
         },
         //右上角图标操作
