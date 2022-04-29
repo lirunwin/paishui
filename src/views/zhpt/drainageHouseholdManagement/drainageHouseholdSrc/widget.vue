@@ -140,6 +140,7 @@ export default {
                 current:this.pagination.current,
                 size:this.pagination.size,
                 sort:this.householdType,
+                nameAndAddress:this.keyValue
             }
             getDischarger(data).then(res=>{
                 const result = res.data;

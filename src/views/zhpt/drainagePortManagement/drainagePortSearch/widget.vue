@@ -78,26 +78,51 @@
         @rowDblclick="rowDblclick"
       />
     </div>
-    <div id="popup" class="ol-popup">
-      <a href="#" id="popup-closer" class="ol-popup-closer"></a>
-      <div id="popup-content"></div>
+    <common-popup 
+    ref="commonPopup"
+    :popupShow="popupShow" 
+    :popupPosition="popupPosition"
+    :popupTitle="popupTitle"
+    :headerStyle="hstyle"
+    :isSetCenter="true"
+    :operationGroup="operationGroup"
+    @detail="detail()"
+    >
+    <div class="drainagePortInfo">
+        <div class="infoTerm"><div>排放口编码</div><div>PSK987667</div></div>
+        <div class="infoTerm"><div>所在污水分区</div><div>临港污水片区</div></div>
+        <div class="infoTerm"><div>所在排水分区</div><div>临港雨水片区</div></div>
+        <div class="panelTerm">
+            <div class="portTypeItem pfklx">
+                <div class="itemTitle">排放口类型</div>
+                <div class="itemValue">污水</div>
+            </div>
+            <div class="portTypeItem snst">
+                <div class="itemTitle">收纳水体</div>
+                <div class="itemValue">童家河</div>
+            </div>
+            <div class="portTypeItem pfkj">
+                <div class="itemTitle">排放口径</div>
+                <div class="itemValue">DN400</div>
+            </div>
+        </div>
     </div>
+    </common-popup>
 </div>
 </template>
 
 <script>
 import axios from "axios";
 import { geteSessionStorage } from '@/utils/auth'
-import Overlay from 'ol/Overlay';
-import {toLonLat} from 'ol/proj';
-import {toStringHDMS} from 'ol/coordinate';
 import {getOutfall} from '@/api/drainage/drainage'
 import Config from "./config.json"
 import tableItem from "@/components/Table/index.vue"
+import commonPopup from "@/components/CommonPopup/index.vue"
 export default {
     name:"drainagePortSearch",//排水口管理
     components:{
-        tableItem
+        tableItem,
+        commonPopup
     },
     data(){
         return{
@@ -136,9 +161,16 @@ export default {
             },
             //导出url
             expXls:'/psjc/outfall/export',
-            //地图事件
+            //地图弹窗
             mapEvent:null,
-            overlay:null,
+            popupShow:false,
+            popupPosition:null,
+            popupTitle:null,
+            view:null,
+            operationGroup:[
+                {icon:"iconfont icondtbz",color:"royalblue",action:"detail"},
+            ],
+            hstyle:'font-weight: bold;justify-content: center;'
         }
     },
     computed:{
@@ -149,13 +181,13 @@ export default {
     mounted(){
         this.getPage();
         this.column=this.config.column
-        this.view=this.$attrs.data.mapView
     },
     methods:{
         getPage(){
             let data={
                 current:this.pagination.current,
                 size:this.pagination.size,
+                nameAndAddress:this.keyValue
             }
             getOutfall(data).then(res=>{
                 const result = res.data;
@@ -209,46 +241,35 @@ export default {
         },
         //定位方法
         located(){
-            const gl = this
-            const container = document.getElementById('popup');
-            const content = document.getElementById('popup-content');
-            const closer = document.getElementById('popup-closer');
-            this.overlay = new Overlay({
-                element: container,
-                autoPan: {
-                    animation: {
-                    duration: 250,
-                    },
-                },
+            this.view=this.$attrs.data.mapView
+            let gl =this
+            this.mapEvent=this.view.on('singleclick', function (evt) {
+                let pixel = gl.view.getEventPixel(evt.originalEvent)
+                gl.view.forEachFeatureAtPixel(pixel,function(feature){
+                    var attr = feature.getProperties();
+                    var coordinate = evt.coordinate;
+                    console.log(attr,coordinate)
+                });
             });
-            closer.onclick = ()=>{
-                this.overlay.setPosition(undefined);
-                closer.blur();
-                return false;
-            };
-            this.view.addOverlay(this.overlay)
-            // this.mapEvent=this.view.on('singleclick', function (evt) {
-            //     const coordinate = evt.coordinate;
-            //     const hdms = toStringHDMS(toLonLat(coordinate));
-            //     content.innerHTML = '<p>You clicked here:</p><code>' + hdms + '</code>';
-            //     console.log(coordinate)
-            // });
             let center=[
                 104.75231999734498,
                 31.525963399505617
             ]
-            gl.overlay.setPosition(center);
+            this.popupShow=true
+            this.popupPosition=center
+            this.popupTitle="（排放口）锦绣家园小区"
             // this.view.animate({
             //     center: fromLonLat(center),
             //     duration: 2000,
             // });
-            this.view.getView().setCenter(center)
-            this.view.getView().setZoom(20)
+        },
+        detail(){
+            
         }
     },
     beforeDestroy(){
-        this.view.removeOverlay(this.overlay)
-        // this.view.un(this.mapEvent.type, this.mapEvent.listener)
+        this.view.un(this.mapEvent.type, this.mapEvent.listener)
+        if(this.$refs.commonPopup.isShow) this.$refs.commonPopup.closePopup()
     }
 }
 </script>
@@ -270,6 +291,47 @@ export default {
     }
     .tableContainer{
         height: calc(100% - 25px);
+    }
+}
+</style>
+<style lang="scss">
+.drainagePortInfo{
+    width:400px;
+    display:flex;
+    flex-flow:column;
+    .infoTerm{
+        display:flex;
+        justify-content:space-between;
+        padding:10px
+    }
+    .panelTerm{
+        display:flex;
+        justify-content:space-between;
+        padding:10px;
+        .portTypeItem{
+            flex: 0.3;
+            display: flex;
+            flex-flow: column;
+            border-radius: 5px;
+            color: white;
+            .itemTitle{
+                padding: 10px 5px;
+                font-size: 14px;
+            }
+            .itemValue{
+                padding:10px 20px;
+                font-size: 16px;
+            }
+        }
+        .pfklx{
+            background-color: rgba(131,122,254,0.7);
+        }
+        .snst{
+            background-color: rgba(85,186,254,0.7);
+        }
+        .pfkj{
+            background-color: rgba(247,179,85,0.7);
+        }
     }
 }
 </style>

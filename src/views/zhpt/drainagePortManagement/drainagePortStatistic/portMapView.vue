@@ -1,5 +1,5 @@
 <template>
-    <div class="mapChildrenView" id="mapChildrenView">
+    <div class="portMapView" id="portMapView">
         <!-- 左下角工具栏 -->
         <leftBottomTool style="bottom:20px"
             :toolList="leftBottomTool.children"
@@ -34,7 +34,7 @@ export default {
         initMap(){
             let { initCenter, initZoom } = appconfig
             this.view = new Map({
-                target: 'mapChildrenView',
+                target: 'portMapView',
                 view: new View({
                     center: initCenter,
                     zoom: initZoom,
@@ -109,7 +109,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-    .mapChildrenView{
+    .portMapView{
         height: 100%;
         width: 50%;
         // float: left;

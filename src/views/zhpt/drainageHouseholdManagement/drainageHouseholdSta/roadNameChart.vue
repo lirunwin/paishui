@@ -141,6 +141,13 @@ export default {
                 yAxis: {
                     type: 'value'
                 },
+                grid:{
+                    top:30,
+                    bottom:30
+                },
+                tooltip: {
+                    trigger: "axis"
+                },
                 series: [
                     {
                         data: data,
