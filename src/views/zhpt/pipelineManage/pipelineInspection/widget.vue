@@ -21,11 +21,11 @@
           </div>
           <div class="title">结构性缺陷等级：</div>
           <el-select v-model="searchParams.funcClass" placeholder="">
-            <el-option v-for="(item,i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
+            <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
           <el-select v-model="searchParams.structClass" placeholder="">
-            <el-option v-for="(item,i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
+            <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
         </div>
         <div class="right-btn">
@@ -81,7 +81,7 @@
         <el-card class="box-card">
           <div slot="header" class="clearfix">
             <span>管道检测详情 ({{ detailsTitle.pipeType + detailsTitle.expNo }})</span>
-            <span style="float: right; padding: 3px 0; cursor: pointer;user-select: none;">
+            <span style="float: right; padding: 3px 0; cursor: pointer; user-select: none">
               <i class="el-icon-caret-left" type="text" @click="lastPage"></i>
               {{ currentIndex + 1 }}/{{ cardTable.length }}
               <i class="el-icon-caret-right" type="text" @click="nextPage"></i>
@@ -91,14 +91,14 @@
           <div class="content">
             <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
               <el-menu-item index="1">检测信息</el-menu-item>
-              <el-menu-item index="2">功能性缺陷</el-menu-item>
-              <el-menu-item index="3">结构性缺陷</el-menu-item>
+              <el-menu-item index="2">功能性缺陷({{ tableForm.funcClass }})</el-menu-item>
+              <el-menu-item index="3">结构性缺陷({{ tableForm.structClass }})</el-menu-item>
             </el-menu>
             <div class="content-info">
               <div class="box1" v-show="activeIndex == '1'">
                 <div class="detailsTitle">管段信息</div>
                 <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
-                  <el-row v-for="(v,i) in cardTableContent" :key="i">
+                  <el-row v-for="(v, i) in cardTableContent" :key="i">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
                         <el-input v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
@@ -167,7 +167,13 @@
                   <el-row>
                     <el-col :span="24" style="padding-right: 15px">
                       <el-form-item label="评价">
-                        <el-input v-model="tableForm.funcEstimate" disabled show-word-limit></el-input>
+                        <el-input
+                          type="textarea"
+                          :autosize="{ minRows: 2, maxRows: 4 }"
+                          disabled
+                          v-model="tableForm.funcEstimate"
+                        >
+                        </el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -203,7 +209,13 @@
                   <el-row>
                     <el-col :span="24" style="padding-right: 15px">
                       <el-form-item label="评价">
-                        <el-input v-model="tableForm.structEstimate" disabled show-word-limit></el-input>
+                        <el-input
+                          type="textarea"
+                          :autosize="{ minRows: 2, maxRows: 4 }"
+                          disabled
+                          v-model="tableForm.structEstimate"
+                        >
+                        </el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -274,7 +286,7 @@ export default {
       pagination: { current: 1, size: 30 }, // 分页参数信息
       paginationTotal: 0, // 总页数
       tableData: [],
-        isPromptBox: {}, // 当前列信息
+      isPromptBox: {}, // 当前列信息
       form: {}
     }
   },
@@ -297,7 +309,7 @@ export default {
       // this.openDetails(this.isPromptBox)
     },
     // 下一页
-     nextPage() {
+    nextPage() {
       if (this.currentIndex + 1 >= this.cardTable.length) {
         this.currentIndex = this.cardTable.length - 1
         return
@@ -313,8 +325,8 @@ export default {
     },
     // 详情
     async openDetails(row) {
-      console.log("详情触发");
-      this.isPromptBox = {...row}
+      console.log('详情触发')
+      this.isPromptBox = { ...row }
       let res = await histroyPipeData({ expNo: row.expNo })
       this.detailsTitle = {
         expNo: row.expNo,
