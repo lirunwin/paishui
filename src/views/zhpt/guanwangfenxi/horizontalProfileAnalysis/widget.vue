@@ -110,7 +110,7 @@ export default {
       }
     },
     analysis_new (drawFeature) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B" }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       let queryTask = new iQuery({ ...appconfig.gisResource["iserver_resource"].dataServer, dataSetInfo })
 
       queryTask.spaceQuery(drawFeature).then(resArr => {

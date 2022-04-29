@@ -114,8 +114,6 @@ export default {
       this.map.addLayer(this.lightLayer)
     },
     choosePipe () {
-            this.data.that.setPipesView()
-      return
       this.selectedPipe = []
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
@@ -148,7 +146,7 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B" }]
+        let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       let dataServer = appconfig.gisResource['iserver_resource'].dataServer
       return new Promise(resolve => {
         new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {
