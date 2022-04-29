@@ -268,7 +268,7 @@ export default {
         }
     },
     beforeDestroy(){
-        this.view.un(this.mapEvent.type, this.mapEvent.listener)
+        if(this.view) this.view.un(this.mapEvent.type, this.mapEvent.listener)
         if(this.$refs.commonPopup.isShow) this.$refs.commonPopup.closePopup()
     }
 }
