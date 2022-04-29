@@ -1,6 +1,6 @@
 <template>
   <div class="engineering-manage">
-    <!-- 管道评估汇总 -->
+    <!-- 管道缺陷汇总 -->
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">

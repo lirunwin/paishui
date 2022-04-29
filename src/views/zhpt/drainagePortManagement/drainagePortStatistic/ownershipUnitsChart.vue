@@ -97,7 +97,7 @@ export default {
                     {
                         name: '排放口类别',
                         type: 'pie',
-                        radius: '50%',
+                        radius: '65%',
                         data: data,
                         emphasis: {
                             itemStyle: {
@@ -136,6 +136,13 @@ export default {
                 },
                 yAxis: {
                     type: 'value'
+                },
+                grid:{
+                    top:30,
+                    bottom:30
+                },
+                tooltip: {
+                    trigger: "axis"
                 },
                 series: [
                     {

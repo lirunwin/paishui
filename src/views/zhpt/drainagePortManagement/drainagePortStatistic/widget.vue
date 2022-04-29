@@ -1,6 +1,6 @@
 <template>
     <div class="drainagePortStatistic">
-        <children-map-view></children-map-view>
+        <port-map-view></port-map-view>
         <div class="statisticContainer">
             <div class="title">
                 <div class="iconSymbol"></div>
@@ -57,7 +57,7 @@
                     </el-radio-group>
                     <el-select v-model="region" 
                         placeholder="请选择" 
-                        style="margin-left:14px;width:157px" 
+                        style="margin-left:14px;width:164px" 
                         :disabled="isRegion"
                         multiple 
                         clearable 
@@ -98,14 +98,14 @@
 </template>
 
 <script>
-import childrenMapView from './childrenMapView.vue'
+import portMapView from './portMapView.vue'
 import portTypeChart from './portTypeChart.vue'
 import ownershipUnitsChart from './ownershipUnitsChart.vue'
 import roadNameChart from './roadNameChart.vue'
 export default {
     name:"drainagePortStatistic",//排放口统计
     components:{
-        childrenMapView,
+        portMapView,
         portTypeChart,
         ownershipUnitsChart,
         roadNameChart

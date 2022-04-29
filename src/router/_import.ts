@@ -1,4 +1,4 @@
-export default file => {
+export default (file) => {
   // console.log(file);
   return map[file] || null
 }
@@ -40,11 +40,10 @@ const map = {
   coordinateTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/coordinateTool.vue'), //坐标
   clearMeasureTool: () => import('@/views/zhpt/tongyonggongju/rightTopTool/measureTool/clearMeasureTool.vue'), //清除测量
 
-  toolBox: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/widget.vue'),//工具箱
-  fullScreen: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/fullScreen.vue'),//全屏
-  mapScreenshot: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/mapScreenshot.vue'),//截图
+  toolBox: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/widget.vue'), //工具箱
+  fullScreen: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/fullScreen.vue'), //全屏
+  mapScreenshot: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/mapScreenshot.vue'), //截图
 
-  
   otherTools: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/widget.vue'), //其他工具
   mapLegend: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/mapLegend.vue'), // 图例
   attrSearch: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/attrSearch.vue'), // 属性查询
@@ -57,6 +56,32 @@ const map = {
   initExtent: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/initExtent/widget.vue'), // 初始范围
   viewSwitch: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/viewSwitch/widget.vue'), // 视图切换
   mapCompass: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/mapCompass/widget.vue'), // 指北针
+
+  // 监测中心
+  //    检测配置
+  //设备类型配置
+  '/monitoring/settings/device/types': () => import('@/views/monitoring/settings/device/types/index.vue'),
+  //设备档案管理
+  '/monitoring/settings/device/archives': () => import('@/views/monitoring/settings/device/archives/index.vue'),
+  //监测点管理
+  '/monitoring/settings/points': () => import('@/views/monitoring/settings/points/index.vue'),
+  //监测站管理
+  '/monitoring/settings/sites': () => import('@/views/monitoring/settings/sites/index.vue'),
+  //图标管理
+  '/monitoring/settings/icons': () => import('@/views/monitoring/settings/icons/index.vue'),
+  //指标标准配置
+  '/monitoring/settings/standards': () => import('@/views/monitoring/settings/standards/index.vue'),
+
+  // 监控中心
+  '/monitoring/monitor': () => import('@/views/monitoring/monitor/index.vue'),
+  // 指标实时监测
+  '/monitoring/monitor/points': () => import('@/views/monitoring/monitor/points/index.vue'),
+  // 站点实时监测
+  '/monitoring/monitor/sites': () => import('@/views/monitoring/monitor/sites/index.vue'),
+  '/monitoring/report/detail': () => import('@/views/monitoring/report/detail/index.vue'),
+  '/monitoring/report/points': () => import('@/views/monitoring/report/points/index.vue'),
+  '/monitoring/report/sites': () => import('@/views/monitoring/report/sites/index.vue'),
+  '/monitoring/report/warnings': () => import('@/views/monitoring/report/warnings/index.vue')
 
   // 设施评估
   // 管道检测数据管理
@@ -297,5 +322,4 @@ const map = {
   // pipeFlushing: () => import('@/views/currentSystem/onlineHydrualicsModel'),	// 管道冲洗
   // riskAssessment: () => import('@/views/currentSystem/onlineHydrualicsModel'),	// 风险评估
   // hydrualicsSysSetting: () => import('@/views/currentSystem/onlineHydrualicsModel')	// 系统设置
-
 }

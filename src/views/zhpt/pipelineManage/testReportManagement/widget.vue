@@ -227,8 +227,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" :icon="isLoading" @click="uploadWord" :disabled="isLoading">确 定</el-button>
-        <el-button @click="hideUpdataDocx" >取 消</el-button>
+        <el-button type="primary" :icon="isLoading" @click="uploadWord" :disabled="loadingBool">确 定</el-button>
+        <el-button @click="hideUpdataDocx">取 消</el-button>
       </div>
     </el-dialog>
     <!-- 视频上传 -->
@@ -292,8 +292,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" :icon="isLoading" @click="uploadVideoWord" :disabled="isLoading">确 定</el-button>
-        <el-button @click="hideUpdataDocx" >取 消</el-button>
+        <el-button type="primary" :icon="isLoading" @click="uploadVideoWord" :disabled="loadingBool">确 定</el-button>
+        <el-button @click="hideUpdataDocx">取 消</el-button>
       </div>
     </el-dialog>
     <!-- 发布 -->
@@ -484,7 +484,7 @@ export default {
   computed: {
     // 加载按钮
     isLoading() {
-      if (this.loadingBool) return 'el-icon-loading'
+      return this.loadingBool ? 'el-icon-loading' : ''
     },
     // 动态设置上传携带参数
     getData() {
@@ -496,7 +496,7 @@ export default {
   },
   mounted() {},
   methods: {
-    // 打开上传弹框时
+    // 关闭上传弹框时
     closeDialog() {
       this.loadingBool = false
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
@@ -815,14 +815,16 @@ export default {
               type: 'success'
             })
             this.getDate()
+          } else {
+            this.$message.error('上传文件失败' + res.message)
           }
           let timeId = setTimeout(() => {
             this.dialogFormVisible2 = false
             this.form.name = ''
             clearTimeout(timeId)
-          }, 2000)
-          console.log('上传后的code码', res)
-          console.log('上传后的文件信息', file)
+          }, 1000)
+          // console.log('上传后的code码', res)
+          // console.log('上传后的文件信息', file)
         }
       })
     },

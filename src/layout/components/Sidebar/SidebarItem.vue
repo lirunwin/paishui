@@ -3,8 +3,8 @@
     <template
       v-if="
         hasOneShowingChild(item.children, item) &&
-        (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
-        !item.alwaysShow
+          (!onlyOneChild.children || onlyOneChild.noShowingChildren) &&
+          !item.alwaysShow
       "
     >
       <app-link v-if="item.type === 'sys'" :to="resolvePath(onlyOneChild.path)">
@@ -44,7 +44,7 @@
   </div>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
 
 import { isExternal } from '@/utils/validate'
