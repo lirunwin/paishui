@@ -5,9 +5,9 @@ import GeoJSON from 'ol/format/GeoJSON'
 
 export default class DisAnalysisTool {
     private Field = {
-        diaMeterField: "DIAMETER",
-        edeepField: "END_DEPTH",
-        sdeppField: "START_DEPTH"
+        diaMeterField: "DIAMETER", // 管径
+        edeepField: "END_DEPTH", // 终点埋深
+        sdeppField: "START_DEPTH" // 起点埋深
     }
     /**
      * 是否相交

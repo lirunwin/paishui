@@ -17,7 +17,7 @@ import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
 import { esriConfig, appconfig } from 'staticPub/config'
 import leftBottomTool from '@/views/zhpt/tongyonggongju/leftBottomTool/widget.vue'
 export default {
-    name:"childrenMapView",//
+    name:"portMapView",//
     components: {
         leftBottomTool
     },

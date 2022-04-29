@@ -1,6 +1,6 @@
 <template>
     <div class="drainagePortStatistic">
-        <port-map-view></port-map-view>
+        <drainage-household-map></drainage-household-map>
         <div class="statisticContainer">
             <div class="title">
                 <div class="iconSymbol"></div>
@@ -84,10 +84,7 @@
             </div>
             <div class="chartContainer">
                 <div class="chartItem">
-                    <port-type-chart></port-type-chart>
-                </div>
-                <div class="chartItem">
-                    <ownership-units-chart></ownership-units-chart>
+                    <drainage-household-chart></drainage-household-chart>
                 </div>
                 <div class="chartItem">
                     <road-name-chart></road-name-chart>
@@ -98,16 +95,14 @@
 </template>
 
 <script>
-import portMapView from './portMapView.vue'
-import portTypeChart from './portTypeChart.vue'
-import ownershipUnitsChart from './ownershipUnitsChart.vue'
+import drainageHouseholdMap from './drainageHouseholdMap.vue'
+import drainageHouseholdChart from './drainageHouseholdChart.vue'
 import roadNameChart from './roadNameChart.vue'
 export default {
     name:"drainagePortStatistic",//排放口统计
     components:{
-        portMapView,
-        portTypeChart,
-        ownershipUnitsChart,
+        drainageHouseholdMap,
+        drainageHouseholdChart,
         roadNameChart
     },
     data(){
@@ -196,7 +191,7 @@ export default {
             .chartItem{
                 float: left;
                 height: 50%;
-                width: 50%;
+                width: 100%;
                 padding: 20px;
             }
             .chartItem:last-child{

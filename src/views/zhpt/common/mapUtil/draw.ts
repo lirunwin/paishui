@@ -39,7 +39,7 @@ export default class iDraw {
 
     constructor (map, type, { startDrawCallBack = null, conditionCallBack = null, endDrawCallBack = null, showCloser = true, maxLength = 1e3 }) {
         if (!map) throw new Error("绘制器没有地图对象")
-        if (!type) throw new Error("无绘制类型")
+        if (!type) throw new Error(`无绘制类型`)
         this.map = map
         this.type = type
         this.startDrawCallBack = startDrawCallBack
@@ -62,14 +62,13 @@ export default class iDraw {
 
     start () {
         // 初始化绘制
-        let geometryFunction = {}
-        if (this.type === "rect") geometryFunction = { geometryFunction: createBox() }
+        let geometryFunction = this.type === "rect" ? { geometryFunction: createBox() } : {}
 
         this.drawer = new Draw({
             source: this.vectorSource,
             type: this.drawType[this.type],
             maxPoints: this.maxLength,
-            style: comSymbol.getDrawStyle(7, "#f40", 5, "#C0DB8D"),
+            style: comSymbol.getDrawStyle(5, "#f40", 5, "#C0DB8D"),
             condition: evt => {
                 this.conditionCallBack && this.conditionCallBack(evt)
                 return true

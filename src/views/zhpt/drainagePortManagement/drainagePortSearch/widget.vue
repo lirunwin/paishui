@@ -54,8 +54,8 @@
             </el-col>
             <el-col :span="10">
                 <div class="btnGroup">
-                    <el-button type="primary" icon="el-icon-search" size="mini">搜索</el-button>
-                    <el-button type="primary" icon="el-icon-download" size="mini">导出</el-button>
+                    <el-button type="primary" icon="el-icon-search" size="mini" @click="getPage()">搜索</el-button>
+                    <el-button type="primary" icon="el-icon-download" size="mini" @click="exportOperation()">导出</el-button>
                 </div>
             </el-col>
         </el-row>
@@ -86,10 +86,12 @@
 </template>
 
 <script>
+import axios from "axios";
+import { geteSessionStorage } from '@/utils/auth'
 import Overlay from 'ol/Overlay';
 import {toLonLat} from 'ol/proj';
 import {toStringHDMS} from 'ol/coordinate';
-import {getOutfall} from '@/api/drainage/drainagePort'
+import {getOutfall} from '@/api/drainage/drainage'
 import Config from "./config.json"
 import tableItem from "@/components/Table/index.vue"
 export default {
@@ -123,15 +125,7 @@ export default {
                 textAlign: 'center'
             },
             //表格数据
-            list:[{
-                date: '2016-05-02',
-            }, {
-                date: '2016-05-04',
-            }, {
-                date: '2016-05-01',
-            }, {
-                date: '2016-05-03',
-            }],
+            list:[],
             //表格列
             column:[],
             //分页信息
@@ -140,6 +134,8 @@ export default {
                 size:10,
                 current:1
             },
+            //导出url
+            expXls:'/psjc/outfall/export',
             //地图事件
             mapEvent:null,
             overlay:null,
@@ -151,24 +147,60 @@ export default {
         }
     },
     mounted(){
-        // this.getPage();
+        this.getPage();
         this.column=this.config.column
         this.view=this.$attrs.data.mapView
     },
     methods:{
         getPage(){
-            getOutfall().then(res=>{
+            let data={
+                current:this.pagination.current,
+                size:this.pagination.size,
+            }
+            getOutfall(data).then(res=>{
                 const result = res.data;
-                console.log(result.result.records)
+                this.list=result.result.records.map((item)=>{
+                    return{
+                        ...item
+                    }
+                })
+                this.total=result.result.total
             }).catch(err=>{
                 console.log(err)
             })
         },
-        handleCurrentChange(){
-
+        // 页码改变
+        handleCurrentChange(currentPage) {
+            this.pagination.current = currentPage
+            this.getPage()
         },
-        handleSizeChange(){
-
+        // 每页显示条数
+        handleSizeChange(pagesize) {
+            this.pagination.size = pagesize
+            this.getPage()
+        },
+        //导出数据
+        exportOperation(){
+            axios.defaults.baseURL = "/api";
+            axios({
+                headers: {
+                    'Content-Type': 'application/json;charset=UTF-8',
+                    'Authorization':'bearer ' + geteSessionStorage('token')
+                },
+                method: 'get',
+                url:this.expXls,
+                responseType:"blob",
+            }).then(res=>{
+                var blob = res.data;
+                const href = URL.createObjectURL(blob) // 创建新的URL表示指定的blob对象
+                const a = document.createElement('a')
+                a.style.display = 'none'
+                a.href = href // 指定下载链接
+                a.download ='排水口数据.xls' // 指定下载文件名
+                a.click()
+            }).catch(err=>{
+                console.log(err)
+            })
         },
         //列表双击定位
         rowDblclick(row, column, event) {

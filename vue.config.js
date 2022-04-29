@@ -48,6 +48,13 @@ module.exports = {
         pathRewrite: {
           '^/backstage': ''
         }
+      },
+      '/api': {
+        target: 'http://192.168.2.235:1118', // 后台接口地址
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': ''
+        }
       }
       // '/omsweb': { // 自定义 接口前缀
       //   target: 'http://58.17.241.6:1212', // 这里可以跟随项目实际部署服务器来

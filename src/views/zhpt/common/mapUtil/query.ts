@@ -8,10 +8,18 @@ import * as turf from '@turf/turf'
 
 export default class iQuery {
 
-    dataServiceUrl = null
-    dataSource = null
-    dataSetInfo = null
-    featureService = null
+    dataServiceUrl = null // 服务地址
+    dataSource = null // 数据源
+    dataSetInfo = null // 数据集
+    featureService = null // 查询服务
+    maxFeatures = 1e5 // 最大返回要素数量
+    // 空间查询模式
+    spatialQueryMode = {
+        CROSS : "CROSS",
+        INTERSECT: "INTERSECT",
+        NONE: "NONE",
+        CONTAIN: "CONTAIN"
+    }
 
     constructor ({ dataServiceUrl, dataSource, dataSetInfo }) {
         this.dataServiceUrl = dataServiceUrl
@@ -24,13 +32,7 @@ export default class iQuery {
         this.featureService = new FeatureService(this.dataServiceUrl)
     }
 
-    // 空间查询模式
-    spatialQueryMode: {
-        CROSS : "CROSS",
-        INTERSECT: "INTERSECT",
-        NONE: "NONE",
-        CONTAIN: "CONTAIN"
-    }
+
     
     // 空间查询
     spaceQuery (queryFeature) {
@@ -45,18 +47,20 @@ export default class iQuery {
         }
         let queryPromises = this.dataSetInfo.map(info => {
             let layerName = info.name
+            let attachName = info.attachName
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesByGeometryParameters({
                     toIndex: -1,
-                    maxFeatures: 1e5,
+                    maxFeatures: this.maxFeatures,
                     datasetNames: [this.dataSource + ':' + info.name],
                     geometry: queryFeature.getGeometry(),
-                    spatialQueryMode: "INTERSECT" // 相交空间查询模式
+                    spatialQueryMode: this.spatialQueryMode["INTERSECT"] // 相交空间查询模式
                 })
                 this.featureService.getFeaturesByGeometry(params, result => {
                     if (result.type == "processFailed") resolve(null);
                     else {
                         result.layerName = layerName
+                        result.attachName = attachName
                         resolve(result)
                     };
                 })
@@ -72,7 +76,7 @@ export default class iQuery {
             let layerName = info.name
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesBySQLParameters({
-                    maxFeatures: 1e5,
+                    maxFeatures: this.maxFeatures,
                     toIndex: -1,
                     datasetNames: [this.dataSource + ':' + info.name],
                     queryParameter: { attributeFilter: sqlStr }
