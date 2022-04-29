@@ -114,11 +114,8 @@ export default {
   watch: {
     // 监听面板是否被改变
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
-      if (val == 'trackingAnalysis') {
-        this.removeAll()
-      } else {
-        this.init()
-      }
+      if (val !== 'trackingAnalysis') this.removeAll()
+      else this.init()
     }
   },
   destroyed() {
@@ -144,7 +141,7 @@ export default {
       this.rootPage.$refs.popupWindow.showPopup(position, featureJson, this.afterClosePopup)
     },
     afterClosePopup () {
-      this.vectorLayer.getSource().clear()
+      this.vectorLayer && this.vectorLayer.getSource().clear()
     },
     selectPipe() {
       this.drawer && this.drawer.end()
@@ -178,7 +175,7 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "给水管线", attachName: "给水管线节点" }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", attachName: "TF_PSPS_POINT_B" }]
       let dataServer = appconfig.gisResource['iserver_resource'].dataServer
       return new Promise(resolve => {
         new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {

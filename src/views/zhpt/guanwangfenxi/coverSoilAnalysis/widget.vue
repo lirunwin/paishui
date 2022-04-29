@@ -103,14 +103,14 @@ export default {
     this.init()
   },
   destroyed() {
-    this.remveAll()
+    this.removeAll()
   },
   methods: {
     init () {
       this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
       this.mapView.addLayer(this.vectorLayer)
     },
-    remveAll () {
+    removeAll () {
       this.rootPage.$refs.popupWindow.closePopup() // 清除地图视图点击选择的要素,关闭弹窗
       this.mapClickEvent && unByKey(this.mapClickEvent)
       this.mapView.removeLayer(this.vectorLayer)
@@ -127,8 +127,8 @@ export default {
       this.mapClickEvent = this.mapView.on("click", evt => {
         let { coordinate } = evt
         let dataServer = appconfig.gisResource.iserver_resource.dataServer
-        let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
-        const tolerateDis = 0.5 // 模糊距离
+        let dataSetInfo = [{ name: "TF_PSPS_PIPE_B" }]
+        const tolerateDis = 0.3 // 模糊距离
         let geometryJson = turf.buffer(turf.point(coordinate), tolerateDis / 1000, { units: 'kilometers' })
         new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(new GeoJSON().readFeature(geometryJson)).then(resArr => {
           let featureObj = resArr.find(res => res.result.featureCount !== 0)
@@ -230,16 +230,25 @@ export default {
     },
 
     getPipeSoilDepth(feature) {
+      // 字段名
+      let START_HEIGHT = 'IN_ELEV',
+          END_HEIGHT = 'OUT_ELEV',
+          START_DEPTH = 'S_DEEP',
+          END_DEPTH = 'E_DEEP',
+          BURYTYPE = 'EMBED'
+
+      console.log('覆土分析')
       let feaType;
-      let typeName = feature.properties.TYPENAME
+      let typeName = feature.properties.TYPE
       if (typeName == '移动线缆' || typeName == '电信线缆' || typeName == '广电线缆')
         feaType = '电信线缆'
       else {
         feaType = typeName
       }
-      const buryType = feature.properties.BURYTYPE // 埋设方式
-      const startDepth = feature.properties.START_DEPTH // 起点埋深
-      const endDepth = feature.properties.END_DEPTH // 终点埋深
+      const buryType = feature.properties[BURYTYPE] // 埋设方式
+      const startDepth = feature.properties[START_DEPTH] // 起点埋深
+      const endDepth = feature.properties[END_DEPTH] // 终点埋深
+
       let standard = null // 获取对应的标准
       let result = []
       let standardDescrip = null
@@ -267,16 +276,16 @@ export default {
         result[1] = Number(endDepth) > standard.ditch
       }
       this.result = {
-        pipeName: feature.properties.TYPENAME + '-' + feature.properties.SID,
+        pipeName: feature.properties.TYPE + '-' + feature.properties.LNO,
         buryType: "埋设方式：" + buryType,
         depth: '起止深度：' + startDepth + 'm / ' + endDepth + 'm',
         standard: standardDescrip,
         result: result
       }
-      let startGroundHeight = parseFloat(feature.properties.START_HEIGHT) + parseFloat(feature.properties.START_DEPTH)
-      let endGroundHeight = parseFloat(feature.properties.END_HEIGHT) + parseFloat(feature.properties.END_DEPTH)
+      let startGroundHeight = parseFloat(feature.properties[START_HEIGHT]) + parseFloat(feature.properties[START_DEPTH])
+      let endGroundHeight = parseFloat(feature.properties[END_HEIGHT]) + parseFloat(feature.properties[END_DEPTH])
       let groundHeightArray = [startGroundHeight.toFixed(2), endGroundHeight.toFixed(2)]
-      let nodeHeightArray = [feature.properties.START_HEIGHT, feature.properties.END_HEIGHT]
+      let nodeHeightArray = [feature.properties[START_HEIGHT], feature.properties[END_HEIGHT]]
       let proj = this.mapView.getView().getProjection()
       let xAxis = [0, getLength(new GeoJSON().readFeature(feature).getGeometry(), { "projection": proj, "radius": 6378137 }).toFixed(2)]
       let standardValArry = [(startGroundHeight - standardVal).toFixed(2), (endGroundHeight - standardVal).toFixed(2)]
