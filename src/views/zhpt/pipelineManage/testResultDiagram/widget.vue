@@ -200,7 +200,7 @@ export default {
       layers.forEach((layer) => this.mapView.addLayer(layer))
     },
     initMap() {
-      let center = [104.74, 31.51]
+      let center = [113.1547, 29.3682]
       let colorBox = ['#ff0000', '#0c9923', '#f405ff']
 
       let points = this.randomPoint(center, 0.025, 50)
@@ -232,15 +232,15 @@ export default {
       // 查询的图形坐标
       let polygonCoors = [
         [
-          [104.75026032443446, 31.52579871191445],
-          [104.74952647739394, 31.5186207705493],
-          [104.75837850732029, 31.518230914309022],
-          [104.75723187131948, 31.526486693514943],
-          [104.75026032443446, 31.52579871191445]
+          [113.11214127919722, 29.3790030636461],
+          [113.13265481374312, 29.3790030636461],
+          [113.13265481374312, 29.392564312425396],
+          [113.11214127919722, 29.392564312425396],
+          [113.11214127919722, 29.3790030636461]
         ]
       ]
       let polygon = new Feature({ geometry: new Polygon(polygonCoors) })
-      let dataSetInfo = [{ name: '给水管线' }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       let queryTask = new iQuery({ ...appconfig.gisResource['iserver_resource'].dataServer, dataSetInfo })
       queryTask.spaceQuery(polygon).then((resArr) => {
         let pipeFeaturesObj = resArr.find((res) => res.result.featureCount !== 0)

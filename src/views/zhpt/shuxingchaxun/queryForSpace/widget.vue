@@ -134,7 +134,7 @@ export default {
       drawer: null,
       queryService: null,
       queryLayer: null,
-      fields: ['SID', 'START_SID', 'END_SID', 'MATERIAL'],
+      fields: ['LNO', 'S_POINT', 'E_POINT', 'MATERIAL'],
       rowData: null
     }
   },

@@ -2,33 +2,33 @@
   <!-- 地图弹窗 -->
   <div id="popup-window" class="popup-window">
     <div class="window-header">
-      <span class="popup-title" v-cloak v-if="flg">{{infoObject.properties.TYPENAME+'('+infoObject.properties.SID+')'}}</span>
+      <span class="popup-title" v-cloak v-if="flg">{{infoObject.properties.TYPE+'('+infoObject.properties.S_POINT+'/'+  infoObject.properties.E_POINT + ')'}}</span>
       <span class="close-btn el-icon-close" title="关闭" @click="closePopup"></span>
     </div>
     <!-- 管线属性内容 -->
-    <div class="window-body" v-if="flg&&infoObject.geometry.type=='LineString'">
+    <div class="window-body" v-if="flg&&infoObject.geometry.type=='LineString'"> 
       <ul>
         <li>
-          <span>类型：<i v-text="infoObject.properties.TYPENAME"></i></span>
+          <span>类型：<i v-text="infoObject.properties.TYPE"></i></span>
           <span>材质：<i v-text="infoObject.properties.MATERIAL"></i></span>
 
         </li>
         <li>
-          <span>管径：<i v-text="infoObject.properties.DIAMETER"></i></span>
-          <span>所在道路：<i v-text="infoObject.properties.LANE_WAY"></i></span>
+          <span>管径：<i v-text="infoObject.properties.PSIZE"></i></span>
+          <span>位置：<i v-text="infoObject.properties.POINTPOSITION"></i></span>
         </li>
         <li>
           <span>起止埋深：<i
-               v-text="Number(infoObject.properties.START_DEPTH).toFixed(2)+' / '+Number(infoObject.properties.END_DEPTH).toFixed(2)"></i></span>
+               v-text="Number(infoObject.properties.S_DEEP).toFixed(2)+' / '+Number(infoObject.properties.E_DEEP).toFixed(2)"></i></span>
           <span>起止高程：<i
-               v-text="Number(infoObject.properties.START_HEIGHT).toFixed(3)+' / '+Number(infoObject.properties.END_HEIGHT).toFixed(3)"></i></span>
+               v-text="Number(infoObject.properties.IN_ELEV).toFixed(3)+' / '+Number(infoObject.properties.OUT_ELEV).toFixed(3)"></i></span>
         </li>
         <li>
-          <span>埋设方式：<i v-text="infoObject.properties.BURYTYPE"></i></span>
-          <span>修改日期：<i v-text="infoObject.properties.CHANGEDATE"></i></span>
+          <span>埋设方式：<i v-text="infoObject.properties.EMBED"></i></span>
+          <span>更新日期：<i v-text="infoObject.properties.UPDATETIME"></i></span>
         </li>
         <li>
-          <span style="width:100%">权属单位：<i v-text="infoObject.properties.OWNERUNIT"></i></span>
+          <span style="width:100%">权属单位：<i v-text="infoObject.properties.BELONG"></i></span>
         </li>
       </ul>
     </div>
@@ -36,23 +36,25 @@
     <div class="window-body" v-if="flg&&infoObject.geometry.type=='Point'">
       <ul>
         <li>
-          <span>类型：<i v-text="infoObject.properties.TYPENAME"></i></span>
-          <span>所属类型：<i v-text="infoObject.properties.SUBTYPE +' '+ infoObject.properties.ADJUNCT"></i></span>
+          <span>类型：<i v-text="infoObject.properties.TYPE"></i></span>
+          <!-- <span>所属类型：<i v-text="infoObject.properties.SUBTYPE +' '+ infoObject.properties.ADJUNCT"></i></span> -->
+          <span>所属类型：<i v-text="infoObject.properties.POINT_TYPE"></i></span>
         </li>
         <li>
-          <span>地面高程：<i v-text="infoObject.properties.HEIGHT"></i></span>
-          <span>所在道路：<i v-text="infoObject.properties.LANE_WAY"></i></span>
+          <span>地面高程：<i v-text="infoObject.properties.HIGH"></i></span>
+          <span>位置：<i v-text="infoObject.properties.POINTPOSITION"></i></span>
         </li>
         <li>
-          <span>井深：<i v-text="infoObject.properties.WELLDEPTH"></i></span>
-          <span>符号角度：<i v-text="infoObject.properties.PDIRECTION"></i></span>
+          <span>井深：<i v-text="infoObject.properties.WELLDEEP"></i></span>
+          <span>符号角度：<i v-text="infoObject.properties.ROTATION"></i></span>
         </li>
         <li>
-          <span>埋深：<i v-text="infoObject.properties.DEPTH"></i></span>
-          <span>修改日期：<i v-text="infoObject.properties.CHANGEDATE"></i></span>
+          <!-- <span>埋深：<i v-text="infoObject.properties.DEPTH"></i></span> -->
+          <span>接入管数：<i v-text="infoObject.properties.WELLPIPES"></i></span>
+          <span>更新日期：<i v-text="infoObject.properties.UPDATE_TIME"></i></span>
         </li>
         <li>
-          <span style="width:100%">权属单位：<i v-text="infoObject.properties.OWNERUNIT"></i></span>
+          <span style="width:100%">权属单位：<i v-text="infoObject.properties.BELONG"></i></span>
         </li>
       </ul>
     </div>

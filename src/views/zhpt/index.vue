@@ -392,6 +392,8 @@ export default class BaseMap extends Vue {
       view: new View({
         center: initCenter,
         zoom: initZoom,
+        maxZoom: 20,
+        minZoom: 9,
         projection: 'EPSG:4326'
       })
     })
@@ -439,8 +441,7 @@ export default class BaseMap extends Vue {
 
   // 定位某条管线
   setPipesView (pipes) {
-    console.log('定位')
-    let coors = pipes || [[104.75527467557153, 31.524098782069018], [104.75489471757147, 31.524367191069018]]
+    let coors = pipes || [[113.14459646427814, 29.365111002105298], [113.14462310850658, 29.36565173168358]]
     let feature = new Feature({ geometry: new LineString(coors) })
     if (!this.vectorLayer) {
       this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, "f00", 5, "#00ffff", "fff6") })

@@ -28,7 +28,8 @@ export default {
             searchEvent: null,
             tipOverlay: null,
             popupWindow: null,
-            lightLayer: null
+            lightLayer: null,
+            exit: false
         }
     },
     methods: {
@@ -65,7 +66,7 @@ export default {
             const bufferDis = 3e-3
             let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
             let dataServerConfig = appconfig.gisResource.iserver_resource.dataServer
-            let queryData = await this.smGetFeatureService(queryFeature, dataServerConfig) 
+            let queryData = await this.smGetFeatureService(queryFeature, dataServerConfig)
             let showData = []
             for (let data of queryData) {
                 let features = data.result.features.features
@@ -73,7 +74,6 @@ export default {
                     showData.push(features)
                 }
             }
-            
             if(showData.length !== 0) {
                 let feature = showData[0][0]
                 this.openPopup(position, feature)
@@ -117,7 +117,7 @@ export default {
          */
         afterClosePopup () {
             this.map.removeLayer(this.lightLayer)
-            this.attrSearchEvent()
+            !this.exit && this.attrSearchEvent()
         },
         /**
          * 高亮点击的设施
@@ -135,18 +135,26 @@ export default {
             }
         },
         closeAll () {
+            this.exit = true
             this.tipOverlay && this.tipOverlay.setPosition(null)
             this.pointermoveEvent && unByKey(this.pointermoveEvent)
             this.searchEvent && unByKey(this.searchEvent)
-            this.rootPage.$refs.popupWindow.popup.setPosition(null)
+            this.rootPage.$refs.popupWindow.closePopup()
         }
     },
     mounted () {
-        if (this.$parent.$data.activeTools.includes("attrSearch")) {
-            this.attrSearchEvent()
-        } else {
-            this.closeAll()
-        }
+        this.$nextTick(() => {
+            document.addEventListener('keyup', e => {
+                if (e.keyCode == 27) this.closeAll()
+            })
+        })
+        this.$notify({
+            title: '操作提示',
+            message: '开启属性查看，按ESC键退出属性查看',
+            type: 'success',
+            position: 'bottom-right'
+        });
+        this.attrSearchEvent()
     },
     destroyed () {
         this.closeAll()

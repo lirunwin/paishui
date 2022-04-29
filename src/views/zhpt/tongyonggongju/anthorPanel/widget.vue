@@ -123,6 +123,7 @@ import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
 import * as control from 'ol/control'
 import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 
 export default {
   name: 'AnthorPanel',
@@ -144,7 +145,11 @@ export default {
       pipeLayer: undefined,
       
       currMap: null,
-      defaultCheckedKeys: []
+      defaultCheckedKeys: [],
+      defaultProps: {
+        children: 'children',
+        label: 'label'
+      },
     }
   },
   mounted: function() {
@@ -200,30 +205,13 @@ export default {
       // }
     },
 
-    addLayers(layers) {
-      layers.forEach((layerConfig) => {
-        let { name, url, parentname, id, visible = true } = layerConfig
-        // 显示图层的 id
-        let visibleLayerIndex = [2]
-        visible = visibleLayerIndex.includes(layerConfig.id)
-
-        let layer = new TileLayer({
-          name,
-          parentname,
-          id,
-          visible,
-          source: new TileSuperMapRest({
-            url,
-            crossOrigin: 'anonymous', // 是否请求跨域操作
-            wrapX: true
-          }),
-          properties: {
-            projection: 'EPSG:4326'
-          }
-        })
-        this.currMap.addLayer(layer)
-      })
-    },
+  addLayers(layers) {
+    layers.forEach((layerConfig) => {
+      let { name, type, url, parentname, id, visible = true } = layerConfig
+      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
+      this.currMap.addLayer(layer)
+    })
+  },
 
     setTreeData() {
       let layers = this.currMap.getLayers().array_
@@ -258,6 +246,7 @@ export default {
           })
         })
       })
+      
       this.layerTable = layersData
       this.defaultCheckedKeys = defaultCheckedKeys
     },

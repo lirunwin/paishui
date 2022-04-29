@@ -117,6 +117,7 @@ export default {
       if (val !== "bufferAnalysis") this.removeAll()
     },
     drawType(val, oldVal) {
+      if (!val) return
       this.initDraw()
     }
   },
@@ -146,6 +147,7 @@ export default {
       this.vectorLayer && this.vectorLayer.getSource().clear()
       this.drawer = new iDraw(this.data.mapView, this.drawType, {
         endDrawCallBack: feature => {
+          // console.log(feature.getGeometry().getCoordinates())
           this.drawer.remove()
           this.drawFeature = feature
         },
@@ -303,9 +305,10 @@ export default {
     },
     clearResult() {
       this.vectorLayer.getSource().clear()
-      this.initDraw()
       this.drawFeature = null
       this.resultData = []
+      this.drawType = ''
+      this.selectLayer = ''
     },
     /**
      *  展示查询结果

@@ -13,6 +13,9 @@ export default class iQuery {
     dataSetInfo = null // 数据集
     featureService = null // 查询服务
     maxFeatures = 1e5 // 最大返回要素数量
+
+    projection = "EPSG:4326"
+
     // 空间查询模式
     spatialQueryMode = {
         CROSS : "CROSS",
@@ -32,21 +35,19 @@ export default class iQuery {
         this.featureService = new FeatureService(this.dataServiceUrl)
     }
 
-
-    
     // 空间查询
     spaceQuery (queryFeature) {
         if (!(queryFeature instanceof Feature)) {
             queryFeature = new GeoJSON().readFeature(queryFeature)
         } else if (queryFeature.getGeometry() instanceof Circle) {
-            // 空间查询 不支持圆, 把圆转换为点 buffer
+            // 空间查询 不支持圆, 把圆转换为 buffer / polygon
             let center = queryFeature.getGeometry().getCenter()
             let radius = queryFeature.getGeometry().getRadius()
-            let dis = olSphere.getLength(new LineString([center, [center[0] + radius, center[1]]]), { projection: "EPSG:4326" })
+            let dis = olSphere.getLength(new LineString([center, [center[0] + radius, center[1]]]), { projection: this.projection })
             queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(center), dis / 1000, { units: 'kilometers' }))
         }
         let queryPromises = this.dataSetInfo.map(info => {
-            let layerName = info.name
+            let layerName = info.label
             let attachName = info.attachName
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesByGeometryParameters({
@@ -73,7 +74,7 @@ export default class iQuery {
     sqlQuery (sqlStr) {
         // console.log("sql过滤条件", sqlStr)
         let queryPromises = this.dataSetInfo.map(info => {
-            let layerName = info.name
+            let layerName = info.label
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesBySQLParameters({
                     maxFeatures: this.maxFeatures,
@@ -105,7 +106,7 @@ export default class iQuery {
             // 超图查询 不支持圆, 把圆转换为点 buffer
             let center = bufferFeature.getGeometry().getCenter()
             let radius = bufferFeature.getGeometry().getRadius()
-            let dis = olSphere.getLength(new LineString([center, [center[0] + radius, center[1]]]), { projection: "EPSG:4326" })
+            let dis = olSphere.getLength(new LineString([center, [center[0] + radius, center[1]]]), { projection: this.projection })
             bufferFeature = new GeoJSON().readFeature(turf.buffer(turf.point(center), dis / 1000, { units: 'kilometers' }))
         }
         let queryPromises = this.dataSetInfo.map(info => {

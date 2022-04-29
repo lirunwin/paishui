@@ -139,12 +139,12 @@ export default {
     }
   },
   mounted: function () {
-      let { layers, dataServer } = appconfig.gisResource["iserver_resource"]
-      let netLayers = layers.filter(layer => layer.parentname === "管线")
+      let { dataServer } = appconfig.gisResource["iserver_resource"]
+      let netLayers = dataServer.dataSetInfo.filter(layer => layer.type === "line")
 
       // 设置图层
       this.layers = netLayers.map(layer => {
-        return { label: layer.name, value: layer.name }
+        return { label: layer.label, value: layer.name }
       })
 
       var mapView = this.mapView = this.data.mapView
