@@ -27,8 +27,8 @@
       <div class="content">
         <el-radio v-model="radio" label="1">饼状图</el-radio>
         <el-radio v-model="radio" label="2">柱状图</el-radio>
-        <el-radio v-model="radioB" label="num">管道数量</el-radio>
-        <el-radio v-model="radioC" label="length">管道长度</el-radio>
+        <el-checkbox label="管道数量"></el-checkbox>
+        <el-checkbox label="管道长度"></el-checkbox>
         <h2 style="text-align: center">管道评估统计图</h2>
         <div id="mainB" style="height: 250px"></div>
         <div style="border: 1px solid #ccc">
@@ -66,7 +66,7 @@ require('echarts/lib/chart/pie')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 export default {
-  props: ["data"],
+  props: ['data'],
   data() {
     return {
       radio: '1', // 单选框的值
@@ -100,15 +100,15 @@ export default {
         workUnit: [{ max: 255, message: '内容不能超过255个字符串', trigger: 'blur' }],
         projectIntroduction: [{ max: 1000, message: '内容不能超过1000个字符串', trigger: 'blur' }]
       },
-      value1: ""
+      value1: ''
     }
   },
   mounted() {
     this.initData()
-    this.data.that.showLegend("pipelineEvaluate", true)
+    this.data.that.showLegend('pipelineEvaluate', true)
   },
-  destroyed () {
-    this.data.that.showLegend("pipelineEvaluate", false)
+  destroyed() {
+    this.data.that.showLegend('pipelineEvaluate', false)
     this.data.that.clearMap()
   },
   beforeCreate() {
@@ -194,7 +194,7 @@ export default {
     }
   },
   computed: {
-    mapExtent () {
+    mapExtent() {
       return this.$store.state.gis.mapExtent
     }
   },
@@ -205,10 +205,11 @@ export default {
       }
     },
     mapExtent: {
-      handler (nv, ov) {
+      handler(nv, ov) {
         if (this.data.mapView.getView().getZoom() > 17) {
           this.data.that.queryForExtent(nv)
-        } else { // 在地图界别较小时，移除管网
+        } else {
+          // 在地图界别较小时，移除管网
           this.data.that.clearMap()
         }
       },
@@ -287,6 +288,12 @@ export default {
       // overflow-y: scroll;
       padding: 10px;
       box-sizing: border-box;
+      /deep/ .el-checkbox {
+        margin-right: 0px !important;
+        .el-checkbox__label {
+          padding-left: 6px;
+        }
+      }
       /deep/ .el-radio {
         margin-right: 9px;
         .el-radio__label {
