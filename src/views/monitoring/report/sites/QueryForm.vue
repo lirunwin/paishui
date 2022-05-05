@@ -23,6 +23,7 @@
         size="small"
         style="width:230px"
         clearable
+        value-format="yyyy-MM-dd"
       >
       </el-date-picker>
     </el-form-item>

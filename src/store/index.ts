@@ -18,11 +18,11 @@ const state = {
   topNavState: 'home',
   leftNavState: 'home',
   jumpText: '',
-  specialWidth: "480px"
+  specialWidth: '480px'
 }
 const mutations = {
   setSpecialWidth(state, value) {
-    state.specialWidth += value;
+    state.specialWidth += value
   }
 }
 // store.commit('increment', { amount: 10 });
