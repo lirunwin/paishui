@@ -152,7 +152,7 @@ export default {
   },
   methods: {
     // 获取服务字段
-    getServerFields ({ dataServiceUrl, dataSource }, dataSet) {
+    getServerFields ({ dataService, dataSource }, dataSet) {
       return new Promise(resolve => {
         // 设置数据集，数据源
         var param = new SuperMap.FieldParameters({
@@ -160,7 +160,7 @@ export default {
           dataset: dataSet
         });
         // 创建字段查询实例
-        new FieldService(dataServiceUrl).getFields(param, serviceResult => {
+        new FieldService(dataService.url).getFields(param, serviceResult => {
           if (serviceResult.type === "processFailed") resolve(null) 
           else resolve(serviceResult.result.fieldNames)
         });
@@ -243,7 +243,7 @@ export default {
       let dataServer = appconfig.gisResource['iserver_resource'].dataServer
       let dataSetInfo = dataServer.dataSetInfo.filter(info => info.name === this.layerId)
       
-      let queryTask = new iQuery({...dataServer, dataSetInfo })
+      let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {
         if (!resArr) return this.$message.error("服务器请求失败!")
 

@@ -7,7 +7,7 @@
         </tf-legend>
         <tf-legend class="legend_dept" label="图层选择" isopen="true" title="选择将要进行查询的图层">
           <el-select v-model="layerId" placeholder="请选择图层">
-            <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.value"/>
+            <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.name"/>
           </el-select>
         </tf-legend>        
         <tf-legend class="legend_dept" label="图层字段" isopen="true" title="请选择图层查询字段。">
@@ -224,7 +224,7 @@ export default {
 
       // 设置图层
       this.layers = netLayers.map(layer => {
-        return { label: layer.label, value: layer.name }
+        return { label: layer.label, name: layer.name }
       })
 
       var mapView = this.mapView = this.data.mapView
@@ -233,7 +233,7 @@ export default {
     },
 
     // 获取服务字段
-    getServerFields ({ dataServiceUrl, dataSource }, dataSet) {
+    getServerFields ({ dataService, dataSource }, dataSet) {
       return new Promise(resolve => {
         // 设置数据集，数据源
         var param = new SuperMap.FieldParameters({
@@ -241,7 +241,7 @@ export default {
           dataset: dataSet
         });
         // 创建字段查询实例
-        new FieldService(dataServiceUrl).getFields(param, serviceResult => {
+        new FieldService(dataService.url).getFields(param, serviceResult => {
           if (serviceResult.type === "processFailed") resolve(null) 
           else resolve(serviceResult.result.fieldNames)
         });
@@ -341,7 +341,7 @@ export default {
       this.data.that.loadText = "专题图显示中..."
 
       let dataSetInfo = [{ name: layerId }]
-      let queryTask = new iQuery({ ...appconfig.gisResource['iserver_resource'].dataServer, dataSetInfo })
+      let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(sqlFilterStr).then(resArr => {
         this.data.that.loading = false
         if (!resArr) return this.$message.error("服务器请求失败!")

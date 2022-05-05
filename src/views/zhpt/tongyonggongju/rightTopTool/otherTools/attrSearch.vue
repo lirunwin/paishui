@@ -88,7 +88,7 @@ export default {
         /**
          * 超图数据服务
          */
-        async smGetFeatureService (queryFeature, { dataServiceUrl, dataSets, dataSource, dataSetInfo }) {
+        async smGetFeatureService (queryFeature, { dataService, dataSets, dataSource, dataSetInfo }) {
             let result = []
             return Promise.all(dataSetInfo.map(info => {
                 return new Promise(resolve => {
@@ -99,7 +99,7 @@ export default {
                         geometry: new GeoJSON().readFeature(queryFeature).getGeometry(),
                         spatialQueryMode: "INTERSECT" // 相交空间查询模式
                     })
-                    new FeatureService(dataServiceUrl).getFeaturesByGeometry(params, result => {
+                    new FeatureService(dataService.url).getFeaturesByGeometry(params, result => {
                         if (result.type == "processFailed") resolve(null);
                         else resolve(result);
                     })

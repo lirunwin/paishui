@@ -130,7 +130,7 @@ export default {
         let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
         const tolerateDis = 0.3 // 模糊距离
         let geometryJson = turf.buffer(turf.point(coordinate), tolerateDis / 1000, { units: 'kilometers' })
-        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(new GeoJSON().readFeature(geometryJson)).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(new GeoJSON().readFeature(geometryJson)).then(resArr => {
           let featureObj = resArr.find(res => res.result.featureCount !== 0)
           if (featureObj) {
             this.mapView.removeInteraction(this.mapClickEvent)

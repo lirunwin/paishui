@@ -152,7 +152,7 @@ export default {
       let queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
       let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       return new Promise(resolve => {
-        new iQuery({ ...appconfig.gisResource["iserver_resource"].dataServer, dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
         let featureObj = resArr.find(res => res.result.featureCount !== 0)
         if (featureObj) resolve(featureObj.result.features)
         else resolve(null)

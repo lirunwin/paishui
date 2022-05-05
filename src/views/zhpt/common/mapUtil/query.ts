@@ -4,11 +4,11 @@ import Feature from 'ol/Feature';
 import { Circle, LineString } from 'ol/geom';
 import * as olSphere from 'ol/sphere';
 import * as turf from '@turf/turf'
-
+import { appconfig } from 'staticPub/config'
 
 export default class iQuery {
 
-    dataServiceUrl = null // 服务地址
+    dataServiceUrl = '' // 服务地址
     dataSource = null // 数据源
     dataSetInfo = null // 数据集
     featureService = null // 查询服务
@@ -24,14 +24,15 @@ export default class iQuery {
         CONTAIN: "CONTAIN"
     }
 
-    constructor ({ dataServiceUrl, dataSource, dataSetInfo }) {
-        this.dataServiceUrl = dataServiceUrl
-        this.dataSetInfo = dataSetInfo
-        this.dataSource = dataSource
-        this.init()
+    constructor ({ dataSetInfo }) {
+        this.init(dataSetInfo)
     }
 
-    private init () {
+    private init (info) {
+        let { dataService, dataSource, dataSetInfo } = appconfig.gisResource['iserver_resource'].dataServer
+        this.dataServiceUrl = dataService.url
+        this.dataSource = dataSource
+        this.dataSetInfo = info || dataSetInfo // 默认加载全部
         this.featureService = new FeatureService(this.dataServiceUrl)
     }
 

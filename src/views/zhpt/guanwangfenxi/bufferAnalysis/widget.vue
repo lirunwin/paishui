@@ -169,7 +169,7 @@ export default {
       let bufferFeature = this.getBufferFeature(this.drawFeature)
       this.vectorLayer.getSource().addFeature(bufferFeature)
 
-      new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(bufferFeature).then(resArr => {
+      new iQuery({ dataSetInfo }).spaceQuery(bufferFeature).then(resArr => {
         console.log("空间查询信息", resArr)
         let tableData = []
         resArr.forEach(res => {

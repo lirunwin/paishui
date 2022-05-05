@@ -409,7 +409,7 @@ export default {
         if (!this.selectLayer) return this.$message.error("请选择查询图层")
       let dataSetInfo = [{ name: this.selectLayer.name }]
       let sqlStr = this.checkQueryParams()
-      new iQuery({ ...this.dataServer, dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
+      new iQuery({ dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
           let featuresObj = resArr.find(item => item && item.result.featureCount !== 0)
           if (featuresObj) {
             let featuresJson = featuresObj.result.features

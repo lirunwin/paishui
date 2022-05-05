@@ -219,7 +219,7 @@ export default {
     initLayer () {
       var mapView = this.mapView = this.data.mapView
     },
-    getServerFields ({ dataServiceUrl, dataSource }, dataSet) {
+    getServerFields ({ dataService, dataSource }, dataSet) {
       return new Promise(resolve => {
         // 设置数据集，数据源
         var param = new SuperMap.FieldParameters({
@@ -227,7 +227,7 @@ export default {
           dataset: dataSet
         });
         // 创建字段查询实例
-        new FieldService(dataServiceUrl).getFields(param, serviceResult => {
+        new FieldService(dataService.url).getFields(param, serviceResult => {
           if (serviceResult.type === "processFailed") resolve(null) 
           else resolve(serviceResult.result.fieldNames)
         });
@@ -235,14 +235,13 @@ export default {
     },
 
     analysis_new () {
-      console.log("管线查询")
       if (!this.layerId) return this.$message.error('请选择查询图层名称')
       if (this.layerSelectList.length === 0) return this.$message.error('请选择管网统计的类型')
 
       let dataServer = appconfig.gisResource['iserver_resource'].dataServer
       let dataSetInfo = dataServer.dataSetInfo.filter(info => info.type === "point")
       
-      let queryTask = new iQuery({...dataServer, dataSetInfo })
+      let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {
         if (!resArr) return this.$message.error("服务器请求失败!")
 

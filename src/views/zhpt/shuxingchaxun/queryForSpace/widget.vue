@@ -168,7 +168,7 @@ export default {
       this.drawer.start()
 
       function query(feature, callback) {
-        let queryTask = new iQuery(appconfig.gisResource.iserver_resource.dataServer)
+        let queryTask = new iQuery()
         let geometry = null
         // 如果是点，缓冲距离
         if (type === 'point') {

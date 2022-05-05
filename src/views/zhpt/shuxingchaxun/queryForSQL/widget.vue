@@ -240,7 +240,7 @@ export default {
       let dataServer = appconfig.gisResource['iserver_resource'].dataServer
       let dataSetInfo = dataServer.dataSetInfo.filter(info => info.name === this.layerId)
       
-      let queryTask = new iQuery({...dataServer, dataSetInfo })
+      let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {
         if (!resArr) return this.$message.error("服务器请求失败!")
 

@@ -44,7 +44,10 @@ export const appconfig = {
     // add iserverResource
     "iserver_resource": {
       'dataServer': {
-        'dataServiceUrl': iserverConfig.baseUrl + "services/data-tf_rsps/rest/data", // 数据服务
+        'dataService': {
+          name: "数据服务",
+          url: iserverConfig.baseUrl + "services/data-tf_rsps/rest/data"
+        }, // 数据服务
         'netWorkAnalysisUrl': iserverConfig.baseUrl + 'services/transportationAnalyst-tf_rsps/rest/networkanalyst/NETWORK_PSPS@tofly',
         'dataSource': "tofly",
         'dataSet': ["psmap"],
