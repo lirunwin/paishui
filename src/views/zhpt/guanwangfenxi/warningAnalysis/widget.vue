@@ -225,8 +225,8 @@ export default {
       this.mapView.addLayer(this.vectorLayer)
       this.mapView.addLayer(this.lightLayer)
       
-      this.dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      let { dataSetInfo } = this.dataServer
+      this.dataService = appconfig.gisResource['iserver_resource'].dataService
+      let { dataSetInfo } = this.dataService
       this.datasetOptions = dataSetInfo.filter(item => item.type === 'line')
       // 
       this.drawer = new iDraw(this.mapView, 'polygon', {
@@ -409,7 +409,7 @@ export default {
         if (!this.selectLayer) return this.$message.error("请选择查询图层")
       let dataSetInfo = [{ name: this.selectLayer.name }]
       let sqlStr = this.checkQueryParams()
-      new iQuery({ ...this.dataServer, dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
+      new iQuery({ dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
           let featuresObj = resArr.find(item => item && item.result.featureCount !== 0)
           if (featuresObj) {
             let featuresJson = featuresObj.result.features

@@ -152,7 +152,7 @@ export default {
       let queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
       let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       return new Promise(resolve => {
-        new iQuery({ ...appconfig.gisResource["iserver_resource"].dataServer, dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
         let featureObj = resArr.find(res => res.result.featureCount !== 0)
         if (featureObj) resolve(featureObj.result.features)
         else resolve(null)
@@ -162,10 +162,9 @@ export default {
     // 显示连通信息
     showConnetPipe (startId, endId) {
       let that = this
-      let { netWorkAnalysisUrl } = appconfig.gisResource['iserver_resource'].dataServer
       if (!(startId && endId)) return this.$message.error('管线数据不完整, 无法执行分析')
 
-      new iNetAnalysis({ url: netWorkAnalysisUrl }).findPath(startId, endId).then(res => {
+      new iNetAnalysis().findPath(startId, endId).then(res => {
         if (res) {
           if (res.result.pathList.length !== 0) {
             let pathList = res.result.pathList

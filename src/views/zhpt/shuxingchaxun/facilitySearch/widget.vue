@@ -87,7 +87,7 @@ export default {
   computed: {
     // 图层选项
     datasetOptions() {
-      const dataSetInfo = appconfig.gisResource['iserver_resource'].dataServer.dataSetInfo
+      const dataSetInfo = appconfig.gisResource['iserver_resource'].dataService.dataSetInfo
       return dataSetInfo.map(item => {
         return { label: item.label, value: item.name, type: item.type }
       })
@@ -156,15 +156,14 @@ export default {
         if (!this.selectLayer) return this.$message.error('请先选择要分析的图层!')
         if (this.drawType === "") return this.$message.error('请选择查询范围')
         if (this.drawType === 'extent' && !this.drawFeature) return this.$message.error('请先绘制查询范围!')
-        let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-        let dataSetInfo = [{ name: this.selectLayer.value }]
+        let dataSetInfo = [{ name: this.selectLayer.value, label: this.selectLayer.label }]
 
         if (!this.vectorLayer) {
             this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
             this.mapView.addLayer(this.vectorLayer)
         }
         
-        let queryTask = new iQuery({ ...dataServer, dataSetInfo })
+        let queryTask = new iQuery({ dataSetInfo })
         this.queryStatus = true
         queryTask.sqlQuery("1=1").then(resArr => {
             let resFeaturesObj = resArr.filter(res => res && res.result.featureCount !== 0)

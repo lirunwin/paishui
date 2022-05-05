@@ -60,7 +60,7 @@ export class mapUtil {
         let coors = [[[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax],]]
         let feature = new Feature({ geometry: new Polygon(coors) })
         let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
-        new iQuery({ ...appconfig.gisResource['iserver_resource'].dataServer, dataSetInfo }).spaceQuery(feature).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(feature).then(resArr => {
             let resFeaturesObj = resArr.filter((res: any) => res && res.result.featureCount !== 0)
             let features = []
             if (resFeaturesObj.length !== 0) {

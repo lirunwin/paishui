@@ -121,8 +121,8 @@ export default {
   watch: {
     layerId(e) {
       if(!e) return 
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      this.getServerFields(dataServer, this.layerId).then(fields => {
+      let dataService = appconfig.gisResource['iserver_resource'].dataService
+      new iQuery().getServerFields(this.layerId).then(fields => {
         if (fields) {
           this.analysisAtt = fields.map(field => {
             return { label: fieldDoc[field] || field, value: field }
@@ -138,8 +138,8 @@ export default {
     }
   },
   mounted: function () {
-      let { dataServer } = appconfig.gisResource["iserver_resource"]
-      let netLayers = dataServer.dataSetInfo.filter(layer => layer.type === "line")
+      let { dataService } = appconfig.gisResource["iserver_resource"]
+      let netLayers = dataService.dataSetInfo.filter(layer => layer.type === "line")
 
       // 设置图层
       this.layers = netLayers.map(layer => {
@@ -150,21 +150,6 @@ export default {
 
   },
   methods: {
-    // 获取服务字段
-    getServerFields ({ dataServiceUrl, dataSource }, dataSet) {
-      return new Promise(resolve => {
-        // 设置数据集，数据源
-        var param = new SuperMap.FieldParameters({
-          datasource: dataSource,
-          dataset: dataSet
-        });
-        // 创建字段查询实例
-        new FieldService(dataServiceUrl).getFields(param, serviceResult => {
-          if (serviceResult.type === "processFailed") resolve(null) 
-          else resolve(serviceResult.result.fieldNames)
-        });
-      })
-    },
     addText: function (text, length, isField) {   
       this.languageChange(text, length, isField);
       var myField = this.$refs.textBox.$refs.textarea
@@ -237,10 +222,10 @@ export default {
       this.queryLayer && this.mapView.removeLayer(this.queryLayer)
       this.queryLayer = null
       this.finalData = []
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      let dataSetInfo = dataServer.dataSetInfo.filter(info => info.name === this.layerId)
+      let dataService = appconfig.gisResource['iserver_resource'].dataService
+      let dataSetInfo = dataService.dataSetInfo.filter(info => info.name === this.layerId)
       
-      let queryTask = new iQuery({...dataServer, dataSetInfo })
+      let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {
         if (!resArr) return this.$message.error("服务器请求失败!")
 

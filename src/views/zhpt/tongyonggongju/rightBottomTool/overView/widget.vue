@@ -34,6 +34,7 @@ export default {
         new TileLayer({
           source: new XYZ({
             url: appconfig.gisResource['iserver_resource'].layers[0].url + appconfig.tianMapKey,
+            crossOrigin: 'anonymous',
           })
         })
       ]

@@ -489,34 +489,25 @@ export default class BaseMap extends Vue {
     console.log('是否获取后台配置服务:' + appconfig.isloadServer)
     if (appconfig.isloadServer) {
       this.loadText = '服务加载中'
-      request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then((res1) => {
+      request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then(res1 => {
+        console.log("地图数据服务", res1)
         if (res1.code == 1) {
           const res = res1.result
           //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
-          let onlineIndex = res.findIndex((item) => {
-            return item.code == 'isOnlineAddress'
-          })
-          if (onlineIndex != -1) {
+          let onlineIndex = res.findIndex(item => item.code == 'isOnlineAddress')
+          if (onlineIndex !== -1) {
             let isOnline = true
             let onLineAddress = res[onlineIndex].child[0].cval
             console.log('判断地址' + onLineAddress)
-            axios
-              .get(onLineAddress)
-              .then(
-                (res) => {
-                  if (res.status == 200) {
-                    //正常返回
-                    isOnline = true
-                  } else {
-                    isOnline = false
-                  }
-                },
-                (error) => {
+            axios.get(onLineAddress).then(
+              res => {
+                  isOnline = res.status === 200
+              }, 
+              error => {
                   //异常返回
                   isOnline = false
                 }
-              )
-              .catch((e) => {
+              ).catch(e => {
                 isOnline = false //异常返回
               })
               .finally(() => {
@@ -532,21 +523,15 @@ export default class BaseMap extends Vue {
                     ]
                     //离线状况下替换天地图地址
                     if (!isOnline) {
-                      if (
-                        replaceItems.findIndex((valItem) => {
-                          return valItem == dr.code
-                        }) != -1
-                      ) {
-                        let index2 = res.findIndex((item) => {
-                          return item.code == dr.code + '_dl'
-                        })
-                        if (index2 != -1) {
+                      if (replaceItems.some(valItem => valItem == dr.code)) {
+                        let index2 = res.findIndex(item => item.code === dr.code + '_dl')
+                        if (index2 !== -1) {
                           let dataItem = res[index2]
                           var odr = index[dr.code]
                           odr.type = dataItem.type
                           odr.groupname = dataItem.name
                           if (dataItem.child) {
-                            odr.config = dataItem.child.map((e) => {
+                            odr.config = dataItem.child.map(e => {
                               return { name: e.name, url: e.cval }
                             })
                           }

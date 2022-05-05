@@ -147,9 +147,8 @@ export default {
     },
     getAnalysisPipe (fea) {
         let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
       return new Promise(resolve => {
-        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresObj = resArr.find(res => res && res.result.featureCount !== 0)
           if (featuresObj) resolve(featuresObj)
           else resolve(null)
@@ -157,7 +156,6 @@ export default {
       })
     },
     analysis () {
-      let { netWorkAnalysisUrl } = appconfig.gisResource['iserver_resource'].dataServer
       if (this.selectedPipe.length !== 2) return this.$message.error('选择两条管线')
       let points = this.selectedPipe.map((pipe, i) => {
         let [startPoint, endPoint] = pipe.feature.getGeometry().getCoordinates(), 
@@ -165,7 +163,7 @@ export default {
         if (i) point = { x: endPoint[0], y: endPoint[1] }
         return point
       })
-      new iNetAnalysis({ url: netWorkAnalysisUrl }).findPath(points[0], points[1]).then(res => {
+      new iNetAnalysis().findPath(points[0], points[1]).then(res => {
         if (res) {
           if (res.result.pathList.length !== 0) {
             let pathList = res.result.pathList
