@@ -55,11 +55,7 @@ export default class InfoCard extends Vue {
 
 <style lang="scss" scoped>
 .info-card {
-  position: absolute;
-  left: 25%;
-  top: 30%;
   width: 366px;
-  transform: translate3d(-25%, -30%, 0);
   /deep/ .el-card__header {
     padding: 15px;
   }

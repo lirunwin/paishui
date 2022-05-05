@@ -12,7 +12,13 @@
       <el-input v-model="formData.param" placeholder="请输入指标参数" size="small" clearable />
     </el-form-item>
     <el-form-item label="采集时间" prop="date">
-      <el-date-picker v-model="formData.date" placeholder="请选择采集时间" size="small" clearable />
+      <el-date-picker
+        v-model="formData.date"
+        placeholder="请选择采集时间"
+        size="small"
+        clearable
+        value-format="yyyy-MM-dd"
+      />
     </el-form-item>
     <el-form-item label="统计方式" prop="type">
       <el-radio-group v-model="formData.type">
