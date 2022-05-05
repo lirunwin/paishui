@@ -87,7 +87,7 @@ export default {
   computed: {
     // 图层选项
     datasetOptions() {
-      const dataSetInfo = appconfig.gisResource['iserver_resource'].dataServer.dataSetInfo
+      const dataSetInfo = appconfig.gisResource['iserver_resource'].dataService.dataSetInfo
       return dataSetInfo.map(item => {
         return { label: item.label, value: item.name, type: item.type }
       })

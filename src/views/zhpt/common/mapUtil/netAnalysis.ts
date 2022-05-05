@@ -1,4 +1,5 @@
 import { SuperMap, NetworkAnalystService } from '@supermap/iclient-ol';
+import { appconfig } from 'staticPub/config'
 
 // 网络分析
 export default class iNetAnalysis {
@@ -6,14 +7,14 @@ export default class iNetAnalysis {
 
     analysisService = null
 
-    weightField = ""
+    weightField = "SmLength" // 管网权重字段
 
     analysisParams = null
 
     // weightField: 权重字段
-    constructor ({ url = "", weightField = "SmLength" }) {
-        this.analysisUrl = url
-        this.weightField = weightField
+    constructor (weightField) {
+        this.analysisUrl = appconfig.gisResource['iserver_resource'].netAnalysisService.url
+        this.weightField = weightField || this.weightField
         this.init()
     }
 

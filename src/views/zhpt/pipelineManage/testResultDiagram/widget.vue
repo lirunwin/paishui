@@ -241,7 +241,7 @@ export default {
       ]
       let polygon = new Feature({ geometry: new Polygon(polygonCoors) })
       let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
-      let queryTask = new iQuery({ ...appconfig.gisResource['iserver_resource'].dataServer, dataSetInfo })
+      let queryTask = new iQuery({ dataSetInfo })
       queryTask.spaceQuery(polygon).then((resArr) => {
         let pipeFeaturesObj = resArr.find((res) => res.result.featureCount !== 0)
         let pipeFeatures = new GeoJSON().readFeatures(pipeFeaturesObj.result.features)

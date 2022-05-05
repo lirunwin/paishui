@@ -29,8 +29,8 @@ export default class iQuery {
     }
 
     private init (info) {
-        let { dataService, dataSource, dataSetInfo } = appconfig.gisResource['iserver_resource'].dataServer
-        this.dataServiceUrl = dataService.url
+        let { url, dataSource, dataSetInfo } = appconfig.gisResource['iserver_resource'].dataService
+        this.dataServiceUrl = url
         this.dataSource = dataSource
         this.dataSetInfo = info || dataSetInfo // 默认加载全部
         this.featureService = new FeatureService(this.dataServiceUrl)

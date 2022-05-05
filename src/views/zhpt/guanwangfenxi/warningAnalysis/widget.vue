@@ -225,8 +225,8 @@ export default {
       this.mapView.addLayer(this.vectorLayer)
       this.mapView.addLayer(this.lightLayer)
       
-      this.dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      let { dataSetInfo } = this.dataServer
+      this.dataService = appconfig.gisResource['iserver_resource'].dataService
+      let { dataSetInfo } = this.dataService
       this.datasetOptions = dataSetInfo.filter(item => item.type === 'line')
       // 
       this.drawer = new iDraw(this.mapView, 'polygon', {

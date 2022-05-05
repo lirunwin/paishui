@@ -176,7 +176,6 @@ export default {
     },
     getAnalysisPipe (fea) {
       let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管", attachName: "TF_PSPS_POINT_B" }]
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresObj = resArr.find(res => res && res.result.featureCount !== 0)

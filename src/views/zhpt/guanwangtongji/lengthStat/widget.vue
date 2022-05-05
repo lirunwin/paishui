@@ -172,8 +172,8 @@ export default {
     },
     layerId(e) {
       if(!e) return 
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      this.getServerFields(dataServer, this.layerId).then(fields => {
+      let dataService = appconfig.gisResource['iserver_resource'].dataService
+      this.getServerFields(dataService, this.layerId).then(fields => {
         if (fields) {
           this.analysisAtt = fields.map(field => {
             return { label: fieldDoc[field] || field, value: field }
@@ -225,8 +225,8 @@ export default {
     },
     // 初始化地图
     initLayer () {
-      let { dataServer } = appconfig.gisResource["iserver_resource"]
-      let netLayers = dataServer.dataSetInfo.filter(layer => layer.type === "line")
+      let { dataService } = appconfig.gisResource["iserver_resource"]
+      let netLayers = dataService.dataSetInfo.filter(layer => layer.type === "line")
 
       // 设置图层
       this.layersAtt = netLayers.map(layer => {
@@ -236,7 +236,7 @@ export default {
       var mapView = this.mapView = this.data.mapView
     },
     // 获取服务字段
-    getServerFields ({ dataService, dataSource }, dataSet) {
+    getServerFields ({ url, dataSource }, dataSet) {
       return new Promise(resolve => {
         // 设置数据集，数据源
         var param = new SuperMap.FieldParameters({
@@ -244,7 +244,7 @@ export default {
           dataset: dataSet
         });
         // 创建字段查询实例
-        new FieldService(dataService.url).getFields(param, serviceResult => {
+        new FieldService(url).getFields(param, serviceResult => {
           if (serviceResult.type === "processFailed") resolve(null) 
           else resolve(serviceResult.result.fieldNames)
         });
@@ -255,8 +255,8 @@ export default {
       if (!this.layerId) return this.$message.error('请选择查询图层名称')
       if (this.layerSelectList.length === 0) return this.$message.error('请选择管网统计的类型')
 
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      let dataSetInfo = dataServer.dataSetInfo.filter(info => info.name === this.layerId)
+      let dataService = appconfig.gisResource['iserver_resource'].dataService
+      let dataSetInfo = dataService.dataSetInfo.filter(info => info.name === this.layerId)
       
       let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {

@@ -162,10 +162,9 @@ export default {
     // 显示连通信息
     showConnetPipe (startId, endId) {
       let that = this
-      let { netWorkAnalysisUrl } = appconfig.gisResource['iserver_resource'].dataServer
       if (!(startId && endId)) return this.$message.error('管线数据不完整, 无法执行分析')
 
-      new iNetAnalysis({ url: netWorkAnalysisUrl }).findPath(startId, endId).then(res => {
+      new iNetAnalysis().findPath(startId, endId).then(res => {
         if (res) {
           if (res.result.pathList.length !== 0) {
             let pathList = res.result.pathList

@@ -43,12 +43,13 @@ export const appconfig = {
     ],
     // add iserverResource
     "iserver_resource": {
-      'dataServer': {
-        'dataService': {
-          name: "数据服务",
-          url: iserverConfig.baseUrl + "services/data-tf_rsps/rest/data"
-        }, // 数据服务
-        'netWorkAnalysisUrl': iserverConfig.baseUrl + 'services/transportationAnalyst-tf_rsps/rest/networkanalyst/NETWORK_PSPS@tofly',
+      'netAnalysisService': {
+        'name': '网络分析服务',
+        'url': iserverConfig.baseUrl + 'services/transportationAnalyst-tf_rsps/rest/networkanalyst/NETWORK_PSPS@tofly'
+      },
+      'dataService': {
+        'name': '数据服务',
+        'url': iserverConfig.baseUrl + "services/data-tf_rsps/rest/data",
         'dataSource': "tofly",
         'dataSet': ["psmap"],
         'dataSetInfo': [

@@ -173,8 +173,8 @@ export default {
     },
     layerId(e) {
       if(!e) return
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      this.getServerFields(dataServer, this.layerId).then(fields => {
+      let getServerFields = appconfig.gisResource['iserver_resource'].getServerFields
+      this.getServerFields(getServerFields, this.layerId).then(fields => {
         if (fields) {
           this.analysisAtt = fields.map(field => {
             return { label: fieldDoc[field] || field, value: field }
@@ -219,8 +219,8 @@ export default {
   },
   methods: { 
     init() {
-      let { dataServer } = appconfig.gisResource["iserver_resource"]
-      let netLayers = dataServer.dataSetInfo.filter(layer => layer.type === "line")
+      let { dataService } = appconfig.gisResource["iserver_resource"]
+      let netLayers = dataService.dataSetInfo.filter(layer => layer.type === "line")
 
       // 设置图层
       this.layers = netLayers.map(layer => {
@@ -233,7 +233,7 @@ export default {
     },
 
     // 获取服务字段
-    getServerFields ({ dataService, dataSource }, dataSet) {
+    getServerFields ({ url, dataSource }, dataSet) {
       return new Promise(resolve => {
         // 设置数据集，数据源
         var param = new SuperMap.FieldParameters({
@@ -241,7 +241,7 @@ export default {
           dataset: dataSet
         });
         // 创建字段查询实例
-        new FieldService(dataService.url).getFields(param, serviceResult => {
+        new FieldService(url).getFields(param, serviceResult => {
           if (serviceResult.type === "processFailed") resolve(null) 
           else resolve(serviceResult.result.fieldNames)
         });

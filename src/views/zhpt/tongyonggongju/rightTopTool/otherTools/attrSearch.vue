@@ -65,7 +65,7 @@ export default {
         async spaceQuery (position) {
             const bufferDis = 3e-3
             let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
-            let dataServerConfig = appconfig.gisResource.iserver_resource.dataServer
+            let dataServerConfig = appconfig.gisResource.iserver_resource.dataService
             let queryData = await this.smGetFeatureService(queryFeature, dataServerConfig)
             let showData = []
             for (let data of queryData) {
@@ -88,7 +88,7 @@ export default {
         /**
          * 超图数据服务
          */
-        async smGetFeatureService (queryFeature, { dataService, dataSets, dataSource, dataSetInfo }) {
+        async smGetFeatureService (queryFeature, { url, dataSets, dataSource, dataSetInfo }) {
             let result = []
             return Promise.all(dataSetInfo.map(info => {
                 return new Promise(resolve => {
@@ -99,7 +99,7 @@ export default {
                         geometry: new GeoJSON().readFeature(queryFeature).getGeometry(),
                         spatialQueryMode: "INTERSECT" // 相交空间查询模式
                     })
-                    new FeatureService(dataService.url).getFeaturesByGeometry(params, result => {
+                    new FeatureService(url).getFeaturesByGeometry(params, result => {
                         if (result.type == "processFailed") resolve(null);
                         else resolve(result);
                     })
