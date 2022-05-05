@@ -44,7 +44,7 @@ export default {
             this.addLayers()
         },
         addLayers(){
-            let layerResource = appconfig.gisResource['iserver_resource'].layers
+            let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
             layerResource.forEach((layerConfig) => {
                 let { name, url, parentname, id, visible = true } = layerConfig
                 let layer = new TileLayer({

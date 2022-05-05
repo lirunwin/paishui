@@ -62,7 +62,7 @@
         border
         style="width: 100%;margin-bottom: 8px;"
         row-class-name="selectRowC"
-        @row-click="getFeature_new"
+        @row-click="getFeature"
       >
         <el-table-column
           v-for="item in columns"
@@ -242,7 +242,7 @@ export default {
       }
       this.attData = attData
     },
-    getFeature_new (row) {
+    getFeature (row) {
       console.log(row)
       this.addField(row)
     },
@@ -255,88 +255,6 @@ export default {
       this.attData = []
       this.featureData = []
       this.layerData = []
-    },
-    getFeature(row) {
-      var layerId = this.lastFeatures
-      if (!layerId) return this.$message.error('请选中图层')
-      var config = attConfig.hide
-      var configChange = attConfig.change
-      var view = this.mapView
-      this.secondResultFeatures.removeAll()
-      this.attLoading = true
-      var gra = this.allResultFeaturesIndex[row['OBJECTID']]
-      if (gra) {
-        var symbol
-        switch (gra.geometry.type) {
-          case 'point':
-            symbol = {
-              type: 'simple-marker',
-              color: [255, 255, 255],
-              size: 8,
-              outline: { color: [0, 255, 255], width: 2 }
-            }
-            break
-          case 'polyline':
-            symbol = { type: 'simple-line', color: [0, 255, 255], cap: 'square', width: '3px' }
-            break
-          case 'polygon':
-            symbol = { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: { color: [0, 255, 255], width: '3px' } }
-            break
-        }
-
-        this.queryFeature.geometry = gra.geometry
-        this.queryFeature.symbol = symbol
-
-        var extent = this.queryFeature.geometry.extent
-        var x, y
-        if (extent) {
-          x = (extent.xmax + extent.xmin) / 2
-          y = (extent.ymax + extent.ymin) / 2
-        } else {
-          x = gra.geometry.x
-          y = gra.geometry.y
-        }
-        window.requestAnimationFrame((_) => {
-          view.center = { x: x, y: y, spatialReference: view.spatialReference }
-          view.zoom = 6
-        })
-      }
-      $.ajax({
-        url: appconfig.gisResource.business_map.config[0].url + '/' + layerId + '/query',
-        type: 'POST',
-        data: {
-          objectIds: row['OBJECTID'],
-          outFields: '*',
-          returnGeometry: false,
-          f: 'pjson'
-        },
-        success: (data) => {
-          this.attLoading = false
-          if (!data) return this.$message.error('查询错误')
-          data = JSON.parse(data)
-          if (data.error) return this.$message.error('查询错误:' + data.message)
-          if (!data.features.length) return this.$message.error('查询设施不存在')
-
-          var attDic = data.fieldAliases
-          var att = data.features[0].attributes
-          var atts = []
-          this.infoId = att.hasOwnProperty('SID') ? att['SID'] : undefined
-          for (var i = 0, il = Object.keys(att), ii = il.length; i < ii; i++) {
-            var key = il[i]
-            if (config.includes(key)) continue
-            var showAtt = att[key]
-            if (configChange.hasOwnProperty(key)) {
-              showAtt = configChange[key](key, showAtt)
-            }
-            if (showAtt == 'Null') showAtt = ''
-            atts.push({ fix: attDic[key], att: showAtt })
-          }
-          this.attData = atts
-        },
-        error: (error) => {
-          console.log(error)
-        }
-      })
     },
     removeEvent() {
       if (this.eventMove) this.eventMove.remove()

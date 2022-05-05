@@ -24,8 +24,8 @@ export default class iQuery {
         CONTAIN: "CONTAIN"
     }
 
-    constructor({ dataSetInfo }) {
-        this.init(dataSetInfo)
+    constructor(obj = { dataSetInfo: null }) {
+        this.init(obj.dataSetInfo)
     }
 
     private init(info) {

@@ -30,10 +30,11 @@ export default {
      * 创建鹰眼
     */
     initOverView(){
+      let vectorLayer = appconfig.gisResource['iserver_resource'].layerService.layers.find(item => item.name === '矢量底图')
       let viewTileLayers = [
         new TileLayer({
           source: new XYZ({
-            url: appconfig.gisResource['iserver_resource'].layers[0].url + appconfig.tianMapKey,
+            url: vectorLayer.url + appconfig.tianMapKey,
             crossOrigin: 'anonymous',
           })
         })

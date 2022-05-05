@@ -57,59 +57,62 @@ export const appconfig = {
             { name: 'TF_PSPS_POINT_B', type: 'point', label: '排水管点' },
         ]
       },
-      'layers': [
-        {
-          'parentname': "底图", 
-          'name': '矢量底图',
-          'type': 'tdtlayer',
-          'url': 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
-          'visible': true,
-          "id": 2
-        },
-        {
-          'parentname': "底图", 
-          'name': '影像底图',
-          'type': 'tdtlayer',
-          'url': 'http://t3.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=',
-          'visible': false,
-          "id": 3
-        },
-        // {
-        //   'parentname': "底图", 
-        //   'name': '标注底图',
-        //   'type': 'tdtlayer',
-        //   'url': 'http://t4.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
-        //   'visible': true,
-        //   "id": 4
-        // },
-        // {
-        //   'parentname': '底图',
-        //   'name': '矢量底图',
-        //   'type': 'smlayer',
-        //   'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_vec',
-        //   'visible': true,
-        //   'id': 2
-        // },
-        // {
-        //   'parentname': '底图',
-        //   'name': '影像底图', 
-        //   'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_img',
-        //   'type': 'smlayer',
-        //   'visible': false,
-        //   'id': 3
-        // },
-        { 
-          'parentname': '管线',
-          'name': '排水管线',
-          'type': 'smlayer',
-          // 'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/给水管线',
-          'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/psmap',
-          'visible': true,
-          'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/psmap/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
-          // 'legendUrl': 'http://117.174.10.73:8090/iserver/services/map-kxcgw/rest/maps/%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
-          'id': 6
-        }
-      ]
+      'layerService': {
+        'name': '图层服务',
+        'layers': [
+          {
+            'parentname': "底图", 
+            'name': '矢量底图',
+            'type': 'tdtlayer',
+            'url': 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
+            'visible': true,
+            "id": 2
+          },
+          {
+            'parentname': "底图", 
+            'name': '影像底图',
+            'type': 'tdtlayer',
+            'url': 'http://t3.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=',
+            'visible': false,
+            "id": 3
+          },
+          // {
+          //   'parentname': "底图", 
+          //   'name': '标注底图',
+          //   'type': 'tdtlayer',
+          //   'url': 'http://t4.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
+          //   'visible': true,
+          //   "id": 4
+          // },
+          // {
+          //   'parentname': '底图',
+          //   'name': '矢量底图',
+          //   'type': 'smlayer',
+          //   'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_vec',
+          //   'visible': true,
+          //   'id': 2
+          // },
+          // {
+          //   'parentname': '底图',
+          //   'name': '影像底图', 
+          //   'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_img',
+          //   'type': 'smlayer',
+          //   'visible': false,
+          //   'id': 3
+          // },
+          { 
+            'parentname': '管线',
+            'name': '排水管线',
+            'type': 'smlayer',
+            // 'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/给水管线',
+            'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/psmap',
+            'visible': true,
+            'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/psmap/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
+            // 'legendUrl': 'http://117.174.10.73:8090/iserver/services/map-kxcgw/rest/maps/%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
+            'id': 6
+          }
+        ]
+      }
     },
 
     'tian_online_vector': {

@@ -175,7 +175,7 @@ export default {
   },
   methods: {
     loadOlMap(mapContainer) {
-      let layerResource = appconfig.gisResource['iserver_resource'].layers
+      let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
       let center = this.mapView.getView().getCenter()
       let zoom = this.mapView.getView().getZoom()
       let map = new Olmap({

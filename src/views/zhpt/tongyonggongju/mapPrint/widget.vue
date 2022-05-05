@@ -180,7 +180,7 @@ export default {
         })
       })
       // 初始化图层选项
-      let layers = appconfig.gisResource['iserver_resource'].layers
+      let layers = appconfig.gisResource['iserver_resource'].layerService.layers
       let baseLayers = layers.filter(layer => layer.parentname === "底图")
       let pipelineLayers = layers.filter(layer => layer.parentname === "管线")
       this.layerGroup('基础底图', baseLayers)
