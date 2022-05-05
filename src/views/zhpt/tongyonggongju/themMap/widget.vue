@@ -173,8 +173,7 @@ export default {
     },
     layerId(e) {
       if(!e) return
-      let getServerFields = appconfig.gisResource['iserver_resource'].getServerFields
-      this.getServerFields(getServerFields, this.layerId).then(fields => {
+      new iQuery().getServerFields(this.layerId).then(fields => {
         if (fields) {
           this.analysisAtt = fields.map(field => {
             return { label: fieldDoc[field] || field, value: field }
@@ -230,22 +229,6 @@ export default {
       var mapView = this.mapView = this.data.mapView
       // 先跳出，后面的方法用 ol 重写
       return Promise.resolve()
-    },
-
-    // 获取服务字段
-    getServerFields ({ url, dataSource }, dataSet) {
-      return new Promise(resolve => {
-        // 设置数据集，数据源
-        var param = new SuperMap.FieldParameters({
-          datasource: dataSource,
-          dataset: dataSet
-        });
-        // 创建字段查询实例
-        new FieldService(url).getFields(param, serviceResult => {
-          if (serviceResult.type === "processFailed") resolve(null) 
-          else resolve(serviceResult.result.fieldNames)
-        });
-      })
     },
 
     // ------------------------------

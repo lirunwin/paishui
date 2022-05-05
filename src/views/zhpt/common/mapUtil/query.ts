@@ -1,4 +1,4 @@
-import { SuperMap, FeatureService } from '@supermap/iclient-ol';
+import { SuperMap, FeatureService, FieldService } from '@supermap/iclient-ol';
 import GeoJSON from 'ol/format/GeoJSON';
 import Feature from 'ol/Feature';
 import { Circle, LineString } from 'ol/geom';
@@ -18,17 +18,17 @@ export default class iQuery {
 
     // 空间查询模式
     spatialQueryMode = {
-        CROSS : "CROSS",
+        CROSS: "CROSS",
         INTERSECT: "INTERSECT",
         NONE: "NONE",
         CONTAIN: "CONTAIN"
     }
 
-    constructor ({ dataSetInfo }) {
+    constructor({ dataSetInfo }) {
         this.init(dataSetInfo)
     }
 
-    private init (info) {
+    private init(info) {
         let { url, dataSource, dataSetInfo } = appconfig.gisResource['iserver_resource'].dataService
         this.dataServiceUrl = url
         this.dataSource = dataSource
@@ -37,7 +37,7 @@ export default class iQuery {
     }
 
     // 空间查询
-    spaceQuery (queryFeature) {
+    spaceQuery(queryFeature) {
         if (!(queryFeature instanceof Feature)) {
             queryFeature = new GeoJSON().readFeature(queryFeature)
         } else if (queryFeature.getGeometry() instanceof Circle) {
@@ -72,7 +72,7 @@ export default class iQuery {
     }
 
     // 属性查询
-    sqlQuery (sqlStr) {
+    sqlQuery(sqlStr) {
         // console.log("sql过滤条件", sqlStr)
         let queryPromises = this.dataSetInfo.map(info => {
             let layerName = info.label
@@ -95,12 +95,12 @@ export default class iQuery {
         return Promise.all(queryPromises)
     }
 
-    boundsQuery (bounds) {
+    boundsQuery(bounds) {
 
     }
 
     // 缓冲区查询
-    bufferQuery (bufferFeature, bufferDis) {
+    bufferQuery(bufferFeature, bufferDis) {
         if (!(bufferFeature instanceof Feature)) {
             bufferFeature = new GeoJSON().readFeature(bufferFeature)
         } else if (bufferFeature.getGeometry() instanceof Circle) {
@@ -131,5 +131,19 @@ export default class iQuery {
         return Promise.all(queryPromises)
     }
 
-
+    // 字段查询
+    getServerFields(dataSet) {
+        return new Promise(resolve => {
+            // 设置数据集，数据源
+            var param = new SuperMap.FieldParameters({
+                datasource: this.dataSource,
+                dataset: dataSet
+            });
+            // 创建字段查询实例
+            new FieldService(this.dataServiceUrl).getFields(param, serviceResult => {
+                if (serviceResult.type === "processFailed") resolve(null)
+                else resolve(serviceResult.result.fieldNames)
+            });
+        })
+    }
 }
