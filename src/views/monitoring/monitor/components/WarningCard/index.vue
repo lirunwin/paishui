@@ -114,8 +114,8 @@ export default class WarningCard extends Vue {
 <style lang="scss" scoped>
 .warning-card {
   position: fixed;
-  left: 200px;
-  bottom: 70px;
+  left: 50px;
+  bottom: 50px;
   width: 366px;
   transition: left ease 300ms;
 
