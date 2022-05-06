@@ -99,7 +99,7 @@ const actions = {
             Object.assign(result, obj)
           }
           commit('SET_DYNAMICROUTES', result)
-          const exclude = ['map', 'dashboard', 'xjxt', 'whxt','monitor']
+          const exclude = ['map', 'dashboard', 'xjxt', 'whxt','monitor','psjc']
           const autoLink= (type, arr)=> {
             if (!exclude.includes(type)) {
               // return `${arr.childrens[0].path}/${arr.childrens[0].childrens[0].path}`
@@ -124,7 +124,7 @@ const actions = {
 
           const addRouter = packageRouter(routes)
           commit('SET_ROUTES', addRouter)
-          if (data.some(item => item.type === 'map' || item.type === 'xjxt' || item.type === 'whxt' || item.type ==='monitor')) addRouter.unshift(mapRoute)
+          if (data.some(item => item.type === 'map' || item.type === 'xjxt' || item.type === 'whxt' || item.type ==='monitor' || item.type ==='psjc')) addRouter.unshift(mapRoute)
           if (data.some(item => item.type === 'dashboard')) addRouter.unshift(dashboardRoute)
           else if (!data.some(item => item.type === 'dashboard')) {
             const redirectParent = state.addRoutes[0]

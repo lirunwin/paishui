@@ -12,19 +12,8 @@
       @tab-remove="removeTab"
       @tab-click="clickTab"
     >
-      <el-tab-pane
-        v-for="item in panels"
-        :key="item.com"
-        :label="item.title"
-        :name="item.com"
-      >
-        <component
-          :is="Comps[item.com]"
-          class="halfitems"
-          :param="item.param"
-          :data="data"
-          :name="item.com"
-        />
+      <el-tab-pane v-for="item in panels" :key="item.com" :label="item.title" :name="item.com">
+        <component :is="Comps[item.com]" class="halfitems" :param="item.param" :data="data" :name="item.com" />
       </el-tab-pane>
     </el-tabs>
     <div ref="dragline" class="dragline" />
@@ -32,96 +21,96 @@
 </template>
 
 <script lang='ts'>
-import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-import Comps from "./loadComps";
-import $ from "jquery";
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import Comps from './loadComps'
+import $ from 'jquery'
 @Component({
-  name: "HalfPanels",
+  name: 'HalfPanels'
 })
 export default class HalfPanels extends Vue {
-  @Prop({ default: [] }) panels: any[];
-  @Prop({ default: null }) data: any;
-  @Prop() panelVisible: boolean;
-  @Prop() fullpanelVisible: boolean;
-  @Prop() footerHeight: string;
-  @Prop() defaultHeight: string;
+  @Prop({ default: [] }) panels: any[]
+  @Prop({ default: null }) data: any
+  @Prop() panelVisible: boolean
+  @Prop() fullpanelVisible: boolean
+  @Prop() footerHeight: string
+  @Prop() defaultHeight: string
 
-  Comps = Comps;
-  nowHeight = null;
+  Comps = Comps
+  nowHeight = null
 
   get editableTabsValue() {
-    return this.$store.state.map.halfP_editableTabsValue;
+    return this.$store.state.map.halfP_editableTabsValue
   }
-  @Watch("panels")
+  @Watch('panels')
   panelsChange() {
     if (this.panels.length > 0) {
-      this.$emit("update:panelVisible", true);
-      this.$emit("update:footerHeight", this.defaultHeight || "400px");
+      this.$emit('update:panelVisible', true)
+      this.$emit('update:footerHeight', this.defaultHeight || '400px')
     } else {
-      if (!this.panelVisible) return;
-      this.$emit("update:panelVisible", false);
+      if (!this.panelVisible) return
+      this.$emit('update:panelVisible', false)
       if (this.fullpanelVisible == false) {
-        this.$emit("update:footerHeight", "0%");
+        this.$emit('update:footerHeight', '0%')
       }
     }
   }
-  @Watch("panelVisible")
+  @Watch('panelVisible')
   panelVisibleChange() {
     if (this.panelVisible == true) {
-      this.$store.dispatch("map/delAllFull");
+      this.$store.dispatch('map/delAllFull')
     }
   }
   updated() {
     this.$nextTick(() => {
-      this.initEvent();
-    });
+      this.initEvent()
+    })
   }
   /**
    * 初始化事件函数
    */
   initEvent() {
-    var domObj = $(this.$el);
-    var that = this;
+    var domObj = $(this.$el)
+    var that = this
     domObj
-      .find(".dragline")
-      .off("mousedown")
-      .on("mousedown", function (e) {
-        var oldy = e.screenY;
+      .find('.dragline')
+      .off('mousedown')
+      .on('mousedown', function (e) {
+        var oldy = e.screenY
         $(document)
-          .off("mousemove")
-          .on("mousemove", function (e) {
-            var newy = e.screenY;
-            var nowheight = domObj.height();
-            var newheight = nowheight + (oldy - newy);
-            that.$emit("update:footerHeight", newheight + "px");
-            that.nowHeight = newheight + "px";
-            oldy = newy;
-          });
-      });
+          .off('mousemove')
+          .on('mousemove', function (e) {
+            var newy = e.screenY
+            var nowheight = domObj.height()
+            var newheight = nowheight + (oldy - newy)
+            that.$emit('update:footerHeight', newheight + 'px')
+            that.nowHeight = newheight + 'px'
+            oldy = newy
+          })
+      })
 
     $(document)
-      .off("mouseup")
-      .on("mouseup", function () {
-        $(document).off("mousemove");
-        that.$emit("update:defaultHeight", that.nowHeight);
-      });
+      .off('mouseup')
+      .on('mouseup', function () {
+        $(document).off('mousemove')
+        that.$emit('update:defaultHeight', that.nowHeight)
+      })
   }
   handelClose() {
     // this.$store.dispatch('map/handelClose', data)
-    this.$store.dispatch("map/delAllHalf");
-    this.$emit("handelClose");
+    this.$store.dispatch('map/delAllHalf')
+    this.$emit('handelClose')
   }
   removeTab(targetName) {
     // console.log('333', targetName)
-    this.$store.dispatch("map/delHalfPanels", targetName);
+    this.$store.dispatch('map/delHalfPanels', targetName)
   }
   clickTab(targetName) {
-    this.data.activeModel = targetName.name;
+    this.data.activeModel = targetName.name
     const sendData = {
-      widgetid: "HalfPanel",
-      id: this.data.activeModel,
-    };
-    this.$store.dispatch("map/changeMethod", sendData);
+      widgetid: 'HalfPanel',
+      id: this.data.activeModel
+    }
+    this.$store.dispatch('map/changeMethod', sendData)
   }
 }
 </script>
@@ -168,7 +157,7 @@ export default class HalfPanels extends Vue {
   top: 0;
   height: 100%;
   width: 100%;
-
+  user-select: none;
   .close {
     position: absolute;
     top: 10px;

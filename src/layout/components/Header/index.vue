@@ -275,7 +275,7 @@ export default class Header extends Vue {
         }
     }
     set defaultActiveIndex(name: string) {
-        if (["map", "xjxt", "whxt",'monitor'].indexOf(name) > -1)
+        if (["map", "xjxt", "whxt",'monitor','psjc'].indexOf(name) > -1)
           this.specialIndex = name;
         else this.specialIndex = "";
       }
@@ -448,7 +448,7 @@ export default class Header extends Vue {
       this.defaultActiveIndex = event.name;
       if (event.path !== undefined && event.path !== "")
         this.$router.push({ path: event.path });
-      else if (["map", "xjxt", "whxt",'monitor'].indexOf(event.name) > -1)
+      else if (["map", "", "whxt",'monitor'].indexOf(event.name) > -1)
         this.$router.push("/map");
       const sideBarShow = this.$store.state.app.sidebar.show;
       if (!sideBarShow) this.$store.dispatch("app/toggleSideBarShow", true);
