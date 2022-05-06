@@ -1,4 +1,6 @@
 import request from '@/utils/request'
+import $ from 'jquery'
+import { resolve } from 'q'
 
 // 缓冲区分析 获取字段
 export function getFields(data) {
@@ -12,7 +14,7 @@ export function getFields(data) {
 // 追踪分析
 export function trackingAnalysis(data) {
     return request({
-        url: '/kxc/pipelineMaintain/getPipelineConnect',
+        url: '/analyse/pipeline/getPipelineConnect',
         method: 'post',
         data
     })

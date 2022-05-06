@@ -53,15 +53,15 @@ export const appconfig = {
         'dataSource': "tofly",
         'dataSet': ["psmap"],
         'dataSetInfo': [
-            { name: 'TF_PSPS_PIPE_B', type: 'line', label: '排水管线' },
-            { name: 'TF_PSPS_POINT_B', type: 'point', label: '排水管点' },
+            { 'name': 'TF_PSPS_PIPE_B', 'type': 'line', 'label': '排水管线' },
+            { 'name': 'TF_PSPS_POINT_B', 'type': 'point', 'label': '排水管点' },
         ]
       },
       'layerService': {
         'name': '图层服务',
         'layers': [
           {
-            'parentname': "底图", 
+            'parentname': "底图",
             'name': '矢量底图',
             'type': 'tdtlayer',
             'url': 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
@@ -76,14 +76,14 @@ export const appconfig = {
             'visible': false,
             "id": 3
           },
-          // {
-          //   'parentname': "底图", 
-          //   'name': '标注底图',
-          //   'type': 'tdtlayer',
-          //   'url': 'http://t4.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
-          //   'visible': true,
-          //   "id": 4
-          // },
+          {
+            'parentname': "底图", 
+            'name': '标注底图',
+            'type': 'tdtlayer',
+            'url': 'http://t4.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
+            'visible': true,
+            "id": 4
+          },
           // {
           //   'parentname': '底图',
           //   'name': '矢量底图',
@@ -104,11 +104,9 @@ export const appconfig = {
             'parentname': '管线',
             'name': '排水管线',
             'type': 'smlayer',
-            // 'url': iserverConfig.baseUrl + 'services/map-kxcgw/rest/maps/给水管线',
             'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/psmap',
             'visible': true,
             'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/psmap/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
-            // 'legendUrl': 'http://117.174.10.73:8090/iserver/services/map-kxcgw/rest/maps/%E7%BB%99%E6%B0%B4%E7%AE%A1%E7%BA%BF/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
             'id': 6
           }
         ]

@@ -35,6 +35,18 @@ export class mapUtil {
         }
         return center
     }
+
+    // 设置图层在最上层
+    setTop(layer) {
+        let layers = this.map.getLayers(), zindexs = []
+        layers.forEach(layer => {
+            let index = layer.getZIndex()
+            if (isNaN(index)) zindexs.push(0)
+            else zindexs.push(index)
+        })
+        layer.setZIndex(Math.max.apply(null, zindexs) + 1)
+    }
+
     // 获取当前地图 extent
     getCurrentViewExtent() {
         let mapDom = this.map.getTargetElement()

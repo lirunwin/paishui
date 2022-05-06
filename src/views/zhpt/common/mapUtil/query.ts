@@ -50,6 +50,7 @@ export default class iQuery {
         let queryPromises = this.dataSetInfo.map(info => {
             let layerName = info.label
             let attachName = info.attachName
+            let tableName = info.name
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesByGeometryParameters({
                     toIndex: -1,
@@ -63,6 +64,7 @@ export default class iQuery {
                     else {
                         result.layerName = layerName
                         result.attachName = attachName
+                        result.tableName = tableName
                         resolve(result)
                     };
                 })

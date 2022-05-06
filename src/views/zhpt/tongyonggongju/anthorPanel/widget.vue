@@ -29,7 +29,7 @@
                 v-if="data.id !==0 && data.id !== 1"
                 v-model="data.visibleNum"
                 input-size="mini"
-                @input="data.layer.values_.opacity = 1 - data.visibleNum / 100"
+                @input="opacityChange(data)"
                 :disabled="!data.layer.values_.visible"
               />
             </div>
@@ -206,7 +206,7 @@ export default {
     },
 
   addLayers(layers) {
-    layers.forEach((layerConfig) => {
+    layers.forEach(layerConfig => {
       let { name, type, url, parentname, id, visible = true } = layerConfig
       let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
       this.currMap.addLayer(layer)
@@ -233,7 +233,7 @@ export default {
         layersData.push({
           id: parentid++,
           label: parentname,
-          children: sublayers.map((sublayer) => {
+          children: sublayers.map(sublayer => {
             let { id, name, layer } = sublayer
             let opacity, visibleNum;
             if (sublayer.visible) {
@@ -246,7 +246,7 @@ export default {
           })
         })
       })
-      
+      console.log("图层数据")
       this.layerTable = layersData
       this.defaultCheckedKeys = defaultCheckedKeys
     },
@@ -254,6 +254,10 @@ export default {
     subLayerChange (node) {
       console.log(node)
       node.layer.values_.visible = !node.layer.values_.visible;
+      this.currMap.render()
+    },
+    opacityChange (data) {
+      data.layer.values_.opacity = 1 - data.visibleNum / 100
       this.currMap.render()
     },
     // 底图变化
@@ -278,7 +282,7 @@ export default {
       this.anthorBaseMaps[this.showImageBase ? 3 : 1].visible = e
     },
     inputBaseLayer: function(w) {
-      const layerBox = ["标注", "矢量底图", "影像底图"]
+      const layerBox = ["标注底图", "矢量底图", "影像底图"]
       let opacity = this.baseMapsNum[w];
       let layers = this.currMap.getLayers().array_
       let thisLayer = layers.find(layer => layer.values_.name === layerBox[w])
@@ -286,12 +290,12 @@ export default {
     }
   },
   watch: {
-    layerTable: {
-      handler (newValue, oldValue) {
-        this.currMap && this.currMap.render()
-      },
-      deep: true
-    }
+    // layerTable: {
+    //   handler (newValue, oldValue) {
+    //     // this.currMap && this.currMap.render()
+    //   },
+    //   deep: true
+    // }
   }
 }
 </script>
