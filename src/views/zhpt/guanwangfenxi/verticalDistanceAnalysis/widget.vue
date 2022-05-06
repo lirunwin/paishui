@@ -158,7 +158,7 @@ export default {
                 })
                 
                 let feature = featuresArr[0].result.features.features[0]
-                this.selectPipeID = feature.properties["SID"]
+                this.selectPipeID = feature.properties["LNO"]
                 let feaJson = turf.buffer(turf.lineString(new GeoJSON().readFeature(feature).getGeometry().getCoordinates()), this.bufferDistance / 1000, { units: 'kilometers' })
                 this.queryFeature = new GeoJSON().readFeature(feaJson)
                 this.queryFeature.setStyle(comSymbol.getDrawStyle(2, "f00", 3, '#66B1FF', 'rgba(255,255,255,0.3)',[15, 15]))
@@ -171,10 +171,9 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       return new Promise(resolve => {
-        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresArr = resArr.filter(res => res && res.result.featureCount !== 0)
           resolve(featuresArr)
         })
@@ -185,6 +184,7 @@ export default {
       this.getAnalysisPipe(this.queryFeature).then(featuresArr => {
         let data = [], features
         if (featuresArr.length !== 0) {
+          console.log('查询数据')
           featuresArr.forEach(obj => {
             let resFeatures = [...obj.result.features.features]
             let layerName = obj.layerName
@@ -205,8 +205,8 @@ export default {
     // 垂直净距分析
     // 相连管线、埋设不是管埋不进行分析，
     disAnalysis (data) {
-      const diamaterFiled = 'DIAMETER'
-      const typeField = "BURYTYPE"
+      const diamaterFiled = 'PSIZE'
+      // const typeField = "BURYTYPE"
 
       let disAnalysis = new DisAnalysisTool()
       let dataBox = []
@@ -228,11 +228,11 @@ export default {
         let comparePipe = new GeoJSON().readFeature(featuresArr[i].feature)
         let diameter1 = comparePipe.get(diamaterFiled)
         if (!diameter1) return this.$message.error("管线属性数据不完整，无法执行分析")
-        if (!comparePipe.get(typeField) || comparePipe.get(typeField) !== '管埋') continue
+        // if (!comparePipe.get(typeField) || comparePipe.get(typeField) !== '管埋') continue
 
         for (let j = i + 1; j < len; j++) {
           let pipe = new GeoJSON().readFeature(featuresArr[j].feature)
-          if (!pipe.get(typeField) || pipe.get(typeField) !== '管埋') continue
+          // if (!pipe.get(typeField) || pipe.get(typeField) !== '管埋') continue
           // 非连接管段
           if (!isConnect(comparePipe, pipe)) {
             let res = disAnalysis.closetVcDis(comparePipe, pipe)
@@ -252,17 +252,17 @@ export default {
           dis: item.dis, 
           sdis: item.sdis, 
           diameter: item.comparePipe.get(diamaterFiled), 
-          pipeid: item.comparePipe.get("SID"), 
-          secpipeid: item.pipe.get("SID") 
+          pipeid: item.comparePipe.get("LNO"), 
+          secpipeid: item.pipe.get("LNO") 
         }
       })
 
       // 判断是否是前后连接的管段
       function isConnect(feature1, feature2) {
-        let sid1 = feature1.get("START_SID"),
-            eid1 = feature1.get("END_SID")
-        let sid2 = feature2.get("START_SID"),
-            eid2 = feature2.get("END_SID")
+        let sid1 = feature1.get("S_POINT"),
+            eid1 = feature1.get("E_POINT")
+        let sid2 = feature2.get("S_POINT"),
+            eid2 = feature2.get("E_POINT")
         return sid1 === eid2 || eid1 === sid2 || sid1 === sid2 || eid1 === eid2
       }
       

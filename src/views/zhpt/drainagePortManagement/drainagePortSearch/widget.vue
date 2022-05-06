@@ -55,7 +55,7 @@
             <el-col :span="10">
                 <div class="btnGroup">
                     <el-button type="primary" icon="el-icon-search" size="mini" @click="getPage()">搜索</el-button>
-                    <el-button type="primary" icon="el-icon-download" size="mini" @click="exportOperation()">导出</el-button>
+                    <el-button type="primary" icon="el-icon-download" size="mini" @click="exportConfirm()">导出</el-button>
                 </div>
             </el-col>
         </el-row>
@@ -80,6 +80,7 @@
     </div>
     <common-popup 
     ref="commonPopup"
+    :mapView="view"
     :popupShow="popupShow" 
     :popupPosition="popupPosition"
     :popupTitle="popupTitle"
@@ -181,6 +182,7 @@ export default {
     mounted(){
         this.getPage();
         this.column=this.config.column
+        this.view=this.$attrs.data.mapView
     },
     methods:{
         getPage(){
@@ -210,6 +212,20 @@ export default {
         handleSizeChange(pagesize) {
             this.pagination.size = pagesize
             this.getPage()
+        },
+        //导出前确认
+        exportConfirm(){
+            if(this.total<=1000){
+                this.exportOperation();
+                return
+            }
+            this.$confirm('仅支持导出前1000条数据，是否确认导出？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+            }).then(() => {
+                this.exportOperation()
+            }).catch(() => {});
         },
         //导出数据
         exportOperation(){
@@ -241,7 +257,7 @@ export default {
         },
         //定位方法
         located(){
-            this.view=this.$attrs.data.mapView
+            
             let gl =this
             this.mapEvent=this.view.on('singleclick', function (evt) {
                 let pixel = gl.view.getEventPixel(evt.originalEvent)
@@ -268,7 +284,7 @@ export default {
         }
     },
     beforeDestroy(){
-        this.view.un(this.mapEvent.type, this.mapEvent.listener)
+        if(this.view) this.view.un(this.mapEvent.type, this.mapEvent.listener)
         if(this.$refs.commonPopup.isShow) this.$refs.commonPopup.closePopup()
     }
 }

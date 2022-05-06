@@ -7,7 +7,7 @@
         <el-form-item label="选取图层" style="margin:0">
           <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small"
                      @change="selectLayerChange">
-            <el-option v-for="item in datasetOptions" :key="item.value" :label="item.label" :value="item"> </el-option>
+            <el-option v-for="item in datasetOptions" :key="item.name" :label="item.label" :value="item"> </el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -15,7 +15,7 @@
     <div class="op-box">
       <div class="item-head" style="margin-top:0">预警设置</div>
       <el-form label-width="70px">
-        <el-form-item label="竣工日期" style="margin:0">
+        <el-form-item label="埋设日期" style="margin:0">
           <el-row>
             <el-col :span="6" style="padding-right:5px">
               <el-select v-model="queryForm.completionDate.calc" placeholder="" size="small">
@@ -23,13 +23,13 @@
               </el-select>
             </el-col>
             <el-col :span="18">
-              <el-date-picker v-model="queryForm.completionDate.FINISHDATE" type="date" placeholder="选择日期" size="small"
+              <el-date-picker v-model="queryForm.completionDate.MDATE" type="date" placeholder="选择日期" size="small"
                               value-format="yyyy-MM-dd" style="width:100%">
               </el-date-picker>
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item label="修改日期" style="margin:0">
+        <el-form-item label="更新日期" style="margin:0">
           <el-row>
             <el-col :span="6" style="padding-right:5px">
               <el-select v-model="queryForm.changeDate.calc" placeholder="" size="small">
@@ -37,13 +37,13 @@
               </el-select>
             </el-col>
             <el-col :span="18">
-              <el-date-picker v-model="queryForm.changeDate.CHANGEDATE" type="date" placeholder="选择日期" size="small"
+              <el-date-picker v-model="queryForm.changeDate.UPDATETIME" type="date" placeholder="选择日期" size="small"
                               value-format="yyyy-MM-dd" style="width:100%">
               </el-date-picker>
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item label="报废日期" style="margin:0">
+        <el-form-item label="探测日期" style="margin:0">
           <el-row>
             <el-col :span="6" style="padding-right:5px">
               <el-select v-model="queryForm.expiredDate.calc" placeholder="" size="small">
@@ -51,13 +51,13 @@
               </el-select>
             </el-col>
             <el-col :span="18">
-              <el-date-picker v-model="queryForm.expiredDate.SCRAPDATE" type="date" placeholder="选择日期" size="small"
+              <el-date-picker v-model="queryForm.expiredDate.SDATE" type="date" placeholder="选择日期" size="small"
                               value-format="yyyy-MM-dd" style="width:100%">
               </el-date-picker>
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item label="维护次数" style="margin:0">
+        <!-- <el-form-item label="维护次数" style="margin:0">
           <el-row>
             <el-col :span="6" style="padding-right:5px">
               <el-select v-model="queryForm.maintainNum.calc" placeholder="" size="small">
@@ -69,7 +69,7 @@
               </el-input-number>
             </el-col>
           </el-row>
-        </el-form-item>
+        </el-form-item> -->
         <!-- 动态添加的条件 -->
         <!-- <div v-for="(item,i) in filterArr" :key="i">
           <el-row style="height:40px;line-height: 40px;">
@@ -225,11 +225,9 @@ export default {
       this.mapView.addLayer(this.vectorLayer)
       this.mapView.addLayer(this.lightLayer)
       
-      this.dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      let { dataSet } = this.dataServer
-      this.datasetOptions = dataSet.map(item => {
-        return { value: item, label: item }
-      })
+      this.dataService = appconfig.gisResource['iserver_resource'].dataService
+      let { dataSetInfo } = this.dataService
+      this.datasetOptions = dataSetInfo.filter(item => item.type === 'line')
       // 
       this.drawer = new iDraw(this.mapView, 'polygon', {
         endDrawCallBack: this.drawFunc,
@@ -266,7 +264,7 @@ export default {
       let sqlParam = new SuperMap.GetFeaturesBySQLParameters({
         toIndex: -1,
         maxFeatures: 10000000,
-        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.value],
+        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.name],
         queryParameter: {
           attributeFilter: "",
           fields: [field],
@@ -308,7 +306,7 @@ export default {
         maxFeatures: 10000000,
         geometry: this.queryExtent,
         attributeFilter: this.checkQueryParams(),
-        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.value],
+        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.name],
         spatialQueryMode: "INTERSECT" // 相交空间查询模式
       })
       const url = mapConfig.iServerUrl.pipelineDataServer.url
@@ -343,7 +341,7 @@ export default {
       let sqlQueryParam = new SuperMap.GetFeaturesBySQLParameters({
         toIndex: -1,
         maxFeatures: 10000000,
-        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.value],
+        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.name],
         queryParameter: { attributeFilter: this.checkQueryParams() }
       })
       const url = mapConfig.iServerUrl.pipelineDataServer.url
@@ -373,6 +371,7 @@ export default {
     },
     // 获取过滤条件
     checkQueryParams() {
+      console.log("过滤条件")
       let sqlStr = ''
       // 拼接固定字段
       for (const key in this.queryForm) {
@@ -408,9 +407,9 @@ export default {
     execute() {
       if (this.warningExtent === "2" && !this.limitFeature) return this.$message.error("请先绘制查询范围")
         if (!this.selectLayer) return this.$message.error("请选择查询图层")
-      let dataSetInfo = [{ name: this.selectLayer.value }]
+      let dataSetInfo = [{ name: this.selectLayer.name }]
       let sqlStr = this.checkQueryParams()
-      new iQuery({ ...this.dataServer, dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
+      new iQuery({ dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
           let featuresObj = resArr.find(item => item && item.result.featureCount !== 0)
           if (featuresObj) {
             let featuresJson = featuresObj.result.features
@@ -462,6 +461,7 @@ export default {
     /**清除结果 */
     clearReasult() {
       this.vectorLayer.getSource().clear()
+      this.lightLayer.getSource().clear()
       this.selectLayer = ""
       this.queryForm = {
         completionDate: {},

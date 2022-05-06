@@ -85,6 +85,7 @@ export default class Monitor extends Vue {
       address: '四川省成都市青羊区光华大道256号'
     }
   ]
+
   backupPlans = [
     {
       id: '1',

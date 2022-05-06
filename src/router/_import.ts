@@ -55,33 +55,33 @@ const map = {
   regionZoomOut: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/regionZoomOut/widget.vue'), // 放大
   initExtent: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/initExtent/widget.vue'), // 初始范围
   viewSwitch: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/viewSwitch/widget.vue'), // 视图切换
-  mapCompass: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/mapCompass/widget.vue'), // 指北针
+  mapCompass: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/mapCompass/widget.vue') // 指北针
 
   // 监测中心
   //    检测配置
   //设备类型配置
-  '/monitoring/settings/device/types': () => import('@/views/monitoring/settings/device/types/index.vue'),
-  //设备档案管理
-  '/monitoring/settings/device/archives': () => import('@/views/monitoring/settings/device/archives/index.vue'),
-  //监测点管理
-  '/monitoring/settings/points': () => import('@/views/monitoring/settings/points/index.vue'),
-  //监测站管理
-  '/monitoring/settings/sites': () => import('@/views/monitoring/settings/sites/index.vue'),
-  //图标管理
-  '/monitoring/settings/icons': () => import('@/views/monitoring/settings/icons/index.vue'),
-  //指标标准配置
-  '/monitoring/settings/standards': () => import('@/views/monitoring/settings/standards/index.vue'),
+  // '/monitoring/settings/device/types': () => import('@/views/monitoring/settings/device/types/index.vue'),
+  // //设备档案管理
+  // '/monitoring/settings/device/archives': () => import('@/views/monitoring/settings/device/archives/index.vue'),
+  // //监测点管理
+  // '/monitoring/settings/points': () => import('@/views/monitoring/settings/points/index.vue'),
+  // //监测站管理
+  // '/monitoring/settings/sites': () => import('@/views/monitoring/settings/sites/index.vue'),
+  // //图标管理
+  // '/monitoring/settings/icons': () => import('@/views/monitoring/settings/icons/index.vue'),
+  // //指标标准配置
+  // '/monitoring/settings/standards': () => import('@/views/monitoring/settings/standards/index.vue'),
 
-  // 监控中心
-  '/monitoring/monitor': () => import('@/views/monitoring/monitor/index.vue'),
-  // 指标实时监测
-  '/monitoring/monitor/points': () => import('@/views/monitoring/monitor/points/index.vue'),
-  // 站点实时监测
-  '/monitoring/monitor/sites': () => import('@/views/monitoring/monitor/sites/index.vue'),
-  '/monitoring/report/detail': () => import('@/views/monitoring/report/detail/index.vue'),
-  '/monitoring/report/points': () => import('@/views/monitoring/report/points/index.vue'),
-  '/monitoring/report/sites': () => import('@/views/monitoring/report/sites/index.vue'),
-  '/monitoring/report/warnings': () => import('@/views/monitoring/report/warnings/index.vue')
+  // // 监控中心
+  // '/monitoring/monitor': () => import('@/views/monitoring/monitor/widget.vue'),
+  // // 指标实时监测
+  // '/monitoring/monitor/points': () => import('@/views/monitoring/monitor/points/index.vue'),
+  // // 站点实时监测
+  // '/monitoring/monitor/sites': () => import('@/views/monitoring/monitor/sites/index.vue'),
+  // '/monitoring/report/detail': () => import('@/views/monitoring/report/detail/index.vue'),
+  // '/monitoring/report/points': () => import('@/views/monitoring/report/points/index.vue'),
+  // '/monitoring/report/sites': () => import('@/views/monitoring/report/sites/index.vue'),
+  // '/monitoring/report/warnings': () => import('@/views/monitoring/report/warnings/index.vue')
 
   // 设施评估
   // 管道检测数据管理

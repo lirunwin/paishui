@@ -20,7 +20,7 @@ export const CoverSoilStandard = [{
     ditch: 0.7
 },
 {
-    subtype: '给水管道',
+    subtype: '排水管',
     direct: 0.65,
     ditch: 0.65
 },
@@ -44,13 +44,8 @@ export const CoverSoilStandard = [{
 // 水平垂直净距标准
 export const DisStandard = [
     {
-        subtype: '给水管线',
+        subtype: '排水管',
         hStandardDis: 0.75,
         vStandardDis: 0.55
-    },
-    {
-        subtype: '广电线缆',
-        hStandardDis: 0.75,
-        vStandardDis: 0.55
-    },
+    }
 ]

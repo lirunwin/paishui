@@ -127,7 +127,6 @@ export default {
       layerFix: [],
       layersAtt: [],
 
-      titleName: '',
       layerId: '',
       lastRange: [0, 0],
       analysisAtt: [],
@@ -151,9 +150,9 @@ export default {
         { name: "闸阀井" }
       ],
       attList: [
-        { name: "所在道路", field: "LANE_WAY" },
-        { name: "权属单位", field: "OWNERUNIT" },
-        { name: "探测单位", field: "DETECTUNIT" },
+        { name: "位置", field: "POINTPOSITION" },
+        { name: "权属单位", field: "BELONG" },
+        { name: "探测单位", field: "SUNIT" },
       ],
       limitFeature: null,
       drawer: null
@@ -171,9 +170,6 @@ export default {
     queText(nv,ov){
       if(this.queText.length == 0 ) this.queTextName = '';
     },
-    type: function() {
-      this.titleName = this.param.type
-    },
     layerSelectList(e) {
       if (e.length !== 0) {
         this.layersAtt = this.layerSelectList.map(layer => {
@@ -185,8 +181,7 @@ export default {
     },
     layerId(e) {
       if(!e) return
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      this.getServerFields(dataServer, "给水管线节点").then(fields => {
+      new iQuery().getServerFields("TF_PSPS_POINT_B").then(fields => {
         if (fields) {
           this.analysisAtt = fields.map(field => {
             return { label: pointFieldDoc[field] || field, value: field }
@@ -223,30 +218,15 @@ export default {
     initLayer () {
       var mapView = this.mapView = this.data.mapView
     },
-    getServerFields ({ dataServiceUrl, dataSource }, dataSet) {
-      return new Promise(resolve => {
-        // 设置数据集，数据源
-        var param = new SuperMap.FieldParameters({
-          datasource: dataSource,
-          dataset: dataSet
-        });
-        // 创建字段查询实例
-        new FieldService(dataServiceUrl).getFields(param, serviceResult => {
-          if (serviceResult.type === "processFailed") resolve(null) 
-          else resolve(serviceResult.result.fieldNames)
-        });
-      })
-    },
 
     analysis_new () {
-      console.log("管线查询")
       if (!this.layerId) return this.$message.error('请选择查询图层名称')
-      if (this.layerSelectList.length === 0) this.$message.error('请选择管网统计的类型')
+      if (this.layerSelectList.length === 0) return this.$message.error('请选择管网统计的类型')
 
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      let dataSetInfo = dataServer.dataSetInfo.filter(info => info.name === "给水管线节点")
+      let dataService = appconfig.gisResource['iserver_resource'].dataService
+      let dataSetInfo = dataService.dataSetInfo.filter(info => info.type === "point")
       
-      let queryTask = new iQuery({...dataServer, dataSetInfo })
+      let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {
         if (!resArr) return this.$message.error("服务器请求失败!")
 
@@ -283,17 +263,17 @@ export default {
     },
 
     // TODO 多种类型 选择过滤
-    addResData (features) {
-      console.log(features)
-      console.log(this.attSelectList, this.layerSelectList)
-      
+    addResData (features) {      
       // 表格信息
       let tableData = [], columns = [], tableRows = [];
       columns = this.attSelectList.map(att => {
         return { name: att.name, value: att.field }
       })
       tableRows = this.layerSelectList.map(layer => {
-        let selectedFeatures = features.filter(fea => fea.values_['ADJUNCT'] === layer.name)
+        let selectedFeatures = features.filter(fea => {
+          console.log('管点类别', fea.values_['TYPE'])
+          return fea.values_['POINT_TYPE'] === layer.name
+        })
         return selectedFeatures.map(fea => {
           fea.values_["statistic_num"] = 1
           return fea.values_

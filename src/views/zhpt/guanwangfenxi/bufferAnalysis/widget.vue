@@ -105,7 +105,7 @@ export default {
   computed: {
     // 图层选项
     datasetOptions() {
-      const dataSetInfo = appconfig.gisResource['iserver_resource'].dataServer.dataSetInfo
+      const dataSetInfo = appconfig.gisResource['iserver_resource'].dataService.dataSetInfo
       return dataSetInfo.map(item => {
         return { label: item.label, value: item.name, type: item.type }
       })
@@ -117,6 +117,7 @@ export default {
       if (val !== "bufferAnalysis") this.removeAll()
     },
     drawType(val, oldVal) {
+      if (!val) return
       this.initDraw()
     }
   },
@@ -146,6 +147,7 @@ export default {
       this.vectorLayer && this.vectorLayer.getSource().clear()
       this.drawer = new iDraw(this.data.mapView, this.drawType, {
         endDrawCallBack: feature => {
+          // console.log(feature.getGeometry().getCoordinates())
           this.drawer.remove()
           this.drawFeature = feature
         },
@@ -157,8 +159,7 @@ export default {
     doQuery_new () {
       if (!this.selectLayer) return this.$message.error('请先选择要分析的图层!')
       if (!this.drawFeature) return this.$message.error('请先绘制缓冲区图形!')
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      let dataSetInfo = [{ name: this.selectLayer.value }]
+      let dataSetInfo = [{ name: this.selectLayer.value, label: this.selectLayer.label }]
 
       if (!this.vectorLayer) {
         this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
@@ -167,7 +168,7 @@ export default {
       let bufferFeature = this.getBufferFeature(this.drawFeature)
       this.vectorLayer.getSource().addFeature(bufferFeature)
 
-      new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(bufferFeature).then(resArr => {
+      new iQuery({ dataSetInfo }).spaceQuery(bufferFeature).then(resArr => {
         console.log("空间查询信息", resArr)
         let tableData = []
         resArr.forEach(res => {
@@ -303,9 +304,10 @@ export default {
     },
     clearResult() {
       this.vectorLayer.getSource().clear()
-      this.initDraw()
       this.drawFeature = null
       this.resultData = []
+      this.drawType = ''
+      this.selectLayer = ''
     },
     /**
      *  展示查询结果

@@ -38,7 +38,7 @@
                 <el-col :span="15">
                     <div class="btnGroup">
                         <el-button type="primary" icon="el-icon-search" size="mini" @click="getPage()">查询</el-button>
-                        <el-button type="primary" icon="el-icon-download" size="mini" @click="exportOperation()">导出</el-button>
+                        <el-button type="primary" icon="el-icon-download" size="mini" @click="exportConfirm()">导出</el-button>
                     </div>
                 </el-col>
             </el-row>
@@ -160,6 +160,20 @@ export default {
         },
         handleSelectionChange(value){
             this.selectedData=value
+        },
+        //导出前确认
+        exportConfirm(){
+            if(this.total<=1000){
+                this.exportOperation();
+                return
+            }
+            this.$confirm('仅支持导出前1000条数据，是否确认导出？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+            }).then(() => {
+                this.exportOperation()
+            }).catch(() => {});
         },
         exportOperation(){
             axios.defaults.baseURL = "/api";

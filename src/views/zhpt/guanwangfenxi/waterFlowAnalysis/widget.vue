@@ -61,6 +61,7 @@ import { LineString, Point } from 'ol/geom'
 import { Style } from 'ol/style'
 import Icon from 'ol/style/Icon';
 import arrowImg from '@/assets/images/arrow-right.png'
+import { fromExtent as extentToPolygon } from 'ol/geom/Polygon';
 
 export default {
   name: 'ConnectivityAnalysis',
@@ -85,13 +86,13 @@ export default {
     }
   },
   computed: {
-    // 监听面板是否被改变
-    '$store.state.map.P_editableTabsValue': function (val, oldVal) {
-      if (val == 'waterFlowAnalysis') this.removeAll() 
-      else this.init()
-    }
   },
   watch: {
+    // 监听面板是否被改变
+    '$store.state.map.P_editableTabsValue': function (val, oldVal) {
+      if (val !== 'waterFlowAnalysis') this.removeAll() 
+      else this.init()
+    },
     ractSelect (nv, ov) {
     }
   },
@@ -107,6 +108,7 @@ export default {
       this.map.addLayer(this.lightLayer)
     },
     removeAll () {
+      console.log('移除')
       this.resFeatures = []
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
@@ -130,6 +132,7 @@ export default {
               let feature = new GeoJSON().readFeature(featureJson)
               this.vectorLayer.getSource().addFeature(feature)
               // 
+              console.log("查询信息")
               let lineCoors = feature.getGeometry().getCoordinates()
               let centerPoint = new Feature({ geometry: new Point([(lineCoors[0][0] + lineCoors[1][0]) / 2, (lineCoors[0][1] + lineCoors[1][1]) / 2]) })
               let style = this.getIconStyle(feature)
@@ -144,10 +147,9 @@ export default {
       
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       return new Promise(resolve => {
-        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresObj = resArr.find(res => res && res.result.featureCount !== 0)
           if (featuresObj) resolve(featuresObj)
           else resolve(null)
@@ -155,13 +157,12 @@ export default {
       })
     },
     analysis () {
-      let { netWorkAnalysisUrl } = appconfig.gisResource['iserver_resource'].dataServer
       if (this.selectedPipe.length !== 2) return this.$message.error('选择两条管线')
       let points = this.selectedPipe.map(pipe => {
         let startPoint = pipe.feature.getGeometry().getCoordinates()[0]
         return { x: startPoint[0], y: startPoint[1] }
       })
-      new iNetAnalysis({ url: netWorkAnalysisUrl }).findPath(points[0], points[1]).then(res => {
+      new iNetAnalysis().findPath(points[0], points[1]).then(res => {
         if (res) {
           if (res.result.pathList.length !== 0) {
             let pathList = res.result.pathList
@@ -227,7 +228,7 @@ export default {
       return new Style({
         image: new Icon({
           src: arrowImg,
-          scale: 0.6,
+          scale: 0.4,
           size: [48, 48], // 对应图片大小
           rotation // 旋转弧度
         })

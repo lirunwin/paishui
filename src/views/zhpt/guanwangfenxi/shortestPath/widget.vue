@@ -127,12 +127,12 @@ export default {
               let featureJson = resObj.result.features.features[0]
               let feature = new GeoJSON().readFeature(featureJson)
               this.vectorLayer.getSource().addFeature(feature)
-              let sid = feature.get("SID"), startid = feature.get("START_SID"), endid = feature.get("END_SID")
+              let sid = feature.get("LNO"), startid = feature.get("S_POINT"), endid = feature.get("E_POINT")
 
               if (this.selectedPipe.length === 0) {
                 this.selectedPipe.push({ oid: sid, STARTSID: startid, ENDSID: endid, feature })
               } else {
-                if (this.selectedPipe[0].oid === sid) return this.$message.error("同一条管线")
+                if (this.selectedPipe[0].STARTSID === startid && this.selectedPipe[0].ENDSID === endid) return this.$message.error("同一条管线")
                 this.selectedPipe.push({ oid: sid, STARTSID: startid, ENDSID: endid, feature })
                 this.drawer.remove()
               }
@@ -147,10 +147,9 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       return new Promise(resolve => {
-        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresObj = resArr.find(res => res && res.result.featureCount !== 0)
           if (featuresObj) resolve(featuresObj)
           else resolve(null)
@@ -158,13 +157,14 @@ export default {
       })
     },
     analysis () {
-      let { netWorkAnalysisUrl } = appconfig.gisResource['iserver_resource'].dataServer
       if (this.selectedPipe.length !== 2) return this.$message.error('选择两条管线')
-      let points = this.selectedPipe.map(pipe => {
-        let startPoint = pipe.feature.getGeometry().getCoordinates()[0]
-        return { x: startPoint[0], y: startPoint[1] }
+      let points = this.selectedPipe.map((pipe, index) => {
+        let [startPoint, endPoint] = pipe.feature.getGeometry().getCoordinates(), 
+            point = { x: startPoint[0], y: startPoint[1] }
+        if (index) point = { x: endPoint[0], y: endPoint[1] }
+        return point
       })
-      new iNetAnalysis({ url: netWorkAnalysisUrl }).findPath(points[0], points[1]).then(res => {
+      new iNetAnalysis().findPath(points[0], points[1]).then(res => {
         if (res) {
           if (res.result.pathList.length !== 0) {
             let pathList = res.result.pathList

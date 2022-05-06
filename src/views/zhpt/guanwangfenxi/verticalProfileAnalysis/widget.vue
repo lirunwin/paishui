@@ -150,9 +150,9 @@ export default {
     // 点查询
     getPipeLineByPoint (feature) {
       let queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
-      let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       return new Promise(resolve => {
-        new iQuery({ ...appconfig.gisResource["iserver_resource"].dataServer, dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
         let featureObj = resArr.find(res => res.result.featureCount !== 0)
         if (featureObj) resolve(featureObj.result.features)
         else resolve(null)
@@ -162,10 +162,9 @@ export default {
     // 显示连通信息
     showConnetPipe (startId, endId) {
       let that = this
-      let { netWorkAnalysisUrl } = appconfig.gisResource['iserver_resource'].dataServer
       if (!(startId && endId)) return this.$message.error('管线数据不完整, 无法执行分析')
 
-      new iNetAnalysis({ url: netWorkAnalysisUrl }).findPath(startId, endId).then(res => {
+      new iNetAnalysis().findPath(startId, endId).then(res => {
         if (res) {
           if (res.result.pathList.length !== 0) {
             let pathList = res.result.pathList
@@ -186,12 +185,13 @@ export default {
     openBox(features, mapCenter) {
       let xminDistance = 0, xmaxDistance = 1, xmin = 0, xmax = 0
       let dataYPipe = [], dataYGround = []
-      const SH = "START_HEIGHT",
-            EH = 'END_HEIGHT',
-            SD = "START_DEPTH",
-            ED = 'END_DEPTH';
+      const SH = "IN_ELEV",
+            EH = 'OUT_ELEV',
+            SD = "S_DEEP",
+            ED = 'E_DEEP';
 
         let startX = 0
+        console.log('数据不完整')
         for (let len = features.length, i = 0; i < len; i++) {
           let fea = features[i], { properties, geometry } = fea
           let sheight = properties[SH], eheight = properties[EH],
@@ -202,7 +202,7 @@ export default {
           startX = Math.round((startX + length) * 1000) / 1000
           xmax = Math.max(startX, xmax)
 
-          dataYPipe.push([Number(startX), Number(eheight), Number(edeep)])
+          dataYPipe.push([Number(startX).toFixed(3), Number(eheight).toFixed(3), Number(edeep).toFixed(3)])
           dataYGround.push([Number(startX), Math.round((Number(eheight) + Number(edeep)) * 1000) / 1000 ])
         }
         // 添加起点管线

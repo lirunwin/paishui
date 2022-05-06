@@ -65,13 +65,19 @@ export default {
             }
         },
         setLayerVisible (row, check) {
-            console.log(check)
             let layer = row.layer
             layer.values_.visible = !layer.values_.visible
-            if (row.label.includes("底图")) {
-                
-            }
+            if (layer.values_.visible) this.setTop(layer)
             this.data.mapView.render()
+        },
+        setTop(layer) {
+            let layers = this.data.mapView.getLayers(), zindexs = []
+            layers.forEach(layer => {
+                let index = layer.getZIndex()
+                if (isNaN(index)) zindexs.push(0)
+                else zindexs.push(index)
+            })
+            layer.setZIndex(Math.max.apply(null, zindexs) + 1)
         }
     },
     mounted () {

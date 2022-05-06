@@ -16,16 +16,16 @@
       <div class="result-description">
         <div class="contant" v-if="selectPipeLines.length>0">
           <div>
-            <p>{{selectPipeLines[0].properties.TYPENAME}}</p>
-            <p>{{selectPipeLines[0].properties.SID}}</p>
-            <p>{{selectPipeLines[0].properties.BURYTYPE}}</p>
+            <p>{{selectPipeLines[0].properties.TYPE}}</p>
+            <p>{{selectPipeLines[0].properties.S_POINT}} / {{selectPipeLines[0].properties.E_POINT }}</p>
+            <p>{{selectPipeLines[0].properties.ADDRESS}}</p>
             <!-- <p>{{selectPipeLines[0].feature.properties.PRESSURE}}</p> -->
           </div>
           <div>VS</div>
           <div v-if="selectPipeLines.length==2">
-            <p>{{selectPipeLines[1].properties.TYPENAME}}</p>
-            <p>{{selectPipeLines[1].properties.SID}}</p>
-            <p>{{selectPipeLines[1].properties.BURYTYPE}}</p>
+            <p>{{selectPipeLines[1].properties.TYPE}}</p>
+            <p>{{selectPipeLines[0].properties.S_POINT}} / {{selectPipeLines[0].properties.E_POINT }}</p>
+            <p>{{selectPipeLines[1].properties.ADDRESS}}</p>
             <!-- <p>{{selectPipeLines[1].feature.properties.PRESSURE}}</p> -->
           </div>
         </div>
@@ -102,6 +102,7 @@ export default {
   },
   mounted() {
     this.map = this.data.mapView
+    this.init()
   },
   destroyed() {
     this.removeAll()
@@ -118,16 +119,18 @@ export default {
     select () {
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
+      this.selectPipeLines = []
       this.drawer = new iDraw(this.map, "point", {
         endDrawCallBack: feature => {
           let fea = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 0.5 / 1000, { units: "kilometers" }))
           this.getAnalysisPipe(fea).then(featuresJson => {
             if (featuresJson) {
-              
               if (this.selectPipeLines.length === 0) {
                 this.$set(this.selectPipeLines, 0, featuresJson.features[0])
               } else {
-                if (this.selectPipeLines[0].properties.SID === featuresJson.features[0].properties.SID) return this.$message.error('同一条管线')
+                if (this.selectPipeLines[0].properties.S_POINT === featuresJson.features[0].properties.S_POINT
+                && this.selectPipeLines[0].properties.E_POINT === featuresJson.features[0].properties.E_POINT
+                ) return this.$message.error('同一条管线')
                 this.$set(this.selectPipeLines, 1, featuresJson.features[0])
                 this.drawer.remove()
               }
@@ -148,23 +151,22 @@ export default {
       let [feature1, feature2] = this.selectPipeLines
       let pipe1 = new GeoJSON().readFeature(feature1)
       let pipe2 = new GeoJSON().readFeature(feature2)
-      let layername1 = pipe1.get("TYPENAME"), layername2 = pipe2.get("TYPENAME")
       let disAnalysisTool = new DisAnalysis()
 
-      // 判断管埋
-      let findPipes = [pipe1, pipe2].filter(pipe => pipe.get("BURYTYPE") !== "管埋")
-      if (findPipes.length !== 0) {
-        this.bgc = "#02baaf"
-        this.isCollsion = "不碰撞"
-        this.resResult = findPipes.map(pipe => pipe.get("SID")).join(",") + " 非管埋"
-        return
-      }
+      // // 判断管埋
+      // let findPipes = [pipe1, pipe2].filter(pipe => pipe.get("BURYTYPE") !== "管埋")
+      // if (findPipes.length !== 0) {
+      //   this.bgc = "#02baaf"
+      //   this.isCollsion = "不碰撞"
+      //   this.resResult = findPipes.map(pipe => pipe.get("SID")).join(",") + " 非管埋"
+      //   return
+      // }
 
       // 判断相连
       if  (isConnect(pipe1, pipe2)) {
         this.bgc = "#FF6401"
         this.isCollsion = "碰撞"
-        this.resResult = [pipe1, pipe2].map(pipe => pipe.get("SID")).join(",") + " 相连"
+        this.resResult = [pipe1, pipe2].map(pipe => pipe.get("LNO")).join(",") + " 相连"
         return
       }
       
@@ -179,8 +181,8 @@ export default {
         this.resResult = `垂直净距${res.dis}m`
       } else {
         // 水平净距
-        let sdiameter = pipe1.get("DIAMETER")
-        let cdiameter = pipe2.get("DIAMETER")
+        let sdiameter = pipe1.get("PSIZE")
+        let cdiameter = pipe2.get("PSIZE")
         let res = disAnalysisTool.closetHzDis(pipe1.getGeometry(), pipe2.getGeometry(), sdiameter, cdiameter)
         this.isCollsion = "不碰撞"
         this.bgc = "#02baaf"
@@ -189,18 +191,17 @@ export default {
 
       // 判断是否是前后连接的管段
       function isConnect(feature1, feature2) {
-        let sid1 = feature1.get("START_SID"),
-            eid1 = feature1.get("END_SID")
-        let sid2 = feature2.get("START_SID"),
-            eid2 = feature2.get("END_SID")
+        let sid1 = feature1.get("S_POINT"),
+            eid1 = feature1.get("E_POINT")
+        let sid2 = feature2.get("S_POINT"),
+            eid2 = feature2.get("E_POINT")
         return sid1 === eid2 || eid1 === sid2 || sid1 === sid2 || eid1 === eid2
       }
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
       return new Promise(resolve => {
-        new iQuery({ ...dataServer, dataSetInfo }).spaceQuery(fea).then(resArr => {
+        new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresArr = resArr.find(res => res && res.result.featureCount !== 0)
           if (featuresArr) resolve(featuresArr.result.features)
           else resolve(null)

@@ -23,7 +23,7 @@ import Map from 'ol/Map'
 import View from 'ol/View'
 
 import TileLayer from 'ol/layer/Tile';
-import { Vector as VectorSource } from "ol/source";
+import { Vector as VectorSource, XYZ } from "ol/source";
 import { Vector as VectorLayer } from "ol/layer";
 import { TileSuperMapRest } from '@supermap/iclient-ol'
 
@@ -90,7 +90,8 @@ export default {
       function clone (layer) {
         if (layer instanceof TileLayer) {
           if (layer.get("name") === "影像底图") return null
-          return new TileLayer({
+          return layer.get("parentname") !== "底图" ? 
+          new TileLayer({
             source: new TileSuperMapRest({
               url: layer.getSource()['_url'],
               crossOrigin: 'anonymous', // 是否请求跨域操作
@@ -99,7 +100,8 @@ export default {
             properties: {
               projection: 'EPSG:4326'
             }
-          })
+          }) :
+          new TileLayer({ source: new XYZ({ url: layer.getSource()['urls'][0] }) })
         } else if (layer instanceof VectorLayer) {
           let clonelayer = new VectorLayer({
             source: new VectorSource(),

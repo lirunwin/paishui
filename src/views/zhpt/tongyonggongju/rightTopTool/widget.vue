@@ -5,7 +5,7 @@
         <div class='grouptitle' @mouseover="showList(item)">
           <div class='imgDiv'>
             <!-- 目前没有图片后续，可以读取图片地址，通过地址进行动态加载，地址写入下面的src中 -->
-            <i class="el-icon-notebook-1"></i>
+            <i :class="item.icon"></i>
             <!-- <img style='width:100%;width:100%' src=''> -->
           </div>
           <span  class='spanDiv'>{{item.label}}</span>
@@ -50,8 +50,6 @@ export default {
       currentList:null,
       /**没有在浮动框、全框、半框里面的组件*/
       componentList:[],
-      //
-      activeTools: []
     }
   },
   mounted() {
@@ -125,12 +123,6 @@ export default {
      * @param val 对应功能的信息
      * */
     openFunction(val){
-      // 添加当前激活的功能, 第二次点击时删除
-      if (!this.activeTools.includes(val.name)) {
-        this.activeTools.push(val.name)
-      } else {
-        this.activeTools.splice(this.activeTools.indexOf(val.name), 1)
-      }
       if(!val.widgetid){
         let componentList=this.getComponents("rightTopTool");
         let tempComponent=componentList.find(e=>{return e.name==val.name});

@@ -50,7 +50,12 @@ export class TF_Layer {
     // 天地图
     TDT_Layer (url = "") {
         if (!url) return null
-        return new TileLayer({ source: new XYZ({ url: url + appconfig.tianMapKey }) })
+        return new TileLayer({ 
+            source: new XYZ({
+                crossOrigin: 'anonymous',
+                url: url + appconfig.tianMapKey 
+            }),
+        })
     }
     // 矢量图层
     VT_Layer () {

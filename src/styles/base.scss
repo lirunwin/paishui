@@ -280,7 +280,7 @@ div:focus {
   width: 100%;
   overflow: hidden auto;
   position: absolute;
-  background-color: #f5f5f6;
+  background-color: #f5f5f6 !important;
 }
 .el-dialog__wrapper.dialog .el-dialog__body {
   max-height: 75vh;

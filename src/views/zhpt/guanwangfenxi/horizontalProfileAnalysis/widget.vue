@@ -110,8 +110,8 @@ export default {
       }
     },
     analysis_new (drawFeature) {
-      let dataSetInfo = [{ name: "给水管线" }, { name: "广电线缆" }]
-      let queryTask = new iQuery({ ...appconfig.gisResource["iserver_resource"].dataServer, dataSetInfo })
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
+      let queryTask = new iQuery({ dataSetInfo })
 
       queryTask.spaceQuery(drawFeature).then(resArr => {
         if (!this.vectorLayer) {
@@ -147,7 +147,7 @@ export default {
           let center = [(coordinates[0][0] + coordinates[1][0]) / 2, (coordinates[0][1] + coordinates[1][1]) / 2]
           this.openBox(insertPoints, center)
           this.layerData = tableData
-        } else this.$message.error('无相交管线')
+        } else this.$message.error('无管线')
       })
       
       function createLayer () {
@@ -176,7 +176,7 @@ export default {
     openBox (features, mapCenter) {
       let xminDistance = 0, xmaxDistance = 1, xmin = 0, xmax = 0
       let dataYPipe = [], dataYGround = []
-      const heightField = "START_HEIGHT", deepFiled = "START_DEPTH"
+      const heightField = "IN_ELEV", deepFiled = "S_DEEP"
 
       if (features.length === 1) {
         xminDistance = 0.1
@@ -198,7 +198,7 @@ export default {
             startX = Math.round((startX + length) * 1000) / 1000
             xmax = Math.max(startX, xmax)
           }
-          dataYPipe.push([Number(startX), Number(height), Number(deep)])
+          dataYPipe.push([Number(startX).toFixed(3), Number(height).toFixed(3), Number(deep).toFixed(3)])
           dataYGround.push([Number(startX), Math.round((Number(height) + Number(deep)) * 1000) / 1000 ])
         }
       }

@@ -29,7 +29,7 @@
                 v-if="data.id !==0 && data.id !== 1"
                 v-model="data.visibleNum"
                 input-size="mini"
-                @input="data.layer.values_.opacity = 1 - data.visibleNum / 100"
+                @input="opacityChange(data)"
                 :disabled="!data.layer.values_.visible"
               />
             </div>
@@ -123,6 +123,7 @@ import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
 import * as control from 'ol/control'
 import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 
 export default {
   name: 'AnthorPanel',
@@ -144,7 +145,11 @@ export default {
       pipeLayer: undefined,
       
       currMap: null,
-      defaultCheckedKeys: []
+      defaultCheckedKeys: [],
+      defaultProps: {
+        children: 'children',
+        label: 'label'
+      },
     }
   },
   mounted: function() {
@@ -170,7 +175,7 @@ export default {
   },
   methods: {
     loadOlMap(mapContainer) {
-      let layerResource = appconfig.gisResource['iserver_resource'].layers
+      let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
       let center = this.mapView.getView().getCenter()
       let zoom = this.mapView.getView().getZoom()
       let map = new Olmap({
@@ -200,30 +205,13 @@ export default {
       // }
     },
 
-    addLayers(layers) {
-      layers.forEach((layerConfig) => {
-        let { name, url, parentname, id, visible = true } = layerConfig
-        // 显示图层的 id
-        let visibleLayerIndex = [2]
-        visible = visibleLayerIndex.includes(layerConfig.id)
-
-        let layer = new TileLayer({
-          name,
-          parentname,
-          id,
-          visible,
-          source: new TileSuperMapRest({
-            url,
-            crossOrigin: 'anonymous', // 是否请求跨域操作
-            wrapX: true
-          }),
-          properties: {
-            projection: 'EPSG:4326'
-          }
-        })
-        this.currMap.addLayer(layer)
-      })
-    },
+  addLayers(layers) {
+    layers.forEach(layerConfig => {
+      let { name, type, url, parentname, id, visible = true } = layerConfig
+      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
+      this.currMap.addLayer(layer)
+    })
+  },
 
     setTreeData() {
       let layers = this.currMap.getLayers().array_
@@ -245,7 +233,7 @@ export default {
         layersData.push({
           id: parentid++,
           label: parentname,
-          children: sublayers.map((sublayer) => {
+          children: sublayers.map(sublayer => {
             let { id, name, layer } = sublayer
             let opacity, visibleNum;
             if (sublayer.visible) {
@@ -258,6 +246,7 @@ export default {
           })
         })
       })
+      console.log("图层数据")
       this.layerTable = layersData
       this.defaultCheckedKeys = defaultCheckedKeys
     },
@@ -265,6 +254,10 @@ export default {
     subLayerChange (node) {
       console.log(node)
       node.layer.values_.visible = !node.layer.values_.visible;
+      this.currMap.render()
+    },
+    opacityChange (data) {
+      data.layer.values_.opacity = 1 - data.visibleNum / 100
       this.currMap.render()
     },
     // 底图变化
@@ -289,7 +282,7 @@ export default {
       this.anthorBaseMaps[this.showImageBase ? 3 : 1].visible = e
     },
     inputBaseLayer: function(w) {
-      const layerBox = ["标注", "矢量底图", "影像底图"]
+      const layerBox = ["标注底图", "矢量底图", "影像底图"]
       let opacity = this.baseMapsNum[w];
       let layers = this.currMap.getLayers().array_
       let thisLayer = layers.find(layer => layer.values_.name === layerBox[w])
@@ -297,12 +290,12 @@ export default {
     }
   },
   watch: {
-    layerTable: {
-      handler (newValue, oldValue) {
-        this.currMap && this.currMap.render()
-      },
-      deep: true
-    }
+    // layerTable: {
+    //   handler (newValue, oldValue) {
+    //     // this.currMap && this.currMap.render()
+    //   },
+    //   deep: true
+    // }
   }
 }
 </script>

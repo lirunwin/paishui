@@ -143,11 +143,11 @@ export default {
       // add
       attList: [
         { name: "管线材质", field: "MATERIAL" },
-        { name: "管径", field: "DIAMETER" },
-        { name: "行政区", field: "DISTRICT" },
-        { name: "权属单位", field: "OWNERUNIT" },
-        { name: "埋设方式", field: "BURYTYPE" },
-        { name: "所在道路", field: "LANE_WAY" }
+        { name: "管径", field: "PSIZE" },
+        { name: "所属工程名称", field: "ENAME" },
+        { name: "权属单位", field: "BELONG" },
+        { name: "埋设方式", field: "EMBED" },
+        { name: "位置", field: "POINTPOSITION" }
       ],
       limitFeature: null,
       layerList: [ { name: "管线" }],
@@ -171,9 +171,8 @@ export default {
     layerSelectList(e) {
     },
     layerId(e) {
-      if(!e) return 
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      this.getServerFields(dataServer, this.layerId).then(fields => {
+      if(!e) return
+      new iQuery().getServerFields(this.layerId).then(fields => {
         if (fields) {
           this.analysisAtt = fields.map(field => {
             return { label: fieldDoc[field] || field, value: field }
@@ -225,40 +224,25 @@ export default {
     },
     // 初始化地图
     initLayer () {
-      let { layers, dataServer } = appconfig.gisResource["iserver_resource"]
-      let netLayers = layers.filter(layer => layer.parentname === "管线")
+      let { dataService } = appconfig.gisResource["iserver_resource"]
+      let netLayers = dataService.dataSetInfo.filter(layer => layer.type === "line")
 
       // 设置图层
       this.layersAtt = netLayers.map(layer => {
-        return { value: layer.name, label: layer.name }
+        return { value: layer.name, label: layer.label }
       })
 
       var mapView = this.mapView = this.data.mapView
     },
-    // 获取服务字段
-    getServerFields ({ dataServiceUrl, dataSource }, dataSet) {
-      return new Promise(resolve => {
-        // 设置数据集，数据源
-        var param = new SuperMap.FieldParameters({
-          datasource: dataSource,
-          dataset: dataSet
-        });
-        // 创建字段查询实例
-        new FieldService(dataServiceUrl).getFields(param, serviceResult => {
-          if (serviceResult.type === "processFailed") resolve(null) 
-          else resolve(serviceResult.result.fieldNames)
-        });
-      })
-    },
 
     analysis () {
       if (!this.layerId) return this.$message.error('请选择查询图层名称')
-      if (this.layerSelectList.length === 0) this.$message.error('请选择管网统计的类型')
+      if (this.layerSelectList.length === 0) return this.$message.error('请选择管网统计的类型')
 
-      let dataServer = appconfig.gisResource['iserver_resource'].dataServer
-      let dataSetInfo = dataServer.dataSetInfo.filter(info => info.name === this.layerId)
+      let dataService = appconfig.gisResource['iserver_resource'].dataService
+      let dataSetInfo = dataService.dataSetInfo.filter(info => info.name === this.layerId)
       
-      let queryTask = new iQuery({...dataServer, dataSetInfo })
+      let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {
         if (!resArr) return this.$message.error("服务器请求失败!")
 
@@ -296,6 +280,7 @@ export default {
 
     // TODO 多种类型 选择过滤
     addResData (features) {
+      console.log("查询")
       const lengthField = 'SMLENGTH'
       console.log(this.attSelectList, this.layerSelectList)
       let sumLength = features.map(fea => (fea.values_[lengthField] || 0)).reduce((p, n) => Number(p) + Number(n), 0)

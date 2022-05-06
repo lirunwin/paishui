@@ -9,6 +9,9 @@ import { OverviewMap } from 'ol/control';
 import { appconfig } from 'staticPub/config' // 查找静态文件下的config 地图配置
 import { TileSuperMapRest } from "@supermap/iclient-ol";
 import TileLayer from "ol/layer/Tile";
+import { XYZ } from 'ol/source';
+
+
 export default {
   name: 'overView',
   components: {  },
@@ -27,11 +30,12 @@ export default {
      * 创建鹰眼
     */
     initOverView(){
+      let vectorLayer = appconfig.gisResource['iserver_resource'].layerService.layers.find(item => item.name === '矢量底图')
       let viewTileLayers = [
         new TileLayer({
-          source: new TileSuperMapRest({
-            url: appconfig.gisResource['iserver_resource'].layers[0].url,
-            crossOrigin: 'anonymous'
+          source: new XYZ({
+            url: vectorLayer.url + appconfig.tianMapKey,
+            crossOrigin: 'anonymous',
           })
         })
       ]

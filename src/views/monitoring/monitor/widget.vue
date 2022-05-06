@@ -1,5 +1,5 @@
 <template>
-  <div class="container" :style="`background-image: url('${mapPng}')`">
+  <div class="container">
     <el-tabs type="border-card" closable :class="`tabs ${drawer ? 'show' : ''}`" v-show="drawer" v-model="tab">
       <el-tab-pane lazy v-for="page of pages" :key="page.name" :name="page.name">
         <span slot="label">{{ page.label }}</span>
@@ -7,34 +7,49 @@
       </el-tab-pane>
     </el-tabs>
     <WarningCard />
-    <InfoCard @distribute="onDistribute" />
     <MissionForm :visible.sync="missionVisible" :title="`工单`" :data="current" />
+    <CommonPopup
+      :popupShow="popupShow"
+      :popupPosition="[104.75231999734498, 31.525963399505617]"
+      :mapView="view"
+      isSetCenter
+    >
+      <InfoCard @distribute="onDistribute" />
+    </CommonPopup>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import mapPng from './map.png'
 import MonitorStage from './pages/Monitor.vue'
 import RoutePlan from './pages/RoutePlan.vue'
 import WarningCard from './components/WarningCard/index.vue'
 import InfoCard from './components/InfoCard/index.vue'
 import MissionForm from './components/MissionForm/index.vue'
+import CommonPopup from '@/components/CommonPopup/index.vue'
 
-@Component({ name: 'Monitor', components: { MonitorStage, RoutePlan, WarningCard, InfoCard, MissionForm } })
+@Component({
+  name: 'Monitor',
+  components: { MonitorStage, RoutePlan, WarningCard, InfoCard, MissionForm, CommonPopup }
+})
 export default class Monitor extends Vue {
-  mapPng = mapPng
   drawer = true
   tab = 'monitor'
   pages = [
     { name: 'monitor', label: '监控台', component: 'MonitorStage' },
     { name: 'route-plan', label: '路径规划', component: 'RoutePlan' }
   ]
+  view = null
   missionVisible = false
   current = {}
+  popupShow = true
   onDistribute(obj) {
+    this.popupShow = false
     this.current = obj
     this.missionVisible = true
+  }
+  mounted() {
+    this.view = (this.$attrs.data as any).mapView
   }
 }
 </script>

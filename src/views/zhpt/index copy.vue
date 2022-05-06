@@ -327,7 +327,7 @@ export default class BaseMap extends Vue {
   async initMap() {
     let { initCenter, initZoom } = appconfig
 
-    let layerResource = appconfig.gisResource['iserver_resource'].layers
+    let layerResource = appconfig.gisResource['iserver_resource'].layerService.layerService.layers
     // layerInfo.url = "https://iserver.supermap.io/iserver/services/map-world/rest/maps/World";
     let map = new Map({
       target: 'mapView',

@@ -205,8 +205,9 @@ export default {
       }
     },
     mapExtent: {
-      handler(nv, ov) {
-        if (this.data.mapView.getView().getZoom() > 17) {
+      handler (nv, ov) {
+        console.log('视图改变')
+        if (this.data.mapView.getView().getZoom() > 16) {
           this.data.that.queryForExtent(nv)
         } else {
           // 在地图界别较小时，移除管网

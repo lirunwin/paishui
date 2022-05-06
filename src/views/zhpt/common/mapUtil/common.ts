@@ -35,6 +35,18 @@ export class mapUtil {
         }
         return center
     }
+
+    // 设置图层在最上层
+    setTop(layer) {
+        let layers = this.map.getLayers(), zindexs = []
+        layers.forEach(layer => {
+            let index = layer.getZIndex()
+            if (isNaN(index)) zindexs.push(0)
+            else zindexs.push(index)
+        })
+        layer.setZIndex(Math.max.apply(null, zindexs) + 1)
+    }
+
     // 获取当前地图 extent
     getCurrentViewExtent() {
         let mapDom = this.map.getTargetElement()
@@ -59,8 +71,8 @@ export class mapUtil {
         let [xmin, ymin, xmax, ymax] = extent
         let coors = [[[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax],]]
         let feature = new Feature({ geometry: new Polygon(coors) })
-        let dataSetInfo = [{ name: '给水管线' }]
-        new iQuery({ ...appconfig.gisResource['iserver_resource'].dataServer, dataSetInfo }).spaceQuery(feature).then(resArr => {
+        let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
+        new iQuery({ dataSetInfo }).spaceQuery(feature).then(resArr => {
             let resFeaturesObj = resArr.filter((res: any) => res && res.result.featureCount !== 0)
             let features = []
             if (resFeaturesObj.length !== 0) {

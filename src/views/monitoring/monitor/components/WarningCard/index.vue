@@ -1,5 +1,9 @@
 <template>
-  <el-card class="warning-card" :body-style="{ fontSize: '14px', padding: '15px' }">
+  <el-card
+    class="warning-card"
+    :body-style="{ fontSize: '14px', padding: '15px' }"
+    :style="`left: ${$store.getters.sidebar.opened ? '200px' : '50px'}`"
+  >
     <div slot="header" class="clearfix">
       <span>告警信息提示</span>
       <el-button style="float: right; padding: 3px 0" type="text">历史数据</el-button>
@@ -84,7 +88,6 @@ export default class WarningCard extends Vue {
   checked = []
 
   onCheckAllChange(val) {
-    console.log(val)
     this.checkedValues = val ? this.params.map((item) => item.id) : []
     this.checked = val ? this.params.map(() => true) : []
     this.isIndeterminate = false
@@ -102,15 +105,20 @@ export default class WarningCard extends Vue {
     this.selectedAll = checkedCount === this.params.length
     this.isIndeterminate = checkedCount > 0 && checkedCount < this.params.length
   }
+  mounted() {
+    console.log(this)
+  }
 }
 </script>
 
 <style lang="scss" scoped>
 .warning-card {
-  position: absolute;
-  left: 30px;
-  bottom: 70px;
+  position: fixed;
+  left: 50px;
+  bottom: 50px;
   width: 366px;
+  transition: left ease 300ms;
+
   /deep/ .el-card__header {
     padding: 15px;
   }
@@ -123,7 +131,6 @@ export default class WarningCard extends Vue {
   display: flex;
   align-items: center;
   max-width: 100%;
-
   &-check-all {
     flex: 0 0 4.5em;
   }
