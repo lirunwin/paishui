@@ -1249,3 +1249,15 @@
   content: "\e641";
 }
 
+.iconother::before {
+  content: "\e644"
+}
+
+.icontool::before {
+  content: "\e683"
+}
+
+.iconmeasure::before {
+  content: "\e699"
+}
+

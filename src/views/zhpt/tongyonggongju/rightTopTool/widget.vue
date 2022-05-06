@@ -5,7 +5,7 @@
         <div class='grouptitle' @mouseover="showList(item)">
           <div class='imgDiv'>
             <!-- 目前没有图片后续，可以读取图片地址，通过地址进行动态加载，地址写入下面的src中 -->
-            <i class="el-icon-notebook-1"></i>
+            <i :class="item.icon"></i>
             <!-- <img style='width:100%;width:100%' src=''> -->
           </div>
           <span  class='spanDiv'>{{item.label}}</span>

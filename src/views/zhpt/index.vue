@@ -481,12 +481,12 @@ export default class BaseMap extends Vue {
     this.$refs.any.style.display = 'none'
   }
   initConfig() {
-    var index = appconfig.gisResource
+    var resource = appconfig.gisResource["iserver_resource"]
     var nextDo = () => {
       this.loadText = '地图加载中'
       this.$nextTick(this.initMap)
     }
-    console.log('是否获取后台配置服务:' + appconfig.isloadServer)
+
     if (appconfig.isloadServer) {
       this.loadText = '服务加载中'
       request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then(res1 => {
@@ -498,57 +498,88 @@ export default class BaseMap extends Vue {
           if (onlineIndex !== -1) {
             let isOnline = true
             let onLineAddress = res[onlineIndex].child[0].cval
-            console.log('判断地址' + onLineAddress)
             axios.get(onLineAddress).then(
               res => {
-                  isOnline = res.status === 200
+                isOnline = res.status === 200
               }, 
               error => {
-                  //异常返回
-                  isOnline = false
-                }
-              ).catch(e => {
+                isOnline = false // 异常返回
+              }
+            )
+            .catch(e => {
                 isOnline = false //异常返回
-              })
-              .finally(() => {
-                for (var i = 0, ii = res.length; i < ii; i++) {
-                  var dr = res[i]
-                  if (index.hasOwnProperty(dr.code)) {
-                    //天地图相关的编码
-                    let replaceItems = [
-                      'tian_online_vector',
-                      'tian_online_raster',
-                      'tian_online_vector_label',
-                      'tian_online_raster_label'
-                    ]
-                    //离线状况下替换天地图地址
-                    if (!isOnline) {
-                      if (replaceItems.some(valItem => valItem == dr.code)) {
-                        let index2 = res.findIndex(item => item.code === dr.code + '_dl')
-                        if (index2 !== -1) {
-                          let dataItem = res[index2]
-                          var odr = index[dr.code]
-                          odr.type = dataItem.type
-                          odr.groupname = dataItem.name
-                          if (dataItem.child) {
-                            odr.config = dataItem.child.map(e => {
-                              return { name: e.name, url: e.cval }
-                            })
-                          }
-                        }
-                        continue
-                      }
-                    }
-                    var odr = index[dr.code]
-                    odr.type = dr.type
-                    odr.groupname = dr.name
-                    if (dr.child) {
-                      odr.config = dr.child.map((e) => {
-                        return { name: e.name, url: e.cval }
-                      })
-                    }
+            })
+            .finally(() => {
+              const repItems = ["图层服务"]
+              res.forEach(service => {
+                let resData = [], source = null
+                if (repItems.includes(service.name)) {
+                  resData = service.child
+                  switch(service.name) {
+                    case "图层服务": source = resource.layerService.layers
+                      break;
+                    case "网络分析服务": source = resource.netAnalysisService
+                      break;
+                    case "数据服务": source = resource.dataService
+                      break
+                    default: 
+                      break
                   }
                 }
+                if (source && resData && resData.length !== 0) {
+                  if (service.name === "图层服务") {
+                    resData.forEach(data => {
+                      let findItem = source.find(sourceItem => {
+                        return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name )
+                      })
+                      if (findItem) {
+                        findItem.url = data.cval
+                      }
+                    })
+                  } else {
+                    source.url = resData[0].cval
+                  }
+                }
+              })
+              console.log('重新配置后的服务', appconfig.gisResource["iserver_resource"])
+                // for (var i = 0, ii = res.length; i < ii; i++) {
+                //   var dr = res[i]
+                //   if (resource.hasOwnProperty(dr.code)) {
+                //     //天地图相关的编码
+                //     let replaceItems = [
+                //       'tian_online_vector',
+                //       'tian_online_raster',
+                //       'tian_online_vector_label',
+                //       'tian_online_raster_label'
+                //     ]
+                //     //离线状况下替换天地图地址
+                //     if (!isOnline) {
+                //       if (replaceItems.some(valItem => valItem == dr.code)) {
+                //         let index2 = res.findIndex(item => item.code === dr.code + '_dl')
+                //         if (index2 !== -1) {
+                //           let dataItem = res[index2]
+                //           var odr = resource[dr.code]
+                //           odr.type = dataItem.type
+                //           odr.groupname = dataItem.name
+                //           if (dataItem.child) {
+                //             odr.config = dataItem.child.map(e => {
+                //               return { name: e.name, url: e.cval }
+                //             })
+                //           }
+                //         }
+                //         continue
+                //       }
+                //     }
+                //     var odr = resource[dr.code]
+                //     odr.type = dr.type
+                //     odr.groupname = dr.name
+                //     if (dr.child) {
+                //       odr.config = dr.child.map((e) => {
+                //         return { name: e.name, url: e.cval }
+                //       })
+                //     }
+                //   }
+                // }
                 nextDo()
               })
           }
