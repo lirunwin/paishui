@@ -127,9 +127,10 @@
           >
           </el-input>
         </el-form-item>
-        <el-form-item label="附件:" v-show="!isDetails">
+        <el-form-item label="附件:">
           <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
           <el-upload
+            v-show="!isDetails"
             show-file-list
             ref="updataDocx"
             class="upload-demo"

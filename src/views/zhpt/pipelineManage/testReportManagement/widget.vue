@@ -171,7 +171,15 @@
             :file-list="fileList"
             :auto-upload="false"
           >
-            <el-button size="small" type="primary">选择文件夹</el-button>
+            <div class="btn-box">
+              <el-button size="small" type="primary">选择报告</el-button>
+              <span class="btns"
+                ><el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
+                  >确 定</el-button
+                >
+                <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
+              >
+            </div>
             <div slot="tip" class="el-upload__tip">
               <p>只能上传docx/doc文件</p>
               <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%">
@@ -197,10 +205,6 @@
           </el-upload>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" :icon="isLoading" @click="uploadWord" :disabled="loadingBool">确 定</el-button>
-        <el-button @click="hideUpdataDocx">取 消</el-button>
-      </div>
     </el-dialog>
     <!-- 视频上传 -->
     <el-dialog title="附件视频上传" @close="closeDialog" :visible.sync="dialogFormVisible2">
@@ -236,7 +240,16 @@
             :file-list="fileList"
             :auto-upload="false"
           >
-            <el-button size="small" type="primary">选择文件夹</el-button>
+            <div class="btn-box">
+              <el-button size="small" type="primary">选择视频</el-button>
+              <span class="btns"
+                ><el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
+                  >确 定</el-button
+                >
+                <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
+              >
+            </div>
+
             <div slot="tip" class="el-upload__tip">
               <p>只能上传mp4文件</p>
               <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%">
@@ -262,10 +275,6 @@
           </el-upload>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" :icon="isLoading" @click="uploadVideoWord" :disabled="loadingBool">确 定</el-button>
-        <el-button @click="hideUpdataDocx">取 消</el-button>
-      </div>
     </el-dialog>
     <!-- 发布 -->
     <el-dialog
@@ -305,9 +314,7 @@
             </el-tab-pane>
             <el-tab-pane label="数据地图" name="two">
               <!-- 数据地图 -->
-              <div class="map-box">
-                数据地图
-              </div>
+              <div class="map-box">数据地图</div>
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -1108,9 +1115,25 @@ $fontSize: 14px !important;
     }
     .right {
       flex: 1;
-      .map-box{
+      .map-box {
         height: 597px;
         border: 1px solid #666;
+      }
+    }
+  }
+  /deep/ .upload-demo {
+    position: relative;
+    & > .el-upload {
+      // width: 100%;
+    }
+    .btn-box {
+      // cursor: default;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .btns {
+        position: absolute;
+        right: 0;
       }
     }
   }
