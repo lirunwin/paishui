@@ -303,7 +303,12 @@
                 <pdf-see></pdf-see>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="数据地图" name="two">数据地图</el-tab-pane>
+            <el-tab-pane label="数据地图" name="two">
+              <!-- 数据地图 -->
+              <div class="map-box">
+                数据地图
+              </div>
+            </el-tab-pane>
           </el-tabs>
         </div>
       </div>
@@ -969,7 +974,7 @@ $fontSize: 14px !important;
         .el-input__inner {
           height: 34px;
         }
-        .el-range-editor{
+        .el-range-editor {
           width: 270px;
         }
         .date-css {
@@ -1103,6 +1108,10 @@ $fontSize: 14px !important;
     }
     .right {
       flex: 1;
+      .map-box{
+        height: 597px;
+        border: 1px solid #666;
+      }
     }
   }
 }

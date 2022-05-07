@@ -144,18 +144,20 @@
             :file-list="fileList"
             :auto-upload="false"
           >
-            <el-button size="small" type="primary">选择文件夹</el-button>
+            <div class="add-btn">
+              <el-button size="small" type="primary" slot="trigger">选择文件夹</el-button>
+              <span class="btns">
+                <el-button @click.stop="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
+                <el-button type="primary" @click.stop="addTable('form')" v-if="!isDetails">确 定</el-button>
+                <el-button @click.stop="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
+              </span>
+            </div>
             <div slot="tip" class="el-upload__tip">
-              <p>只能上传docx/doc文件</p>
+              <!-- <p>只能上传docx/doc文件</p> -->
             </div>
           </el-upload>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
-        <el-button type="primary" @click="addTable('form')" v-if="!isDetails">确 定</el-button>
-        <el-button @click="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
-      </div>
     </el-dialog>
   </div>
 </template>
@@ -282,7 +284,7 @@ export default {
             message: '只能输入数字',
             trigger: 'blur'
           }
-        ],
+        ]
       }
     }
   },
@@ -357,6 +359,7 @@ export default {
     closeDialog() {
       console.log('关闭了对话框', this.initForm)
       this.form = { ...this.initForm }
+      this.$refs['form'].resetFields()
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
       // 提交条件初始化
       this.isEdit = false
@@ -432,11 +435,14 @@ export default {
             res = await addData(this.form)
           }
           // console.log('工程添加成功后', res)
-          this.updataParamsId.itemId = res.result.id
-          // 获得字典id
-          await this.getParamsId()
-          // console.log('附件参数', this.updataParamsId)
-          await this.$refs.updataDocx.submit()
+          // 如果有附件则再上传附件
+          if (this.fileList) {
+            this.updataParamsId.itemId = res.result.id
+            // 获得字典id
+            await this.getParamsId()
+            // console.log('附件参数', this.updataParamsId)
+            await this.$refs.updataDocx.submit()
+          }
           if (res.result) {
             this.$message({
               message: '添加成功',
@@ -565,33 +571,40 @@ export default {
     }
   }
   // 卡片样式
-  /deep/ .el-dialog {
-    margin-top: 9vh !important;
-    font-size: 12px;
-    .el-dialog__body {
-      padding: 10px 0px !important;
-    }
-    .el-dialog__header {
-      background-color: #2d74e7;
-      .el-dialog__title {
-        color: #dfeffe;
+  /deep/ .el-dialog__wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+    box-sizing: border-box;
+    .el-dialog {
+      margin-top: 0vh !important;
+      font-size: 12px;
+      .el-dialog__body {
+        padding: 10px 0px !important;
       }
-      .el-icon-close:before {
-        color: #fff;
+      .el-dialog__header {
+        background-color: #2d74e7;
+        .el-dialog__title {
+          color: #dfeffe;
+        }
+        .el-icon-close:before {
+          color: #fff;
+        }
       }
-    }
-    .el-input__inner {
-      height: 34px;
-    }
-    .el-form {
-      padding: 0 35px;
-      box-sizing: border-box;
-      .el-form-item {
-        margin-bottom: 14px;
+      .el-input__inner {
+        height: 34px;
       }
-    }
-    .el-dialog__footer {
-      padding: 0 20px 5px !important;
+      .el-form {
+        padding: 0 35px;
+        box-sizing: border-box;
+        .el-form-item {
+          margin-bottom: 14px;
+        }
+      }
+      .el-dialog__footer {
+        padding: 0 20px 5px !important;
+      }
     }
   }
 }
@@ -603,5 +616,22 @@ export default {
   // background-color: #2d74e7;
   margin-left: 20px;
   border: none !important;
+}
+
+/deep/ .upload-demo {
+  position: relative;
+  & > .el-upload {
+    // width: 100%;
+  }
+  .add-btn {
+    // cursor: default;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .btns {
+      position: absolute;
+      right: 0;
+    }
+  }
 }
 </style>

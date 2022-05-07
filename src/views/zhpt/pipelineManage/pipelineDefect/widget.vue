@@ -135,7 +135,7 @@
                   ><span style="flex: 1">等级:&emsp;{{ isPromptBoxdefectLevel }}</span>
                 </div>
                 <div style="display: flex; padding: 3px 0">
-                  <span style="width: 28px">评价:</span>
+                  <span style="width: 30px">评价:</span>
                   <span style="line-height: 16px;padding-left: 10px;">{{ isPromptBox.pipeNote }}</span>
                 </div>
               </div>
