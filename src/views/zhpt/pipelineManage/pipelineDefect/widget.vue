@@ -51,7 +51,6 @@
               type="primary"
               size="small"
               :disabled="multipleSelection.length != 1"
-              :wu="scope"
               >导出<i class="el-icon-download el-icon--right"></i
             ></el-button>
           </el-popconfirm>

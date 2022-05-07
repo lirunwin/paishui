@@ -43,7 +43,7 @@
             icon="el-icon-info"
             icon-color="##FFDF84"
             title="确定要导出吗?"
-            @confirm="$message('该功能暂未开放', scope.row.prjName)"
+            @confirm="$message('该功能暂未开放')"
           >
             <el-button
               slot="reference"
@@ -51,7 +51,6 @@
               type="primary"
               size="small"
               :disabled="multipleSelection.length != 1"
-              :wu="scope"
               >导出<i class="el-icon-download el-icon--right"></i
             ></el-button>
           </el-popconfirm>

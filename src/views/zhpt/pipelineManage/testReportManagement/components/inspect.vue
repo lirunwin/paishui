@@ -14,8 +14,8 @@
         :label="v.label"
         align="center"
         show-overflow-tooltip
-        v-for="v in tableContent"
-        :key="v.name"
+        v-for="(v,i) in tableContent"
+        :key="i"
         :show-overflow-tooltip="true"
         :render-header="renderHeader"
       >
