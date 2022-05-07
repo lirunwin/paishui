@@ -14,15 +14,6 @@
           >
           </el-input>
           <div class="title">检测日期：</div>
-          <!-- <el-date-picker
-            v-model="searchValue.dateTime"
-            type="date"
-            class="date-css"
-            value-format="yyyy-MM-dd"
-            placeholder="检测日期"
-          >
-          </el-date-picker> -->
-          <!-- value-format="yyyy-MM-dd HH:mm:ss" -->
           <el-date-picker
             v-model="searchValue.dateTime"
             type="daterange"
@@ -94,18 +85,6 @@
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <!-- <el-popconfirm
-              confirm-button-text="确定"
-              cancel-button-text="不用了"
-              icon="el-icon-info"
-              icon-color="##FFDF84"
-              title="确定要发布吗?"
-              v-if="scope.row.state == '0'"
-              @confirm="oneRelease(scope.row.id)"
-            >
-              <el-button slot="reference" type="text" size="small" :wu="scope">发布</el-button>
-            </el-popconfirm> -->
-
             <el-popconfirm
               confirm-button-text="确定"
               cancel-button-text="取消"
@@ -117,14 +96,6 @@
             >
               <el-button slot="reference" type="text" size="small" :wu="scope">撤回</el-button>
             </el-popconfirm>
-            <!-- <el-button
-              v-if="scope.row.state == '1'"
-              type="text"
-              size="small"
-              :wu="scope"
-              @click="$message('该功能暂未开放')"
-              >撤回</el-button
-            > -->
             <el-button
               type="text"
               size="small"
@@ -310,47 +281,13 @@
           <el-tabs v-model="activeLeft" @tab-click="handleClick">
             <el-tab-pane label="统计汇总" name="first">
               <div class="releaseContent">
+                <div class="detailsTitle">主要工程量表</div>
+                <project-form></project-form>
+                <div class="detailsTitle">检查井检查情况汇总表</div>
+                <inspect-form></inspect-form>
                 <div class="detailsTitle">管道缺陷数量统计表</div>
-                <table width="560" height="300" border="1" class="left-table" cellspacing="0" align="center">
-                  <thead>
-                    <tr height="34">
-                      <th rowspan="2" colspan="2">缺陷名称\缺陷数量\缺陷级别</th>
-                      <th>1级(轻微)</th>
-                      <th>2级(中等)</th>
-                      <th>3级(严重)</th>
-                      <th>4级(重大)</th>
-                      <th rowspan="2">小计</th>
-                    </tr>
-                    <tr height="34">
-                      <th>缺陷个数</th>
-                      <th>缺陷个数</th>
-                      <th>缺陷个数</th>
-                      <th>缺陷个数</th>
-                    </tr>
-                  </thead>
-                  <tr v-for="(v, i) in defectQuantityStatisticsA" :key="v.title">
-                    <td rowspan="10" v-if="i < 1">结构性缺陷</td>
-                    <td>{{ v.title }}</td>
-                    <td>{{ v.oneValue }}</td>
-                    <td>{{ v.twoValue }}</td>
-                    <td>{{ v.threeValue }}</td>
-                    <td>{{ v.fourValue }}</td>
-                    <td>{{ v.sum }}</td>
-                  </tr>
-                  <tr v-for="(v, i) in defectQuantityStatisticsB" :key="i">
-                    <td rowspan="6" v-if="i < 1">功能性缺陷</td>
-                    <td>{{ v.title }}</td>
-                    <td>{{ v.oneValue }}</td>
-                    <td>{{ v.twoValue }}</td>
-                    <td>{{ v.threeValue }}</td>
-                    <td>{{ v.fourValue }}</td>
-                    <td>{{ v.sum }}</td>
-                  </tr>
-                  <tr class="defectSum">
-                    <td colspan="2">合计</td>
-                    <td v-for="(key, i) in defectSumObj" :key="i">{{ key }}</td>
-                  </tr>
-                </table>
+                <summary-form :tabelData="returnTabel"></summary-form>
+                <div class="detailsTitle">管道缺陷数量统计图</div>
               </div>
             </el-tab-pane>
             <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane>
@@ -361,7 +298,11 @@
         <!-- 右边部分 -->
         <div class="right">
           <el-tabs v-model="activeRight" @tab-click="handleClick">
-            <el-tab-pane label="原始检测报告" name="one"> <div class="releaseContent">原始检测报告</div> </el-tab-pane>
+            <el-tab-pane label="原始检测报告" name="one">
+              <div class="releaseContent">
+                <pdf-see></pdf-see>
+              </div>
+            </el-tab-pane>
             <el-tab-pane label="数据地图" name="two">数据地图</el-tab-pane>
           </el-tabs>
         </div>
@@ -386,7 +327,21 @@ import {
   queryDictionariesId
 } from '@/api/pipelineManage'
 
+// 引入预览pdf插件
+import pdfSee from '../components/OpenPdf.vue'
+
+// 引入发布的组件
+import summaryForm from './components/summaryForm'
+import projectForm from './components/project'
+import inspectForm from './components/inspect'
+
 export default {
+  components: {
+    summaryForm,
+    projectForm,
+    inspectForm,
+    pdfSee
+  },
   data() {
     return {
       // 上传文件表格
@@ -482,6 +437,14 @@ export default {
     let res = this.getDate()
   },
   computed: {
+    returnTabel() {
+      let obj = {
+        defectQuantityStatisticsA: this.defectQuantityStatisticsA,
+        defectQuantityStatisticsB: this.defectQuantityStatisticsB,
+        defectSumObj: this.defectSumObj
+      }
+      return obj
+    },
     // 加载按钮
     isLoading() {
       return this.loadingBool ? 'el-icon-loading' : ''
@@ -726,7 +689,7 @@ export default {
       this.selectArr = data.map((v) => {
         return {
           name: v.prjName,
-          No: v.prjNo
+          No: v.id
         }
       })
       // this.selectArr
@@ -939,6 +902,7 @@ export default {
 
 
 <style lang="scss" scoped>
+$fontSize: 14px !important;
 // 上传进度样式
 .font-green {
   color: #26b54b;
@@ -947,6 +911,14 @@ export default {
   color: #2d9eeb;
 }
 .engineering-manage {
+  height: 100vh;
+  margin: 0;
+  padding: 20px 0;
+  box-sizing: border-box;
+  position: relative;
+  font-size: $fontSize;
+  /deep/ .el-date-editor {
+  }
   // 表格样式
   .table-box {
     width: 96%;
@@ -966,7 +938,10 @@ export default {
       justify-content: space-between;
       flex-direction: row;
       flex-wrap: wrap;
-      font-size: 12px;
+      font-size: $fontSize;
+      /deep/ .el-radio__label {
+        font-size: $fontSize;
+      }
       /deep/ .serch-engineering {
         display: flex;
         // justify-content: space-around;
@@ -977,6 +952,7 @@ export default {
           align-items: center;
           white-space: nowrap;
           margin-right: 5px;
+          font-size: $fontSize;
           .el-radio {
             margin-right: 10px;
           }
@@ -988,10 +964,13 @@ export default {
           }
         }
         .serch-input {
-          width: 245px;
+          width: 240px;
         }
         .el-input__inner {
           height: 34px;
+        }
+        .el-range-editor{
+          width: 270px;
         }
         .date-css {
           width: 140px;
@@ -1006,11 +985,12 @@ export default {
       .serch-btn {
         height: 34px;
         display: flex;
+        font-size: $fontSize;
         justify-content: center;
         align-items: center;
         // background-color: #2d74e7;
         // margin-left: 14px;
-        padding: 12px;
+        padding: 10px;
         border: none !important;
       }
 
@@ -1018,22 +998,20 @@ export default {
         margin-bottom: 14px;
         display: flex;
         align-items: center;
+        font-size: $fontSize;
         // flex-direction: row;
         // flex-wrap: wrap;
       }
     }
   }
-  /deep/ .el-table th.el-table__cell > .cell {
-    height: 40px;
-    line-height: 40px;
-    background-color: #dfeffe;
+  /deep/ .el-table {
+    font-size: $fontSize;
+    th.el-table__cell > .cell {
+      height: 40px;
+      line-height: 40px;
+      background-color: #dfeffe;
+    }
   }
-  height: 100vh;
-  margin: 0;
-  padding: 20px 0;
-  box-sizing: border-box;
-  position: relative;
-  font-size: 12px;
 
   // 报告上传样式
   /deep/ .el-dialog__header {
@@ -1053,7 +1031,7 @@ export default {
       height: 40px;
       display: flex;
       align-items: center;
-      font-size: 12px;
+      font-size: $fontSize;
       font-weight: bold;
       background-color: #dfeffe;
     }
@@ -1095,12 +1073,13 @@ export default {
         margin-top: 11px !important;
         background: transparent !important;
       }
-      .releaseContent {
+      /deep/.releaseContent {
         width: 100%;
         height: 600px;
         margin-top: -3px;
         padding: 20px;
         box-sizing: border-box;
+        overflow-y: scroll;
       }
     }
     .left {
@@ -1109,7 +1088,7 @@ export default {
         border: 1px solid #9a9a9a;
         overflow: scroll;
         .detailsTitle {
-          margin: 10px 0;
+          margin: 24px 0;
           position: relative;
         }
         .detailsTitle::after {
@@ -1119,22 +1098,6 @@ export default {
           width: 4px;
           height: 100%;
           background-color: #2d74e7;
-        }
-        .left-table {
-          width: 100%;
-          font-weight: bold;
-          text-align: center;
-          th {
-            color: #666;
-            background: #eeece1;
-          }
-          tr {
-            height: 38px;
-          }
-          .defectSum {
-            height: 45px;
-            background-color: #eeece1;
-          }
         }
       }
     }

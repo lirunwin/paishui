@@ -89,138 +89,42 @@
             </span>
           </div>
           <div class="content">
-            <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
-              <el-menu-item index="1">检测信息</el-menu-item>
-              <el-menu-item index="2">功能性缺陷({{ tableForm.funcClass }})</el-menu-item>
-              <el-menu-item index="3">结构性缺陷({{ tableForm.structClass }})</el-menu-item>
-            </el-menu>
-            <div class="content-info">
-              <div class="box1" v-show="activeIndex == '1'">
+            <div class="box1">
+              <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
                 <div class="detailsTitle">管段信息</div>
-                <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
-                  <el-row v-for="(v, i) in cardTableContent" :key="i">
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item :label="v[0].label">
-                        <el-input v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item :label="v[1].label">
-                        <el-input v-model="tableForm[v[1].name]" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <div class="detailsTitle">检测信息</div>
-                  <el-row>
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item label="检测方向">
-                        <el-input v-model="tableForm.detectDir" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item label="检测长度">
-                        <el-input v-model="tableForm.checkLength" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item label="修复指数">
-                        <el-input v-model="tableForm.repairIndex" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item label="养护指数">
-                        <el-input v-model="tableForm.maintainIndex" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                </el-form>
-              </div>
-              <div class="box1" v-show="activeIndex == '2'">
-                <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
-                  <div class="detailsTitle">功能性缺陷评价(等级：{{ tableForm.funcClass }})</div>
-                  <el-row>
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item label="平均值S">
-                        <el-input v-model="tableForm.funcYmean" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item label="最大值Smax">
-                        <el-input v-model="tableForm.funcYmax" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item label="缺陷密度">
-                        <el-input v-model="tableForm.funcDensity" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item label="养护指数MI">
-                        <el-input v-model="tableForm.maintainIndex" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="24" style="padding-right: 15px">
-                      <el-form-item label="评价">
-                        <el-input
-                          type="textarea"
-                          :autosize="{ minRows: 2, maxRows: 4 }"
-                          disabled
-                          v-model="tableForm.funcEstimate"
-                        >
-                        </el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                </el-form>
-              </div>
-              <div class="box1" v-show="activeIndex == '3'">
-                <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
-                  <div class="detailsTitle">结构性缺陷评价(等级：{{ tableForm.structClass }})</div>
-                  <el-row>
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item label="平均值S">
-                        <el-input v-model="tableForm.structYmean" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item label="最大值Smax">
-                        <el-input v-model="tableForm.structYmax" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item label="缺陷密度">
-                        <el-input v-model="tableForm.structDensity" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item label="修复指数RI">
-                        <el-input v-model="tableForm.repairIndex" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="24" style="padding-right: 15px">
-                      <el-form-item label="评价">
-                        <el-input
-                          type="textarea"
-                          :autosize="{ minRows: 2, maxRows: 4 }"
-                          disabled
-                          v-model="tableForm.structEstimate"
-                        >
-                        </el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                </el-form>
-              </div>
+                <el-row v-for="(v, i) in cardTableContent" :key="i">
+                  <el-col :span="12" style="padding-right: 15px">
+                    <el-form-item :label="v[0].label">
+                      <el-input v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12" style="padding-right: 15px"
+                    ><el-form-item :label="v[1].label">
+                      <el-input v-model="tableForm[v[1].name]" disabled show-word-limit></el-input>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+                <div class="detailsTitle">检测历史</div>
+                <div class="historyTitle">
+                  <div>
+                    <span style="margin-right: 40px">2021-01-09</span>
+                    <span> (无)</span>
+                  </div>
+                  <div>详情</div>
+                </div>
+                <el-row>
+                  <el-col :span="12" style="padding-right: 15px">
+                    <el-form-item label="检测方向">
+                      <el-input v-model="tableForm.detectDir" disabled show-word-limit></el-input>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12" style="padding-right: 15px"
+                    ><el-form-item label="检测长度">
+                      <el-input v-model="tableForm.checkLength" disabled show-word-limit></el-input>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
             </div>
           </div>
         </el-card>
@@ -295,6 +199,7 @@ export default {
   },
   computed: {
     tableForm() {
+      // console.log("当前详情页数",this.cardTable[this.currentIndex]);
       return this.cardTable[this.currentIndex] || {}
     }
   },
@@ -518,10 +423,26 @@ export default {
         }
       }
       .content {
-        /deep/ .content-info {
+        // padding: 22px;
+        // box-sizing: border-box;
+        /deep/ .box1 {
           overflow-y: scroll;
           max-height: 545px;
           padding: 10px 20px;
+          .el-row {
+            padding: 0 10px;
+          }
+          .historyTitle {
+            height: 30px;
+            font-weight: bold;
+            padding: 5px 10px;
+            box-sizing: border-box;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f6f9fe;
+          }
           .el-textarea__inner,
           .el-input__inner {
             color: #666;
@@ -529,7 +450,7 @@ export default {
           .detailsTitle {
             position: relative;
             font-size: 16px;
-            padding: 5px 0;
+            padding: 5px 10px;
             box-sizing: border-box;
           }
           .detailsTitle::after {
@@ -545,7 +466,7 @@ export default {
       }
       .table-content {
         padding: 15px;
-        .content-info {
+        /deep/ .content-info {
           font-size: 12px;
           display: flex;
           justify-content: space-between;

@@ -447,6 +447,7 @@ export default {
       console.log('打开缩略提示框', row)
       this.isPromptBox = { ...row }
       let res = await assessmentDefect(row.id)
+       this.currentIndex = 0
       this.currentForm = res.result
       this.currentInfoCard = true
       console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)

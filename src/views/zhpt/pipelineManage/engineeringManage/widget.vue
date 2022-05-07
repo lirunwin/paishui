@@ -7,14 +7,6 @@
           <div class="title">关键字：</div>
           <el-input placeholder="搜索工程编号、工程名称" v-model="searchValue.prjNo" clearable class="serch-input">
           </el-input>
-          <!-- <el-input
-            placeholder="搜索工程名称"
-            v-model="searchValue.prjName"
-            style="margin-left: 12px"
-            clearable
-            class="serch-input"
-          >
-          </el-input> -->
           <el-button class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
         </div>
         <div class="right-btn">
