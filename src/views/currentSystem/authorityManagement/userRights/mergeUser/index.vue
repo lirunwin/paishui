@@ -271,15 +271,20 @@ export default class MergeUser extends Vue {
   // 编辑参数回显
   handleEdit() {
     this.ruleForm = this.assignment(this.ruleForm, this.data) as any
-    const arr = [this.data.avatar, this.data.esignature]
-    arr.forEach((item, index) => {
-      if (item === null) return
-      imageByName(item).then((res) => {
-        if (res.status === 200) {
-          index === 1 ? (this.form.signPic = res.config.url) : (this.form.avatar = res.config.url)
-        }
-      })
-    })
+    // const arr = [this.data.avatar, this.data.esignature]
+    // arr.forEach((item, index) => {
+    //   if (item === null) return
+    //   imageByName(item).then((res) => {
+    //     if (res.status === 200) {
+    //       index === 1 ? (this.form.signPic = res.config.url) : (this.form.avatar = res.config.url)
+    //     }
+    //   })
+    // })
+    this.form = {
+      ...this.form,
+      signPic: imageByName(this.data.esignature),
+      avatar: imageByName(this.data.avatar)
+    }
   }
   // 赋值
   assignment(par, role) {

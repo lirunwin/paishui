@@ -12,6 +12,7 @@
       :popupShow="popupShow"
       :popupPosition="[104.75231999734498, 31.525963399505617]"
       :mapView="view"
+      headerStyle=""
       isSetCenter
     >
       <InfoCard @distribute="onDistribute" />

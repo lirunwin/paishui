@@ -17,62 +17,29 @@
       <el-row type="flex" justify="space-around">
         <el-col :span="12">
           <el-form-item style="margin-bottom: 15px" label="登录名">
-            <el-input
-              v-model="ruleForm.username"
-              size="small"
-              placeholder="请输入登录名"
-              :disabled="difference"
-            />
+            <el-input v-model="ruleForm.username" size="small" placeholder="请输入登录名" :disabled="difference" />
           </el-form-item>
           <!-- <el-form-item label="密码" prop="password">
               <el-input v-model="ruleForm.password" size="small" type="password" placeholder="请输入密码" />
             </el-form-item> -->
-          <el-form-item
-            style="margin-bottom: 15px"
-            label="用户名"
-            prop="realName"
-          >
-            <el-input
-              v-model="ruleForm.realName"
-              size="small"
-              placeholder="请输入客户名"
-            />
+          <el-form-item style="margin-bottom: 15px" label="用户名" prop="realName">
+            <el-input v-model="ruleForm.realName" size="small" placeholder="请输入客户名" />
           </el-form-item>
-          <el-form-item
-            style="margin-bottom: 15px"
-            label="联系电话"
-            prop="phone"
-          >
-            <el-input
-              v-model="ruleForm.phone"
-              size="small"
-              placeholder="请输入联系电话"
-            />
+          <el-form-item style="margin-bottom: 15px" label="联系电话" prop="phone">
+            <el-input v-model="ruleForm.phone" size="small" placeholder="请输入联系电话" />
           </el-form-item>
           <el-form-item style="margin-bottom: 15px" label="邮箱" prop="email">
-            <el-input
-              v-model="ruleForm.email"
-              size="small"
-              placeholder="请输入邮箱"
-            />
+            <el-input v-model="ruleForm.email" size="small" placeholder="请输入邮箱" />
           </el-form-item>
           <el-form-item style="margin-bottom: 15px" label="工作岗位" prop="job">
             <el-input v-model="ruleForm.job" />
           </el-form-item>
-          <el-form-item
-            style="margin-bottom: 15px"
-            label="工作职责"
-            prop="note"
-          >
+          <el-form-item style="margin-bottom: 15px" label="工作职责" prop="note">
             <el-input v-model="ruleForm.note" :rows="3" type="textarea" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item
-            label="个性签名"
-            label-width="7.5rem"
-            style="margin-bottom: 15px"
-          >
+          <el-form-item label="个性签名" label-width="7.5rem" style="margin-bottom: 15px">
             <!-- :data="upLoadData" -->
             <el-upload
               class="avatar-uploader"
@@ -81,7 +48,7 @@
               :on-success="handleAvatarSuccess"
               :before-upload="(file) => beforeAvatarUpload(file, 'sign')"
             >
-              <img v-if="form.signPic" :src="form.signPic" class="avatar">
+              <img v-if="form.signPic" :src="form.signPic" class="avatar" />
               <i v-else class="el-icon-plus avatar-uploader-icon el-upload" />
             </el-upload>
           </el-form-item>
@@ -95,11 +62,11 @@
               :before-upload="(file) => beforeAvatarUpload(file, 'avatar')"
               style="margin-bottom: 15px"
             >
-              <img v-if="form.avatar" :src="form.avatar" class="avatar">
+              <img v-if="form.avatar" :src="form.avatar" class="avatar" />
               <i v-else class="el-icon-plus avatar-uploader-icon el-upload" />
             </el-upload>
             <div class="msg">
-              ⚠️注意：上传图片只能是 JPG或png 格式!单张图片大小不能超过 2MB!
+              ⚠️注意：上传图片只能是 JPG/JPEG 或png 格式!单张图片大小不能超过 2MB!
             </div>
           </el-form-item>
         </el-col>
@@ -112,7 +79,7 @@
   </el-dialog>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
 // import { getInfo } from '@/api/dashboard'
 import { editUser, getUserList } from '@/api/base'
@@ -121,10 +88,10 @@ import { regUserName, regPhone, regEmail } from '@/utils/reg'
 import { ElForm } from 'element-ui/types/form'
 @Component({})
 export default class UserInfoEdit extends Vue {
-  @Prop({ default: false }) showApply: boolean;
+  @Prop({ default: false }) showApply: boolean
 
-  difference = true;
-  data = null;
+  difference = true
+  data = null
   ruleForm = {
     username: '',
     // password: '',
@@ -137,12 +104,12 @@ export default class UserInfoEdit extends Vue {
     note: '',
     file: '',
     electronicFile: ''
-  };
+  }
   form = {
     avatar: '',
     signPic: '',
     imageUrl: ''
-  };
+  }
   rules = {
     username: [
       { required: true, message: '请输入登录名', trigger: 'blur' },
@@ -153,13 +120,9 @@ export default class UserInfoEdit extends Vue {
       }
     ],
     realName: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-    phone: [
-      { pattern: regPhone(), message: '请输入正确联系手机号', trigger: 'blur' }
-    ],
-    email: [
-      { pattern: regEmail(), message: '请输入正确邮箱', trigger: 'blur' }
-    ]
-  };
+    phone: [{ pattern: regPhone(), message: '请输入正确联系手机号', trigger: 'blur' }],
+    email: [{ pattern: regEmail(), message: '请输入正确邮箱', trigger: 'blur' }]
+  }
   mounted() {
     this.getUserInfo()
   }
@@ -176,12 +139,8 @@ export default class UserInfoEdit extends Vue {
         const result = res.result
         if (result.records.length > 0) {
           that.data = result.records[0]
-          that.data.phone = that.strIsNull(that.data.phone)
-            ? ''
-            : that.data.phone // 联系电话
-          that.data.email = that.strIsNull(that.data.email)
-            ? ''
-            : that.data.email // 邮箱
+          that.data.phone = that.strIsNull(that.data.phone) ? '' : that.data.phone // 联系电话
+          that.data.email = that.strIsNull(that.data.email) ? '' : that.data.email // 邮箱
           that.data.job = that.strIsNull(that.data.job) ? '' : that.data.job // 工作岗位
           that.data.note = that.strIsNull(that.data.note) ? '' : that.data.note // 工作职责
           that.handleEdit()
@@ -210,9 +169,7 @@ export default class UserInfoEdit extends Vue {
       return false
     }
     // console.log('2222', file)
-    type === 'avatar'
-      ? (this.ruleForm.file = file)
-      : (this.ruleForm.electronicFile = file)
+    type === 'avatar' ? (this.ruleForm.file = file) : (this.ruleForm.electronicFile = file)
     const _this = this
     const reader = new FileReader()
     // 转base64
@@ -237,12 +194,7 @@ export default class UserInfoEdit extends Vue {
     for (const key in this.ruleForm) {
       if (key === 'roles') {
         data.append(key, this.ruleForm[key].toString())
-      } else if (
-        key === 'phone' ||
-        key === 'email' ||
-        key === 'job' ||
-        key === 'note'
-      ) {
+      } else if (key === 'phone' || key === 'email' || key === 'job' || key === 'note') {
         let tempVal = this.ruleForm[key] + ''
         if (this.strIsNull(tempVal)) {
           tempVal = 'null'
@@ -258,8 +210,8 @@ export default class UserInfoEdit extends Vue {
   }
   // 提交
   submitForm() {
-    const _this = this;
-    (this.$refs.ruleForm as ElForm).validate((valid) => {
+    const _this = this
+    ;(this.$refs.ruleForm as ElForm).validate((valid) => {
       if (valid) {
         const data = _this.readyData()
         _this.editSubmit(data)
@@ -287,17 +239,22 @@ export default class UserInfoEdit extends Vue {
   // 编辑参数回显
   handleEdit() {
     this.ruleForm = this.assignment(this.ruleForm, this.data) as any
-    const arr = [this.data.avatar, this.data.esignature]
-    arr.forEach((item, index) => {
-      if (item === null) return
-      imageByName(item).then((res) => {
-        if (res.status === 200) {
-          index === 1
-            ? (this.form.signPic = res.config.url)
-            : (this.form.avatar = res.config.url)
-        }
-      })
-    })
+    // const arr = [this.data.avatar, this.data.esignature]
+    // arr.forEach((item, index) => {
+    //   if (item === null) return
+    //   imageByName(item).then((res) => {
+    //     if (res.status === 200) {
+    //       index === 1
+    //         ? (this.form.signPic = res.config.url)
+    //         : (this.form.avatar = res.config.url)
+    //     }
+    //   })
+    // })
+    this.form = {
+      ...this.form,
+      signPic: imageByName(this.data.esignature),
+      avatar: imageByName(this.data.avatar)
+    }
   }
 
   // 赋值
@@ -305,10 +262,7 @@ export default class UserInfoEdit extends Vue {
     const data = {}
     for (const key in par) {
       if (key === 'roles') {
-        data[key] =
-          role.roleIdList &&
-          role.roleIdList != null &&
-          role.roleIdList.split(',')
+        data[key] = role.roleIdList && role.roleIdList != null && role.roleIdList.split(',')
       } else {
         data[key] = role[key]
       }
@@ -326,12 +280,7 @@ export default class UserInfoEdit extends Vue {
    */
   strIsNull(strVal) {
     strVal = strVal || ''
-    return (
-      typeof strVal === 'undefined' ||
-      strVal == null ||
-      strVal == '' ||
-      strVal == 'null'
-    )
+    return typeof strVal === 'undefined' || strVal == null || strVal == '' || strVal == 'null'
   }
 }
 </script>
@@ -403,4 +352,3 @@ export default class UserInfoEdit extends Vue {
   }
 }
 </style>
-

@@ -55,38 +55,42 @@ const actions = {
     const { username, password } = userInfo
     // setSessionStorage('username', username)
     return new Promise((resolve, reject) => {
-      login({ 'username': username, 'password': sha1Hex(password) }).then(response => {
-      // console.log('2222', response)
-      // const data = {
-      //   accessToken: 1111111,
-      //   username: 'admin',
-      //   realName: '超级管理员'
-      // }
-        const { accessToken, username, avatar, realName, id, departmentId } = response.result
-        // const { accessToken, username, avatar, realName } = data
-        // setToken(accessToken)
-        commit('SET_TOKEN', accessToken)
-        commit('SET_USERNAME', username)
-        commit('SET_REALNAME', realName)
-        commit('SET_USERID', id)
-        commit('SET_DEPTS', departmentId)
-        setSessionStorage('token', accessToken)
-        setSessionStorage('username', username)
-        setSessionStorage('realName', realName)
-        setSessionStorage('userId', id)
-        setSessionStorage('departmentId', departmentId)
-        if (avatar) {
-          imageByName(avatar).then(res => {
-            if (res.status === 200) {
-              commit('SET_AVATAR', res.config.url)
-              setSessionStorage('avatar', res.config.url)
-            }
-          })
-        }
-        resolve(response)
-      }).catch(error => {
-        reject(error)
-      })
+      login({ username: username, password: sha1Hex(password) })
+        .then((response) => {
+          // console.log('2222', response)
+          // const data = {
+          //   accessToken: 1111111,
+          //   username: 'admin',
+          //   realName: '超级管理员'
+          // }
+          const { accessToken, username, avatar, realName, id, departmentId } = response.result
+          // const { accessToken, username, avatar, realName } = data
+          // setToken(accessToken)
+          commit('SET_TOKEN', accessToken)
+          commit('SET_USERNAME', username)
+          commit('SET_REALNAME', realName)
+          commit('SET_USERID', id)
+          commit('SET_DEPTS', departmentId)
+          setSessionStorage('token', accessToken)
+          setSessionStorage('username', username)
+          setSessionStorage('realName', realName)
+          setSessionStorage('userId', id)
+          setSessionStorage('departmentId', departmentId)
+          if (avatar) {
+            // imageByName(avatar).then(res => {
+            //   if (res.status === 200) {
+            //     commit('SET_AVATAR', res.config.url)
+            //     setSessionStorage('avatar', res.config.url)
+            //   }
+            // })
+            commit('SET_AVATAR', imageByName(avatar))
+            setSessionStorage('avatar', imageByName(avatar))
+          }
+          resolve(response)
+        })
+        .catch((error) => {
+          reject(error)
+        })
     })
   },
 
@@ -101,29 +105,31 @@ const actions = {
       const data = {
         token: state.token
       }
-      logout(data).then(() => {
-        // removeToken() // must remove  token  first
-        removeSessionStorage('token')
-        removeSessionStorage('username')
-        removeSessionStorage('avatar')
-        removeSessionStorage('realName')
-        removeSessionStorage('userId')
-        removeSessionStorage('departmentId')
-        removeSessionStorage('last-route')
-        resetRouter()
-        commit('RESET_STATE')
-        dispatch('tagsView/loginOutdel', {}, { root: true }) // 调用tagsView中的清空
-        dispatch('routeSetting/loginOutdel', {}, { root: true }) // 调用tagsView中的清空
-        resolve({})
-      }).catch(error => {
-        reject(error)
-      })
+      logout(data)
+        .then(() => {
+          // removeToken() // must remove  token  first
+          removeSessionStorage('token')
+          removeSessionStorage('username')
+          removeSessionStorage('avatar')
+          removeSessionStorage('realName')
+          removeSessionStorage('userId')
+          removeSessionStorage('departmentId')
+          removeSessionStorage('last-route')
+          resetRouter()
+          commit('RESET_STATE')
+          dispatch('tagsView/loginOutdel', {}, { root: true }) // 调用tagsView中的清空
+          dispatch('routeSetting/loginOutdel', {}, { root: true }) // 调用tagsView中的清空
+          resolve({})
+        })
+        .catch((error) => {
+          reject(error)
+        })
     })
   },
 
   // remove token
   resetToken({ commit }) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // removeToken() // must remove  token  first
       removeSessionStorage('token')
       removeSessionStorage('avatar')
@@ -149,4 +155,3 @@ export default {
   mutations,
   actions
 }
-

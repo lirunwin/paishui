@@ -41,23 +41,9 @@
           end-placeholder="结束日期"
           value-format="yyyy-MM-dd"
         />
-        <el-button
-          type="primary"
-          size="small"
-          @click="historyList"
-        >查询</el-button>
-        <el-button
-          type="primary"
-          size="small"
-          @click="toggleAccountApplyTab"
-        >账号申请</el-button>
-        <el-table
-          :data="applyHistory"
-          stripe
-          style="height: 400px; margin-top: 10px"
-          border
-          max-height="380px"
-        >
+        <el-button type="primary" size="small" @click="historyList">查询</el-button>
+        <el-button type="primary" size="small" @click="toggleAccountApplyTab">账号申请</el-button>
+        <el-table :data="applyHistory" stripe style="height: 400px; margin-top: 10px" border max-height="380px">
           <template v-for="item in columns">
             <el-table-column
               v-if="item.prop"
@@ -67,18 +53,14 @@
               :width="item.width"
               :formatter="item.formatter"
             />
-            <el-table-column
-              v-else
-              :key="item.prop"
-              :prop="item.prop"
-              :label="item.label"
-            >
+            <el-table-column v-else :key="item.prop" :prop="item.prop" :label="item.label">
               <template slot-scope="curr">
                 <span
                   v-if="!item.prop"
                   style="cursor: pointer; color: #2d74e7"
                   @click="toggleAccountApplyDetailTab(curr.row)"
-                >详情</span>
+                  >详情</span
+                >
               </template>
             </el-table-column>
           </template>
@@ -94,12 +76,7 @@
           @current-change="handleCurrentChange"
         />
       </el-tab-pane>
-      <el-tab-pane
-        v-if="accountApplyTab"
-        label="账号申请"
-        name="account"
-        class="apply-account-container"
-      >
+      <el-tab-pane v-if="accountApplyTab" label="账号申请" name="account" class="apply-account-container">
         <el-form
           ref="accountApply"
           size="small"
@@ -127,41 +104,20 @@
                 <el-input v-model="accountApply.email" />
               </el-form-item>
               <el-form-item label="部门：" prop="departmentId">
-                <el-select
-                  v-model="accountApply.departmentId"
-                  placeholder="请选择"
-                >
-                  <el-option
-                    v-for="item in departmentIdOptions"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                  />
+                <el-select v-model="accountApply.departmentId" placeholder="请选择">
+                  <el-option v-for="item in departmentIdOptions" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
               <el-form-item label="审核人：" prop="recipient">
-                <el-select
-                  v-model="accountApply.recipient"
-                  filterable
-                  placeholder="请选择"
-                >
-                  <el-option
-                    v-for="item in recipients"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                  />
+                <el-select v-model="accountApply.recipient" filterable placeholder="请选择">
+                  <el-option v-for="item in recipients" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
               <el-form-item label="工作岗位：" prop="applyJob">
                 <el-input v-model="accountApply.job" />
               </el-form-item>
               <el-form-item label="工作职责：" prop="applyNote">
-                <el-input
-                  v-model="accountApply.note"
-                  :rows="3"
-                  type="textarea"
-                />
+                <el-input v-model="accountApply.note" :rows="3" type="textarea" />
               </el-form-item>
               <el-form-item label="申请说明：" prop="applyState">
                 <el-input v-model="accountApply.applystate" type="textarea" />
@@ -177,11 +133,8 @@
                       :show-file-list="false"
                       :before-upload="(file) => beforePicUpload(file, 'sign')"
                     >
-                      <img v-if="esign" :src="esign" class="avatar">
-                      <i
-                        v-else
-                        class="el-icon-plus avatar-uploader-icon el-upload"
-                      />
+                      <img v-if="esign" :src="esign" class="avatar" />
+                      <i v-else class="el-icon-plus avatar-uploader-icon el-upload" />
                     </el-upload>
                   </el-form-item>
                 </el-col>
@@ -195,15 +148,11 @@
                       :show-file-list="false"
                       :before-upload="(file) => beforePicUpload(file, 'avatar')"
                     >
-                      <img v-if="head" :src="head" class="avatar">
-                      <i
-                        v-else
-                        class="el-icon-plus avatar-uploader-icon el-upload"
-                      />
+                      <img v-if="head" :src="head" class="avatar" />
+                      <i v-else class="el-icon-plus avatar-uploader-icon el-upload" />
                     </el-upload>
                     <div class="msg">
-                      ⚠️注意：上传图片只能是 JPG或png 格式!单张图片大小不能超过
-                      2MB!
+                      ⚠️注意：上传图片只能是 JPG或png 格式!单张图片大小不能超过 2MB!
                     </div>
                   </el-form-item>
                 </el-col>
@@ -211,19 +160,11 @@
             </el-col>
           </el-row>
           <div style="width: 100%; display: flex; justify-content: flex-end">
-            <el-button
-              type="primary"
-              size="small"
-              @click="submitApply"
-            >提交申请</el-button>
+            <el-button type="primary" size="small" @click="submitApply">提交申请</el-button>
           </div>
         </el-form>
       </el-tab-pane>
-      <el-tab-pane
-        v-if="applyDetailTab"
-        label="申请详细查看"
-        name="accountApplyDetail"
-      >
+      <el-tab-pane v-if="applyDetailTab" label="申请详细查看" name="accountApplyDetail">
         <el-collapse v-model="activeNames">
           <el-collapse-item title="基本信息" name="baseInfo">
             <el-row>
@@ -255,16 +196,12 @@
               </el-col>
               <el-col :span="12" class="base-info">
                 <el-row>
-                  <span class="title">个性签名图片：</span><img
-                    v-if="detailInfo.esignature !== null"
-                    :src="detailInfo.esignature"
-                  >
+                  <span class="title">个性签名图片：</span
+                  ><img v-if="detailInfo.esignature !== null" :src="detailInfo.esignature" />
                 </el-row>
                 <el-row>
-                  <span class="title">用户头像：</span><img
-                    v-if="detailInfo.avatar !== null"
-                    :src="detailInfo.avatar"
-                  >
+                  <span class="title">用户头像：</span
+                  ><img v-if="detailInfo.avatar !== null" :src="detailInfo.avatar" />
                 </el-row>
                 <el-row>
                   <span class="title">工作职责：</span><span>{{ detailInfo.note }}</span>
@@ -308,22 +245,11 @@
   </el-dialog>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import {
-  accountApplyHistory,
-  accountApplyFill,
-  getCompanyAll,
-  getAllAuditors
-} from '@/api/base'
+import { accountApplyHistory, accountApplyFill, getCompanyAll, getAllAuditors } from '@/api/base'
 import { imageByName } from '@/api/ftp'
-import {
-  regPhone,
-  regEmail,
-  regPassword,
-  regUserName,
-  regRealName
-} from '@/utils/reg'
+import { regPhone, regEmail, regPassword, regUserName, regRealName } from '@/utils/reg'
 
 // eslint-disable-next-line no-unused-vars
 import { ElForm } from 'element-ui/types/form'
@@ -364,7 +290,7 @@ const columns = [
   }
 })
 export default class AccountApply extends Vue {
-  @Prop({ default: false }) showApply: boolean;
+  @Prop({ default: false }) showApply: boolean
   accountApply = {
     username: '',
     password: '',
@@ -378,7 +304,7 @@ export default class AccountApply extends Vue {
     applystate: '',
     file: '', // 用户头像
     electronicFile: '' // 电子签名
-  };
+  }
   accountApplyRules = {
     username: [
       { required: true, message: '请输入登录名', trigger: 'blur' },
@@ -404,12 +330,8 @@ export default class AccountApply extends Vue {
         trigger: 'blur'
       }
     ],
-    phone: [
-      { pattern: regPhone(), message: '请输入正确的联系电话', trigger: 'blur' }
-    ],
-    email: [
-      { pattern: regEmail(), message: '请输入正确的邮箱', trigger: 'blur' }
-    ],
+    phone: [{ pattern: regPhone(), message: '请输入正确的联系电话', trigger: 'blur' }],
+    email: [{ pattern: regEmail(), message: '请输入正确的邮箱', trigger: 'blur' }],
     // role: [{ required: true, message: '请输入角色', trigger: 'blur' }],
     departmentId: [{ required: true, message: '请选择部门', trigger: 'blur' }],
     recipient: [{ required: true, message: '请选择审核人', trigger: 'blur' }]
@@ -420,26 +342,26 @@ export default class AccountApply extends Vue {
     // applyState: [
     //   { required: true, message: '请输入申请说明', trigger: 'blur' }
     // ]
-  };
-  accountApplyTab = false;
-  applyDetailTab = false;
-  columns;
-  activeTab = 'history';
-  departmentIdOptions = [];
-  recipients = []; // 审核人列表
-  value = '';
-  fileList = [];
-  applyRealName = '';
-  applyStatus = '';
-  applyTime = '';
-  applyHistory = [];
-  pageSize = 10;
-  page = 1;
-  total = 0;
-  detailInfo = null;
-  activeNames = ['baseInfo'];
-  esign = '';
-  head = '';
+  }
+  accountApplyTab = false
+  applyDetailTab = false
+  columns
+  activeTab = 'history'
+  departmentIdOptions = []
+  recipients = [] // 审核人列表
+  value = ''
+  fileList = []
+  applyRealName = ''
+  applyStatus = ''
+  applyTime = ''
+  applyHistory = []
+  pageSize = 10
+  page = 1
+  total = 0
+  detailInfo = null
+  activeNames = ['baseInfo']
+  esign = ''
+  head = ''
   @Watch('showApply')
   showApplyChange(val) {
     if (val === false) {
@@ -466,16 +388,22 @@ export default class AccountApply extends Vue {
     this.applyDetailTab = true
     if (this.applyDetailTab) this.activeTab = 'accountApplyDetail'
     const arr = [this.detailInfo.avatar, this.detailInfo.esignature]
-    arr.forEach((item, index) => {
-      item !== null &&
-        imageByName(item).then((res) => {
-          if (res.status === 200) {
-            index === 1
-              ? (this.detailInfo.esignature = res.config.url)
-              : (this.detailInfo.avatar = res.config.url)
-          }
-        })
-    })
+    // arr.forEach((item, index) => {
+    // item !== null &&
+    // imageByName(item).then((res) => {
+    //   if (res.status === 200) {
+    //     index === 1
+    //       ? (this.detailInfo.esignature = res.config.url)
+    //       : (this.detailInfo.avatar = res.config.url)
+    //   }
+    // })
+
+    // })
+    this.detailInfo = {
+      ...this.detailInfo,
+      esignature: imageByName(this.detailInfo.esignature),
+      avatar: imageByName(this.detailInfo.avatar)
+    }
   }
   // 关闭dialog
   closeDialog() {
@@ -503,16 +431,11 @@ export default class AccountApply extends Vue {
   }
   // 申请账号
   submitApply() {
-    (this.$refs.accountApply as ElForm).validate((valid) => {
+    ;(this.$refs.accountApply as ElForm).validate((valid) => {
       if (valid) {
         const data = new FormData()
         for (const key in this.accountApply) {
-          data.append(
-            key,
-            key === 'password'
-              ? sha1Hex(this.accountApply[key])
-              : this.accountApply[key]
-          )
+          data.append(key, key === 'password' ? sha1Hex(this.accountApply[key]) : this.accountApply[key])
         }
         accountApplyFill(data).then((res) => {
           // 用户存在的时候， 后台返回的数据多包了一层，造成永远都是code = 1, 报错的时候是res.result.code === -1
@@ -556,14 +479,10 @@ export default class AccountApply extends Vue {
     }
     const _this = this
     const reader = new FileReader()
-    type === 'sign'
-      ? (this.accountApply.electronicFile = file)
-      : (this.accountApply.file = file)
+    type === 'sign' ? (this.accountApply.electronicFile = file) : (this.accountApply.file = file)
     // 转base64
     reader.onload = function(e) {
-      type === 'sign'
-        ? (_this.esign = e.target.result.toString())
-        : (_this.head = e.target.result.toString()) // 将图片路径赋值给src
+      type === 'sign' ? (_this.esign = e.target.result.toString()) : (_this.head = e.target.result.toString()) // 将图片路径赋值给src
     }
     reader.readAsDataURL(file)
     return false
@@ -663,4 +582,3 @@ export default class AccountApply extends Vue {
   }
 }
 </style>
-
