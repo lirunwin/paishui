@@ -238,6 +238,10 @@ import { LegendConfig } from '@/views/zhpt/common/legendConfig'
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import { Polygon } from 'ol/geom';
+import { WMTS } from 'ol/source';
+import * as olExtent from 'ol/extent';
+import WMTSTileGrid from 'ol/tilegrid/WMTS';
+import * as olProj from 'ol/proj';
 
 @Component({
   components: {
@@ -386,27 +390,55 @@ export default class BaseMap extends Vue {
     let { initCenter, initZoom } = appconfig
 
     let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
-    // layerInfo.url = "https://iserver.supermap.io/iserver/services/map-world/rest/maps/World";
     let map = new Map({
       target: 'mapView',
       view: new View({
         center: initCenter,
         zoom: initZoom,
         maxZoom: 20,
-        minZoom: 9,
+        minZoom: 5,
         projection: 'EPSG:4326'
       })
     })
-    this.panels.mapView = this.view = map
+    this.panels.mapView = this.view = this.$store.state.gis.map = map
 
+
+    // console.log('加载 wmts')
+    // let projection = olProj.get("EPSG:4326")
+    // let extent = projection.getExtent()
+    // let width = olExtent.getWidth(extent)
+    // let resolutions = [], matrixIds = []
+    // for(let z = 1; z < 19; ++z) {
+    //   resolutions[z] = Math.pow(2, z)
+    //   matrixIds[z] = z
+    // }
+    // let tilelayer = new TileLayer({
+    //   source: new WMTS({
+    //     url: 'http://t0.tianditu.gov.cn/vec_c/wmts?tk=' + appconfig.tianMapKey,
+    //     layer: 'vec',
+    //     matrixSet: 'w',
+    //     format: 'tiles',
+    //     style: 'default',
+    //     wrapX: true,
+    //     projection: projection,
+    //     tileGrid: new WMTSTileGrid({
+    //       origin: olExtent.getTopLeft(extent),
+    //       resolutions,
+    //       matrixIds
+    //     })
+    //   } as any)
+    // })
+    // this.view.addLayer(tilelayer)
+    
     let layer = this.addLayers(layerResource)
 
     this.loading = false
     this.$nextTick(this.controlToolDisplay)
 
     // 触发地图视野变化
-    let timer = null, time = 300
+    let timer = null, time = 500
     this.view.getView().on("change", evt => {
+      // console.log('级别变化', this.view)
       timer && clearTimeout(timer)
       timer = setTimeout(() => {
         let extent = new mapUtil(this.view).getCurrentViewExtent()

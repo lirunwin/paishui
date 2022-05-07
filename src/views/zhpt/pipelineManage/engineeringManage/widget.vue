@@ -93,7 +93,7 @@
                 v-model="form[item[1].name]"
                 :maxlength="item[1].maxLength"
                 show-word-limit
-                :disabled="isDetails"
+                :disabled="isDetails || (isEdit && item[1].label == '工程编号')"
               ></el-input>
             </el-form-item>
           </el-col>

@@ -1,7 +1,8 @@
 const state = {
   view: null,
   evts: [],
-  mapExtent: []
+  mapExtent: [],
+  map: null
 }
 
 const mutations = {
@@ -15,10 +16,16 @@ const mutations = {
     //    });
     //    state.evts=[];
     alert('destory')
+  },
+  updateMapSize (state) {
+    state.map.updateSize()
   }
 }
 
 const actions = {
+  updateSize ({ commit }) {
+    commit('updateMapSize')
+  },
   registerEvents({ commit, state, dispatch }, evt) {
     commit('pushEvts', evt)
   },
