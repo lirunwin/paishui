@@ -510,7 +510,7 @@ export default class BaseMap extends Vue {
                 isOnline = false //异常返回
             })
             .finally(() => {
-              const repItems = ["图层服务"]
+              const repItems = ['地图配置服务']
               res.forEach(service => {
                 let resData = [], source = null
                 if (repItems.includes(service.name)) {
@@ -522,6 +522,7 @@ export default class BaseMap extends Vue {
                       break;
                     case "数据服务": source = resource.dataService
                       break
+                    case "地图配置服务": source = appconfig
                     default: 
                       break
                   }
@@ -534,6 +535,15 @@ export default class BaseMap extends Vue {
                       })
                       if (findItem) {
                         findItem.url = data.cval
+                      }
+                    })
+                  } else if (service.name === "地图配置服务") {
+                    console.log("地图服务配置")
+                    resData.forEach(item => {
+                      if (item.ckey === 'center') {
+                        source.initCenter = item.cval.split(',')
+                      } else if (item.ckey === 'zoom') {
+                        source.initZoom = item.cval
                       }
                     })
                   } else {

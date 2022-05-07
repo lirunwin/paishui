@@ -246,13 +246,11 @@ export default {
           })
         })
       })
-      console.log("图层数据")
       this.layerTable = layersData
       this.defaultCheckedKeys = defaultCheckedKeys
     },
 
     subLayerChange (node) {
-      console.log(node)
       node.layer.values_.visible = !node.layer.values_.visible;
       this.currMap.render()
     },
@@ -268,13 +266,12 @@ export default {
         this.showVectorBase = !this.showVectorBase
       }
       
-      let layers = this.currMap.getLayers().array_
+      let layers = this.currMap.getLayers().getArray()
       layers.forEach(layer => {
         let { parentname, name, } = layer.values_
         if (parentname === "底图") {
           if (name === "矢量底图") layer.setVisible(this.showVectorBase)
           else if (name === "影像底图") layer.setVisible(!this.showVectorBase)
-          else layer.setVisible(false)
         }
       })
     },

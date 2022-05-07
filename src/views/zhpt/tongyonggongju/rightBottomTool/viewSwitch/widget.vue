@@ -3,7 +3,7 @@
   <div class="viewSwitch">
     <el-popover v-model="visible" placement="left" width="auto" trigger="hover">
       <el-radio-group v-model="currentValue" @change="mapChange(currentValue)">
-        <el-radio-button label="1">电子地图</el-radio-button>
+        <el-radio-button label="1">矢量地图</el-radio-button>
         <el-radio-button label="2">影像图</el-radio-button>
         <!-- <el-radio-button label="2、3D联动"></el-radio-button> -->
       </el-radio-group>
@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { esriConfig, appconfig } from "staticPub/config";
+import { appconfig } from "staticPub/config";
 export default {
   data() {
     return {
@@ -30,34 +30,16 @@ export default {
      * 
     */
     mapChange(type) {
-      let layers = this.map.getLayers().getArray() //所有的地图图层
-      console.log("切换地图", layers)
-      let tdtLayerInfo = appconfig.gisResource['iserver_resource'].layers[0];//天地图信息
-      let yxtLayerInfo = appconfig.gisResource['iserver_resource'].layers[1];//影像图信息
-      let tdtLayer = layers.find(item=>{return item.values_.name === tdtLayerInfo.name});//天地图图层
-      let yxtLayer = layers.find(item=>{return item.values_.name === yxtLayerInfo.name});//影像图图层
-      let tdtAction = true;
-      let yxtAction = false;
-      if (type=='1') {//切换电子地图
-        tdtAction=true;
-        yxtAction=false;
-      } else {//切换影像图
-        tdtAction=false;
-        yxtAction=true;
-      }
-      this.layerControl(tdtLayer,tdtAction);
-      this.layerControl(yxtLayer,yxtAction);
-    },
-
-  /**
-   * 控制图层的显示与隐藏
-   * @param layer 图层
-   * @param action true显示，false隐藏
-   * */ 
-    layerControl(layer, action){
-      if(layer){
-        layer.setVisible(action);
-      }
+      let showVectorLayer = type === "1"
+      let layers = this.map.getLayers().getArray()
+      layers.forEach(layer => {
+        let layername = layer.get('name')
+        if (layername === '矢量底图') {
+          layer.setVisible(showVectorLayer)
+        } else if (layername === '影像底图') {
+          layer.setVisible(!showVectorLayer)
+        }
+      })
     }
   }
 }

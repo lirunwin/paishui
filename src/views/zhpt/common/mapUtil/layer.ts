@@ -53,7 +53,8 @@ export class TF_Layer {
         return new TileLayer({ 
             source: new XYZ({
                 crossOrigin: 'anonymous',
-                url: url + appconfig.tianMapKey 
+                url: url + appconfig.tianMapKey,
+                wrapX: true
             }),
         })
     }

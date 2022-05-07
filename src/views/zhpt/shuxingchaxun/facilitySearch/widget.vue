@@ -131,8 +131,8 @@ export default {
       });
     },
     init() {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#f00') })
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#00FFFF', 5, '#00FFFF') })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f00', 5, '#00FFFF') })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#FFFFB6') })
       this.mapView.addLayer(this.vectorLayer)
       this.mapView.addLayer(this.lightLayer)
     },

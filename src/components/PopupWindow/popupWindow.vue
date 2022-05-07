@@ -2,7 +2,7 @@
   <!-- 地图弹窗 -->
   <div id="popup-window" class="popup-window">
     <div class="window-header">
-      <span class="popup-title" v-cloak v-if="flg">{{infoObject.properties.TYPE+'('+infoObject.properties.S_POINT+'/'+  infoObject.properties.E_POINT + ')'}}</span>
+      <span class="popup-title" v-cloak v-if="flg">{{infoObject.properties.TYPE+'('+ infoObject.properties.LNO + ')'}}</span>
       <span class="close-btn el-icon-close" title="关闭" @click="closePopup"></span>
     </div>
     <!-- 管线属性内容 -->

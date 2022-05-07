@@ -9,9 +9,12 @@ export default {
         rootPage: null
     },
     methods: {
+        close () {
+            this.rootPage.$data.labelShow = false
+        },
         showlegend () {
             console.log("加载图例")
-            this.rootPage.$data.labelShow = !this.rootPage.$data.labelShow
+            this.rootPage.$data.labelShow = true
             if (this.rootPage.$data.labelShow) this.setLegend()
         },
         setLegend () {
@@ -34,10 +37,25 @@ export default {
             },
             error: error => console.error(error)
           })
+        },
+        keyUpEvent (e) {
+            if (e.keyCode == 27) {
+                this.close()
+                document.removeEventListener('keyup', this.keyUpEvent)
+            }
         }
     },
     mounted () {
+        this.$nextTick(() => {
+            document.addEventListener('keyup', this.keyUpEvent)
+        })
         this.showlegend()
+        this.$notify({
+            title: '操作提示',
+            message: '按ESC键关闭图例',
+            type: 'success',
+            position: 'bottom-right'
+        });
     }
 
 }

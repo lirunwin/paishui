@@ -139,14 +139,18 @@ export default {
             this.tipOverlay && this.tipOverlay.setPosition(null)
             this.pointermoveEvent && unByKey(this.pointermoveEvent)
             this.searchEvent && unByKey(this.searchEvent)
-            this.rootPage.$refs.popupWindow.closePopup()
+            this.rootPage.$refs.popupWindow && this.rootPage.$refs.popupWindow.closePopup()
+        },
+        keyUpEvent (e) {
+            if (e.keyCode == 27) {
+                this.closeAll()
+                document.removeEventListener('keyup', this.keyUpEvent)
+            }
         }
     },
     mounted () {
         this.$nextTick(() => {
-            document.addEventListener('keyup', e => {
-                if (e.keyCode == 27) this.closeAll()
-            })
+            document.addEventListener('keyup', this.keyUpEvent)
         })
         this.$notify({
             title: '操作提示',
