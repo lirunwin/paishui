@@ -9,8 +9,9 @@ function tokenFormSession() {
 }
 export function imageByName(data) {
   // console.log('2222', getToken())
-  return axios.get(`${IP}/base/file/loadImg?access_token=` + tokenFormSession() +
-    '&remotePath=' + data, {
-    responseType: 'blob'
-  })
+  // return axios.get(`${IP}/base/file/loadImg?access_token=` + tokenFormSession() +
+  //   '&remotePath=' + data, {
+  //   responseType: 'blob'
+  // })
+  return `${IP}/base/file/${data}`
 }

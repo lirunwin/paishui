@@ -763,17 +763,19 @@ export default class UserRights extends Vue {
   audit() {
     this.auditVisible = true
     this.copyRole = []
-    const arr = [this.multipleSelection[0].avatar, this.multipleSelection[0].esignature]
-    arr.forEach((item, index) => {
-      imageByName(item).then((res) => {
-        // debugger
-        if (res.status === 200) {
-          index === 1
-            ? (this.multipleSelection[0].esignature = res.config.url)
-            : (this.multipleSelection[0].avatar = res.config.url)
-        }
-      })
-    })
+    // const arr = [this.multipleSelection[0].avatar, this.multipleSelection[0].esignature]
+    // arr.forEach((item, index) => {
+    //   imageByName(item).then((res) => {
+    //     // debugger
+    //     if (res.status === 200) {
+    //       index === 1
+    //         ? (this.multipleSelection[0].esignature = res.config.url)
+    //         : (this.multipleSelection[0].avatar = res.config.url)
+    //     }
+    //   })
+    // })
+    this.multipleSelection[0].esignature = imageByName(this.multipleSelection[0].esignature)
+    this.multipleSelection[0].avatar = imageByName(this.multipleSelection[0].avatar)
 
     // 审核页面，默认同意
     this.auditInfo.auditStatus = '2'
