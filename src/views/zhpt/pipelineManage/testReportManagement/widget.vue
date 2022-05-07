@@ -314,7 +314,9 @@
             </el-tab-pane>
             <el-tab-pane label="数据地图" name="two">
               <!-- 数据地图 -->
-              <div class="map-box">数据地图</div>
+              <div class="map-box">
+                <simple-map ref='myMap'></simple-map>
+              </div>
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -346,13 +348,15 @@ import pdfSee from '../components/OpenPdf.vue'
 import summaryForm from './components/summaryForm'
 import projectForm from './components/project'
 import inspectForm from './components/inspect'
+import simpleMap from '@/components/SimpleMap'
 
 export default {
   components: {
     summaryForm,
     projectForm,
     inspectForm,
-    pdfSee
+    pdfSee,
+    simpleMap
   },
   data() {
     return {
