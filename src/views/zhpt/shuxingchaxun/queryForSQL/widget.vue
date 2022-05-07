@@ -146,7 +146,7 @@ export default {
         return { label: layer.label, value: layer.name }
       })
 
-      var mapView = this.mapView = this.data.mapView
+      this.mapView = this.data.mapView
 
   },
   methods: {
@@ -267,7 +267,7 @@ export default {
       function createThemLayer () {
         return new VectorLayer({
           source: new VectorSource(),
-          style: comSymbol.getAllStyle(3, "#f40", 5, "#C0DB8D")
+          style: comSymbol.getAllStyle(3, "#f00", 5, "#0ff")
         })
       }
     },
@@ -300,101 +300,16 @@ export default {
         param: { data: rowData, colsData }
       })
     },
-
-    /**
-     * describe 查询到的数据高亮 2021-11-24 add by tmx
-    */
-    showAllHighlight(data){
-      let mapView =this.$attrs.data.mapView;
-      let sp = mapView.spatialReference;
-      let paths = [];
-      let maxExtent = null;
-      if(this.queryLayer) mapView.map.remove(this.queryLayer);
-      this.queryLayer = new mapView.TF_graphicsLayer();
-      let geometryType = data.geometryType;  //esriGeometryPoint、esriGeometryLine、esriGeometryPolygon
-      mapView.map.add(this.queryLayer);
-      if(!data || !data.hasOwnProperty('features')) return;
-      let features = [];
-      data.features.forEach(feature => {
-        let graphic = null;
-        if(geometryType == "esriGeometryPoint" ){
-          graphic = new mapView.TF_graphic({ 
-            geometry:  { type: 'point', x: feature.geometry.x, y: feature.geometry.y, spatialReference: sp },
-            symbol: { type: 'simple-marker', color: [80, 187, 121], size: 12, outline: { color: [80, 187, 121], width: 0 }}
-          });
-          paths.push([feature.geometry.x,feature.geometry.y])
-        }
-        //如果为面
-        if(geometryType == "esriGeometryPolygon" ){
-          graphic = new mapView.TF_graphic({
-            geometry: { type: 'polyline', paths: feature.geometry.rings, spatialReference: sp},
-            symbol: { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: { color: [80, 187, 121, 1], width: "3px" } }
-          });
-          maxExtent = maxExtent == null ? graphic.geometry.extent : maxExtent
-          maxExtent = this.computerExtent(maxExtent,graphic.geometry.extent);
-        }
-        //如果为线
-        if(geometryType == "esriGeometryPolyline" ){
-          graphic = new mapView.TF_graphic({
-            geometry: { type: 'polyline', paths: feature.geometry.paths, spatialReference: sp},
-            symbol: { type: 'simple-fill', color: [80, 187, 121, 1], outline: { color: [80, 187, 121, 1], width: '3px' } }
-          });
-          maxExtent = maxExtent == null ? graphic.geometry.extent : maxExtent
-          maxExtent = this.computerExtent(maxExtent,graphic.geometry.extent);
-        }
-        features.push(graphic);
-      });
-      this.queryLayer.addMany(features);
-      
-      if(paths.length > 1){
-        // let polyline = {type: "polyline",paths: paths};
-        // let graphic = new mapView.TF_graphic({geometry: polyline});
-        // maxExtent = graphic.geometry.extent;
-        let Extent = this.Extent;
-        paths.forEach((pt,index) => {
-          if(index == 0){
-            maxExtent = new Extent({ 
-              xmin:pt[0],
-              xmax:pt[0],
-              ymin:pt[1], 
-              ymax:pt[1], 
-              spatialReference: sp 
-            })
-          }
-          else{
-            maxExtent.xmin = maxExtent.xmin > pt[0] ? pt[0] : maxExtent.xmin;
-            maxExtent.xmax = maxExtent.xmax < pt[0] ? pt[0] : maxExtent.xmax;
-            maxExtent.ymin = maxExtent.ymin > pt[1] ? pt[1] : maxExtent.ymin;
-            maxExtent.ymax = maxExtent.ymax < pt[1] ? pt[1] : maxExtent.ymax;
-          }
-        })
+    gotoGeometry (geometry) {
+      if (!this.lightLayer) {
+        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#FFFFB6') })
+        this.lightLayer.setZIndex(999)
+        this.data.mapView.addLayer(this.lightLayer)
       }
-      else if(paths.length == 1){
-        mapView.center = {x: paths[0][0], y: paths[0][1], spatialReference: sp}
-      }
-      if(maxExtent != null){
-        mapView.goTo(maxExtent)
-      }
-    },
-    
-    /**
-     * 计算最大extent
-    */
-    computerExtent(maxExtent,extent){
-      if(maxExtent.xmin > extent.xmin){
-        maxExtent.xmin = extent.xmin
-      }
-      if(maxExtent.xmax < extent.xmax){
-        maxExtent.xmax = extent.xmax
-      }
-      if(maxExtent.ymin > extent.ymin){
-        maxExtent.ymin = extent.ymin
-      }
-      if(maxExtent.ymax < extent.ymax){
-        maxExtent.ymax = extent.ymax
-      }
-      return maxExtent
-    },
+      this.lightLayer.getSource().clear()
+      this.lightFeature = new Feature({ geometry })
+      this.lightLayer.getSource().addFeature(this.lightFeature)
+    }
   },
   destroyed() {
     this.clearAll()

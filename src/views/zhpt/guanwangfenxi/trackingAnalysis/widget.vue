@@ -85,7 +85,7 @@ import { trackingAnalysis } from '@/api/mainMap/analysis'
 import iDraw from '@/views/zhpt/common/mapUtil/draw';
 import iQuery from '@/views/zhpt/common/mapUtil/query';
 import * as turf from '@turf/turf'
-import { comSymbol } from '../../../../utils/comSymbol';
+import { comSymbol } from '@/utils/comSymbol'
 
 export default {
   props: ['data'],
@@ -151,16 +151,16 @@ export default {
           let fea = new GeoJSON().readFeature(turf.buffer(turf.point(drawFea.getGeometry().getCoordinates()), 0.3 / 1000, { units: 'kilometers' }))
           this.getAnalysisPipe(fea).then(resObj => {
             if (resObj) {
-              let attachName = resObj.attachName
               let featureJson = resObj.result.features.features[0]
               let feature = new GeoJSON().readFeature(featureJson)
               this.vectorLayer.getSource().addFeature(feature)
-              this.selectPipelineInfo.name = feature.get("TYPENAME")
-              this.selectPipelineInfo.id = feature.get("SID")
+              this.selectPipelineInfo.name = `管道类别：${feature.get("TYPE")}`
+              this.selectPipelineInfo.id = `管道编号：${feature.get("LNO")}`
               //
               this.openPopup(drawFea.getGeometry().getCoordinates(), featureJson)
               //
-              feature.set("attachName", attachName)
+              feature.set("attachName", resObj.attachName)
+              feature.set("tableName", resObj.tableName)
               this.selectFeature = feature.clone()
               console.log("选择管段", featureJson)
               this.drawer.end()
@@ -176,6 +176,7 @@ export default {
     },
     getAnalysisPipe (fea) {
       let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管", attachName: "TF_PSPS_POINT_B" }]
+
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresObj = resArr.find(res => res && res.result.featureCount !== 0)
@@ -192,21 +193,18 @@ export default {
      * 开始分析
      */
     async doQuery() {
-      if (!this.selectFeature) {
-        this.$message.error("还未选择管线，不能进行分析！")
-        return
-      }
+      if (!this.selectFeature) return this.$message.error("还未选择管线，不能进行分析！")
+      if (!this.selectFeature.get("LNO")) return this.$message.error("数据缺少唯一标识，不能进行分析！")
       this.doLoading = true // 开始查询
       this.selectFlag = false
       let data = {
         pipeLength: this.distence,
-        dataSetName: this.selectFeature.get("TYPENAME"),
-        pipePointNo: this.selectFeature.get("SMID")
+        tableName: this.selectFeature.get("tableName"),
+        pipePointNo: this.selectFeature.get("LNO")
       }
       let resultTable = []
-      let result = await trackingAnalysis(data)// 接口返回结果
-      
-      console.log("追踪分析", result)
+      let result = await trackingAnalysis(data) // 接口返回结果
+      console.log("追踪分析结果", result)
       this.doLoading = false
       return
       for (const key in result.result) {

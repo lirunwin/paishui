@@ -10,6 +10,10 @@
           <el-table-column prop="oid" label="管线编号" />
           <el-table-column prop="STARTSID" label="起点编号" />
           <el-table-column prop="ENDSID" label="终点编号" />
+          <template slot="empty">
+            <img src="@/assets/icon/null.png" alt="">
+            <p class="empty-p">暂无数据</p>
+          </template>
         </el-table>
       </el-col>
       <!-- <el-row style="padding-top: 8px; clear: both;">

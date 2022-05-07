@@ -38,6 +38,7 @@
         v-loading="queryLoading"
         style="margin-bottom: 8px;"
         row-class-name="selectRowC"
+        @row-click="showDetail"
       >
         <el-table-column prop="layer" label="图层名称" width="100" />
         <el-table-column prop="num" label="数量" />
@@ -46,7 +47,7 @@
         </el-table-column>
       </el-table>
     </tf-legend>
-    <tf-legend
+    <!-- <tf-legend
       class="legend_dept"
       label="设施信息"
       isopen="true"
@@ -62,7 +63,7 @@
         border
         style="width: 100%;margin-bottom: 8px;"
         row-class-name="selectRowC"
-        @row-click="getFeature"
+        @row-click="showMoreInfo"
       >
         <el-table-column
           v-for="item in columns"
@@ -72,7 +73,7 @@
           show-overflow-tooltip
         />
       </el-table>
-    </tf-legend>
+    </tf-legend> -->
     <tf-legend
       class="legend_dept"
       label="设施详情"
@@ -80,12 +81,6 @@
       title="显示选中的要素详情信息。"
       v-loading="attLoading"
     >
-      <el-link
-        style=" position: absolute; top: -25px; right: 25px;"
-        type="primary"
-        @click="showMoreInfo"
-        :disabled="!rowData && attData.length <= 0"
-      >更多</el-link>
       <el-table :data="attData" stripe max-height="270px">
         <el-table-column prop="fix" label="字段" />
         <el-table-column prop="att" label="属性" />
@@ -107,7 +102,8 @@ import GeoJSON from 'ol/format/GeoJSON'
 import { Vector as VectorSource } from 'ol/source'
 import { Vector as VectorLayer } from 'ol/layer'
 import { comSymbol } from '@/utils/comSymbol'
-import { fieldDoc } from '@/views/zhpt/common/doc'
+import { fieldDoc, pointFieldDoc } from '@/views/zhpt/common/doc'
+import Feature from 'ol/Feature'
 
 
 export default {
@@ -134,7 +130,7 @@ export default {
       drawer: null,
       queryService: null,
       queryLayer: null,
-      fields: ['LNO', 'S_POINT', 'E_POINT', 'MATERIAL'],
+      fields: [],
       rowData: null
     }
   },
@@ -150,6 +146,21 @@ export default {
     }
   },
   methods: {
+    // 显示详情
+    showDetail (row) {
+      let doc = null
+      if (row.layer === "排水管线") {
+        this.fields = ['LNO', 'S_POINT', 'E_POINT', 'MATERIAL']
+        doc = fieldDoc
+      } else {
+        this.fields = ["POINT_TYPE", "TYPE", "HIGH"]
+        doc = pointFieldDoc
+      }
+      // this.addDetail(row.features.features, doc)
+
+      this.addField(doc)
+      this.showMoreInfo(row.features.features, doc)
+    },
     // 空间查询
     spaceQuery(type) {
       let that = this
@@ -160,7 +171,6 @@ export default {
           this.drawer.remove()
           query(feature, res => {
             this.addStatistic(res)
-            this.addDetail(res)
           })
         },
         showCloser: false
@@ -196,13 +206,12 @@ export default {
     initLayer() {
       this.queryLayer = new VectorLayer({
         source: new VectorSource(),
-        style: comSymbol.getAllStyle(3, '#f40', 5, '#C0DB8D')
+        style: comSymbol.getAllStyle(3, '#f40', 5, '#0ff')
       })
       this.data.mapView.addLayer(this.queryLayer)
     },
     // 统计
     addStatistic (dataArr) {
-      console.log('总长')
       let lengthField = 'SMLENGTH', layerData = []
       dataArr.forEach(item => {
         if (item && item.result.featureCount !== 0) {
@@ -219,32 +228,21 @@ export default {
       this.layerData = layerData
     },
     // 详情
-    addDetail (dataArr) {
-      console.log("详情", dataArr)
-      let detailData = [];
-      this.columns = this.fields.map(field => {
-        return { prop: field, label: fieldDoc[field] }
-      })
-      dataArr.forEach(item => {
-        if (item && item.result.featureCount !== 0) {
-          let features = item.result.features.features
-          features.forEach(fea => detailData.push(fea.properties))
-        }
-      })
-      this.featureData = detailData
-    },
+    // addDetail (dataArr, doc) {
+    //   this.columns = this.fields.map(field => {
+    //     return { prop: field, label: doc[field] }
+    //   })
+    //   this.featureData = dataArr.map(data => {
+    //     return { geometry: data.geometry, ...data.properties }
+    //   })
+    // },
     // 字段
-    addField (row) {
+    addField (doc) {
       let attData = []
-      this.rowData = row
-      for (let key in row) {
-        attData.push({ fix: key, att: fieldDoc[key] || key})
+      for (let key in doc) {
+        attData.push({ fix: key, att: doc[key] || key})
       }
       this.attData = attData
-    },
-    getFeature (row) {
-      console.log(row)
-      this.addField(row)
     },
 
     clearQuery() {  
@@ -256,61 +254,54 @@ export default {
       this.featureData = []
       this.layerData = []
     },
-    removeEvent() {
-      if (this.eventMove) this.eventMove.remove()
-      if (this.eventClick) this.eventClick.remove()
-    },
-    loadLayerName() {
-      var url = appconfig.gisResource.layer_name.config[0].url
-      $.ajax({
-        url: url,
-        type: 'POST',
-        data: {
-          usertoken: appconfig.usertoken,
-          layerids: JSON.stringify(this.getLayers),
-          f: 'pjson'
-        },
-        dataType: 'json',
-        success: (data) => {
-          if (data.code == 10000) {
-            var layersData = []
-            var layerIndex = {}
-            for (var i = 0, il = data.result.rows, ii = il.length; i < ii; i++) {
-              var layer = il[i]
-              layersData.push(layer)
-              layerIndex[layer.layerid] = layer
-            }
-            this.layerIndex = layerIndex
-            this.layerList = layersData
-          }
-        }
-      })
-    },
-    showMoreInfo() {
+    showMoreInfo(row, doc) {
       let colsData = []
-      for (let key in this.rowData) {
+      for (let key in doc) {
         if (fieldDoc[key]) {
           colsData.push({ prop: key, label: fieldDoc[key]})
         }
       }
-      // 测试先显示20条
+      // 测试先显示20条属性
       colsData.length = 20
-      this.$store.dispatch('map/changeMethod', {
+
+      let rowData = row.map(item => {
+        return { ...item.properties, geometry: item.geometry }
+      })
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
         pathId: 'queryResultMore',
         widgetid: 'HalfPanel',
-        label: '更多信息',
-        param: { data: [this.rowData], colsData }
+      });
+      this.$nextTick(() => {
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'queryResultMore',
+          widgetid: 'HalfPanel',
+          label: '更多信息',
+          param: { rootPage: this, data: rowData, colsData }
+        })
       })
     },
     removeAll () {
       this.drawer && this.drawer.end()
       this.queryLayer && this.queryLayer.getSource().clear()
+      this.lightLayer && this.lightLayer.getSource().clear()
       this.drawer = this.queryLayer = null
       this.$store.dispatch('map/handelClose', {
         box:'HalfPanel',
         pathId: 'queryResultMore',
         widgetid: 'HalfPanel',
       });
+    },
+    gotoGeometry (geometry) {
+      geometry = new GeoJSON().readGeometry(geometry)
+      if (!this.lightLayer) {
+        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#FFFFB6') })
+        this.lightLayer.setZIndex(999)
+        this.data.mapView.addLayer(this.lightLayer)
+      }
+      this.lightLayer.getSource().clear()
+      this.lightFeature = new Feature({ geometry })
+      this.lightLayer.getSource().addFeature(this.lightFeature)
     }
   },
   destroyed() {

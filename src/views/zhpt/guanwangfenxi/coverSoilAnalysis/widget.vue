@@ -238,7 +238,7 @@ export default {
 
       console.log('覆土分析')
       let feaType;
-      let typeName = feature.properties.TYPE
+      let typeName = feature.properties.TYPE || '排水管'
       if (typeName == '移动线缆' || typeName == '电信线缆' || typeName == '广电线缆')
         feaType = '电信线缆'
       else {

@@ -93,7 +93,7 @@ class DrawInMap{
     this.createLayer();
     if(this.option==optionAction.coordinate){
       this.pointClickEvent=this.map.on("click",evt=>{
-        this.creatMark(null, evt.coordinate[0]+","+evt.coordinate[1], 'coordinateInfo').setPosition(evt.coordinate);
+        this.creatMark(null, evt.coordinate[0].toFixed(3)+","+evt.coordinate[1].toFixed(3), 'coordinateInfo').setPosition(evt.coordinate);
         let feature = new Feature({
           geometry: new Point(evt.coordinate),
         });
@@ -181,7 +181,7 @@ class DrawInMap{
             if (evt.target.getCoordinates().length < 3) this.tipDiv.innerHTML = "继续单击确定顶点";
             else {
               this.measureResult = this.formatAngle(evt.target)
-              this.tipDiv.innerHTML = "角度：" + this.measureResult + "</br>继续单击结束";
+              this.tipDiv.innerHTML = "角度：" + parseFloat(this.measureResult).toFixed(2) + "</br>继续单击结束";
             }
           })
         }
@@ -212,7 +212,7 @@ class DrawInMap{
         //******角度测量结束时*****//
         else if (this.option ==optionAction.angle) {
           this.creatMark(closeBtn, null, "close3").setPosition(e.feature.getGeometry().getCoordinates()[1]);
-          this.creatMark(null, "角度：" + this.measureResult + "", "angle").setPosition(e.feature.getGeometry().getCoordinates()[1])
+          this.creatMark(null, "角度：" + parseFloat(this.measureResult).toFixed(2) + "", "angle").setPosition(e.feature.getGeometry().getCoordinates()[1])
         }
         // 停止测量
         this.stopMeasure();
