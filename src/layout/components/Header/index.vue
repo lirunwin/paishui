@@ -4,18 +4,13 @@
       <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" /> -->
       <!-- <ThemePicker /> -->
       <div class="title">
-        <img :src="logo" alt="" class="logo" />
+        <!-- <img :src="logo" alt="" class="logo" /> -->
         <span class="title_text">{{ sysTitle }}</span>
       </div>
       <div class="sysNav">
         <!-- <i class="el-icon-caret-left" @click="scrollPrev" /> -->
         <!-- <div v-show="$store.state.topNavState==='home'" class="topbar-title"> -->
-        <el-menu
-          :default-active="defaultActiveIndex"
-          class="el-menu-demo"
-          mode="horizontal"
-          style="padding: 0 20px"
-        >
+        <el-menu :default-active="defaultActiveIndex" class="el-menu-demo" mode="horizontal" style="padding: 0 20px">
           <el-menu-item
             v-for="item in menus.navList"
             :key="item.name"
@@ -47,47 +42,21 @@
       </div>
       <div class="right-menu">
         <div class="btn_box">
-          <i
-            class="el-icon-bell bell-info"
-            title="消息提示"
-            @click="notificationDialog = true"
-          >
+          <i class="el-icon-bell bell-info" title="消息提示" @click="notificationDialog = true">
             <span v-show="notificationNum !== 0" class="bell-dot">{{
-              notificationNum > 100 ? "99+" : notificationNum
+              notificationNum > 100 ? '99+' : notificationNum
             }}</span>
-            <el-dialog
-              v-if="notificationDialog"
-              :visible.sync="notificationDialog"
-              title="消息"
-              append-to-body
-            >
-              <notification
-                @close-notification="handleCloseNotification"
-                @reget-noti="handleMarked"
-              />
+            <el-dialog v-if="notificationDialog" :visible.sync="notificationDialog" title="消息" append-to-body>
+              <notification @close-notification="handleCloseNotification" @reget-noti="handleMarked" />
             </el-dialog>
-            <video
-              ref="videoMsg"
-              src="../../../assets/images/home/msg.mp3"
-              style="display: none"
-            />
+            <video ref="videoMsg" src="../../../assets/images/home/msg.mp3" style="display: none" />
             <!-- <audio autoplay="autoplay">
               <source src="/i/song.ogg" type="audio/ogg" />
               <source src="/i/song.mp3" type="audio/mpeg" />
             </audio> -->
           </i>
-          <i
-            v-if="showDashboard"
-            class="el-icon-s-home"
-            title="首页"
-            @click="home"
-          />
-          <i
-            v-if="showSystemSetting"
-            class="el-icon-setting"
-            title="系统管理"
-            @click="handleSys('sysSetting')"
-          />
+          <i v-if="showDashboard" class="el-icon-s-home" title="首页" @click="home" />
+          <i v-if="showSystemSetting" class="el-icon-setting" title="系统管理" @click="handleSys('sysSetting')" />
           <!-- <span class="home" title="首页" @click="home" />
           <i class="el-icon-s-tools" title="系统管理" @click="handleSys('sysSeting')" />
           <i class="el-icon-chat-dot-round" title="消息提示" /> -->
@@ -105,22 +74,11 @@
             <i class="el-icon-arrow-down" />
           </div>
           <el-dropdown-menu slot="dropdown" class="user-dropdown">
-            <el-dropdown-item
-              v-if="showAccountApply"
-              @click.native="openApply = true"
-              >账号申请</el-dropdown-item
-            >
-            <el-dropdown-item
-              v-if="showUserInfoEdit"
-              divided
-              @click.native="userEdit = true"
+            <el-dropdown-item v-if="showAccountApply" @click.native="openApply = true">账号申请</el-dropdown-item>
+            <el-dropdown-item v-if="showUserInfoEdit" divided @click.native="userEdit = true"
               >账号编辑</el-dropdown-item
             >
-            <el-dropdown-item
-              :divided="showAccountApply"
-              @click.native="changePassword"
-              >修改密码</el-dropdown-item
-            >
+            <el-dropdown-item :divided="showAccountApply" @click.native="changePassword">修改密码</el-dropdown-item>
             <el-dropdown-item divided @click.native="logout">
               <span style="display: block">退出登录</span>
             </el-dropdown-item>
@@ -132,12 +90,7 @@
 
       <!-- </scrollView> -->
       <!-- </scroll-pane> -->
-      <el-dialog
-        title="修改密码"
-        :visible.sync="passWord"
-        width="400px"
-        append-to-body
-      >
+      <el-dialog title="修改密码" :visible.sync="passWord" width="400px" append-to-body>
         <!-- <span>修改密码</span> -->
         <input-item
           type="password"
@@ -177,9 +130,7 @@
         />
         <span slot="footer" class="dialog-footer">
           <el-button @click="passWord = false">取 消</el-button>
-          <el-button type="primary" @click="confirmModifyPassWord"
-            >确 定</el-button
-          >
+          <el-button type="primary" @click="confirmModifyPassWord">确 定</el-button>
         </span>
       </el-dialog>
       <el-dialog
@@ -203,27 +154,27 @@
   </div>
 </template>
 
-<script lang='ts'>
-import{Vue,Component} from 'vue-property-decorator'
-import { changePassword } from "@/api/base";
-import InputItem from "@/components/FormItem/Input/index.vue";
-import { verification } from "@/utils/index";
-import { geteSessionStorage } from "@/utils/auth";
-import headPortrait from "@/assets/login/headPortrait.gif";
+<script lang="ts">
+import { Vue, Component } from 'vue-property-decorator'
+import { changePassword } from '@/api/base'
+import InputItem from '@/components/FormItem/Input/index.vue'
+import { verification } from '@/utils/index'
+import { geteSessionStorage } from '@/utils/auth'
+import headPortrait from '@/assets/login/headPortrait.gif'
 // import ThemePicker from '@/components/ThemePicker'
-import logo from "@/assets/images/logo1.png";
-import AccountApply from "./AccountApply.vue";
-import Notification from "./Notification.vue";
-import { getNotifications, markAsRead } from "@/api/dashboard";
-import {notificationInterval} from "staticPub/config";
-import { regPassword } from "@/utils/reg";
-import { nextTick } from "q";
-import UserInfoEdit from "./UserInfoEdit.vue";
+import logo from '@/assets/images/logo1.png'
+import AccountApply from './AccountApply.vue'
+import Notification from './Notification.vue'
+import { getNotifications, markAsRead } from '@/api/dashboard'
+import { notificationInterval } from 'staticPub/config'
+import { regPassword } from '@/utils/reg'
+import { nextTick } from 'q'
+import UserInfoEdit from './UserInfoEdit.vue'
 
-const sha1Hex = require("sha1-hex");
+const sha1Hex = require('sha1-hex')
 @Component({
-  name:"Headerdd",
-  components:{
+  name: 'Headerdd',
+  components: {
     AccountApply,
     InputItem,
     Notification,
@@ -231,266 +182,251 @@ const sha1Hex = require("sha1-hex");
   }
 })
 export default class Header extends Vue {
-  name="Headerdd"
-  ispersonalCenter= false
-      passWord= false
-      originalPassword= ""
-      newPassword= ""
-      confirmPassword= ""
-      headPortrait=headPortrait
-      dialogPassword=false
-      logo=logo
-      navOffset= 0
-      openApply= false
-      notificationDialog= false
-      notificationNum= 0
-      timer= null
-      specialIndex= ""
-      userEdit= false
-  get sidebar(){
+  name = 'Headerdd'
+  ispersonalCenter = false
+  passWord = false
+  originalPassword = ''
+  newPassword = ''
+  confirmPassword = ''
+  headPortrait = headPortrait
+  dialogPassword = false
+  logo = logo
+  navOffset = 0
+  openApply = false
+  notificationDialog = false
+  notificationNum = 0
+  timer = null
+  specialIndex = ''
+  userEdit = false
+  get sidebar() {
     return this.$store.getters.sidebar
   }
-   get defaultActiveIndex(){
-        if (this.specialIndex) return this.specialIndex;
-        const name = this.$route.name;
-        const source = this.$store.state.routeSetting.dynamicRoutes;
-        let result = "";
-        const allKeys = Object.keys(source);
-        for (const key of allKeys) {
-          for (const el of source[key]) {
-            if (el.name === name) {
-              result = key;
-              return result;
-            } else {
-              if (el.children) {
-                for (const item of el.children) {
-                  if (item.name === name) {
-                    result = key;
-                    return result;
-                  }
-                }
+  get defaultActiveIndex() {
+    if (this.specialIndex) return this.specialIndex
+    const name = this.$route.name
+    const source = this.$store.state.routeSetting.dynamicRoutes
+    let result = ''
+    const allKeys = Object.keys(source)
+    for (const key of allKeys) {
+      for (const el of source[key]) {
+        if (el.name === name) {
+          result = key
+          return result
+        } else {
+          if (el.children) {
+            for (const item of el.children) {
+              if (item.name === name) {
+                result = key
+                return result
               }
             }
           }
         }
-    }
-    set defaultActiveIndex(name: string) {
-        if (["map", "xjxt", "whxt",'monitor'].indexOf(name) > -1)
-          this.specialIndex = name;
-        else this.specialIndex = "";
       }
-    get avatar() {
-      return this.$store.state.user.avatar || geteSessionStorage("avatar");
     }
-    get systemSettingsBtn() {
-      return this.$store.state.settings.systemSettingsBtn;
+  }
+  set defaultActiveIndex(name: string) {
+    if (['map', 'xjxt', 'whxt', 'monitor'].indexOf(name) > -1) this.specialIndex = name
+    else this.specialIndex = ''
+  }
+  get avatar() {
+    return this.$store.state.user.avatar || geteSessionStorage('avatar')
+  }
+  get systemSettingsBtn() {
+    return this.$store.state.settings.systemSettingsBtn
+  }
+  get systemSwitchingBtn() {
+    return this.$store.state.settings.systemSwitchingBtn
+  }
+  get realName() {
+    return this.$store.state.user.realName || geteSessionStorage('realName')
+  }
+  get sysTitle() {
+    return this.$store.state.settings.sysTitle
+  }
+  get menus() {
+    const menuArr = this.$store.state.routeSetting.menus
+    const result = {
+      navList: [],
+      moreNavList: []
     }
-    get systemSwitchingBtn() {
-      return this.$store.state.settings.systemSwitchingBtn;
-    }
-    get realName() {
-      return this.$store.state.user.realName || geteSessionStorage("realName");
-    }
-    get sysTitle() {
-      return this.$store.state.settings.sysTitle;
-    }
-    get menus() {
-      const menuArr = this.$store.state.routeSetting.menus;
-      const result = {
-        navList: [],
-        moreNavList: [],
-      };
-      for (let index = 0; index < menuArr.length; index++) {
-        if (
-          menuArr[index].name !== "sysSetting" &&
-          menuArr[index].name !== "dashboard"
-        ) {
-          if (index >= 7) result.moreNavList.push(menuArr[index]);
-          else result.navList.push(menuArr[index]);
-        }
+    for (let index = 0; index < menuArr.length; index++) {
+      if (menuArr[index].name !== 'sysSetting' && menuArr[index].name !== 'dashboard') {
+        if (index >= 7) result.moreNavList.push(menuArr[index])
+        else result.navList.push(menuArr[index])
       }
-      return result;
     }
-    get showSystemSetting() {
-      return this.$store.state.routeSetting.menus.some(
-        (item) => item.name === "sysSetting"
-      );
-    }
-    get showDashboard() {
-      return this.$store.state.routeSetting.menus.some(
-        (item) => item.name === "dashboard"
-      );
-    }
-    get showAccountApply() {
-      return (
-        (this.$store.state.routeSetting.dynamicRoutes.sysSetting &&
-          this.$store.state.routeSetting.dynamicRoutes.sysSetting.some((item) =>
-            item.children.some((child) => child.name === "accountApply")
-          )) ||
-        false
-      );
-    }
-    get showUserInfoEdit() {
-      return (
-        (this.$store.state.routeSetting.dynamicRoutes.sysSetting &&
-          this.$store.state.routeSetting.dynamicRoutes.sysSetting.some((item) =>
-            item.children.some((child) => child.name === "userinfoEdit")
-          )) ||
-        false
-      );
-    }
+    return result
+  }
+  get showSystemSetting() {
+    return this.$store.state.routeSetting.menus.some((item) => item.name === 'sysSetting')
+  }
+  get showDashboard() {
+    return this.$store.state.routeSetting.menus.some((item) => item.name === 'dashboard')
+  }
+  get showAccountApply() {
+    return (
+      (this.$store.state.routeSetting.dynamicRoutes.sysSetting &&
+        this.$store.state.routeSetting.dynamicRoutes.sysSetting.some((item) =>
+          item.children.some((child) => child.name === 'accountApply')
+        )) ||
+      false
+    )
+  }
+  get showUserInfoEdit() {
+    return (
+      (this.$store.state.routeSetting.dynamicRoutes.sysSetting &&
+        this.$store.state.routeSetting.dynamicRoutes.sysSetting.some((item) =>
+          item.children.some((child) => child.name === 'userinfoEdit')
+        )) ||
+      false
+    )
+  }
   mounted() {
-    this.getNotificationNum();
+    this.getNotificationNum()
     this.timer = window.setInterval(() => {
       setTimeout(() => {
-        this.getNotificationNum();
-      }, 0);
-    }, notificationInterval);
+        this.getNotificationNum()
+      }, 0)
+    }, notificationInterval)
   }
   destroyed() {
-    window.clearInterval(this.timer);
+    window.clearInterval(this.timer)
   }
-    handleRemove(file, fileList) {
-      console.log(file, fileList);
-    }
-    handlePreview(file) {
-      console.log(file);
-    }
-    handleExceed(files, fileList) {
-      this.$message.warning(
-        `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
-          files.length + fileList.length
-        } 个文件`
-      );
-    }
-    beforeRemove(file, fileList) {
-      return this.$confirm(`确定移除 ${file.name}？`);
-    }
-    // 打开或关闭左侧菜单
-    toggleSideBar() {
-      this.$store.dispatch("app/toggleSideBar");
-    }
-    // 退出登录
-    async logout() {
-      await this.$store.dispatch("user/logout");
-      this.$router.push("/login");
-    }
-    // 个人中心
-    personalCenter() {
-      console.log("个人中心");
-      this.ispersonalCenter = true;
-    }
-    // 修改密码
-    changePassword() {
-      console.log("修改密码");
-      this.passWord = true;
-      this.originalPassword = "";
-      this.newPassword = "";
-      this.confirmPassword = "";
-    }
-    /**
-     * 输入框组件数据绑定方法事件
-     * @param {*} key
-     * @param {*} event
-     */
-    onInput(key, event) {
-      this[key] = event;
-    }
-    // 确定修改密码
-    confirmModifyPassWord() {
-      const verificationPwd = verification([
-        { condition: !this.originalPassword, errmsg: "请输入原密码" },
-        { condition: !this.newPassword, errmsg: "请输入新密码" },
-        {
-          condition: !regPassword().test(this.newPassword),
-          errmsg: "密码包含大小写字母和数字，不可有非法字符！",
-        },
-        {
-          condition: this.confirmPassword !== this.newPassword,
-          errmsg: "两次密码输入不相同！",
-        },
-        {
-          condition: this.originalPassword === this.newPassword,
-          errmsg: "新密码和原始密码一样",
-        },
-      ]);
-      if (!verificationPwd.success) {
-        this.$message.error(verificationPwd.errmsg[0]);
-        return false;
+  handleRemove(file, fileList) {
+    console.log(file, fileList)
+  }
+  handlePreview(file) {
+    console.log(file)
+  }
+  handleExceed(files, fileList) {
+    this.$message.warning(
+      `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`
+    )
+  }
+  beforeRemove(file, fileList) {
+    return this.$confirm(`确定移除 ${file.name}？`)
+  }
+  // 打开或关闭左侧菜单
+  toggleSideBar() {
+    this.$store.dispatch('app/toggleSideBar')
+  }
+  // 退出登录
+  async logout() {
+    await this.$store.dispatch('user/logout')
+    this.$router.push('/login')
+  }
+  // 个人中心
+  personalCenter() {
+    console.log('个人中心')
+    this.ispersonalCenter = true
+  }
+  // 修改密码
+  changePassword() {
+    console.log('修改密码')
+    this.passWord = true
+    this.originalPassword = ''
+    this.newPassword = ''
+    this.confirmPassword = ''
+  }
+  /**
+   * 输入框组件数据绑定方法事件
+   * @param {*} key
+   * @param {*} event
+   */
+  onInput(key, event) {
+    this[key] = event
+  }
+  // 确定修改密码
+  confirmModifyPassWord() {
+    const verificationPwd = verification([
+      { condition: !this.originalPassword, errmsg: '请输入原密码' },
+      { condition: !this.newPassword, errmsg: '请输入新密码' },
+      {
+        condition: !regPassword().test(this.newPassword),
+        errmsg: '密码包含大小写字母和数字，不可有非法字符！'
+      },
+      {
+        condition: this.confirmPassword !== this.newPassword,
+        errmsg: '两次密码输入不相同！'
+      },
+      {
+        condition: this.originalPassword === this.newPassword,
+        errmsg: '新密码和原始密码一样'
       }
-      changePassword({
-        id: this.$store.state.user.userId,
-        originalPassword: sha1Hex(this.originalPassword),
-        password: sha1Hex(this.newPassword),
-        firstlog: 1,
-      }).then((res) => {
-        if (res.code !== -1) {
-          this.passWord = false;
-          this.dialogPassword = true;
-        }
-      });
+    ])
+    if (!verificationPwd.success) {
+      this.$message.error(verificationPwd.errmsg[0])
+      return false
     }
-    confirmOut() {
-      this.logout();
-    }
-    home() {
-      // console.log('3333')
-      const sideBarShow = this.$store.state.app.sidebar.show;
-      if (sideBarShow) this.$store.dispatch("app/toggleSideBarShow", false);
-      this.$router.push("/dashboard");
-      this.defaultActiveIndex = "";
-    }
-    handleSys(event) {
-      if (event === "sysSetting")
-        event = this.$store.state.routeSetting.menus.find(
-          (item) => item.name === "sysSetting"
-        );
-      this.defaultActiveIndex = event.name;
-      if (event.path !== undefined && event.path !== "")
-        this.$router.push({ path: event.path });
-      else if (["map", "xjxt", "whxt",'monitor'].indexOf(event.name) > -1)
-        this.$router.push("/map");
-      const sideBarShow = this.$store.state.app.sidebar.show;
-      if (!sideBarShow) this.$store.dispatch("app/toggleSideBarShow", true);
-      this.$store.dispatch("routeSetting/changeSys", event.name || event);
-      this.$store.commit("map/RESET_ALL");
-    }
-    // scrollPrev() {
-    //   this.$refs.navScroll.$el.scrollLeft = 0;
-    // }
-    // scrollNext() {
-    //   this.$refs.navScroll.$el.scrollLeft = 550;
-    // }
-    // 轮询消息推送
-    getNotificationNum() {
-      getNotifications({ flag: "0" }).then((res) => {
-        this.notificationNum = res.result.total;
+    changePassword({
+      id: this.$store.state.user.userId,
+      originalPassword: sha1Hex(this.originalPassword),
+      password: sha1Hex(this.newPassword),
+      firstlog: 1
+    }).then((res) => {
+      if (res.code !== -1) {
+        this.passWord = false
+        this.dialogPassword = true
+      }
+    })
+  }
+  confirmOut() {
+    this.logout()
+  }
+  home() {
+    // console.log('3333')
+    const sideBarShow = this.$store.state.app.sidebar.show
+    if (sideBarShow) this.$store.dispatch('app/toggleSideBarShow', false)
+    this.$router.push('/dashboard')
+    this.defaultActiveIndex = ''
+  }
+  handleSys(event) {
+    if (event === 'sysSetting') event = this.$store.state.routeSetting.menus.find((item) => item.name === 'sysSetting')
+    this.defaultActiveIndex = event.name
+    if (event.path !== undefined && event.path !== '') this.$router.push({ path: event.path })
+    else if (['map', 'xjxt', 'whxt', 'monitor'].indexOf(event.name) > -1) this.$router.push('/map')
+    const sideBarShow = this.$store.state.app.sidebar.show
+    if (!sideBarShow) this.$store.dispatch('app/toggleSideBarShow', true)
+    this.$store.dispatch('routeSetting/changeSys', event.name || event)
+    this.$store.commit('map/RESET_ALL')
+  }
+  // scrollPrev() {
+  //   this.$refs.navScroll.$el.scrollLeft = 0;
+  // }
+  // scrollNext() {
+  //   this.$refs.navScroll.$el.scrollLeft = 550;
+  // }
+  // 轮询消息推送
+  getNotificationNum() {
+    getNotifications({ flag: '0' }).then((res) => {
+      this.notificationNum = res.result.total
 
-        // 判断消息条数，播放消息语音
-        if (this.notificationNum > 0) {
-          this.speckVideo();
-        }
-      });
-    }
-    // 消息界面跳转到对应处理的位置后 关闭弹窗
-    handleCloseNotification() {
-      this.notificationDialog = false;
-    }
-    // 消息界面标记已读后 刷新条数
-    handleMarked() {
-      this.getNotificationNum();
-    }
+      // 判断消息条数，播放消息语音
+      if (this.notificationNum > 0) {
+        this.speckVideo()
+      }
+    })
+  }
+  // 消息界面跳转到对应处理的位置后 关闭弹窗
+  handleCloseNotification() {
+    this.notificationDialog = false
+  }
+  // 消息界面标记已读后 刷新条数
+  handleMarked() {
+    this.getNotificationNum()
+  }
 
-    /**
-     * @description 消息播放
-     */
-    speckVideo() {
-      this.$nextTick(() => {
-        const _videoMsg = this.$refs.videoMsg as HTMLVideoElement;
-        _videoMsg.play();
-      });
-    }
-};
+  /**
+   * @description 消息播放
+   */
+  speckVideo() {
+    this.$nextTick(() => {
+      const _videoMsg = this.$refs.videoMsg as HTMLVideoElement
+      _videoMsg.play()
+    })
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -509,7 +445,7 @@ export default class Header extends Vue {
   justify-content: space-between;
   padding: 0 10px;
   // background: #304156;
-  background: url("../../../assets/images/title.png") no-repeat;
+  background: url('../../../assets/images/title.png') no-repeat;
   background-size: 100% 100%;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   /deep/.el-menu-item {
@@ -624,14 +560,14 @@ export default class Header extends Vue {
         display: inline-block;
         width: 28px;
         height: 28px;
-        background: url("../../../assets/images/home.png") 100% 100% no-repeat;
+        background: url('../../../assets/images/home.png') 100% 100% no-repeat;
       }
       .switch {
         width: 32px;
-        background: url("../../../assets/images/switch.png") 100% 100% no-repeat;
+        background: url('../../../assets/images/switch.png') 100% 100% no-repeat;
       }
       .theme {
-        background: url("../../../assets/images/theme.png") 100% 100% no-repeat;
+        background: url('../../../assets/images/theme.png') 100% 100% no-repeat;
       }
       .interval {
         display: inline-block;
@@ -726,7 +662,7 @@ export default class Header extends Vue {
     &:after {
       width: 0;
       height: 0;
-      content: "";
+      content: '';
       display: block;
       clear: both;
     }

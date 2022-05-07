@@ -1,39 +1,44 @@
 <template>
- <blocks title="用户信息" >
-  <div class="userinfo-container" ref="userinfoHeight">
-    <div class="userDoc">
-      <el-row>
-        <span class="title">用户姓名：</span><span>{{ userinfo.realName }}</span>
-      </el-row>
-      <el-row>
-        <span class="title">所属部门：</span><span>{{ userinfo.departmentName }}</span>
-      </el-row>
-      <!-- <el-row>
+  <blocks title="用户信息">
+    <div class="userinfo-container" ref="userinfoHeight">
+      <div class="userDoc">
+        <el-row>
+          <span class="title">用户姓名：</span><span>{{ userinfo.realName | null2empty }}</span>
+        </el-row>
+        <el-row>
+          <span class="title">所属部门：</span><span>{{ userinfo.departmentName | null2empty }}</span>
+        </el-row>
+        <!-- <el-row>
         <span class="title">联系电话：</span><span>{{ userinfo.phone }}</span>
       </el-row>
       <el-row>
         <span class="title">邮箱：</span><span>{{ userinfo.email }}</span>
       </el-row> -->
-       <el-row>
-        <span class="title">工作岗位：</span><span>{{ userinfo.job }}</span>
-      </el-row>
-      <el-row>
-        <span class="title">工作职责：</span><span v-html="userinfo.note"></span>
-      </el-row>
-    </div>
-    <div class="userAvatar" >
-      <!-- <div :style="{width:'100%',height:'100%',backgroundSize:'cover',backgroundRepeat: 'no-repeat','background-image': 'url('+userinfo.avatar+')'}"></div> -->
-       <img :src="userinfo.avatar" width="100%" height="100%"  v-if="userinfo.avatar !== '' ">
-       <img src="../../../../../assets/images/home/defultAvatar.png" width="100%" height="100%"  v-if="userinfo.avatar == ''" >
-    </div>
+        <el-row>
+          <span class="title">工作岗位：</span><span>{{ userinfo.job | null2empty }}</span>
+        </el-row>
+        <el-row>
+          <span class="title">工作职责：</span
+          ><span v-html="userinfo.note === 'null' ? '' : userinfo.note || ''"></span>
+        </el-row>
+      </div>
+      <div class="userAvatar">
+        <!-- <div :style="{width:'100%',height:'100%',backgroundSize:'cover',backgroundRepeat: 'no-repeat','background-image': 'url('+userinfo.avatar+')'}"></div> -->
+        <img :src="userinfo.avatar" width="100%" height="100%" v-if="userinfo.avatar !== ''" />
+        <img
+          src="../../../../../assets/images/home/defultAvatar.png"
+          width="100%"
+          height="100%"
+          v-if="userinfo.avatar == ''"
+        />
+      </div>
 
-
-    <!-- <el-row>
+      <!-- <el-row>
       <el-col :span="6" :offset="4" class="base-info">
         <el-row>
           <div :height="imageheight">
             <img :src="userinfo.avatar" v-if="userinfo.avatar !== null">
-          </div> 
+          </div>
         </el-row>
       </el-col>
       <el-col :span="14" class="base-info">
@@ -54,7 +59,7 @@
         </el-row>
       </el-col>
     </el-row> -->
-  </div>
+    </div>
   </blocks>
 </template>
 
@@ -67,33 +72,32 @@ export default {
   components: { Blocks },
   data() {
     return {
-      userinfo:{
-        realName:'',
-        departmentName:'',
-        phone:'',
-        email:'',
-        avatar:'',
-        job:'',   //工作岗位
-        note:'',      //工作职责
+      userinfo: {
+        realName: '',
+        departmentName: '',
+        phone: '',
+        email: '',
+        avatar: '',
+        job: '', //工作岗位
+        note: '' //工作职责
       }
     }
   },
-  watch: {
-  
+  watch: {},
+  destroyed() {},
+  filters: {
+    null2empty: (val) => (val === 'null' ? '' : val || '')
   },
-  destroyed(){
 
-  },
   methods: {
-
     /**
      * @description 获取用户信息
      */
-    getUserInfo(){
+    getUserInfo() {
       var that = this
-      getInfo({}).then(res => {
+      getInfo({}).then((res) => {
         console.log(res)
-         if(res.code !== -1) {
+        if (res.code !== -1) {
           let result = res.result
 
           that.userinfo.realName = result.realName
@@ -102,25 +106,28 @@ export default {
           that.userinfo.email = result.email
           // that.userinfo.avatar = result.avatar
           that.userinfo.job = result.job
-          if(!that.strIsNull(result.note)){
-            that.userinfo.note = result.note.replace(/\r\n/g, '<br/>').replace(/\n/g, '<br/>').replace(/\s/g, ' '); 
+          if (!that.strIsNull(result.note)) {
+            that.userinfo.note = result.note
+              .replace(/\r\n/g, '<br/>')
+              .replace(/\n/g, '<br/>')
+              .replace(/\s/g, ' ')
           }
-          
+
           //获取图片
-          if(!that.strIsNull(result.avatar)){
+          if (!that.strIsNull(result.avatar)) {
             that.getUserAvatar(result.avatar)
           }
-         }else{
-           that.$message.error(res.$message)
-         }
+        } else {
+          that.$message.error(res.$message)
+        }
       })
     },
 
     /**
      * @description 获取用户图片
      */
-    getUserAvatar(avatar){
-      imageByName(avatar).then(res => {
+    getUserAvatar(avatar) {
+      imageByName(avatar).then((res) => {
         this.userinfo.avatar = null
         if (res.status === 200) {
           this.userinfo.avatar = res.config.url
@@ -130,16 +137,16 @@ export default {
 
     // 打开表格弹窗
     handleDialogShow(data) {
-      console.log("参数："+data)
+      console.log('参数：' + data)
     },
 
     /**
-		 * @description 判断字符串是否为空
-		 */
-		strIsNull(strVal){
-			strVal = strVal || ''
-			return (typeof(strVal) == "undefined" || strVal == null || strVal == "");
-		},
+     * @description 判断字符串是否为空
+     */
+    strIsNull(strVal) {
+      strVal = strVal || ''
+      return typeof strVal == 'undefined' || strVal == null || strVal == ''
+    }
   },
   mounted() {
     this.getUserInfo()
@@ -157,21 +164,21 @@ export default {
   // border:1px red solid;
   // position: static;
 
-  .userAvatar{
+  .userAvatar {
     // display: block;
     // border:1px red solid;
     // height: 100%;
     // width: 28%;
-    
+
     // height: 50%;
     width: 30%;
     border-radius: 6px;
     // text-align: right;
-    // clear: both; 
+    // clear: both;
     // overflow: hidden;
-//  transform:translate(-50%,-50%);
+    //  transform:translate(-50%,-50%);
 
-    img{
+    img {
       display: inline;
       float: right;
       // border: 1px red solid;
@@ -180,7 +187,7 @@ export default {
     }
   }
 
-  .userDoc{
+  .userDoc {
     // border:1px red solid;
     height: 100%;
     padding: 10px;
@@ -211,4 +218,3 @@ export default {
   }
 }
 </style>
-
