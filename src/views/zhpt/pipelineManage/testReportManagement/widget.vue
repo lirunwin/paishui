@@ -315,7 +315,7 @@
             <el-tab-pane label="数据地图" name="two">
               <!-- 数据地图 -->
               <div class="map-box">
-                <simple-map ref='myMap'></simple-map>
+                <simple-map @afterMapLoad='afterMapLoad' ref='myMap'></simple-map>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -432,7 +432,7 @@ export default {
         Authorization: 'bearer ' + sessionStorage.getItem('token')
       }, // token值
       activeLeft: 'first', // 发布默认激活的导航（左）
-      activeRight: 'one', // 发布默认激活的导航（右）
+      activeRight: 'two', // 发布默认激活的导航（右）
       multipleSelection: [], // 被选中的表格数据
       // 分页需要的值
       pagination: { current: 1, size: 30 }, // 分页参数信息
@@ -456,7 +456,10 @@ export default {
         report: '1'
       },
       formLabelWidth: '120px',
-      loadingBool: false // 加载按钮显隐
+      loadingBool: false, // 加载按钮显隐
+
+      //
+      showId: 0
     }
   },
   created() {
@@ -484,12 +487,21 @@ export default {
     }
   },
   mounted() {
-    this.getPipeDefectData()
+    // this.getPipeDefectData()
   },
   methods: {
     /**
+     * 小地图完成加载后
+     * */
+    afterMapLoad () {
+      let id = this.id
+      console.log("详情编号", id)
+      this.getPipeDefectData(2, id)
+    },
+    /**
      * 构造要素
      * @param type 地图: 1：主地图，2 小地图
+     * @param id 
      * */
     getPipeDefectData (type = 1, id) {
       let dataApi = null, map = type === 1 ? this.data.mapView : this.$refs.myMap.map
@@ -500,7 +512,6 @@ export default {
       }
       console.log('地图', map)
       dataApi(id).then(res => {
-        console.log('返回数据', res.result)
         if (res.code === 1) {
           let reportInfo = res.result[0] ? res.result : [res.result], 
               pipeData = [], 
@@ -510,8 +521,6 @@ export default {
             pipeData = [...pipeData, ...pipeStates.map(pipe => pipe)]
             defectData = [...defectData, ...pipeStates.map(pipe => pipe.pipeDefects.map(defect => defect)).flat()]
           })
-          console.log("管道数据", pipeData)
-          console.log("管点数据", defectData)
           let dFeas = this.getFeatures(defectData, 2)
           let pFeas = this.getFeatures(pipeData, 1)
           let vectorLayer = new VectorLayer({ source: new VectorSource() })
