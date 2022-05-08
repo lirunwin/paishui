@@ -159,7 +159,7 @@
             ref="updataDocx"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
+            action="http://192.168.2.203:1111/psjc/sysUploadFile/uploadFile"
             accept=".doc,.docx"
             :data="getData"
             multiple
@@ -182,7 +182,7 @@
             </div>
             <div slot="tip" class="el-upload__tip">
               <p>只能上传docx/doc文件</p>
-              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%">
+              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%"  height="250">
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -229,7 +229,7 @@
             ref="updataVideo"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
+            action="http://192.168.2.203:1111/psjc/sysUploadFile/uploadFile"
             accept=".mp4"
             :data="getVideoData"
             multiple
@@ -252,7 +252,7 @@
 
             <div slot="tip" class="el-upload__tip">
               <p>只能上传mp4文件</p>
-              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%">
+              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%" height="250">
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -531,7 +531,7 @@ export default {
     async testReportDetails(id, isRelease) {
       this.id = id
       isRelease ? (this.isRelease = true) : ''
-      console.log('是不是发布', this.isRelease)
+      // console.log('是不是发布', this.isRelease)
       let res = await queryPipecheckDetails(id)
       // this.defectQuantityStatisticsA
       // 按缺陷名称给数据分类

@@ -160,6 +160,7 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <!-- <button @click="fileLinkToStreamDownload('http://117.174.10.73:1114/psjc/opt2/upload/projectInfoDoc/36/202205081114180005.docx')">下载附件</button> -->
   </div>
 </template>
 
@@ -172,7 +173,8 @@ import {
   deleteDatas,
   importFiles,
   queryDictionariesId,
-  projectDetailsQuery
+  projectDetailsQuery,
+  queryPageEnclosure
 } from '@/api/pipelineManage'
 
 export default {
@@ -189,7 +191,7 @@ export default {
         { label: '工程名称', name: 'prjName' },
         { label: '行政区划', name: 'area' },
         { label: '施工单位', name: 'sgunit' },
-        { label: '工程简介', name: '' },
+        { label: '工程简介', name: 'proIntroduction' },
         { label: '创建时间', name: 'createTime' }
       ],
       // 表单参数
@@ -286,7 +288,15 @@ export default {
             trigger: 'blur'
           }
         ]
-      }
+      },
+      // 查询附件列表需要的参数id
+      updataParamsId: {
+        uploadFileTypeDicId: '',
+        uploadItemDictId: ''
+      },
+      // 附件分页
+      paginationEnclosure: { current: 1, size: 30 }, // 分页参数信息
+      paginationEnclosureTotal: 0 // 总页数
     }
   },
   computed: {
@@ -350,7 +360,18 @@ export default {
     async openDetails(row) {
       // 获得详情数据
       let res = await projectDetailsQuery(row.id)
-      // console.log('当前列数据', x)
+      // 获得字典id
+      await this.getParamsId()
+      // 获取附件列表
+      let params = {
+        current: this.paginationEnclosure.current,
+        size: this.paginationEnclosure.size,
+        itemId: row.id,
+        uploadFileTypeDicId: this.updataParamsId.uploadFileTypeDicId,
+        uploadItemDictId: this.updataParamsId.uploadItemDictId
+      }
+      let fileRes = await queryPageEnclosure(params)
+      console.log('附件分页数据', fileRes)
       this.initForm = { ...this.form }
       this.form = res.result
       this.isDetails = true
@@ -507,6 +528,57 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val
       console.log('选项发生了变化', this.multipleSelection.length == 1)
+    },
+    // 下载附件
+    fileLinkToStreamDownload(url) {
+      let fileName = this.getDay()
+      let reg = /^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(([A-Za-z0-9-~]+).)+([A-Za-z0-9-~\/])+$/
+      if (!reg.test(url)) {
+        throw new Error('传入参数不合法,不是标准的文件链接')
+      } else {
+        let xhr = new XMLHttpRequest()
+        xhr.open('get', url, true)
+        xhr.setRequestHeader('Content-Type', `application/pdf`)
+        xhr.setRequestHeader('Authorization', this.uploadHeaders.Authorization)
+        xhr.responseType = 'blob'
+        let that = this
+        xhr.onload = function () {
+          if (this.status == 200) {
+            //接受二进制文件流
+            var blob = this.response
+            that.downloadExportFile(blob, fileName)
+          }
+        }
+        xhr.send()
+      }
+    },
+    downloadExportFile(blob, tagFileName) {
+      let downloadElement = document.createElement('a')
+      let href = blob
+      if (typeof blob == 'string') {
+        downloadElement.target = '_blank'
+      } else {
+        href = window.URL.createObjectURL(blob) //创建下载的链接
+      }
+      downloadElement.href = href
+      downloadElement.download =
+        tagFileName +
+        //下载后文件名
+        document.body.appendChild(downloadElement)
+      downloadElement.click() //点击下载
+      document.body.removeChild(downloadElement) //下载完成移除元素
+      if (typeof blob != 'string') {
+        window.URL.revokeObjectURL(href) //释放掉blob对象
+      }
+    },
+    // getDay()方法:拿当前的时间戳拼接，保证文件名字的唯一性，避免重名
+    getDay() {
+      let time = new Date(),
+        year = time.getFullYear(),
+        month = time.getMonth() + 1,
+        day = time.getDate(),
+        timeStem = time.getTime()
+      return `${year}/${month}/${day}/${timeStem}.jpg`
     }
   }
 }
