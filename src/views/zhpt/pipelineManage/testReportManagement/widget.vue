@@ -182,7 +182,14 @@
             </div>
             <div slot="tip" class="el-upload__tip">
               <p>只能上传docx/doc文件</p>
-              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%"  height="250">
+              <el-table
+                ref="singleTable"
+                :data="upDataTable"
+                stripe
+                highlight-current-row
+                style="width: 100%"
+                height="250"
+              >
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -252,7 +259,14 @@
 
             <div slot="tip" class="el-upload__tip">
               <p>只能上传mp4文件</p>
-              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%" height="250">
+              <el-table
+                ref="singleTable"
+                :data="upDataTable"
+                stripe
+                highlight-current-row
+                style="width: 100%"
+                height="250"
+              >
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -290,7 +304,7 @@
           <el-tabs v-model="activeLeft" @tab-click="handleClick">
             <el-tab-pane label="统计汇总" name="first">
               <div class="releaseContent">
-                <div class="detailsTitle">主要工程量表</div>
+                <div class="detailsTitle" :paramId="id">主要工程量表</div>
                 <project-form></project-form>
                 <div class="detailsTitle">检查井检查情况汇总表</div>
                 <inspect-form></inspect-form>
@@ -315,14 +329,14 @@
             <el-tab-pane label="数据地图" name="two">
               <!-- 数据地图 -->
               <div class="map-box">
-                <simple-map ref='myMap'></simple-map>
+                <simple-map ref="myMap"></simple-map>
               </div>
             </el-tab-pane>
           </el-tabs>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" v-if="isRelease" @click="oneRelease">发 布</el-button>
+        <el-button type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
         <el-button @click="dialogFormVisible3 = false">取 消</el-button>
       </div>
     </el-dialog>
@@ -338,7 +352,11 @@ import {
   batchRelease,
   withdrawReport,
   queryPipecheckDetails,
-  queryDictionariesId
+  queryDictionariesId,
+  oneRelease,
+  queryProjectDetails,
+  queryDefectFormDetails,
+  queryPipeStateDetails
 } from '@/api/pipelineManage'
 
 // 引入预览pdf插件
@@ -350,7 +368,17 @@ import projectForm from './components/project'
 import inspectForm from './components/inspect'
 import simpleMap from '@/components/SimpleMap'
 
+import { getDefectDataById, getDefectData } from '@/api/sysmap/drain'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
+import { Feature } from 'ol'
+import { LineString, Point } from 'ol/geom'
+import { comSymbol } from '@/utils/comSymbol'
+import { transform } from 'ol/proj'
+import * as olProj from 'ol/proj'
+
 export default {
+  props: ['data'],
   components: {
     summaryForm,
     projectForm,
@@ -449,7 +477,7 @@ export default {
       loadingBool: false // 加载按钮显隐
     }
   },
-  created() {
+  async created() {
     let res = this.getDate()
   },
   computed: {
@@ -473,8 +501,92 @@ export default {
       return this.updataParamsId
     }
   },
-  mounted() {},
+  mounted() {
+    this.getPipeDefectData()
+  },
   methods: {
+    /**
+     * 构造要素
+     * @param type 地图: 1：主地图，2 小地图
+     * */
+    getPipeDefectData(type = 1, id) {
+      let dataApi = null,
+        map = type === 1 ? this.data.mapView : this.$refs.myMap.map
+      if (id) {
+        dataApi = getDefectDataById
+      } else {
+        dataApi = getDefectData
+      }
+      console.log('地图', map)
+      dataApi(id).then((res) => {
+        console.log('返回数据', res.result)
+        if (res.code === 1) {
+          let reportInfo = res.result[0] ? res.result : [res.result],
+            pipeData = [],
+            defectData = []
+          reportInfo.forEach((rpt) => {
+            let { pipeStates } = rpt
+            pipeData = [...pipeData, ...pipeStates.map((pipe) => pipe)]
+            defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects.map((defect) => defect)).flat()]
+          })
+          console.log('管道数据', pipeData)
+          console.log('管点数据', defectData)
+          let dFeas = this.getFeatures(defectData, 2)
+          let pFeas = this.getFeatures(pipeData, 1)
+          let vectorLayer = new VectorLayer({ source: new VectorSource() })
+          let coors = dFeas[0].getGeometry().getCoordinates()
+          map.getView().setCenter(coors)
+          vectorLayer.getSource().addFeatures([...dFeas, ...pFeas])
+          map.addLayer(vectorLayer)
+        } else this.$message.error('管线缺陷数据请求失败')
+      })
+    },
+    /**
+     * 构造要素
+     * @param type 类型1: 线，2：点
+     * */
+    getFeatures(featureArr, type) {
+      let style = null,
+        features = []
+      if (type === 1) {
+        featureArr.forEach((feaObj) => {
+          let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
+          if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
+            let startPoint = [Number(startPointYLocation), Number(startPointXLocation)]
+            let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+            startPoint = transform(startPoint, 'EPSG:3857', 'EPSG:4326')
+            endPoint = transform(endPoint, 'EPSG:3857', 'EPSG:4326')
+
+            let coors = [startPoint, endPoint]
+            let feature = new Feature({ geometry: new LineString(coors) })
+            // 健康等级颜色
+            let colors = [
+              { level: 'Ⅰ', color: '#ff0000' },
+              { level: 'Ⅱ', color: '#0c9923' },
+              { level: 'Ⅲ', color: '#f405ff' },
+              { level: 'Ⅳ', color: '#0ff' }
+            ]
+            let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
+            if (findColor) {
+              feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              features.push(feature)
+            }
+          }
+        })
+      } else {
+        featureArr.forEach((feaObj) => {
+          if (feaObj.geometry) {
+            let coors = JSON.parse(feaObj.geometry)
+            let point = transform([coors.x, coors.y], 'EPSG:3857', 'EPSG:4326')
+            let feature = new Feature({ geometry: new Point(point) })
+            feature.setStyle(comSymbol.getPointStyle(5, '#f00'))
+            features.push(feature)
+          }
+        })
+      }
+      return features
+    },
+
     // 关闭上传弹框时
     closeDialog() {
       this.loadingBool = false
@@ -530,6 +642,7 @@ export default {
     // 单行管段详情
     async testReportDetails(id, isRelease) {
       this.id = id
+      console.log('当前id',id);
       isRelease ? (this.isRelease = true) : ''
       // console.log('是不是发布', this.isRelease)
       let res = await queryPipecheckDetails(id)
@@ -596,7 +709,7 @@ export default {
       }
     },
     // 单个发布
-    async oneRelease() {
+    async oneReleaseBtn() {
       let res = await batchRelease(this.id)
       if (res.result) {
         this.$message({
