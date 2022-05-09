@@ -951,6 +951,7 @@ export default {
               message: '上传成功',
               type: 'success'
             })
+            this.getPipeDefectData()
             this.getDate()
           }
           let timeId = setTimeout(() => {
