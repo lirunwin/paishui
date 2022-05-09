@@ -573,7 +573,7 @@ export default {
       }
       dataApi(id).then(res => {
         if (res.code === 1) {
-
+          let dFeas = [], pFeas = []
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result],
             pipeData = [],
@@ -583,8 +583,8 @@ export default {
               pipeData = [...pipeData, ...pipeStates.map((pipe) => pipe)]
               defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects.map((defect) => defect)).flat()]
             })
-            let dFeas = this.getFeatures(defectData, 2)
-            let pFeas = this.getFeatures(pipeData, 1)
+            dFeas = this.getFeatures(defectData, 2)
+            pFeas = this.getFeatures(pipeData, 1)
           }
 
           if (light) {
