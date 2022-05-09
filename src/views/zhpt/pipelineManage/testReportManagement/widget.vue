@@ -68,7 +68,6 @@
       >
         <template slot="empty">
           <p class="emptyText">暂无数据</p>
-          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">添加用户</el-button>
         </template>
         <el-table-column header-align="center" :selectable="checkSelect" align="center" type="selection" width="55">
         </el-table-column>
@@ -201,7 +200,6 @@
               >
                <template slot="empty">
           <p class="emptyText">暂无数据</p>
-          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">添加用户</el-button>
         </template>
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
@@ -541,6 +539,7 @@ export default {
     this.vectorLayer2.getSource().clear()
   },
   methods: {
+    handleAdd () {},
     /**
      * 小地图完成加载后
      * */
@@ -574,18 +573,19 @@ export default {
       }
       dataApi(id).then(res => {
         if (res.code === 1) {
-          let reportInfo = res.result[0] ? res.result : [res.result],
+
+          if (res.result && res.result.length !== 0) {
+            let reportInfo = res.result[0] ? res.result : [res.result],
             pipeData = [],
             defectData = []
-          reportInfo.forEach((rpt) => {
-            let { pipeStates } = rpt
-            pipeData = [...pipeData, ...pipeStates.map((pipe) => pipe)]
-            defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects.map((defect) => defect)).flat()]
-          })
-          console.log('管道数据', pipeData)
-          console.log('管点数据', defectData)
-          let dFeas = this.getFeatures(defectData, 2)
-          let pFeas = this.getFeatures(pipeData, 1)
+            reportInfo.forEach((rpt) => {
+              let { pipeStates } = rpt
+              pipeData = [...pipeData, ...pipeStates.map((pipe) => pipe)]
+              defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects.map((defect) => defect)).flat()]
+            })
+            let dFeas = this.getFeatures(defectData, 2)
+            let pFeas = this.getFeatures(pipeData, 1)
+          }
 
           if (light) {
             map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
@@ -594,7 +594,9 @@ export default {
             layer.getSource().clear()
           }
           
-          layer.getSource().addFeatures([...dFeas, ...pFeas])
+          if (dFeas.length !== 0 || pFeas.length !== 0) {
+            layer.getSource().addFeatures([...dFeas, ...pFeas])
+          }
         } else this.$message.error('管线缺陷数据请求失败')
       })
     },
@@ -804,6 +806,7 @@ export default {
       })
       let res = await batchRelease(idArr.join(','))
       if (res.result) {
+        this.getPipeDefectData()
         this.$message({
           message: '发布成功',
           type: 'success'
@@ -1023,12 +1026,14 @@ export default {
         .then(async () => {
           let res = {}
           if (this.multipleSelection.length == 1) {
-            res = await deleteIdData(this.multipleSelection[0].id)
+            // res = await deleteIdData(this.multipleSelection[0].id)
+            res = await deleteTestReport({ ids: this.multipleSelection[0].id })
           } else {
             let idArr = this.multipleSelection.map((v) => v.id)
             res = await deleteTestReport({ ids: idArr.join(',') })
           }
           if (res.result) {
+            this.getPipeDefectData()
             this.$message({
               message: '删除成功',
               type: 'success'
