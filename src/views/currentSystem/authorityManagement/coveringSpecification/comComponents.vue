@@ -38,7 +38,7 @@
                       step="0.01"
                       style="width:100px;text-align:center"
                       @blur="getSaveInfo(coodData[item3.type + item2.roadType])"
-                      v-model="coodData[item3.type + item2.roadType]['vol']"
+                      v-model.number="coodData[item3.type + item2.roadType]['vol']"
                     />
                   </template>
                   <template v-else>
