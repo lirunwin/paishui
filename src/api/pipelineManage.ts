@@ -108,6 +108,15 @@ export function batchRelease(data) {
     })
 }
 
+//单个发布 (加备注)
+export function oneRelease(data) {
+    return request({
+        url: psjc + '/wordInfo/publishByIds?ids=' + data,
+        method: 'put',
+    })
+}
+
+
 // 通过ID删除管道内窥检测报告信息
 export function deleteIdData(params) {
     return request({
@@ -282,13 +291,47 @@ export function histroyPipeData(params) {
 
 // 检测报告管理
 // 通过检测报告id查询报告内缺陷数量统计(详情查看/发布)
+// 详情(报告文档地址)
+// /pipeState/{id}
+export function queryPipeState(params) {
+    return request({
+        url: psjc + '/wordInfo/pipeState/' + params,
+        method: 'get',
+    })
+}
 // /wordInfo/pipeDefectCount/{id}
+// 报告内缺陷数量统计
 export function queryPipecheckDetails(params) {
     return request({
         url: psjc + '/wordInfo/pipeDefectCount/' + params,
         method: 'get',
     })
 }
+
+// 主要工程量表统计         
+export function queryProjectDetails(params) {
+    return request({
+        url: psjc + '/wordInfo/pipeCount/' + params,
+        method: 'get',
+    })
+}
+
+// 报告内管段缺陷汇总      
+export function queryDefectFormDetails(params) {
+    return request({
+        url: psjc + '/wordInfo/pipeStateCount/' + params,
+        method: 'get',
+    })
+}
+
+// 报告内管段状态评估汇总     
+export function queryPipeStateDetails(params) {
+    return request({
+        url: psjc + '/wordInfo/pipeDefectsCount/' + params,
+        method: 'get',
+    })
+}
+
 
 
 // 批量撤回检测报告

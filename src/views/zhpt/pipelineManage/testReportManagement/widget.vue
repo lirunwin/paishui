@@ -25,8 +25,12 @@
           </el-date-picker>
           <div class="release-radio">
             <p class="release-title">发布状态:</p>
-            <el-radio v-model="searchValue.checkList" label="0">未发布</el-radio>
-            <el-radio v-model="searchValue.checkList" label="1">已发布</el-radio>
+            <el-checkbox-group v-model="searchValue.checkList">
+              <el-checkbox label="0">未发布</el-checkbox>
+              <el-checkbox label="1">已发布</el-checkbox>
+            </el-checkbox-group>
+            <!-- <el-radio v-model="searchValue.checkList" label="0">未发布</el-radio> -->
+            <!-- <el-radio v-model="searchValue.checkList" label="1">已发布</el-radio> -->
           </div>
           <el-button class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi"> 搜索 </el-button>
           <el-button class="serch-btn" icon="el-icon-refresh-right" type="primary" @click="resetDate"> 重置 </el-button>
@@ -62,9 +66,13 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
+        <template slot="empty">
+          <p class="emptyText">暂无数据</p>
+          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">添加用户</el-button>
+        </template>
         <el-table-column header-align="center" :selectable="checkSelect" align="center" type="selection" width="55">
         </el-table-column>
-
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -147,6 +155,7 @@
             v-selectLoadMore="selectLoadMore"
             @blur="initSelectDate"
             filterable
+            :disabled="loadingBool"
           >
             <el-option v-for="(item, i) in selectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
           </el-select>
@@ -172,7 +181,7 @@
             :auto-upload="false"
           >
             <div class="btn-box">
-              <el-button size="small" type="primary">选择报告</el-button>
+              <el-button size="small" type="primary" :disabled="loadingBool">选择报告</el-button>
               <span class="btns"
                 ><el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
                   >确 定</el-button
@@ -182,7 +191,18 @@
             </div>
             <div slot="tip" class="el-upload__tip">
               <p>只能上传docx/doc文件</p>
-              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%">
+              <el-table
+                ref="singleTable"
+                :data="upDataTable"
+                stripe
+                highlight-current-row
+                style="width: 100%"
+                height="250"
+              >
+               <template slot="empty">
+          <p class="emptyText">暂无数据</p>
+          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">添加用户</el-button>
+        </template>
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -217,6 +237,7 @@
             v-selectLoadMore="selectLoadMoreVideo"
             @blur="initSelectDate"
             filterable
+            :disabled="loadingBool"
           >
             <el-option v-for="(item, i) in videoSelectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
           </el-select>
@@ -241,7 +262,7 @@
             :auto-upload="false"
           >
             <div class="btn-box">
-              <el-button size="small" type="primary">选择视频</el-button>
+              <el-button size="small" type="primary" :disabled="loadingBool">选择视频</el-button>
               <span class="btns"
                 ><el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
                   >确 定</el-button
@@ -252,7 +273,14 @@
 
             <div slot="tip" class="el-upload__tip">
               <p>只能上传mp4文件</p>
-              <el-table ref="singleTable" :data="upDataTable" stripe highlight-current-row style="width: 100%">
+              <el-table
+                ref="singleTable"
+                :data="upDataTable"
+                stripe
+                highlight-current-row
+                style="width: 100%"
+                height="250"
+              >
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -290,7 +318,7 @@
           <el-tabs v-model="activeLeft" @tab-click="handleClick">
             <el-tab-pane label="统计汇总" name="first">
               <div class="releaseContent">
-                <div class="detailsTitle">主要工程量表</div>
+                <div class="detailsTitle" :paramId="id">主要工程量表</div>
                 <project-form></project-form>
                 <div class="detailsTitle">检查井检查情况汇总表</div>
                 <inspect-form></inspect-form>
@@ -315,14 +343,14 @@
             <el-tab-pane label="数据地图" name="two">
               <!-- 数据地图 -->
               <div class="map-box">
-                <simple-map @afterMapLoad='afterMapLoad' ref='myMap'></simple-map>
+                <simple-map @afterMapLoad="afterMapLoad" ref="myMap"></simple-map>
               </div>
             </el-tab-pane>
           </el-tabs>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" v-if="isRelease" @click="oneRelease">发 布</el-button>
+        <el-button type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
         <el-button @click="dialogFormVisible3 = false">取 消</el-button>
       </div>
     </el-dialog>
@@ -338,7 +366,12 @@ import {
   batchRelease,
   withdrawReport,
   queryPipecheckDetails,
-  queryDictionariesId
+  queryDictionariesId,
+  oneRelease,
+  queryProjectDetails,
+  queryDefectFormDetails,
+  queryPipeStateDetails,
+  queryPipeState
 } from '@/api/pipelineManage'
 
 // 引入预览pdf插件
@@ -350,17 +383,21 @@ import projectForm from './components/project'
 import inspectForm from './components/inspect'
 import simpleMap from '@/components/SimpleMap'
 
-import { getDefectDataById, getDefectData} from '@/api/sysmap/drain'
+import { getDefectDataById, getDefectData } from '@/api/sysmap/drain'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
 import { LineString, Point } from 'ol/geom'
 import { comSymbol } from '@/utils/comSymbol'
 import { transform } from 'ol/proj'
+<<<<<<< .merge_file_a25408
 import * as olProj from 'ol/proj';
 import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import Text from 'ol/style/Text';
 import { Style } from 'ol/style'
+=======
+import * as olProj from 'ol/proj'
+>>>>>>> .merge_file_a25384
 
 export default {
   props: ['data'],
@@ -424,7 +461,7 @@ export default {
       // 搜索功能参数
       searchValue: {
         dateTime: '', // 检测日期
-        checkList: '', // 发布状态
+        checkList: [], // 发布状态
         serchValue: '' // 搜索关键字
       },
       // 上传需要的数据
@@ -470,8 +507,9 @@ export default {
       hasLoadMap: false
     }
   },
-  created() {
+  async created() {
     let res = this.getDate()
+    queryPipeState('113')
   },
   computed: {
     returnTabel() {
@@ -510,13 +548,18 @@ export default {
     /**
      * 小地图完成加载后
      * */
-    afterMapLoad () {
+    afterMapLoad() {
       let id = this.id
+<<<<<<< .merge_file_a25408
+=======
+      console.log('详情编号', id)
+>>>>>>> .merge_file_a25384
       this.getPipeDefectData(2, id)
     },
     /**
      * 构造要素
      * @param type 地图: 1：主地图，2 小地图
+<<<<<<< .merge_file_a25408
      * @param id 报告编号
      * @param light 是否高亮
      * */
@@ -533,21 +576,36 @@ export default {
           this.hasLoadMap = true
         }
       }
+=======
+     * @param id
+     * */
+    getPipeDefectData(type = 1, id) {
+      let dataApi = null,
+        map = type === 1 ? this.data.mapView : this.$refs.myMap.map
+>>>>>>> .merge_file_a25384
       if (id) {
         dataApi = getDefectDataById
       } else {
         dataApi = getDefectData
       }
+<<<<<<< .merge_file_a25408
       dataApi(id).then(res => {
+=======
+      console.log('地图', map)
+
+      dataApi(id).then((res) => {
+>>>>>>> .merge_file_a25384
         if (res.code === 1) {
-          let reportInfo = res.result[0] ? res.result : [res.result], 
-              pipeData = [], 
-              defectData = []
-          reportInfo.forEach(rpt => {
+          let reportInfo = res.result[0] ? res.result : [res.result],
+            pipeData = [],
+            defectData = []
+          reportInfo.forEach((rpt) => {
             let { pipeStates } = rpt
-            pipeData = [...pipeData, ...pipeStates.map(pipe => pipe)]
-            defectData = [...defectData, ...pipeStates.map(pipe => pipe.pipeDefects.map(defect => defect)).flat()]
+            pipeData = [...pipeData, ...pipeStates.map((pipe) => pipe)]
+            defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects.map((defect) => defect)).flat()]
           })
+          console.log('管道数据', pipeData)
+          console.log('管点数据', defectData)
           let dFeas = this.getFeatures(defectData, 2)
           let pFeas = this.getFeatures(pipeData, 1)
 
@@ -566,17 +624,24 @@ export default {
      * 构造要素
      * @param type 类型1: 线，2：点
      * */
-    getFeatures (featureArr, type) {
-      let style = null, features = []
+    getFeatures(featureArr, type) {
+      let style = null,
+        features = []
       if (type === 1) {
-        featureArr.forEach(feaObj => {
-          let {startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation} = feaObj
+        featureArr.forEach((feaObj) => {
+          let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
           if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
             let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
             let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+<<<<<<< .merge_file_a25408
             startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
             endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
             
+=======
+            startPoint = transform(startPoint, 'EPSG:3857', 'EPSG:4326')
+            endPoint = transform(endPoint, 'EPSG:3857', 'EPSG:4326')
+
+>>>>>>> .merge_file_a25384
             let coors = [startPoint, endPoint]
             let feature = new Feature({ geometry: new LineString(coors) })
             // 健康等级颜色
@@ -584,17 +649,21 @@ export default {
               { level: 'Ⅰ', color: '#ff0000' },
               { level: 'Ⅱ', color: '#0c9923' },
               { level: 'Ⅲ', color: '#f405ff' },
-              { level: 'Ⅳ', color: '#0ff' },
+              { level: 'Ⅳ', color: '#0ff' }
             ]
-            let findColor = colors.find(colorObj => feaObj['funcClass'].includes(colorObj.level))
+            let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
             if (findColor) {
               feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
               features.push(feature)
-            }  
+            }
           }
         })
       } else {
+<<<<<<< .merge_file_a25408
         featureArr.forEach((feaObj, index) => {
+=======
+        featureArr.forEach((feaObj) => {
+>>>>>>> .merge_file_a25384
           if (feaObj.geometry) {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
@@ -671,8 +740,9 @@ export default {
       }
 
       this.id = id
+      console.log('当前id', id)
       isRelease ? (this.isRelease = true) : ''
-      console.log('是不是发布', this.isRelease)
+      // console.log('是不是发布', this.isRelease)
       let res = await queryPipecheckDetails(id)
       // this.defectQuantityStatisticsA
       // 按缺陷名称给数据分类
@@ -737,7 +807,7 @@ export default {
       }
     },
     // 单个发布
-    async oneRelease() {
+    async oneReleaseBtn() {
       let res = await batchRelease(this.id)
       if (res.result) {
         this.$message({
@@ -791,7 +861,7 @@ export default {
     },
     // 重置
     async resetDate() {
-      this.searchValue.checkList = ''
+      this.searchValue.checkList = []
       this.searchValue.serchValue = ''
       this.searchValue.dateTime = ''
       await this.getDate()
@@ -970,7 +1040,14 @@ export default {
     },
     // 搜索
     searchApi() {
-      this.getDate(this.searchValue)
+      let params = { ...this.searchValue }
+      if (params.checkList.length == 1) {
+        params.checkList = params.checkList[0]
+      } else {
+        params.checkList = ''
+      }
+      console.log('搜索时传的参数', params)
+      this.getDate(params)
     },
     // 删除
     removeDatas() {

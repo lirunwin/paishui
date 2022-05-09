@@ -42,7 +42,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -103,7 +103,7 @@
           <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails"></el-input>
         </el-form-item>
         <el-form-item label="工程日期范围">
-          <el-date-picker
+          <!-- <el-date-picker
             :disabled="isDetails"
             v-model="dateRange"
             @change="getDateRange"
@@ -113,7 +113,34 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
           >
-          </el-date-picker>
+          </el-date-picker> -->
+          <el-row>
+            <el-col :span="11">
+              <el-date-picker
+                :disabled="isDetails"
+                v-model="form.startdate"
+                type="date"
+                placeholder="选择开始日期"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                size="small"
+                :picker-options="pickerOptions0"
+                @change="changeDate"
+              ></el-date-picker>
+            </el-col>
+            <el-col :span="1" style="text-align: center">至</el-col>
+            <el-col :span="12">
+              <el-date-picker
+                :disabled="isDetails"
+                v-model="form.finishdate"
+                type="date"
+                placeholder="选择结束日期"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                size="small"
+                :picker-options="pickerOptions1"
+                @change="changeDate"
+              ></el-date-picker>
+            </el-col>
+          </el-row>
         </el-form-item>
 
         <el-form-item label="工程简介" prop="proIntroduction">
@@ -160,6 +187,7 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <!-- <button @click="fileLinkToStreamDownload('http://117.174.10.73:1114/psjc/opt2/upload/projectInfoDoc/36/202205081114180005.docx')">下载附件</button> -->
   </div>
 </template>
 
@@ -172,7 +200,9 @@ import {
   deleteDatas,
   importFiles,
   queryDictionariesId,
-  projectDetailsQuery
+  projectDetailsQuery,
+  queryPageEnclosure,
+  downloadFile
 } from '@/api/pipelineManage'
 
 export default {
@@ -187,9 +217,9 @@ export default {
       tableContent: [
         { label: '工程编号', name: 'prjNo' },
         { label: '工程名称', name: 'prjName' },
-        { label: '行政区划', name: 'area' },
+        // { label: '行政区划', name: 'area' },
         { label: '施工单位', name: 'sgunit' },
-        { label: '工程简介', name: '' },
+        { label: '工程简介', name: 'proIntroduction' },
         { label: '创建时间', name: 'createTime' }
       ],
       // 表单参数
@@ -229,7 +259,6 @@ export default {
       ],
       isDetails: false, // 判断是否是详情
       isEdit: false, // 判断是否是修改数据
-      dateRange: '', // 日期范围
       uploadHeaders: {
         Authorization: 'bearer ' + sessionStorage.getItem('token')
       }, // token值
@@ -269,6 +298,9 @@ export default {
         finishdate: '', /// date
         proIntroduction: '' // 10
       },
+      // 日期选择器规则
+      pickerOptions0: '',
+      pickerOptions1: '',
       rules: {
         prjNo: [
           { required: true, message: '不能为空', trigger: 'blur' },
@@ -286,7 +318,15 @@ export default {
             trigger: 'blur'
           }
         ]
-      }
+      },
+      // 查询附件列表需要的参数id
+      updataParamsId: {
+        uploadFileTypeDicId: '',
+        uploadItemDictId: ''
+      },
+      // 附件分页
+      paginationEnclosure: { current: 1, size: 30 }, // 分页参数信息
+      paginationEnclosureTotal: 0 // 总页数
     }
   },
   computed: {
@@ -350,7 +390,21 @@ export default {
     async openDetails(row) {
       // 获得详情数据
       let res = await projectDetailsQuery(row.id)
-      // console.log('当前列数据', x)
+      // 获得字典id
+      await this.getParamsId()
+      // 获取附件列表
+      let params = {
+        current: this.paginationEnclosure.current,
+        size: this.paginationEnclosure.size,
+        itemId: row.id,
+        uploadFileTypeDicId: this.updataParamsId.uploadFileTypeDicId,
+        uploadItemDictId: this.updataParamsId.uploadItemDictId
+      }
+      let fileRes = await queryPageEnclosure(params)
+      console.log('附件分页数据', fileRes)
+      // 下载附件
+      await downloadFile('102')
+
       this.initForm = { ...this.form }
       this.form = res.result
       this.isDetails = true
@@ -367,9 +421,31 @@ export default {
       this.isDetails = false
     },
     // 获取日期范围
-    getDateRange() {
-      this.startdate = this.dateRange[0]
-      this.finishdate = this.dateRange[1]
+    // getDateRange() {
+    //   this.form.startdate = this.dateRange[0]
+    //   this.form.finishdate = this.dateRange[1]
+    // },
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    changeDate() {
+      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
+      let date1 = new Date(this.form.startdate).getTime()
+      let date2 = new Date(this.form.finishdate).getTime()
+      this.pickerOptions0 = {
+        disabledDate: (time) => {
+          if (date2 != '') {
+            // return time.getTime() > Date.now() || time.getTime() > date2
+            return  time.getTime() > date2
+          } else {
+            return time.getTime() > Date.now()
+          }
+        } 
+      }
+      this.pickerOptions1 = {
+        disabledDate: (time) => {
+          // return time.getTime() < date1 || time.getTime() > Date.now()
+          return time.getTime() < date1 
+        }
+      }
     },
     // 显示添加表单
     showForm() {
@@ -507,6 +583,57 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val
       console.log('选项发生了变化', this.multipleSelection.length == 1)
+    },
+    // 下载附件
+    fileLinkToStreamDownload(url) {
+      let fileName = this.getDay()
+      let reg = /^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(([A-Za-z0-9-~]+).)+([A-Za-z0-9-~\/])+$/
+      if (!reg.test(url)) {
+        throw new Error('传入参数不合法,不是标准的文件链接')
+      } else {
+        let xhr = new XMLHttpRequest()
+        xhr.open('get', url, true)
+        xhr.setRequestHeader('Content-Type', `application/pdf`)
+        xhr.setRequestHeader('Authorization', this.uploadHeaders.Authorization)
+        xhr.responseType = 'blob'
+        let that = this
+        xhr.onload = function () {
+          if (this.status == 200) {
+            //接受二进制文件流
+            var blob = this.response
+            that.downloadExportFile(blob, fileName)
+          }
+        }
+        xhr.send()
+      }
+    },
+    downloadExportFile(blob, tagFileName) {
+      let downloadElement = document.createElement('a')
+      let href = blob
+      if (typeof blob == 'string') {
+        downloadElement.target = '_blank'
+      } else {
+        href = window.URL.createObjectURL(blob) //创建下载的链接
+      }
+      downloadElement.href = href
+      downloadElement.download =
+        tagFileName +
+        //下载后文件名
+        document.body.appendChild(downloadElement)
+      downloadElement.click() //点击下载
+      document.body.removeChild(downloadElement) //下载完成移除元素
+      if (typeof blob != 'string') {
+        window.URL.revokeObjectURL(href) //释放掉blob对象
+      }
+    },
+    // getDay()方法:拿当前的时间戳拼接，保证文件名字的唯一性，避免重名
+    getDay() {
+      let time = new Date(),
+        year = time.getFullYear(),
+        month = time.getMonth() + 1,
+        day = time.getDate(),
+        timeStem = time.getTime()
+      return `${year}/${month}/${day}/${timeStem}.jpg`
     }
   }
 }
@@ -581,6 +708,9 @@ export default {
     .el-dialog {
       margin-top: 0vh !important;
       font-size: 12px;
+      .el-date-editor {
+        width: 100%;
+      }
       .el-dialog__body {
         padding: 10px 0px !important;
       }
