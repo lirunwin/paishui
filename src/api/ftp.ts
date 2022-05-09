@@ -13,5 +13,5 @@ export function imageByName(data) {
   //   '&remotePath=' + data, {
   //   responseType: 'blob'
   // })
-  return `${IP}/base/file/${data}`
+  return data ? `${IP}/base/file/${data}` : ''
 }
