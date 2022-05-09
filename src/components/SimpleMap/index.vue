@@ -7,8 +7,6 @@ import { appconfig } from "staticPub/config";
 import "ol/ol.css";
 import Map from "ol/Map";
 import View from "ol/View";
-import TileLayer from "ol/layer/Tile";
-import { Logo, TileSuperMapRest } from "@supermap/iclient-ol";
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import { defaults as controls } from 'ol/control'
 
@@ -27,7 +25,7 @@ export default {
 
     data () {
         return {
-
+            map: null,
         }
     },
     methods: {
@@ -54,6 +52,7 @@ export default {
                 let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
                 this.map.addLayer(layer)
             })
+            this.$emit('afterMapLoad')
         },
         // 加入缺陷数据
         addData () {
@@ -64,7 +63,6 @@ export default {
     created () {},
 
     mounted () {
-        console.log('加载地图')
         this.initMap()
     },
 

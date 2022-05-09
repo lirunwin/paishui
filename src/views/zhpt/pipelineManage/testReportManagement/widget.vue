@@ -358,6 +358,9 @@ import { LineString, Point } from 'ol/geom'
 import { comSymbol } from '@/utils/comSymbol'
 import { transform } from 'ol/proj'
 import * as olProj from 'ol/proj';
+import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
+import Text from 'ol/style/Text';
+import { Style } from 'ol/style'
 
 export default {
   props: ['data'],
@@ -459,7 +462,12 @@ export default {
       loadingBool: false, // 加载按钮显隐
 
       //
-      showId: 0
+      showId: 0,
+      projUtil: null, // 坐标系工具
+      currentDataProjName: 'proj44',
+      vectorLayer: null,
+      vectorLayer2: null,
+      hasLoadMap: false
     }
   },
   created() {
@@ -487,7 +495,16 @@ export default {
     }
   },
   mounted() {
-    // this.getPipeDefectData()
+    this.projUtil = new projUtil()
+    this.projUtil.resgis(this.currentDataProjName)
+    this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+    this.data.mapView.addLayer(this.vectorLayer)
+    this.vectorLayer2 = new VectorLayer({ source: new VectorSource() })
+    this.getPipeDefectData()
+  },
+  destroyed () {
+    this.vectorLayer.getSource().clear()
+    this.vectorLayer2.getSource().clear()
   },
   methods: {
     /**
@@ -495,22 +512,32 @@ export default {
      * */
     afterMapLoad () {
       let id = this.id
-      console.log("详情编号", id)
       this.getPipeDefectData(2, id)
     },
     /**
      * 构造要素
      * @param type 地图: 1：主地图，2 小地图
-     * @param id 
+     * @param id 报告编号
+     * @param light 是否高亮
      * */
-    getPipeDefectData (type = 1, id) {
-      let dataApi = null, map = type === 1 ? this.data.mapView : this.$refs.myMap.map
+    getPipeDefectData (type = 1, id, light = false) {
+      let dataApi = null, map, layer
+      if (type === 1) {
+        map = this.data.mapView
+        layer = this.vectorLayer
+      } else {
+        map = this.$refs.myMap.map
+        layer = this.vectorLayer2
+        if (!this.hasLoadMap) {
+          map.addLayer(layer)
+          this.hasLoadMap = true
+        }
+      }
       if (id) {
         dataApi = getDefectDataById
       } else {
         dataApi = getDefectData
       }
-      console.log('地图', map)
       dataApi(id).then(res => {
         if (res.code === 1) {
           let reportInfo = res.result[0] ? res.result : [res.result], 
@@ -523,11 +550,15 @@ export default {
           })
           let dFeas = this.getFeatures(defectData, 2)
           let pFeas = this.getFeatures(pipeData, 1)
-          let vectorLayer = new VectorLayer({ source: new VectorSource() })
-          let coors = dFeas[0].getGeometry().getCoordinates()
-          map.getView().setCenter(coors)
-          vectorLayer.getSource().addFeatures([...dFeas, ...pFeas])
-          map.addLayer(vectorLayer)
+
+          if (light) {
+            map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
+            map.getView().setZoom(18)
+          } else {
+            layer.getSource().clear()
+          }
+          
+          layer.getSource().addFeatures([...dFeas, ...pFeas])
         } else this.$message.error('管线缺陷数据请求失败')
       })
     },
@@ -541,10 +572,10 @@ export default {
         featureArr.forEach(feaObj => {
           let {startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation} = feaObj
           if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
-            let startPoint = [Number(startPointYLocation), Number(startPointXLocation)]
+            let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
             let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
-            startPoint = transform(startPoint, 'EPSG:3857', 'EPSG:4326')
-            endPoint = transform(endPoint, 'EPSG:3857', 'EPSG:4326')
+            startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
+            endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
             
             let coors = [startPoint, endPoint]
             let feature = new Feature({ geometry: new LineString(coors) })
@@ -563,13 +594,17 @@ export default {
           }
         })
       } else {
-        featureArr.forEach(feaObj => {
+        featureArr.forEach((feaObj, index) => {
           if (feaObj.geometry) {
             let coors = JSON.parse(feaObj.geometry)
-            let point = transform([coors.x, coors.y], 'EPSG:3857', 'EPSG:4326')
+            let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
             feature.setStyle(comSymbol.getPointStyle(5, '#f00'))
             features.push(feature)
+
+            // let fea = feature.clone()
+            // fea.setStyle(new Style({ text: new Text({ text: `${index}`, offsetY: -20 }) }))
+            // features.push(fea)
           }
         })
       }
@@ -630,6 +665,11 @@ export default {
     },
     // 单行管段详情
     async testReportDetails(id, isRelease) {
+      // 判断是否已加载地图
+      if (this.hasLoadMap) {
+        this.getPipeDefectData(2, id, false)
+      }
+
       this.id = id
       isRelease ? (this.isRelease = true) : ''
       console.log('是不是发布', this.isRelease)
@@ -981,6 +1021,8 @@ export default {
     add() {},
     // 表格选中事件
     handleSelectionChange(val) {
+      console.log('表格选中事件', val)
+      if (val.length !== 0) this.getPipeDefectData(1, val[0].id, true)
       this.multipleSelection = val
     },
     // 分页触发的事件
