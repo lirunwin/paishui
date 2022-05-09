@@ -291,6 +291,14 @@ export function histroyPipeData(params) {
 
 // 检测报告管理
 // 通过检测报告id查询报告内缺陷数量统计(详情查看/发布)
+// 详情(报告文档地址)
+// /pipeState/{id}
+export function queryPipeState(params) {
+    return request({
+        url: psjc + '/wordInfo/pipeState/' + params,
+        method: 'get',
+    })
+}
 // /wordInfo/pipeDefectCount/{id}
 // 报告内缺陷数量统计
 export function queryPipecheckDetails(params) {

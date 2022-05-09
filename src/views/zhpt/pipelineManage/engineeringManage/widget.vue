@@ -42,7 +42,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -174,7 +174,8 @@ import {
   importFiles,
   queryDictionariesId,
   projectDetailsQuery,
-  queryPageEnclosure
+  queryPageEnclosure,
+  downloadFile
 } from '@/api/pipelineManage'
 
 export default {
@@ -189,7 +190,7 @@ export default {
       tableContent: [
         { label: '工程编号', name: 'prjNo' },
         { label: '工程名称', name: 'prjName' },
-        { label: '行政区划', name: 'area' },
+        // { label: '行政区划', name: 'area' },
         { label: '施工单位', name: 'sgunit' },
         { label: '工程简介', name: 'proIntroduction' },
         { label: '创建时间', name: 'createTime' }
@@ -372,6 +373,9 @@ export default {
       }
       let fileRes = await queryPageEnclosure(params)
       console.log('附件分页数据', fileRes)
+      // 下载附件
+      await downloadFile('102')
+
       this.initForm = { ...this.form }
       this.form = res.result
       this.isDetails = true

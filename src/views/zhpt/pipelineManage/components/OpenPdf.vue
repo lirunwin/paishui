@@ -12,7 +12,7 @@ export default {
     // 当前pdf的路径
     pdfUrl: {
       type: String,
-      default: '/static/pdf/攀枝花市主城区排水管网排查检测项目紫荆巷污水评估报告-20220306_20220506154745.pdf'
+      default: 'http://117.174.10.73:1114/psjc/file/opt2/upload/wordInfoDoc/80/202205081416520813.pdf'
     }
   },
   components: {

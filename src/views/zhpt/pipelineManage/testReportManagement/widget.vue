@@ -64,7 +64,7 @@
       >
         <el-table-column header-align="center" :selectable="checkSelect" align="center" type="selection" width="55">
         </el-table-column>
-
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -159,7 +159,7 @@
             ref="updataDocx"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://192.168.2.203:1111/psjc/sysUploadFile/uploadFile"
+            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
             accept=".doc,.docx"
             :data="getData"
             multiple
@@ -236,7 +236,7 @@
             ref="updataVideo"
             class="upload-demo"
             :headers="uploadHeaders"
-            action="http://192.168.2.203:1111/psjc/sysUploadFile/uploadFile"
+            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
             accept=".mp4"
             :data="getVideoData"
             multiple
@@ -329,7 +329,7 @@
             <el-tab-pane label="数据地图" name="two">
               <!-- 数据地图 -->
               <div class="map-box">
-                <simple-map ref="myMap"></simple-map>
+                <simple-map @afterMapLoad="afterMapLoad" ref="myMap"></simple-map>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -356,7 +356,8 @@ import {
   oneRelease,
   queryProjectDetails,
   queryDefectFormDetails,
-  queryPipeStateDetails
+  queryPipeStateDetails,
+  queryPipeState
 } from '@/api/pipelineManage'
 
 // 引入预览pdf插件
@@ -450,7 +451,7 @@ export default {
         Authorization: 'bearer ' + sessionStorage.getItem('token')
       }, // token值
       activeLeft: 'first', // 发布默认激活的导航（左）
-      activeRight: 'one', // 发布默认激活的导航（右）
+      activeRight: 'two', // 发布默认激活的导航（右）
       multipleSelection: [], // 被选中的表格数据
       // 分页需要的值
       pagination: { current: 1, size: 30 }, // 分页参数信息
@@ -474,11 +475,15 @@ export default {
         report: '1'
       },
       formLabelWidth: '120px',
-      loadingBool: false // 加载按钮显隐
+      loadingBool: false, // 加载按钮显隐
+
+      //
+      showId: 0
     }
   },
   async created() {
     let res = this.getDate()
+    queryPipeState('109')
   },
   computed: {
     returnTabel() {
@@ -502,12 +507,21 @@ export default {
     }
   },
   mounted() {
-    this.getPipeDefectData()
+    // this.getPipeDefectData()
   },
   methods: {
     /**
+     * 小地图完成加载后
+     * */
+    afterMapLoad() {
+      let id = this.id
+      console.log('详情编号', id)
+      this.getPipeDefectData(2, id)
+    },
+    /**
      * 构造要素
      * @param type 地图: 1：主地图，2 小地图
+     * @param id
      * */
     getPipeDefectData(type = 1, id) {
       let dataApi = null,
@@ -518,8 +532,8 @@ export default {
         dataApi = getDefectData
       }
       console.log('地图', map)
+
       dataApi(id).then((res) => {
-        console.log('返回数据', res.result)
         if (res.code === 1) {
           let reportInfo = res.result[0] ? res.result : [res.result],
             pipeData = [],
@@ -642,7 +656,7 @@ export default {
     // 单行管段详情
     async testReportDetails(id, isRelease) {
       this.id = id
-      console.log('当前id',id);
+      console.log('当前id', id)
       isRelease ? (this.isRelease = true) : ''
       // console.log('是不是发布', this.isRelease)
       let res = await queryPipecheckDetails(id)
