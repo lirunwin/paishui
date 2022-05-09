@@ -103,7 +103,7 @@
           <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails"></el-input>
         </el-form-item>
         <el-form-item label="工程日期范围">
-          <el-date-picker
+          <!-- <el-date-picker
             :disabled="isDetails"
             v-model="dateRange"
             @change="getDateRange"
@@ -113,7 +113,34 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
           >
-          </el-date-picker>
+          </el-date-picker> -->
+          <el-row>
+            <el-col :span="11">
+              <el-date-picker
+                :disabled="isDetails"
+                v-model="form.startdate"
+                type="date"
+                placeholder="选择开始日期"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                size="small"
+                :picker-options="pickerOptions0"
+                @change="changeDate"
+              ></el-date-picker>
+            </el-col>
+            <el-col :span="1" style="text-align: center">至</el-col>
+            <el-col :span="12">
+              <el-date-picker
+                :disabled="isDetails"
+                v-model="form.finishdate"
+                type="date"
+                placeholder="选择结束日期"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                size="small"
+                :picker-options="pickerOptions1"
+                @change="changeDate"
+              ></el-date-picker>
+            </el-col>
+          </el-row>
         </el-form-item>
 
         <el-form-item label="工程简介" prop="proIntroduction">
@@ -232,7 +259,6 @@ export default {
       ],
       isDetails: false, // 判断是否是详情
       isEdit: false, // 判断是否是修改数据
-      dateRange: '', // 日期范围
       uploadHeaders: {
         Authorization: 'bearer ' + sessionStorage.getItem('token')
       }, // token值
@@ -272,6 +298,9 @@ export default {
         finishdate: '', /// date
         proIntroduction: '' // 10
       },
+      // 日期选择器规则
+      pickerOptions0: '',
+      pickerOptions1: '',
       rules: {
         prjNo: [
           { required: true, message: '不能为空', trigger: 'blur' },
@@ -392,9 +421,31 @@ export default {
       this.isDetails = false
     },
     // 获取日期范围
-    getDateRange() {
-      this.startdate = this.dateRange[0]
-      this.finishdate = this.dateRange[1]
+    // getDateRange() {
+    //   this.form.startdate = this.dateRange[0]
+    //   this.form.finishdate = this.dateRange[1]
+    // },
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    changeDate() {
+      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
+      let date1 = new Date(this.form.startdate).getTime()
+      let date2 = new Date(this.form.finishdate).getTime()
+      this.pickerOptions0 = {
+        disabledDate: (time) => {
+          if (date2 != '') {
+            // return time.getTime() > Date.now() || time.getTime() > date2
+            return  time.getTime() > date2
+          } else {
+            return time.getTime() > Date.now()
+          }
+        } 
+      }
+      this.pickerOptions1 = {
+        disabledDate: (time) => {
+          // return time.getTime() < date1 || time.getTime() > Date.now()
+          return time.getTime() < date1 
+        }
+      }
     },
     // 显示添加表单
     showForm() {
@@ -657,6 +708,9 @@ export default {
     .el-dialog {
       margin-top: 0vh !important;
       font-size: 12px;
+      .el-date-editor {
+        width: 100%;
+      }
       .el-dialog__body {
         padding: 10px 0px !important;
       }

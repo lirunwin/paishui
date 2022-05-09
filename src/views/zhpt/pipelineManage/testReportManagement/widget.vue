@@ -25,8 +25,12 @@
           </el-date-picker>
           <div class="release-radio">
             <p class="release-title">发布状态:</p>
-            <el-radio v-model="searchValue.checkList" label="0">未发布</el-radio>
-            <el-radio v-model="searchValue.checkList" label="1">已发布</el-radio>
+            <el-checkbox-group v-model="searchValue.checkList">
+              <el-checkbox label="0">未发布</el-checkbox>
+              <el-checkbox label="1">已发布</el-checkbox>
+            </el-checkbox-group>
+            <!-- <el-radio v-model="searchValue.checkList" label="0">未发布</el-radio> -->
+            <!-- <el-radio v-model="searchValue.checkList" label="1">已发布</el-radio> -->
           </div>
           <el-button class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi"> 搜索 </el-button>
           <el-button class="serch-btn" icon="el-icon-refresh-right" type="primary" @click="resetDate"> 重置 </el-button>
@@ -62,6 +66,10 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
+        <template slot="empty">
+          <p class="emptyText">暂无数据</p>
+          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">添加用户</el-button>
+        </template>
         <el-table-column header-align="center" :selectable="checkSelect" align="center" type="selection" width="55">
         </el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
@@ -147,6 +155,7 @@
             v-selectLoadMore="selectLoadMore"
             @blur="initSelectDate"
             filterable
+            :disabled="loadingBool"
           >
             <el-option v-for="(item, i) in selectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
           </el-select>
@@ -172,7 +181,7 @@
             :auto-upload="false"
           >
             <div class="btn-box">
-              <el-button size="small" type="primary">选择报告</el-button>
+              <el-button size="small" type="primary" :disabled="loadingBool">选择报告</el-button>
               <span class="btns"
                 ><el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
                   >确 定</el-button
@@ -190,6 +199,10 @@
                 style="width: 100%"
                 height="250"
               >
+               <template slot="empty">
+          <p class="emptyText">暂无数据</p>
+          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">添加用户</el-button>
+        </template>
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -224,6 +237,7 @@
             v-selectLoadMore="selectLoadMoreVideo"
             @blur="initSelectDate"
             filterable
+            :disabled="loadingBool"
           >
             <el-option v-for="(item, i) in videoSelectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
           </el-select>
@@ -248,7 +262,7 @@
             :auto-upload="false"
           >
             <div class="btn-box">
-              <el-button size="small" type="primary">选择视频</el-button>
+              <el-button size="small" type="primary" :disabled="loadingBool">选择视频</el-button>
               <span class="btns"
                 ><el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
                   >确 定</el-button
@@ -440,7 +454,7 @@ export default {
       // 搜索功能参数
       searchValue: {
         dateTime: '', // 检测日期
-        checkList: '', // 发布状态
+        checkList: [], // 发布状态
         serchValue: '' // 搜索关键字
       },
       // 上传需要的数据
@@ -483,7 +497,7 @@ export default {
   },
   async created() {
     let res = this.getDate()
-    queryPipeState('109')
+    queryPipeState('113')
   },
   computed: {
     returnTabel() {
@@ -777,7 +791,7 @@ export default {
     },
     // 重置
     async resetDate() {
-      this.searchValue.checkList = ''
+      this.searchValue.checkList = []
       this.searchValue.serchValue = ''
       this.searchValue.dateTime = ''
       await this.getDate()
@@ -956,7 +970,14 @@ export default {
     },
     // 搜索
     searchApi() {
-      this.getDate(this.searchValue)
+      let params = { ...this.searchValue }
+      if (params.checkList.length == 1) {
+        params.checkList = params.checkList[0]
+      } else {
+        params.checkList = ''
+      }
+      console.log('搜索时传的参数', params)
+      this.getDate(params)
     },
     // 删除
     removeDatas() {
