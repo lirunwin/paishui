@@ -80,7 +80,7 @@
           :isdelete="false"
           :summary="true"
           :get-summaries="getSummaries"
-          @cellDblclick="cellDblclick"
+          @cellClick="cellDblclick"
         />
       </div>
       <div v-if="!btnFlag" style="height: 100%; width: 100%">
@@ -206,7 +206,7 @@ export default class Journal extends Vue {
     },
     {
       label: '时间',
-      prop: 'time'
+      prop: 'createTime'
     }
   ]
 

@@ -104,13 +104,33 @@
                 <el-input v-model="accountApply.email" />
               </el-form-item>
               <el-form-item label="部门：" prop="departmentId">
-                <el-select v-model="accountApply.departmentId" placeholder="请选择">
+                <el-select
+                  v-model="accountApply.departmentId"
+                  placeholder="请选择"
+                  @change="
+                    () => {
+                      accountApply.recipient = ''
+                    }
+                  "
+                >
                   <el-option v-for="item in departmentIdOptions" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
               <el-form-item label="审核人：" prop="recipient">
-                <el-select v-model="accountApply.recipient" filterable placeholder="请选择">
-                  <el-option v-for="item in recipients" :key="item.id" :label="item.name" :value="item.id" />
+                <el-select
+                  v-model="accountApply.recipient"
+                  filterable
+                  placeholder="请选择"
+                  :disabled="!accountApply.departmentId"
+                >
+                  <el-option
+                    v-for="item in (recipients || []).filter(({ departmentId }) => {
+                      return accountApply.departmentId === departmentId
+                    })"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id"
+                  />
                 </el-select>
               </el-form-item>
               <el-form-item label="工作岗位：" prop="applyJob">
@@ -381,6 +401,8 @@ export default class AccountApply extends Vue {
   toggleAccountApplyTab() {
     this.accountApplyTab = true
     if (this.accountApplyTab) this.activeTab = 'account'
+
+    console.log(this.recipients)
   }
   // 打开申请详情页面
   toggleAccountApplyDetailTab(data) {
@@ -499,7 +521,8 @@ export default class AccountApply extends Vue {
       this.recipients = res.result.map((item) => {
         return {
           name: item.realName,
-          id: item.id
+          id: item.id,
+          departmentId: item.departmentId
         }
       })
     })
