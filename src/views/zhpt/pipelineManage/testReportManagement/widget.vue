@@ -390,14 +390,10 @@ import { Feature } from 'ol'
 import { LineString, Point } from 'ol/geom'
 import { comSymbol } from '@/utils/comSymbol'
 import { transform } from 'ol/proj'
-<<<<<<< .merge_file_a25408
 import * as olProj from 'ol/proj';
 import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import Text from 'ol/style/Text';
 import { Style } from 'ol/style'
-=======
-import * as olProj from 'ol/proj'
->>>>>>> .merge_file_a25384
 
 export default {
   props: ['data'],
@@ -550,16 +546,11 @@ export default {
      * */
     afterMapLoad() {
       let id = this.id
-<<<<<<< .merge_file_a25408
-=======
-      console.log('详情编号', id)
->>>>>>> .merge_file_a25384
       this.getPipeDefectData(2, id)
     },
     /**
      * 构造要素
      * @param type 地图: 1：主地图，2 小地图
-<<<<<<< .merge_file_a25408
      * @param id 报告编号
      * @param light 是否高亮
      * */
@@ -576,25 +567,12 @@ export default {
           this.hasLoadMap = true
         }
       }
-=======
-     * @param id
-     * */
-    getPipeDefectData(type = 1, id) {
-      let dataApi = null,
-        map = type === 1 ? this.data.mapView : this.$refs.myMap.map
->>>>>>> .merge_file_a25384
       if (id) {
         dataApi = getDefectDataById
       } else {
         dataApi = getDefectData
       }
-<<<<<<< .merge_file_a25408
       dataApi(id).then(res => {
-=======
-      console.log('地图', map)
-
-      dataApi(id).then((res) => {
->>>>>>> .merge_file_a25384
         if (res.code === 1) {
           let reportInfo = res.result[0] ? res.result : [res.result],
             pipeData = [],
@@ -633,15 +611,9 @@ export default {
           if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
             let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
             let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
-<<<<<<< .merge_file_a25408
             startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
             endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
             
-=======
-            startPoint = transform(startPoint, 'EPSG:3857', 'EPSG:4326')
-            endPoint = transform(endPoint, 'EPSG:3857', 'EPSG:4326')
-
->>>>>>> .merge_file_a25384
             let coors = [startPoint, endPoint]
             let feature = new Feature({ geometry: new LineString(coors) })
             // 健康等级颜色
@@ -659,11 +631,7 @@ export default {
           }
         })
       } else {
-<<<<<<< .merge_file_a25408
         featureArr.forEach((feaObj, index) => {
-=======
-        featureArr.forEach((feaObj) => {
->>>>>>> .merge_file_a25384
           if (feaObj.geometry) {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
