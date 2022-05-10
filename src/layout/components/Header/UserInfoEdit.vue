@@ -143,6 +143,7 @@ export default class UserInfoEdit extends Vue {
           that.data.email = that.strIsNull(that.data.email) ? '' : that.data.email // 邮箱
           that.data.job = that.strIsNull(that.data.job) ? '' : that.data.job // 工作岗位
           that.data.note = that.strIsNull(that.data.note) ? '' : that.data.note // 工作职责
+          this.$store.commit('user/SET_AVATAR', imageByName(that.data.avatar))
           that.handleEdit()
         } else {
           that.$message.error('未查询到相关的用户信息')
@@ -229,6 +230,7 @@ export default class UserInfoEdit extends Vue {
         if (res.result.code === -1) {
           this.$message.error(res.result.message)
         } else {
+          this.getUserInfo()
           _this.$message.success('修改成功')
           _this.closeDialog()
         }

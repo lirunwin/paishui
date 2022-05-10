@@ -127,12 +127,13 @@ export default {
      * @description 获取用户图片
      */
     getUserAvatar(avatar) {
-      imageByName(avatar).then((res) => {
-        this.userinfo.avatar = null
-        if (res.status === 200) {
-          this.userinfo.avatar = res.config.url
-        }
-      })
+      this.userinfo.avatar = imageByName(avatar)
+      // imageByName(avatar).then((res) => {
+      //   this.userinfo.avatar = null
+      //   if (res.status === 200) {
+      //     this.userinfo.avatar = res.config.url
+      //   }
+      // })
     },
 
     // 打开表格弹窗
