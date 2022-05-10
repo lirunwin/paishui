@@ -265,15 +265,15 @@ export default {
           { maxLength: '20', label: '工程编号', name: 'prjNo' }
         ],
         [
-          { maxLength: '50', label: '检测单位', name: 'principal' },
+          { maxLength: '50', label: '检测单位', name: 'jcunit' },
           { maxLength: '50', label: '勘察单位', name: 'kcunit' }
         ],
         [
-          { maxLength: '30', label: '探测单位', name: 'tcunit' },
+          { maxLength: '4', label: '探测单位', name: 'tcunit' },
           { maxLength: '30', label: '设计单位', name: 'sjunit' }
         ],
         [
-          { maxLength: '30', label: '建设单位', name: 'jsunit' },
+          { maxLength: '4', label: '建设单位', name: 'jsunit' },
           { maxLength: '50', label: '监理单位', name: 'ctunit' }
         ],
         [

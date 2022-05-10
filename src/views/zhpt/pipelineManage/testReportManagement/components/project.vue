@@ -1,48 +1,33 @@
 <template>
   <div class="project-box">
     <!-- 主要工程量表 -->
-    <!-- <el-table :param="[]" border :summary-method="getSummaries" show-summary style="width: 100%; margin-top: 20px">
+    <el-table :data="tableData" border :summary-method="getSummaries" show-summary style="width: 100%; margin-top: 20px">
       <el-table-column type="index" label="序号" width="80" align="center" header-align="center"> </el-table-column>
-      <el-table-column prop="name" label="名称" width="400" align="center" header-align="center"> </el-table-column>
-      <el-table-column prop="num" label="管径(mm)" align="center" header-align="center"> </el-table-column>
-      <el-table-column prop="amount1" label="管段长度(m)" align="center" header-align="center"> </el-table-column>
-      <el-table-column prop="amount2" label="检测长度(m)" align="center" header-align="center"> </el-table-column>
-      <el-table-column prop="amount3" label="备注" align="center" header-align="center"> </el-table-column>
-    </el-table> -->
+      <el-table-column prop="material" label="名称" width="400" align="center" header-align="center"> </el-table-column>
+      <el-table-column prop="diameter" label="管径(mm)" align="center" header-align="center"> </el-table-column>
+      <el-table-column prop="totleLength" label="管段长度(m)" align="center" header-align="center"> </el-table-column>
+      <el-table-column prop="totleJcLength" label="检测长度(m)" align="center" header-align="center"> </el-table-column>
+      <el-table-column prop="totleNum" label="总数量" align="center" header-align="center"> </el-table-column>
+    </el-table>
   </div>
 </template>
 
 <script>
+import { queryProjectDetails } from '@/api/pipelineManage'
+
 export default {
   props: ['paramId'],
   data() {
     return {
       tableData: [
-        {
-          name: '污水管道0015625',
-          num: '234',
-          amount1: '23.2',
-          amount2: '23.2',
-          amount3: '分6段'
-        },
-        {
-          name: '污水管道0015625',
-          num: '234',
-          amount2: '23.2',
-          amount1: '23.3',
-          amount3: '分8段'
-        },
-        {
-          name: '污水管道0015625',
-          num: '234',
-          amount1: '23.3',
-          amount2: '23.2',
-          amount3: '分6段'
-        }
       ]
     }
   },
-  mounted() {
+  async mounted() {
+    // 主要工程量表
+    let resPrj = await queryProjectDetails(this.paramId)
+    this.tableData = resPrj.result
+    console.log('工程量表', resPrj)
     console.log('上面传来的id', this.paramId)
   },
   methods: {
