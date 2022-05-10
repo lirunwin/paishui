@@ -192,9 +192,10 @@
             <div v-show="isDetails" style="max-height: 120px; overflow-y: scroll">
               <div v-for="(item, i) in fileListData" :key="i" class="text-space">
                 <el-link type="primary">{{ item.originalName }}</el-link
-                >&nbsp;<el-link type="success" @click="fileLinkToStreamDownload(item.id)">下载</el-link>
+                >&nbsp;<el-link :href="'http://117.174.10.73:1114/psjc/file' + item.path" type="success">下载</el-link>
+                <!-- @click="fileLinkToStreamDownload(item.id)" -->
               </div>
-              <p v-if="!fileListData.length" style="text-align: center;">暂无附件</p>
+              <p v-if="!fileListData.length" style="text-align: center">暂无附件</p>
             </div>
           </el-form-item>
         </el-form>
@@ -204,10 +205,10 @@
     <div class="delete-box">
       <!-- 删除提示框 -->
       <el-dialog title="提示" :visible.sync="deleteDialogVisible" width="30%">
-        <div>
-          <i class="el-icon-info" style="color: #e6a23c"></i>&nbsp; 确认删除选中的{{
-            multipleSelection.length
-          }}条工程项目吗?
+        <div style="display: flex; align-items: center">
+          <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
+          <span class="iconfont icondtbz" style="font-size: 22px;color: #e6a23c"></span>
+          &nbsp; 确认删除选中的{{ multipleSelection.length }}条工程项目吗?
         </div>
         <span slot="footer" class="dialog-footer">
           <el-button @click="deleteDialogVisible = false">取 消</el-button>
@@ -268,11 +269,11 @@ export default {
           { maxLength: '50', label: '勘察单位', name: 'kcunit' }
         ],
         [
-          { maxLength: '4', label: '探测单位', name: 'tcunit' },
-          { maxLength: '4', label: '设计单位', name: 'sjunit' }
+          { maxLength: '30', label: '探测单位', name: 'tcunit' },
+          { maxLength: '30', label: '设计单位', name: 'sjunit' }
         ],
         [
-          { maxLength: '4', label: '建设单位', name: 'jsunit' },
+          { maxLength: '30', label: '建设单位', name: 'jsunit' },
           { maxLength: '50', label: '监理单位', name: 'ctunit' }
         ],
         [
@@ -511,6 +512,7 @@ export default {
           type: 'success'
         })
         this.getDate()
+        this.deleteDialogVisible = false
       } else {
         this.$message.error('删除失败')
       }
@@ -619,6 +621,7 @@ export default {
     },
     // 下载附件
     fileLinkToStreamDownload(id) {
+      console.log('下载附件')
       downloadFile(id)
     },
     downloadExportFile(blob, tagFileName) {
@@ -754,15 +757,15 @@ export default {
       }
     }
     .text-space {
-      /deep/.el-link--inner{
+      /deep/.el-link--inner {
         max-width: 650px;
         // 1.先强制一行内显示文本
-      white-space: nowrap;
+        white-space: nowrap;
 
-      // 2.超出部分隐藏
-      overflow: hidden;
-      // 3.文字用省略号替换超出的部分
-      text-overflow: ellipsis;
+        // 2.超出部分隐藏
+        overflow: hidden;
+        // 3.文字用省略号替换超出的部分
+        text-overflow: ellipsis;
       }
     }
   }
