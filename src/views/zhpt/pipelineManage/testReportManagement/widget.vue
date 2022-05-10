@@ -67,8 +67,7 @@
         @selection-change="handleSelectionChange"
       >
         <template slot="empty">
-          <p class="emptyText">暂无数据</p>
-          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">添加用户</el-button>
+          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
         </template>
         <el-table-column header-align="center" :selectable="checkSelect" align="center" type="selection" width="55">
         </el-table-column>
@@ -190,7 +189,7 @@
               >
             </div>
             <div slot="tip" class="el-upload__tip">
-              <p>只能上传docx/doc文件</p>
+              <p style="line-height: 10px;">只能上传docx/doc文件</p>
               <el-table
                 ref="singleTable"
                 :data="upDataTable"
@@ -199,10 +198,9 @@
                 style="width: 100%"
                 height="250"
               >
-               <template slot="empty">
-          <p class="emptyText">暂无数据</p>
-          <el-button type="primary" @click="handleAdd" style="margin-bottom: 35px">添加用户</el-button>
-        </template>
+                <template slot="empty">
+                  <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                </template>
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -272,7 +270,7 @@
             </div>
 
             <div slot="tip" class="el-upload__tip">
-              <p>只能上传mp4文件</p>
+              <p  style="line-height: 10px;">只能上传mp4文件</p>
               <el-table
                 ref="singleTable"
                 :data="upDataTable"
@@ -281,6 +279,9 @@
                 style="width: 100%"
                 height="250"
               >
+                <template slot="empty">
+                  <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                </template>
                 <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                 <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
                 </el-table-column>
@@ -403,6 +404,8 @@ export default {
   },
   data() {
     return {
+      // 数据为空时的图片
+      // imgUrl:"@/assets/images/nullData.png",
       // 上传文件表格
       upDataTable: [],
       updataParamsId: {
@@ -618,6 +621,7 @@ export default {
     // 关闭上传弹框时
     closeDialog() {
       this.loadingBool = false
+     this.$refs['form'].resetFields()
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
       this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
       this.upDataTable = []
@@ -1249,6 +1253,7 @@ $fontSize: 14px !important;
     .left {
       flex: 2;
       .releaseContent {
+         height: 597px;
         border: 1px solid #9a9a9a;
         overflow: scroll;
         .detailsTitle {

@@ -25,7 +25,7 @@
             icon="el-icon-delete"
             type="danger"
             :disabled="!multipleSelection.length"
-            @click="removeDatas"
+            @click="removeBtn"
             >删除</el-button
           >
         </div>
@@ -41,6 +41,9 @@
         @row-dblclick="dblclickUpdata"
         @selection-change="handleSelectionChange"
       >
+        <template slot="empty">
+          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+        </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
@@ -74,36 +77,37 @@
       </div>
     </div>
     <!-- 添加卡片 -->
-    <el-dialog title="工程内容" :visible.sync="dialogFormVisible" @close="closeDialog">
-      <el-form ref="form" :rules="rules" :model="form" label-width="auto" label-position="right">
-        <el-row v-for="(item, i) in formContent" :key="i">
-          <el-col :span="12">
-            <el-form-item :label="item[0].label" :prop="item[0].name">
-              <el-input
-                v-model="form[item[0].name]"
-                :maxlength="item[0].maxLength"
-                show-word-limit
-                :disabled="isDetails"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="item[1].label" :prop="item[1].name">
-              <el-input
-                v-model="form[item[1].name]"
-                :maxlength="item[1].maxLength"
-                show-word-limit
-                :disabled="isDetails || (isEdit && item[1].label == '工程编号')"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
+    <div class="add-box">
+      <el-dialog title="工程内容" :visible.sync="dialogFormVisible" @close="closeDialog">
+        <el-form ref="form" :rules="rules" :model="form" label-width="auto" label-position="right">
+          <el-row v-for="(item, i) in formContent" :key="i">
+            <el-col :span="12">
+              <el-form-item :label="item[0].label" :prop="item[0].name">
+                <el-input
+                  v-model="form[item[0].name]"
+                  :maxlength="item[0].maxLength"
+                  show-word-limit
+                  :disabled="isDetails"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item :label="item[1].label" :prop="item[1].name">
+                <el-input
+                  v-model="form[item[1].name]"
+                  :maxlength="item[1].maxLength"
+                  show-word-limit
+                  :disabled="isDetails || (isEdit && item[1].label == '工程编号')"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-        <el-form-item label="隐蔽管线点数量" prop="hpoints">
-          <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails"></el-input>
-        </el-form-item>
-        <el-form-item label="工程日期范围">
-          <!-- <el-date-picker
+          <el-form-item label="隐蔽管线点数量" prop="hpoints">
+            <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails"></el-input>
+          </el-form-item>
+          <el-form-item label="工程日期范围">
+            <!-- <el-date-picker
             :disabled="isDetails"
             v-model="dateRange"
             @change="getDateRange"
@@ -114,79 +118,102 @@
             end-placeholder="结束日期"
           >
           </el-date-picker> -->
-          <el-row>
-            <el-col :span="11">
-              <el-date-picker
-                :disabled="isDetails"
-                v-model="form.startdate"
-                type="date"
-                placeholder="选择开始日期"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                size="small"
-                :picker-options="pickerOptions0"
-                @change="changeDate"
-              ></el-date-picker>
-            </el-col>
-            <el-col :span="1" style="text-align: center">至</el-col>
-            <el-col :span="12">
-              <el-date-picker
-                :disabled="isDetails"
-                v-model="form.finishdate"
-                type="date"
-                placeholder="选择结束日期"
-                value-format="yyyy-MM-dd HH:mm:ss"
-                size="small"
-                :picker-options="pickerOptions1"
-                @change="changeDate"
-              ></el-date-picker>
-            </el-col>
-          </el-row>
-        </el-form-item>
+            <el-row>
+              <el-col :span="11">
+                <el-date-picker
+                  :disabled="isDetails"
+                  v-model="form.startDate"
+                  type="date"
+                  placeholder="选择开始日期"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  size="small"
+                  :picker-options="pickerOptions0"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+              <el-col :span="1" style="text-align: center">至</el-col>
+              <el-col :span="12">
+                <el-date-picker
+                  :disabled="isDetails"
+                  v-model="form.finishDate"
+                  type="date"
+                  placeholder="选择结束日期"
+                  value-format="yyyy-MM-dd HH:mm:ss"
+                  size="small"
+                  :picker-options="pickerOptions1"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+            </el-row>
+          </el-form-item>
 
-        <el-form-item label="工程简介" prop="proIntroduction">
-          <el-input
-            type="textarea"
-            resize="none"
-            v-model="form.proIntroduction"
-            maxlength="400"
-            show-word-limit
-            :disabled="isDetails"
-          >
-          </el-input>
-        </el-form-item>
-        <el-form-item label="附件:">
-          <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
-          <el-upload
-            v-show="!isDetails"
-            show-file-list
-            ref="updataDocx"
-            class="upload-demo"
-            :headers="uploadHeaders"
-            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
-            accept=".doc,.docx"
-            :data="getIdData"
-            multiple
-            :before-remove="beforeRemove"
-            :on-progress="beforeUpload"
-            :on-exceed="handleExceed"
-            :file-list="fileList"
-            :auto-upload="false"
-          >
-            <div class="add-btn">
-              <el-button size="small" type="primary" slot="trigger">选择文件夹</el-button>
-              <span class="btns">
-                <el-button @click.stop="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
-                <el-button type="primary" @click.stop="addTable('form')" v-if="!isDetails">确 定</el-button>
-                <el-button @click.stop="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
-              </span>
+          <el-form-item label="工程简介" prop="proIntroduction">
+            <el-input
+              type="textarea"
+              resize="none"
+              v-model="form.proIntroduction"
+              maxlength="400"
+              show-word-limit
+              :disabled="isDetails"
+            >
+            </el-input>
+          </el-form-item>
+          <el-form-item label="附件:">
+            <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
+            <el-upload
+              v-show="!isDetails"
+              show-file-list
+              ref="updataDocx"
+              class="upload-demo"
+              :headers="uploadHeaders"
+              action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
+              accept=".doc,.docx"
+              :data="getIdData"
+              multiple
+              :before-remove="beforeRemove"
+              :on-progress="beforeUpload"
+              :on-exceed="handleExceed"
+              :file-list="fileList"
+              :auto-upload="false"
+            >
+              <div class="add-btn">
+                <el-button size="small" type="primary" slot="trigger">选择文件夹</el-button>
+                <span class="btns">
+                  <el-button @click.stop="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
+                  <el-button type="primary" @click.stop="addTable('form')" v-if="!isDetails">确 定</el-button>
+                  <el-button @click.stop="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
+                </span>
+              </div>
+              <div slot="tip" class="el-upload__tip">
+                <!-- <p>只能上传docx/doc文件</p> -->
+              </div>
+            </el-upload>
+            <!-- 附件列表 -->
+            <div v-show="isDetails" style="max-height: 120px; overflow-y: scroll">
+              <div v-for="(item, i) in fileListData" :key="i" class="text-space">
+                <el-link type="primary">{{ item.originalName }}</el-link
+                >&nbsp;<el-link type="success">下载</el-link>
+              </div>
             </div>
-            <div slot="tip" class="el-upload__tip">
-              <!-- <p>只能上传docx/doc文件</p> -->
-            </div>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-    </el-dialog>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+    </div>
+    <!-- 删除提示框 -->
+    <div class="delete-box">
+      <!-- 删除提示框 -->
+      <el-dialog title="提示" :visible.sync="deleteDialogVisible" width="30%">
+        <div>
+          <i class="el-icon-info" style="color: #e6a23c"></i>&nbsp; 确认删除选中的{{
+            multipleSelection.length
+          }}条工程项目吗?
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="deleteDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="removeDatas">确 定</el-button>
+        </span>
+      </el-dialog>
+    </div>
     <!-- <button @click="fileLinkToStreamDownload('http://117.174.10.73:1114/psjc/opt2/upload/projectInfoDoc/36/202205081114180005.docx')">下载附件</button> -->
   </div>
 </template>
@@ -205,9 +232,16 @@ import {
   downloadFile
 } from '@/api/pipelineManage'
 
+import deleteDialog from '../components/deleteDialog.vue'
+
 export default {
+  components: {
+    deleteDialog
+  },
   data() {
     return {
+      fileListData: [], // 附件列表数据
+      deleteDialogVisible: false, // 删除提示框显影
       updataParamsId: {
         itemId: '',
         uploadFileTypeDicId: '',
@@ -294,8 +328,8 @@ export default {
         jpoints: '', // 15 0
         epoints: '', // 15 0
         hpoints: '', // 15 0
-        startdate: '', // date
-        finishdate: '', /// date
+        startDate: '', // date
+        finishDate: '', /// date
         proIntroduction: '' // 10
       },
       // 日期选择器规则
@@ -402,8 +436,7 @@ export default {
       }
       let fileRes = await queryPageEnclosure(params)
       console.log('附件分页数据', fileRes)
-      // 下载附件
-      await downloadFile('102')
+      this.fileListData = fileRes.result.records
 
       this.initForm = { ...this.form }
       this.form = res.result
@@ -419,6 +452,7 @@ export default {
       // 提交条件初始化
       this.isEdit = false
       this.isDetails = false
+      this.fileListData = []
     },
     // 获取日期范围
     // getDateRange() {
@@ -428,22 +462,22 @@ export default {
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.form.startdate).getTime()
-      let date2 = new Date(this.form.finishdate).getTime()
+      let date1 = new Date(this.form.startDate).getTime()
+      let date2 = new Date(this.form.finishDate).getTime()
       this.pickerOptions0 = {
         disabledDate: (time) => {
           if (date2 != '') {
             // return time.getTime() > Date.now() || time.getTime() > date2
-            return  time.getTime() > date2
+            return time.getTime() > date2
           } else {
             return time.getTime() > Date.now()
           }
-        } 
+        }
       }
       this.pickerOptions1 = {
         disabledDate: (time) => {
           // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 
+          return time.getTime() < date1
         }
       }
     },
@@ -457,30 +491,28 @@ export default {
     searchApi() {
       this.getDate(this.searchValue)
     },
-    // 删除
-    removeDatas() {
-      this.$confirm(`确定删除选中的数据吗？`)
-        .then(async () => {
-          let res = {}
-          if (this.multipleSelection.length == 1) {
-            res = await deleteData(this.multipleSelection[0].id)
-          } else {
-            let idArr = this.multipleSelection.map((v) => v.id)
-            res = await deleteDatas({ ids: idArr.join(',') })
-          }
-          if (res.result) {
-            this.$message({
-              message: '删除成功',
-              type: 'success'
-            })
-            this.getDate()
-          } else {
-            this.$message.error('删除失败')
-          }
+    // 删除按钮
+    removeBtn() {
+      this.deleteDialogVisible = true
+    },
+    // 确认删除
+    async removeDatas() {
+      let res = {}
+      if (this.multipleSelection.length == 1) {
+        res = await deleteData(this.multipleSelection[0].id)
+      } else {
+        let idArr = this.multipleSelection.map((v) => v.id)
+        res = await deleteDatas({ ids: idArr.join(',') })
+      }
+      if (res.result) {
+        this.$message({
+          message: '删除成功',
+          type: 'success'
         })
-        .catch(() => {
-          console.log('err')
-        })
+        this.getDate()
+      } else {
+        this.$message.error('删除失败')
+      }
     },
     // 上传触发的方法
     beforeUpload() {},
@@ -699,42 +731,60 @@ export default {
     }
   }
   // 卡片样式
-  /deep/ .el-dialog__wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px 0;
-    box-sizing: border-box;
-    .el-dialog {
-      margin-top: 0vh !important;
-      font-size: 12px;
-      .el-date-editor {
-        width: 100%;
+  .add-box {
+    /deep/ .el-dialog__wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 0;
+      box-sizing: border-box;
+      .el-dialog {
+        margin-top: 0vh !important;
+        font-size: 12px;
+        .el-date-editor {
+          width: 100%;
+        }
+        .el-dialog__body {
+          padding: 10px 0px !important;
+        }
+        .el-dialog__header {
+          background-color: #2d74e7;
+          .el-dialog__title {
+            color: #dfeffe;
+          }
+          .el-icon-close:before {
+            color: #fff;
+          }
+        }
+        .el-input__inner {
+          height: 34px;
+        }
+        .el-form {
+          padding: 0 35px;
+          box-sizing: border-box;
+          .el-form-item {
+            margin-bottom: 14px;
+          }
+        }
+        .el-dialog__footer {
+          padding: 0 20px 5px !important;
+        }
       }
-      .el-dialog__body {
-        padding: 10px 0px !important;
-      }
+    }
+    .text-space {
+      // 1.先强制一行内显示文本
+      white-space: nowrap;
+      // 2.超出部分隐藏
+      overflow: hidden;
+      // 3.文字用省略号替换超出的部分
+      text-overflow: ellipsis;
+    }
+  }
+  .delete-box {
+    /deep/.el-dialog {
+      margin-top: 30vh !important;
       .el-dialog__header {
-        background-color: #2d74e7;
-        .el-dialog__title {
-          color: #dfeffe;
-        }
-        .el-icon-close:before {
-          color: #fff;
-        }
-      }
-      .el-input__inner {
-        height: 34px;
-      }
-      .el-form {
-        padding: 0 35px;
-        box-sizing: border-box;
-        .el-form-item {
-          margin-bottom: 14px;
-        }
-      }
-      .el-dialog__footer {
-        padding: 0 20px 5px !important;
+        border-bottom: none;
       }
     }
   }
