@@ -730,16 +730,9 @@ export default {
           } else {
             this.lightLayer.getSource().clear()
             layer.getSource().clear()
-<<<<<<< .merge_file_a29832
             if (dFeas.length !== 0 || pFeas.length !== 0) {
               layer.getSource().addFeatures([...dFeas, ...pFeas])
             }
-=======
-          }
-
-          if (dFeas.length !== 0 || pFeas.length !== 0) {
-            layer.getSource().addFeatures([...dFeas, ...pFeas])
->>>>>>> .merge_file_a28336
           }
         } else this.$message.error('管线缺陷数据请求失败')
       })
