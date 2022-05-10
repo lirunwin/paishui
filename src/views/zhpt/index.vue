@@ -133,8 +133,12 @@
           <div v-show="showMapLengend" class="map-legend">
             <div class="map-legend-title"><span>图例</span><span ref="legendCloser" style="float:right;cursor:pointer;" title="收缩" @click="legendChange">▼</span></div>
             <div v-show="showLegendBox" class="map-legend-item" v-for="(item, index) in legendData" :key="index">
-              <div :class="'map-legend-' + item.type" :style="'background-color:' + item.color"></div>
-              <div class="map-legend-label">{{ item.label }}</div>
+              <div style="flex:0.3;text-align:center">
+                <div :class="'map-legend-' + item.type" :style="'background-color:' + item.color"></div>
+              </div>
+              <div style="flex:0.7;text-align:center">
+                <div class="map-legend-label">{{ item.label }}</div>
+              </div>
             </div>
           </div>
           <div></div>
@@ -541,25 +545,13 @@ export default class BaseMap extends Vue {
                 isOnline = false //异常返回
             })
             .finally(() => {
+              console.log('替换服务')
               const repItems = ['地图配置服务']
               res.forEach(service => {
-                let resData = [], source = null
-                if (repItems.includes(service.name)) {
-                  resData = service.child
-                  switch(service.name) {
-                    case "图层服务": source = resource.layerService.layers
-                      break;
-                    case "网络分析服务": source = resource.netAnalysisService
-                      break;
-                    case "数据服务": source = resource.dataService
-                      break
-                    case "地图配置服务": source = appconfig
-                    default: 
-                      break
-                  }
-                }
-                if (source && resData && resData.length !== 0) {
+                let resData = service.child, source = null
+                if (repItems.includes(service.name) && resData && resData.length !== 0) {
                   if (service.name === "图层服务") {
+                    source = resource.layerService.layers
                     resData.forEach(data => {
                       let findItem = source.find(sourceItem => {
                         return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name )
@@ -569,6 +561,7 @@ export default class BaseMap extends Vue {
                       }
                     })
                   } else if (service.name === "地图配置服务") {
+                    source = appconfig
                     resData.forEach(item => {
                       if (item.ckey === 'center') {
                         source.initCenter = item.cval.split(',')
@@ -576,7 +569,11 @@ export default class BaseMap extends Vue {
                         source.initZoom = item.cval
                       }
                     })
-                  } else {
+                  } else if (service.name === '网络分析服务') {
+                    source = resource.netAnalysisService
+                    source.url = resData[0].cval
+                  } else if (service.name === '数据服务') {
+                    source = resource.dataService
                     source.url = resData[0].cval
                   }
                 }
@@ -670,6 +667,7 @@ export default class BaseMap extends Vue {
     })
     return temp.children || []
   }
+  
 }
 </script>
 <style lang="scss" scoped>
@@ -903,7 +901,19 @@ export default class BaseMap extends Vue {
   margin-left: 5px;
 }
 .map-legend-rect {
+  display: inline-block;
   width: 30px;
   height: 100%;
+}
+.map-legend-circle {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.map-legend-line {
+  display: inline-block;
+  width: 50px;
+  height: 8px;
 }
 </style>

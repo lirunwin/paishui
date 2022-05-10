@@ -71,8 +71,8 @@
           </div>
           <div v-else-if="showThemBox[index]" class="transition-box">
             <ul>
-              <li v-for="(level, i) in item.level" :key="i" :class="comStyle(item.type, level.color)">
-                {{ level.label + level.num + level.unit }}
+              <li @click="openBox(item.layerName, level.label)" v-for="(level, i) in item.level" :key="i" :class="comStyle(item.type, level.color)">
+                {{ level.label + ' / ' + level.num + level.unit }}
               </li>
             </ul>
           </div>
@@ -127,7 +127,7 @@ export default {
         {
           title: '管网缺陷密度图',
           layerName: 'heatLayer',
-          open: true,
+          open: false,
           type: 'gradient',
           start: '少',
           end: '多'
@@ -135,34 +135,35 @@ export default {
         {
           title: '管网缺陷分布专题图',
           layerName: 'pipeDefectLayer',
-          open: false,
+          open: true,
           type: 'circle',
           level: [
-            { color: 'green', label: '1级', num: 111, unit: '个' },
-            { color: 'red', label: '2级', num: 111, unit: '个' },
-            { color: 'pink', label: '3级', num: 111, unit: '个' }
+            { color: 'green', label: 'Ⅰ级', num: 0, unit: '个' },
+            { color: 'red', label: 'Ⅱ级', num: 0, unit: '个' },
+            { color: 'pink', label: 'Ⅲ级', num: 0, unit: '个' }
           ]
         },
-        {
-          title: '检查井缺陷分布专题图',
-          layerName: 'manholeDefectLayer',
-          open: false,
-          type: 'square',
-          level: [
-            { color: 'green', label: '井盖缺失', num: 111, unit: '个' },
-            { color: 'red', label: '井盖破损', num: 111, unit: '个' },
-            { color: 'pink', label: '井盖移位', num: 111, unit: '个' }
-          ]
-        },
+        // {
+        //   title: '检查井缺陷分布专题图',
+        //   layerName: 'manholeDefectLayer',
+        //   open: false,
+        //   type: 'square',
+        //   level: [
+        //     { color: 'green', label: '井盖缺失', num: 111, unit: '个' },
+        //     { color: 'red', label: '井盖破损', num: 111, unit: '个' },
+        //     { color: 'pink', label: '井盖移位', num: 111, unit: '个' }
+        //   ]
+        // },
         {
           title: '管网健康评估专题图',
           layerName: 'pipeHealthLayer',
           open: false,
           type: 'line',
           level: [
-            { color: 'pink', label: '1级', num: 111, unit: '个' },
-            { color: 'red', label: '2级', num: 111, unit: '个' },
-            { color: 'green', label: '3级', num: 111, unit: '个' }
+            { color: 'red', label: 'Ⅰ级', num: 0, unit: '条' },
+            { color: 'pink', label: 'Ⅱ级', num: 0, unit: '条' },
+            { color: 'blue', label: 'Ⅲ级', num: 0, unit: '条' },
+            { color: 'green', label: 'Ⅳ级', num: 0, unit: '条' }
           ]
         }
       ],
@@ -196,6 +197,10 @@ export default {
   },
   watch: {},
   methods: {
+    openBox (type, level) {
+      console.log('缺陷信息', type, level)
+      this.openDefect()
+    },
     addLayers(layers) {
       layers.forEach((layer) => this.mapView.addLayer(layer))
     },
@@ -290,7 +295,7 @@ export default {
           return
       }
       layer.setVisible(visible)
-      visible && this.openDefect()
+
     },
     changeArrow(index) {
       console.log('点击箭头')
@@ -396,6 +401,7 @@ export default {
   justify-content: space-between;
 }
 .type-circle {
+  cursor: pointer;
   margin: 10px 0 10px 20px !important;
   &::before {
     position: relative;
@@ -409,6 +415,7 @@ export default {
   }
 }
 .type-square {
+  cursor: pointer;
   margin: 10px 0 10px 20px !important;
   &::before {
     position: relative;
@@ -423,6 +430,7 @@ export default {
   }
 }
 .type-line {
+  cursor: pointer;
   margin: 10px 0 10px 18px !important;
   &::before {
     position: relative;
@@ -432,6 +440,12 @@ export default {
     width: 40px;
     height: 8px;
     display: inline-block;
+  }
+}
+.item-blue {
+  &::before {
+    background-color: #0ff;
+    border: 1px solid #0ff;
   }
 }
 .item-green {

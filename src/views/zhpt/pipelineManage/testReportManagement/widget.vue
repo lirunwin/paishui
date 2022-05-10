@@ -325,7 +325,7 @@
                 <div class="detailsTitle">管道缺陷数量统计图</div>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane>
+            <!-- <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane> -->
             <el-tab-pane label="管道缺陷" name="third">管道缺陷</el-tab-pane>
             <el-tab-pane label="管段状态评估" name="fourth">管段状态评估</el-tab-pane>
           </el-tabs>
@@ -388,10 +388,16 @@ import { Feature } from 'ol'
 import { LineString, Point } from 'ol/geom'
 import { comSymbol } from '@/utils/comSymbol'
 import { transform } from 'ol/proj'
-import * as olProj from 'ol/proj';
+import * as olProj from 'ol/proj'
 import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
-import Text from 'ol/style/Text';
+import Text from 'ol/style/Text'
 import { Style } from 'ol/style'
+
+import defectImgR from '@/assets/images/traingle-r.png';
+import defectImgB from '@/assets/images/traingle-b.png';
+import defectImgY from '@/assets/images/traingle-y.png';
+
+import Icon from 'ol/style/Icon';
 
 export default {
   props: ['data'],
@@ -495,10 +501,11 @@ export default {
       //
       showId: 0,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj44',
+      currentDataProjName: 'proj43', // 当前坐标系
       vectorLayer: null,
       vectorLayer2: null,
-      hasLoadMap: false
+      hasLoadMap: false,
+      map: null
     }
   },
   async created() {
@@ -527,18 +534,43 @@ export default {
     }
   },
   mounted() {
+    this.map = this.data.mapView
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
+
+    this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(4, '#0ff', 10, 'rgba(0, 255, 255, 0.6)') })
     this.vectorLayer = new VectorLayer({ source: new VectorSource() })
-    this.data.mapView.addLayer(this.vectorLayer)
+    this.map.addLayer(this.vectorLayer)
+    this.map.addLayer(this.lightLayer)
+
     this.vectorLayer2 = new VectorLayer({ source: new VectorSource() })
     this.getPipeDefectData()
+    this.addMapEvent()
+    this.data.that.showLegend('testReport', true)
   },
   destroyed () {
     this.vectorLayer.getSource().clear()
     this.vectorLayer2.getSource().clear()
+    this.lightLayer.getSource().clear()
+    this.data.that.showLegend('testReport', false)
   },
   methods: {
+    addMapEvent () {
+      let vectorLayer = new VectorLayer({ source: new VectorSource() })
+      let feature = new Feature({ geometry: new Point([101.731040, 26.505465]) })
+      feature.setStyle(comSymbol.getPointStyle(5, "#f00"))
+      vectorLayer.getSource().addFeature(feature)
+      this.map.addLayer(vectorLayer)
+
+      this.map.on('click', evt => {
+        let features = this.map.getFeaturesAtPixel(evt.pixel)
+        if (features.length !== 0) {
+          console.log(features)
+        } else {
+          console.log('无特征点')
+        }
+      })
+    },
     handleAdd () {},
     /**
      * 小地图完成加载后
@@ -583,19 +615,20 @@ export default {
               pipeData = [...pipeData, ...pipeStates.map((pipe) => pipe)]
               defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects.map((defect) => defect)).flat()]
             })
-            dFeas = this.getFeatures(defectData, 2)
-            pFeas = this.getFeatures(pipeData, 1)
+            dFeas = this.getFeatures(defectData, 2, !light)
+            pFeas = this.getFeatures(pipeData, 1, !light)
           }
 
           if (light) {
             map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
-            map.getView().setZoom(18)
+            map.getView().setZoom(16)
+            this.lightLayer.getSource().addFeatures([...dFeas, ...pFeas])
           } else {
+            this.lightLayer.getSource().clear()
             layer.getSource().clear()
-          }
-          
-          if (dFeas.length !== 0 || pFeas.length !== 0) {
-            layer.getSource().addFeatures([...dFeas, ...pFeas])
+            if (dFeas.length !== 0 || pFeas.length !== 0) {
+              layer.getSource().addFeatures([...dFeas, ...pFeas])
+            }
           }
         } else this.$message.error('管线缺陷数据请求失败')
       })
@@ -603,8 +636,9 @@ export default {
     /**
      * 构造要素
      * @param type 类型1: 线，2：点
+     * @param hasStyle 是否设置样式
      * */
-    getFeatures(featureArr, type) {
+    getFeatures(featureArr, type, hasStyle) {
       let style = null,
         features = []
       if (type === 1) {
@@ -620,14 +654,14 @@ export default {
             let feature = new Feature({ geometry: new LineString(coors) })
             // 健康等级颜色
             let colors = [
-              { level: 'Ⅰ', color: '#ff0000' },
+              { level: 'Ⅰ', color: '#0ff' },
               { level: 'Ⅱ', color: '#0c9923' },
               { level: 'Ⅲ', color: '#f405ff' },
-              { level: 'Ⅳ', color: '#0ff' }
+              { level: 'Ⅳ', color: '#f00' }
             ]
             let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
             if (findColor) {
-              feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              hasStyle && feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
               features.push(feature)
             }
           }
@@ -638,7 +672,8 @@ export default {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
-            feature.setStyle(comSymbol.getPointStyle(5, '#f00'))
+            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: defectImgR, scale: 0.4 }) }))
+
             features.push(feature)
 
             // let fea = feature.clone()

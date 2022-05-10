@@ -18,7 +18,8 @@ export const appconfig = {
   // 是否根据后台配置服务
   'isloadServer': true,
   // 天地图秘钥
-  'tianMapKey': '700ea8c1e2dd873c349dc880169fd96d',
+  // 'tianMapKey': '700ea8c1e2dd873c349dc880169fd96d',
+  'tianMapKey':'9248d7f5b183142e4f1d5c908fba42e0',
   // 打印模板
   'templateFolder': 'D:/xrty/template',
   // 地图初始视角中心
@@ -64,7 +65,7 @@ export const appconfig = {
             'parentname': "底图",
             'name': '矢量底图',
             'type': 'tdtlayer',
-            'url': 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
+            'url': 'http://t4.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
             'visible': true,
             "id": 2
           },
@@ -72,7 +73,7 @@ export const appconfig = {
             'parentname': "底图", 
             'name': '影像底图',
             'type': 'tdtlayer',
-            'url': 'http://t3.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=',
+            'url': 'http://t3.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=',
             'visible': false,
             "id": 3
           },
@@ -80,7 +81,7 @@ export const appconfig = {
             'parentname': "底图", 
             'name': '标注底图',
             'type': 'tdtlayer',
-            'url': 'http://t4.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
+            'url': 'http://t4.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
             'visible': true,
             "id": 4
           },
