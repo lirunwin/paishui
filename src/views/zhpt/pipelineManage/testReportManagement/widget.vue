@@ -65,9 +65,9 @@
         stripe
         style="width: 100%"
         @selection-change="handleSelectionChange"
+        @row-dblclick="openDetails"
         @row-click="openPromptBox"
       >
-        <!-- @row-dblclick="openDetails(row, $event)" -->
         <template slot="empty">
           <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
         </template>
@@ -329,8 +329,8 @@
             <el-tabs v-model="activeLeft" @tab-click="handleClick">
               <el-tab-pane label="统计汇总" name="first">
                 <div class="releaseContent">
-                  <div class="detailsTitle" :paramId="id">主要工程量表</div>
-                  <project-form></project-form>
+                  <div class="detailsTitle">主要工程量表</div>
+                  <project-form :paramId="id"></project-form>
                   <div class="detailsTitle">检查井检查情况汇总表</div>
                   <inspect-form></inspect-form>
                   <div class="detailsTitle">管道缺陷数量统计表</div>
@@ -383,7 +383,7 @@
     </div>
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div class="detailsCrad" style="top: 10%; left: 20%; right: 0" v-if="currentInfoCard">
+      <div class="detailsCrad" style="top: 10%; left: 20%; right: 55%" v-if="currentInfoCard">
         <el-card class="box-card">
           <div class="table-content">
             <div
@@ -403,7 +403,7 @@
               </span>
               <a
                 style="font-size: 12px; color: #2d74e7; text-decoration: underline"
-                @click="openDetails(getCurrentForm)"
+                @click="testReportDetails(getCurrentForm.id)"
                 >详情</a
               >
             </div>
@@ -648,6 +648,36 @@ export default {
     this.data.that.showLegend('testReport', false)
   },
   methods: {
+    // 上一页
+    lastPage() {
+      if (this.currentIndex <= 0) {
+        this.currentIndex = 0
+        return
+      }
+      this.currentIndex--
+    },
+    // 下一页
+    nextPage() {
+      if (this.currentIndex + 1 >= this.currentForm.length) {
+        this.currentIndex = this.currentForm.length - 1
+        return
+      }
+      this.currentIndex++
+    },
+    // 打开缩略提示框
+    async openPromptBox(row, column, cell, event) {
+      console.log('打开缩略提示框', row)
+      this.isPromptBox = { ...row }
+      let res = await assessmentDefect(row.id)
+      this.currentIndex = 0
+      this.currentForm = res.result
+      this.currentInfoCard = true
+      // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
+    },
+    // 双击打开详情或发布
+    openDetails(row, column) {
+      this.testReportDetails(row.id)
+    },
     addMapEvent () {
       let vectorLayer = new VectorLayer({ source: new VectorSource() })
       let feature = new Feature({ geometry: new Point([101.731040, 26.505465]) })
@@ -848,6 +878,7 @@ export default {
       let res = await queryPipecheckDetails(id)
       // this.defectQuantityStatisticsA
       // 按缺陷名称给数据分类
+      // 缺陷数量统计
       res.result.forEach((resValue) => {
         this.defectQuantityStatisticsA.forEach((sumValue) => {
           // console.log("类型是否相等",typeof resValue.defectCode,sumValue.type);
@@ -904,9 +935,9 @@ export default {
         this.defectSumObj.total += v.sum
       })
 
-      if (res.result) {
-        this.dialogFormVisible3 = true
-      }
+      
+
+      this.dialogFormVisible3 = true
     },
     // 单个发布
     async oneReleaseBtn() {
@@ -1201,7 +1232,7 @@ export default {
           message: '删除成功',
           type: 'success'
         })
-         this.deleteDialogVisible = false
+        this.deleteDialogVisible = false
         this.getDate()
       } else {
         this.$message.error('删除失败')
