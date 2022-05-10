@@ -4,7 +4,7 @@
     <p class="title">显示设置</p>
     <el-form ref="form" :model="form" label-width="auto" :rules="rules">
       <el-form-item label="工程名称:" prop="name">
-        <el-select v-model="form.project" placeholder="默认显示最新工程">
+        <el-select @change='projectChange' v-model="form.project" placeholder="工程名称">
           <el-option
             v-for="(item, index) in projectOpt"
             :key="index"
@@ -96,6 +96,7 @@ import iDraw from '@/views/zhpt/common/mapUtil/draw'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
 import { appconfig } from 'staticPub/config'
 import GeoJSON from 'ol/format/GeoJSON'
+import { getDefectDataById, getDefectData, getProject, getReportByProjecetId } from '@/api/sysmap/drain'
 
 export default {
   props: { data: Object },
@@ -114,11 +115,12 @@ export default {
         endDate: ''
       },
 
-      // 缺陷数据
+      // 报告数据
       reportOpt: [
         { label: '区域一', value: 'area1' },
         { label: '区域二', value: 'area2' }
       ],
+      // 工程数据
       projectOpt: [
         { label: '区域一', value: 'area1' },
         { label: '区域二', value: 'area2' }
@@ -188,6 +190,8 @@ export default {
     this.manholeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
     this.pipeHealthLayer = new VectorLayer({ source: new VectorSource(), visible: false })
     this.addLayers([this.heatLayer, this.pipeDefectLayer, this.manholeDefectLayer, this.pipeHealthLayer])
+
+    this.setProjectData()
   },
   destroyed() {
     this.heatLayer && this.mapView.removeLayer(this.heatLayer)
@@ -197,6 +201,28 @@ export default {
   },
   watch: {},
   methods: {
+    setProjectData () {
+      getProject({ current: 1, size: 1e5 }).then(res => {
+        if (res.code === 1) {
+          // label, value
+          this.projectOpt = res.result.records.map(record => {
+            return { label: record.prjName, value: record.prjNo }
+          })
+        } else this.$message.error('获取工程项目失败!')
+      })
+    },
+    projectChange () {
+      let prjId = this.form.project
+      getReportByProjecetId(prjId).then(res => {
+        if (res.code === 1) {
+          let data = res.result.records
+          
+          this.reportOpt = data.map(d => {
+
+          })
+        } else this.$message.error('获取报告失败!')
+      })
+    },
     openBox (type, level) {
       console.log('缺陷信息', type, level)
       this.openDefect()
@@ -268,6 +294,18 @@ export default {
     },
 
     showLayer() {
+      let params = {
+        prjNo: this.form.project,
+        ids: this.form.report,
+        jcStartDate: this.form.startDate,
+        jcEndDate: this.form.endDate,
+      }
+      console.log('参数', params)
+
+      return 
+      getDefectDataByFilter().then(res => {
+
+      })
       if (!this.form.project) return this.$message.warning('请先填写工程名称')
       this.initMap()
       this.defectLegend.forEach((item) => {
