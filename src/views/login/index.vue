@@ -95,6 +95,7 @@ import { changePassword } from '@/api/base'
 import { regPassword } from '@/utils/reg'
 import { ElForm } from 'element-ui/types/form'
 const sha1Hex = require('sha1-hex')
+const defaultPwd = '000000'
 @Component
 export default class Login extends Vue {
   name = 'Login'
@@ -172,6 +173,23 @@ export default class Login extends Vue {
       // console.log('111222', this.loginForm)
       if (valid) {
         this.loading = true
+        /**
+         * 最短6位，最长16位 {6,16}
+         * 必须包含1个数字
+         * 必须包含2个小写字母
+         * 必须包含2个大写字母
+         * 必须包含1个特殊字符
+         */
+        // const pattern = /^.*(?=.{6,16})(?=.*\d)(?=.*[A-Z]{2,})(?=.*[a-z]{2,})(?=.*[!@#$%^&*?\(\)]).*$/
+        /**
+         * 最短6位，最长16位 {8,30}
+         * 必须包含1个数字
+         * 必须包含1个小写字母
+         * 必须包含1个大写字母
+         * 不必须包含1个特殊字符
+         */
+        // const pattern = /^.*(?=.{8,30})(?=.*\d)(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*?\(\)]?).*$/
+
         this.$store
           .dispatch('user/login', this.loginForm)
           .then((res) => {

@@ -51,7 +51,7 @@
             icon="el-icon-delete"
             type="danger"
             :disabled="!multipleSelection.length"
-            @click="removeDatas"
+            @click="removeBtn"
             >删除</el-button
           >
         </div>
@@ -65,9 +65,11 @@
         stripe
         style="width: 100%"
         @selection-change="handleSelectionChange"
+        @row-click="openPromptBox"
       >
+        <!-- @row-dblclick="openDetails(row, $event)" -->
         <template slot="empty">
-          <p class="emptyText">暂无数据</p>
+          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
         </template>
         <el-table-column header-align="center" :selectable="checkSelect" align="center" type="selection" width="55">
         </el-table-column>
@@ -136,222 +138,308 @@
       </div>
     </div>
     <!-- 批量发布 -->
-    <el-dialog title="批量发布" :visible.sync="batchReleaseDialog" width="30%">
-      <span>确定要发布选中的信息吗?</span>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="batchReleaseDialog = false">取 消</el-button>
-        <el-button type="primary" @click="confirmRelease">确 定</el-button>
-      </span>
-    </el-dialog>
+    <div class="public-box">
+      <el-dialog title="批量发布" :visible.sync="batchReleaseDialog" width="30%">
+        <span>确定要发布选中的信息吗?</span>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="batchReleaseDialog = false">取 消</el-button>
+          <el-button type="primary" @click="confirmRelease">确 定</el-button>
+        </span>
+      </el-dialog>
+    </div>
     <!-- 报告上传 -->
-    <el-dialog title="检测报告上传" @close="closeDialog" :visible.sync="dialogFormVisible">
-      <el-form ref="form" :model="form" :rules="rules">
-        <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
-          <el-select
-            clearable
-            v-model="form.name"
-            placeholder="请选择工程名称"
-            v-selectLoadMore="selectLoadMore"
-            @blur="initSelectDate"
-            filterable
-            :disabled="loadingBool"
-          >
-            <el-option v-for="(item, i) in selectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
-          </el-select>
-        </el-form-item>
+    <div class="public-box">
+      <el-dialog title="检测报告上传" @close="closeDialog" :visible.sync="dialogFormVisible">
+        <el-form ref="form" :model="form" :rules="rules">
+          <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
+            <el-select
+              clearable
+              v-model="form.name"
+              placeholder="请选择工程名称"
+              v-selectLoadMore="selectLoadMore"
+              @blur="initSelectDate"
+              filterable
+              :disabled="loadingBool"
+            >
+              <el-option v-for="(item, i) in selectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
+            </el-select>
+          </el-form-item>
 
-        <el-form-item label="检测报告" :label-width="formLabelWidth" class="hd-input" prop="report">
-          <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
-          <el-upload
-            :on-change="getFile"
-            ref="updataDocx"
-            class="upload-demo"
-            :headers="uploadHeaders"
-            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
-            accept=".doc,.docx"
-            :data="getData"
-            multiple
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-remove="beforeRemove"
-            :on-progress="beforeUpload"
-            :on-exceed="handleExceed"
-            :file-list="fileList"
-            :auto-upload="false"
-          >
-            <div class="btn-box">
-              <el-button size="small" type="primary" :disabled="loadingBool">选择报告</el-button>
-              <span class="btns"
-                ><el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
-                  >确 定</el-button
+          <el-form-item label="检测报告" :label-width="formLabelWidth" class="hd-input" prop="report">
+            <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
+            <el-upload
+              :on-change="getFile"
+              ref="updataDocx"
+              class="upload-demo"
+              :headers="uploadHeaders"
+              action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
+              accept=".doc,.docx"
+              :data="getData"
+              multiple
+              :show-file-list="false"
+              :on-success="handleAvatarSuccess"
+              :before-remove="beforeRemove"
+              :on-progress="beforeUpload"
+              :on-exceed="handleExceed"
+              :file-list="fileList"
+              :auto-upload="false"
+            >
+              <div class="btn-box">
+                <el-button size="small" type="primary" :disabled="loadingBool">选择报告</el-button>
+                <span class="btns"
+                  ><el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
+                    >确 定</el-button
+                  >
+                  <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
                 >
-                <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
-              >
-            </div>
-            <div slot="tip" class="el-upload__tip">
-              <p>只能上传docx/doc文件</p>
-              <el-table
-                ref="singleTable"
-                :data="upDataTable"
-                stripe
-                highlight-current-row
-                style="width: 100%"
-                height="250"
-              >
-               <template slot="empty">
-          <p class="emptyText">暂无数据</p>
-        </template>
-                <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
-                <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
-                </el-table-column>
-                <el-table-column property="size" label="视频大小" align="center" width="80"> </el-table-column>
-                <el-table-column property="status" label="上传进度" align="center" width="80">
-                  <!-- filter_schedule -->
-                  <template slot-scope="scope">
-                    <p
-                      :class="{
-                        'font-green': scope.row.status == 'success',
-                        'font-blue': scope.row.status == 'uploading'
-                      }"
-                    >
-                      {{ scope.row.status | filter_schedule }}
-                    </p>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-    </el-dialog>
-    <!-- 视频上传 -->
-    <el-dialog title="附件视频上传" @close="closeDialog" :visible.sync="dialogFormVisible2">
-      <el-form ref="form" :model="form" :rules="rules">
-        <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
-          <el-select
-            clearable
-            v-model="form.name"
-            placeholder="请选择工程名称"
-            v-selectLoadMore="selectLoadMoreVideo"
-            @blur="initSelectDate"
-            filterable
-            :disabled="loadingBool"
-          >
-            <el-option v-for="(item, i) in videoSelectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="检测视频" :label-width="formLabelWidth" class="hd-input" prop="report">
-          <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
-          <el-upload
-            :on-change="getFile"
-            :show-file-list="false"
-            ref="updataVideo"
-            class="upload-demo"
-            :headers="uploadHeaders"
-            action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
-            accept=".mp4"
-            :data="getVideoData"
-            multiple
-            :on-success="handleAvatarSuccessVideo"
-            :before-remove="beforeRemove"
-            :on-progress="beforeUpload"
-            :on-exceed="handleExceed"
-            :file-list="fileList"
-            :auto-upload="false"
-          >
-            <div class="btn-box">
-              <el-button size="small" type="primary" :disabled="loadingBool">选择视频</el-button>
-              <span class="btns"
-                ><el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
-                  >确 定</el-button
-                >
-                <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
-              >
-            </div>
-
-            <div slot="tip" class="el-upload__tip">
-              <p>只能上传mp4文件</p>
-              <el-table
-                ref="singleTable"
-                :data="upDataTable"
-                stripe
-                highlight-current-row
-                style="width: 100%"
-                height="250"
-              >
-                <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
-                <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
-                </el-table-column>
-                <el-table-column property="size" label="视频大小" align="center" width="80"> </el-table-column>
-                <el-table-column property="status" label="上传进度" align="center" width="80">
-                  <!-- filter_schedule -->
-                  <template slot-scope="scope">
-                    <p
-                      :class="{
-                        'font-green': scope.row.status == 'success',
-                        'font-blue': scope.row.status == 'uploading'
-                      }"
-                    >
-                      {{ scope.row.status | filter_schedule }}
-                    </p>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-    </el-dialog>
-    <!-- 发布 -->
-    <el-dialog
-      title="检测报告发布"
-      :visible.sync="dialogFormVisible3"
-      @open="openRelease"
-      @close="closeRelease"
-      :fullscreen="true"
-    >
-      <div class="releaseTop-box">
-        <!-- 左边部分 -->
-        <div class="left">
-          <el-tabs v-model="activeLeft" @tab-click="handleClick">
-            <el-tab-pane label="统计汇总" name="first">
-              <div class="releaseContent">
-                <div class="detailsTitle" :paramId="id">主要工程量表</div>
-                <project-form></project-form>
-                <div class="detailsTitle">检查井检查情况汇总表</div>
-                <inspect-form></inspect-form>
-                <div class="detailsTitle">管道缺陷数量统计表</div>
-                <summary-form :tabelData="returnTabel"></summary-form>
-                <div class="detailsTitle">管道缺陷数量统计图</div>
               </div>
+              <div slot="tip" class="el-upload__tip">
+                <p style="line-height: 10px">只能上传docx/doc文件</p>
+                <el-table
+                  ref="singleTable"
+                  :data="upDataTable"
+                  stripe
+                  highlight-current-row
+                  style="width: 100%"
+                  height="250"
+                >
+                  <template slot="empty">
+                    <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                  </template>
+
+                  <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
+                  <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
+                  </el-table-column>
+                  <el-table-column property="size" label="视频大小" align="center" width="80"> </el-table-column>
+                  <el-table-column property="status" label="上传进度" align="center" width="80">
+                    <!-- filter_schedule -->
+                    <template slot-scope="scope">
+                      <p
+                        :class="{
+                          'font-green': scope.row.status == 'success',
+                          'font-blue': scope.row.status == 'uploading'
+                        }"
+                      >
+                        {{ scope.row.status | filter_schedule }}
+                      </p>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-upload>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+    </div>
+    <!-- 视频上传 -->
+    <div class="public-box">
+      <el-dialog title="附件视频上传" @close="closeDialog" :visible.sync="dialogFormVisible2">
+        <el-form ref="form" :model="form" :rules="rules">
+          <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
+            <el-select
+              clearable
+              v-model="form.name"
+              placeholder="请选择工程名称"
+              v-selectLoadMore="selectLoadMoreVideo"
+              @blur="initSelectDate"
+              filterable
+              :disabled="loadingBool"
+            >
+              <el-option v-for="(item, i) in videoSelectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="检测视频" :label-width="formLabelWidth" class="hd-input" prop="report">
+            <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
+            <el-upload
+              :on-change="getFile"
+              :show-file-list="false"
+              ref="updataVideo"
+              class="upload-demo"
+              :headers="uploadHeaders"
+              action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
+              accept=".mp4"
+              :data="getVideoData"
+              multiple
+              :on-success="handleAvatarSuccessVideo"
+              :before-remove="beforeRemove"
+              :on-progress="beforeUpload"
+              :on-exceed="handleExceed"
+              :file-list="fileList"
+              :auto-upload="false"
+            >
+              <div class="btn-box">
+                <el-button size="small" type="primary" :disabled="loadingBool">选择视频</el-button>
+                <span class="btns"
+                  ><el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
+                    >确 定</el-button
+                  >
+                  <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
+                >
+              </div>
+
+              <div slot="tip" class="el-upload__tip">
+                <p style="line-height: 10px">只能上传mp4文件</p>
+                <el-table
+                  ref="singleTable"
+                  :data="upDataTable"
+                  stripe
+                  highlight-current-row
+                  style="width: 100%"
+                  height="250"
+                >
+                  <template slot="empty">
+                    <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                  </template>
+                  <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
+                  <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
+                  </el-table-column>
+                  <el-table-column property="size" label="视频大小" align="center" width="80"> </el-table-column>
+                  <el-table-column property="status" label="上传进度" align="center" width="80">
+                    <!-- filter_schedule -->
+                    <template slot-scope="scope">
+                      <p
+                        :class="{
+                          'font-green': scope.row.status == 'success',
+                          'font-blue': scope.row.status == 'uploading'
+                        }"
+                      >
+                        {{ scope.row.status | filter_schedule }}
+                      </p>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+<<<<<<< .merge_file_a29832
             </el-tab-pane>
             <!-- <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane> -->
             <el-tab-pane label="管道缺陷" name="third">管道缺陷</el-tab-pane>
             <el-tab-pane label="管段状态评估" name="fourth">管段状态评估</el-tab-pane>
           </el-tabs>
+=======
+            </el-upload>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
+    </div>
+    <!-- 发布 -->
+    <div class="public-box">
+      <el-dialog
+        title="检测报告发布"
+        :visible.sync="dialogFormVisible3"
+        @open="openRelease"
+        @close="closeRelease"
+        :fullscreen="true"
+      >
+        <div class="releaseTop-box">
+          <!-- 左边部分 -->
+          <div class="left">
+            <el-tabs v-model="activeLeft" @tab-click="handleClick">
+              <el-tab-pane label="统计汇总" name="first">
+                <div class="releaseContent">
+                  <div class="detailsTitle" :paramId="id">主要工程量表</div>
+                  <project-form></project-form>
+                  <div class="detailsTitle">检查井检查情况汇总表</div>
+                  <inspect-form></inspect-form>
+                  <div class="detailsTitle">管道缺陷数量统计表</div>
+                  <summary-form :tabelData="returnTabel"></summary-form>
+                  <div class="detailsTitle">管道缺陷数量统计图</div>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane>
+              <el-tab-pane label="管道缺陷" name="third">管道缺陷</el-tab-pane>
+              <el-tab-pane label="管段状态评估" name="fourth">管段状态评估</el-tab-pane>
+            </el-tabs>
+          </div>
+          <!-- 右边部分 -->
+          <div class="right">
+            <el-tabs v-model="activeRight" @tab-click="handleClick">
+              <el-tab-pane label="原始检测报告" name="one">
+                <div class="releaseContent">
+                  <pdf-see></pdf-see>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="数据地图" name="two">
+                <!-- 数据地图 -->
+                <div class="map-box">
+                  <simple-map @afterMapLoad="afterMapLoad" ref="myMap"></simple-map>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
         </div>
-        <!-- 右边部分 -->
-        <div class="right">
-          <el-tabs v-model="activeRight" @tab-click="handleClick">
-            <el-tab-pane label="原始检测报告" name="one">
-              <div class="releaseContent">
-                <pdf-see></pdf-see>
-              </div>
-            </el-tab-pane>
-            <el-tab-pane label="数据地图" name="two">
-              <!-- 数据地图 -->
-              <div class="map-box">
-                <simple-map @afterMapLoad="afterMapLoad" ref="myMap"></simple-map>
-              </div>
-            </el-tab-pane>
-          </el-tabs>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
+          <el-button @click="dialogFormVisible3 = false">取 消</el-button>
         </div>
+      </el-dialog>
+    </div>
+    <!-- 删除提示框 -->
+    <div class="delete-box">
+      <!-- 删除提示框 -->
+      <el-dialog title="提示" :visible.sync="deleteDialogVisible" width="30%">
+        <div style="display: flex; align-items: center">
+          <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
+          <span class="iconfont icondtbz" style="font-size: 22px; color: #e6a23c"></span>
+          &nbsp; 确认删除选中的{{ multipleSelection.length }}条检测报告吗?
+>>>>>>> .merge_file_a28336
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="deleteDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="removeDatas">确 定</el-button>
+        </span>
+      </el-dialog>
+    </div>
+    <!-- 表格当前列信息弹出框 -->
+    <transition name="el-fade-in-linear">
+      <div class="detailsCrad" style="top: 10%; left: 20%; right: 0" v-if="currentInfoCard">
+        <el-card class="box-card">
+          <div class="table-content">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                height: 30px;
+                box-sizing: border-box;
+              "
+            >
+              <span style="font-weight: bold; user-select: none"
+                >{{ getCurrentForm.expNo + getCurrentForm.pipeType }}
+                <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
+                {{ currentIndex + 1 }}/{{ currentForm.length }}
+                <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+              </span>
+              <a
+                style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                @click="openDetails(getCurrentForm)"
+                >详情</a
+              >
+            </div>
+            <div>管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}</div>
+            <div class="content-info">
+              <div class="left">
+                <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
+                <p style="padding-left: 10px">无文档</p>
+                <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
+                <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
+                <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
+                <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
+              </div>
+              <div class="right">
+                <el-tabs v-model="activeName" @tab-click="handleClick">
+                  <el-tab-pane :label="`照片(${getCurrentForm.picnum || '0'})`" name="picnum">
+                    <div class="container">
+                      <img src="./testImg/test.png" alt="" srcset="" />
+                    </div>
+                  </el-tab-pane>
+                  <el-tab-pane :label="`视频(${getCurrentForm.viedoNum || '0'})`" name="viedoNum"></el-tab-pane>
+                </el-tabs>
+              </div>
+            </div>
+          </div>
+        </el-card>
       </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
-        <el-button @click="dialogFormVisible3 = false">取 消</el-button>
-      </div>
-    </el-dialog>
+    </transition>
   </div>
 </template>
 
@@ -369,7 +457,8 @@ import {
   queryProjectDetails,
   queryDefectFormDetails,
   queryPipeStateDetails,
-  queryPipeState
+  queryPipeState,
+  assessmentDefect
 } from '@/api/pipelineManage'
 
 // 引入预览pdf插件
@@ -410,6 +499,13 @@ export default {
   },
   data() {
     return {
+      activeName: 'picnum', // 照片视频tab标签
+      currentForm: [], // 缩略提示框
+      currentIndex: 0, // 当前页数
+      currentInfoCard: false, // 弹出框
+      deleteDialogVisible: false, // 删除提示框显影
+      // 数据为空时的图片
+      // imgUrl:"@/assets/images/nullData.png",
       // 上传文件表格
       upDataTable: [],
       updataParamsId: {
@@ -513,6 +609,11 @@ export default {
     queryPipeState('113')
   },
   computed: {
+    // 提示框当前信息
+    getCurrentForm() {
+      let obj = { ...this.currentForm[this.currentIndex] }
+      return obj ? Object.assign(obj, this.isPromptBox) : {}
+    },
     returnTabel() {
       let obj = {
         defectQuantityStatisticsA: this.defectQuantityStatisticsA,
@@ -548,7 +649,7 @@ export default {
     this.addMapEvent()
     this.data.that.showLegend('testReport', true)
   },
-  destroyed () {
+  destroyed() {
     this.vectorLayer.getSource().clear()
     this.vectorLayer2.getSource().clear()
     this.lightLayer.getSource().clear()
@@ -585,8 +686,10 @@ export default {
      * @param id 报告编号
      * @param light 是否高亮
      * */
-    getPipeDefectData (type = 1, id, light = false) {
-      let dataApi = null, map, layer
+    getPipeDefectData(type = 1, id, light = false) {
+      let dataApi = null,
+        map,
+        layer
       if (type === 1) {
         map = this.data.mapView
         layer = this.vectorLayer
@@ -603,13 +706,14 @@ export default {
       } else {
         dataApi = getDefectData
       }
-      dataApi(id).then(res => {
+      dataApi(id).then((res) => {
         if (res.code === 1) {
-          let dFeas = [], pFeas = []
+          let dFeas = [],
+            pFeas = []
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result],
-            pipeData = [],
-            defectData = []
+              pipeData = [],
+              defectData = []
             reportInfo.forEach((rpt) => {
               let { pipeStates } = rpt
               pipeData = [...pipeData, ...pipeStates.map((pipe) => pipe)]
@@ -626,9 +730,16 @@ export default {
           } else {
             this.lightLayer.getSource().clear()
             layer.getSource().clear()
+<<<<<<< .merge_file_a29832
             if (dFeas.length !== 0 || pFeas.length !== 0) {
               layer.getSource().addFeatures([...dFeas, ...pFeas])
             }
+=======
+          }
+
+          if (dFeas.length !== 0 || pFeas.length !== 0) {
+            layer.getSource().addFeatures([...dFeas, ...pFeas])
+>>>>>>> .merge_file_a28336
           }
         } else this.$message.error('管线缺陷数据请求失败')
       })
@@ -649,7 +760,7 @@ export default {
             let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
             startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
             endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
-            
+
             let coors = [startPoint, endPoint]
             let feature = new Feature({ geometry: new LineString(coors) })
             // 健康等级颜色
@@ -688,6 +799,7 @@ export default {
     // 关闭上传弹框时
     closeDialog() {
       this.loadingBool = false
+      this.$refs['form'].resetFields()
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
       this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
       this.upDataTable = []
@@ -841,7 +953,7 @@ export default {
       })
       let res = await batchRelease(idArr.join(','))
       if (res.result) {
-        this.getPipeDefectData()
+        this.getPipeDefectData() // 刷新地图
         this.$message({
           message: '发布成功',
           type: 'success'
@@ -977,53 +1089,81 @@ export default {
     // 上传触发的方法
     handleAvatarSuccess(res, file, fileList) {
       // this.imageUrl = URL.createObjectURL(file.raw)
-      fileList.forEach((v) => {
-        if (v.status == 'ready' || v.status == 'uploading') {
-          return false
-        } else {
-          if (res.code) {
-            this.$message({
-              message: '上传成功',
-              type: 'success'
-            })
-            this.getPipeDefectData()
-            this.getDate()
-          }
-          let timeId = setTimeout(() => {
-            this.dialogFormVisible = false
-            this.form.name = ''
-            clearTimeout(timeId)
-          }, 1000)
-          // console.log('上传后的code码', res)
-          // console.log('上传后的文件信息', file)
-        }
-      })
+      let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
+      // console.log(arrState)
+      if (res.result.length == 0) {
+        this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
+      }
+      if (arrState) {
+        this.$message({
+          message: '文件已全部上传',
+          type: 'success'
+        })
+        this.getPipeDefectData() // 刷新地图
+        this.getDate()
+        let timeId = setTimeout(() => {
+          this.dialogFormVisible = false
+          this.form.name = ''
+          clearTimeout(timeId)
+        }, 1500)
+      }
+
+      // fileList.forEach((v) => {
+      //   if (v.status == 'ready' || v.status == 'uploading') {
+      //     return false
+      //   } else {
+      //     // let timeId = setTimeout(() => {
+      //     //   this.dialogFormVisible = false
+      //     //   this.form.name = ''
+      //     //   clearTimeout(timeId)
+      //     // }, 2000)
+      //     // console.log('上传后的code码', res)
+      console.log('上传后的文件信息', file)
+      //     // console.log('上传后的文件列表信息', fileList)
+      //   }
+      // })
     },
     // 视频
     handleAvatarSuccessVideo(res, file, fileList) {
-      // this.imageUrl = URL.createObjectURL(file.raw)
-      fileList.forEach((v) => {
-        if (v.status == 'ready' || v.status == 'uploading') {
-          return false
-        } else {
-          if (res.code) {
-            this.$message({
-              message: '上传成功',
-              type: 'success'
-            })
-            this.getDate()
-          } else {
-            this.$message.error('上传文件失败' + res.message)
-          }
-          let timeId = setTimeout(() => {
-            this.dialogFormVisible2 = false
-            this.form.name = ''
-            clearTimeout(timeId)
-          }, 1000)
-          // console.log('上传后的code码', res)
-          // console.log('上传后的文件信息', file)
-        }
-      })
+      let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
+      // console.log(arrState)
+      if (res.result.length == 0) {
+        this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
+      }
+      if (arrState) {
+        this.$message({
+          message: '文件已全部上传',
+          type: 'success'
+        })
+        this.getDate()
+        let timeId = setTimeout(() => {
+          this.dialogFormVisible2 = false
+          this.form.name = ''
+          clearTimeout(timeId)
+        }, 1500)
+      }
+      // fileList.forEach((v) => {
+      //   if (v.status == 'ready' || v.status == 'uploading') {
+      //     return false
+      //   } else {
+      //     if (res.result.length != 0) {
+      //       this.$message({
+      //         message: '上传成功',
+      //         type: 'success'
+      //       })
+      //       this.getDate()
+      //     } else {
+      //       this.$message.error('上传文件失败,请检查文件格式')
+      //     }
+      //     let timeId = setTimeout(() => {
+      //       this.dialogFormVisible2 = false
+      //       this.form.name = ''
+      //       clearTimeout(timeId)
+      //     }, 2000)
+      //     // console.log('上传后的code码', res)
+      // console.log('上传后的文件信息', file)
+      //   }
+      // })
     },
     beforeUpload(event, file, fileList) {
       let num = 1024.0 //byte
@@ -1056,32 +1196,31 @@ export default {
       console.log('搜索时传的参数', params)
       this.getDate(params)
     },
-    // 删除
-    removeDatas() {
-      this.$confirm(`确定删除选中的数据吗？`)
-        .then(async () => {
-          let res = {}
-          if (this.multipleSelection.length == 1) {
-            // res = await deleteIdData(this.multipleSelection[0].id)
-            res = await deleteTestReport({ ids: this.multipleSelection[0].id })
-          } else {
-            let idArr = this.multipleSelection.map((v) => v.id)
-            res = await deleteTestReport({ ids: idArr.join(',') })
-          }
-          if (res.result) {
-            this.getPipeDefectData()
-            this.$message({
-              message: '删除成功',
-              type: 'success'
-            })
-            this.getDate()
-          } else {
-            this.$message.error('删除失败')
-          }
+    // 删除按钮
+    removeBtn() {
+      this.deleteDialogVisible = true
+    },
+    // 确认删除
+    async removeDatas() {
+      let res = {}
+      if (this.multipleSelection.length == 1) {
+        // res = await deleteIdData(this.multipleSelection[0].id)
+        res = await deleteTestReport({ ids: this.multipleSelection[0].id })
+      } else {
+        let idArr = this.multipleSelection.map((v) => v.id)
+        res = await deleteTestReport({ ids: idArr.join(',') })
+      }
+      if (res.result) {
+        this.getPipeDefectData()
+        this.$message({
+          message: '删除成功',
+          type: 'success'
         })
-        .catch(() => {
-          console.log('err')
-        })
+         this.deleteDialogVisible = false
+        this.getDate()
+      } else {
+        this.$message.error('删除失败')
+      }
     },
     // 查询数据
     async getDate(params) {
@@ -1162,6 +1301,15 @@ $fontSize: 14px !important;
   box-sizing: border-box;
   position: relative;
   font-size: $fontSize;
+
+  .delete-box {
+    /deep/.el-dialog {
+      margin-top: 30vh !important;
+      .el-dialog__header {
+        border-bottom: none;
+      }
+    }
+  }
   /deep/ .el-date-editor {
   }
   // 表格样式
@@ -1259,13 +1407,15 @@ $fontSize: 14px !important;
   }
 
   // 报告上传样式
-  /deep/ .el-dialog__header {
-    background-color: #2d74e7;
-    .el-dialog__title {
-      color: #fff;
-    }
-    .el-dialog__headerbtn > .el-icon-close {
-      color: #fff !important;
+  .public-box {
+    /deep/ .el-dialog__header {
+      background-color: #2d74e7;
+      .el-dialog__title {
+        color: #fff;
+      }
+      .el-dialog__headerbtn > .el-icon-close {
+        color: #fff !important;
+      }
     }
   }
   .hd-input {
@@ -1330,6 +1480,7 @@ $fontSize: 14px !important;
     .left {
       flex: 2;
       .releaseContent {
+        height: 597px;
         border: 1px solid #9a9a9a;
         overflow: scroll;
         .detailsTitle {
@@ -1367,6 +1518,112 @@ $fontSize: 14px !important;
       .btns {
         position: absolute;
         right: 0;
+      }
+    }
+  }
+  // 详情卡片的样式
+  .detailsCrad {
+    position: fixed;
+    top: 100px;
+    right: 45px;
+    z-index: 9;
+    .clearfix:before,
+    .clearfix:after {
+      display: table;
+      content: '';
+    }
+    .clearfix:after {
+      clear: both;
+    }
+
+    /deep/ .box-card {
+      width: 500px;
+      max-height: 80vh;
+      .el-card__header {
+        height: 48px;
+        color: #fff;
+        background-color: #2d74e7;
+      }
+      .el-card__body {
+        padding: 0;
+        .el-menu-item {
+          height: 45px;
+        }
+      }
+      .content {
+        /deep/ .content-info {
+          overflow-y: scroll;
+          max-height: 545px;
+          padding: 10px 20px;
+          .el-textarea__inner,
+          .el-input__inner {
+            color: #666;
+          }
+          .detailsTitle {
+            position: relative;
+            font-size: 16px;
+            padding: 5px 0;
+            box-sizing: border-box;
+          }
+          .detailsTitle::after {
+            position: absolute;
+            top: 5px;
+            left: -10px;
+            content: '';
+            width: 4px;
+            height: 65%;
+            background-color: #2d74e7;
+          }
+        }
+      }
+      .table-content {
+        padding: 15px;
+        .content-info {
+          font-size: 12px;
+          display: flex;
+          justify-content: space-between;
+          .left {
+            flex: 1;
+          }
+          /deep/ .right {
+            flex: 1;
+            .container {
+              height: 100%;
+              width: 100%;
+              padding: 5px;
+              box-sizing: border-box;
+            }
+
+            .is-top {
+            }
+            .el-tabs__item {
+              margin: 11px 0 0 0;
+              background: transparent;
+            }
+            .el-tabs__header {
+              border-top: 0;
+              background: #fff;
+            }
+            // .el-tabs__nav-wrap::after {
+            //   z-index: 2;
+            // }
+            // .el-tabs__active-bar
+          }
+          .detailsTitle {
+            position: relative;
+            margin: 6px 0;
+            padding-left: 10px;
+            box-sizing: border-box;
+          }
+          .detailsTitle::after {
+            position: absolute;
+            left: 0;
+            content: '';
+            width: 4px;
+            height: 100%;
+            background-color: #2d74e7;
+          }
+        }
       }
     }
   }
