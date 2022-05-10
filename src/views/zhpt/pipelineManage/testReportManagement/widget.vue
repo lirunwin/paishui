@@ -309,13 +309,6 @@
                   </el-table-column>
                 </el-table>
               </div>
-<<<<<<< .merge_file_a29832
-            </el-tab-pane>
-            <!-- <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane> -->
-            <el-tab-pane label="管道缺陷" name="third">管道缺陷</el-tab-pane>
-            <el-tab-pane label="管段状态评估" name="fourth">管段状态评估</el-tab-pane>
-          </el-tabs>
-=======
             </el-upload>
           </el-form-item>
         </el-form>
@@ -381,7 +374,6 @@
           <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
           <span class="iconfont icondtbz" style="font-size: 22px; color: #e6a23c"></span>
           &nbsp; 确认删除选中的{{ multipleSelection.length }}条检测报告吗?
->>>>>>> .merge_file_a28336
         </div>
         <span slot="footer" class="dialog-footer">
           <el-button @click="deleteDialogVisible = false">取 消</el-button>
