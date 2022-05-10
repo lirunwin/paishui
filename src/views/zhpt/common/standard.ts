@@ -41,7 +41,7 @@ export const CoverSoilStandard = [{
 }
 ]
 
-// 水平垂直净距标准
+// 水平垂直净距标准 
 export const DisStandard = [
     {
         subtype: '排水管',

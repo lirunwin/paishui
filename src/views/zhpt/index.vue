@@ -395,7 +395,7 @@ export default class BaseMap extends Vue {
       view: new View({
         center: initCenter,
         zoom: initZoom,
-        maxZoom: 20,
+        maxZoom: 21,
         minZoom: 5,
         projection: 'EPSG:4326'
       })
@@ -430,7 +430,7 @@ export default class BaseMap extends Vue {
     // })
     // this.view.addLayer(tilelayer)
     
-    let layer = this.addLayers(layerResource)
+    this.addLayers(layerResource)
 
     this.loading = false
     this.$nextTick(this.controlToolDisplay)
@@ -450,7 +450,7 @@ export default class BaseMap extends Vue {
   }
 
   addLayers(layers) {
-    layers.forEach((layerConfig) => {
+    layers.forEach(layerConfig => {
       let { name, type, url, parentname, id, visible = true } = layerConfig
       let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
       this.view.addLayer(layer)
@@ -522,7 +522,6 @@ export default class BaseMap extends Vue {
     if (appconfig.isloadServer) {
       this.loadText = '服务加载中'
       request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then(res1 => {
-        console.log("地图数据服务", res1)
         if (res1.code == 1) {
           const res = res1.result
           //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
@@ -570,7 +569,6 @@ export default class BaseMap extends Vue {
                       }
                     })
                   } else if (service.name === "地图配置服务") {
-                    console.log("地图服务配置")
                     resData.forEach(item => {
                       if (item.ckey === 'center') {
                         source.initCenter = item.cval.split(',')
@@ -583,7 +581,6 @@ export default class BaseMap extends Vue {
                   }
                 }
               })
-              console.log('重新配置后的服务', appconfig.gisResource["iserver_resource"])
                 // for (var i = 0, ii = res.length; i < ii; i++) {
                 //   var dr = res[i]
                 //   if (resource.hasOwnProperty(dr.code)) {

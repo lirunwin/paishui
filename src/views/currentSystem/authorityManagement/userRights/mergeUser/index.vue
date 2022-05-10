@@ -2,27 +2,27 @@
   <el-form ref="ruleForm" :model="ruleForm" :rules="rules" label-width="90px" class="demo-ruleForm">
     <el-row type="flex" justify="space-around">
       <el-col :span="12">
-        <el-form-item style="margin-bottom: 15px" label="登录名">
+        <el-form-item style="margin-bottom: 18px" label="登录名" prop="username">
           <el-input v-model="ruleForm.username" size="small" placeholder="请输入登录名" :disabled="difference" />
         </el-form-item>
         <!-- <el-form-item label="密码" prop="password">
             <el-input v-model="ruleForm.password" size="small" type="password" placeholder="请输入密码" />
           </el-form-item> -->
-        <el-form-item style="margin-bottom: 15px" label="用户名" prop="realName">
+        <el-form-item style="margin-bottom: 18px" label="用户名" prop="realName">
           <el-input v-model="ruleForm.realName" size="small" placeholder="请输入客户名" />
         </el-form-item>
-        <el-form-item style="margin-bottom: 15px" label="联系电话" prop="phone">
+        <el-form-item style="margin-bottom: 18px" label="联系电话" prop="phone">
           <el-input v-model="ruleForm.phone" size="small" placeholder="请输入联系电话" />
         </el-form-item>
-        <el-form-item style="margin-bottom: 15px" label="邮箱" prop="email">
+        <el-form-item style="margin-bottom: 18px" label="邮箱" prop="email">
           <el-input v-model="ruleForm.email" size="small" placeholder="请输入邮箱" />
         </el-form-item>
-        <el-form-item style="margin-bottom: 15px" label="部门" prop="departmentId">
+        <el-form-item style="margin-bottom: 18px" label="部门" prop="departmentId">
           <el-select v-model="ruleForm.departmentId" size="small" placeholder="请选择部门">
             <el-option v-for="item in company" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item style="margin-bottom: 15px" label="角色复制">
+        <el-form-item style="margin-bottom: 18px" label="角色复制">
           <el-select
             v-model="copyRole"
             multiple
@@ -37,20 +37,20 @@
             <el-option v-for="item in copyUsers" :key="item.id" :label="item.realName" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item style="margin-bottom: 15px" label="角色绑定" prop="roles">
+        <el-form-item style="margin-bottom: 18px" label="角色绑定" prop="roles">
           <el-select v-model="ruleForm.roles" multiple size="small" placeholder="请选择用户管理权限">
             <el-option v-for="item in optionsRole" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item style="margin-bottom: 15px" label="工作岗位" prop="job">
+        <el-form-item style="margin-bottom: 18px" label="工作岗位" prop="job">
           <el-input v-model="ruleForm.job" />
         </el-form-item>
-        <el-form-item style="margin-bottom: 15px" label="工作职责" prop="note">
+        <el-form-item style="margin-bottom: 18px" label="工作职责" prop="note">
           <el-input v-model="ruleForm.note" :rows="3" type="textarea" />
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="个性签名" label-width="7.5rem" style="margin-bottom: 15px">
+        <el-form-item label="个性签名" label-width="7.5rem" style="margin-bottom: 18px">
           <!-- :data="upLoadData" -->
           <el-upload
             class="avatar-uploader"
@@ -71,7 +71,7 @@
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
             :before-upload="(file) => beforeAvatarUpload(file, 'avatar')"
-            style="margin-bottom: 15px"
+            style="margin-bottom: 18px"
           >
             <img v-if="form.avatar" :src="form.avatar" class="avatar" />
             <i v-else class="el-icon-plus avatar-uploader-icon el-upload" />

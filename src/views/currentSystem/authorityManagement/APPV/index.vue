@@ -8,7 +8,7 @@
       <select-item
         can-clear
         placeholder="请选择应用程序类型"
-        title="程序类型："
+        title="应用类型："
         nominate="appClassfication"
         :value="appClassfication"
         custom-style="display: inline-block; width: 300px;margin-right:10px"
@@ -85,7 +85,7 @@
       <div class="detail-container">
         <el-row class="info-row">
           <el-col class="info-col" :span="12">
-            <span>应用程序类型：</span><span>{{ detailInfo.appType === '1' ? 'app' : '前端平台' }}</span>
+            <span>应用类型：</span><span>{{ detailInfo.appType === '1' ? 'app' : '前端平台' }}</span>
           </el-col>
           <el-col class="info-col" :span="12">
             <span>版本号：</span><span>{{ detailInfo.version }}</span>
@@ -137,8 +137,8 @@
         <el-form ref="appForm" :model="appForm" :rules="appFormRules" label-width="90px" class="demo-ruleForm">
           <el-row type="flex" justify="space-around">
             <el-col :span="24">
-              <el-form-item style="margin-bottom: 15px" prop="appType" label="app类型">
-                <el-select v-model="appForm.appType" size="small" placeholder="请选择app类型">
+              <el-form-item style="margin-bottom: 15px" prop="appType" label="应用类型">
+                <el-select v-model="appForm.appType" size="small" placeholder="请选择应用类型">
                   <el-option v-for="item in options1" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
@@ -260,7 +260,7 @@ export default class APPV extends Vue {
   ]
   column = [
     {
-      label: '应用程序类型',
+      label: '应用类型',
       prop: 'appType',
       width: '150',
       formatter: (row, col, cellValue, index) => {

@@ -192,8 +192,9 @@
             <div v-show="isDetails" style="max-height: 120px; overflow-y: scroll">
               <div v-for="(item, i) in fileListData" :key="i" class="text-space">
                 <el-link type="primary">{{ item.originalName }}</el-link
-                >&nbsp;<el-link type="success">下载</el-link>
+                >&nbsp;<el-link type="success" @click="fileLinkToStreamDownload(item.id)">下载</el-link>
               </div>
+              <p v-if="!fileListData.length" style="text-align: center;">暂无附件</p>
             </div>
           </el-form-item>
         </el-form>
@@ -617,27 +618,8 @@ export default {
       console.log('选项发生了变化', this.multipleSelection.length == 1)
     },
     // 下载附件
-    fileLinkToStreamDownload(url) {
-      let fileName = this.getDay()
-      let reg = /^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(([A-Za-z0-9-~]+).)+([A-Za-z0-9-~\/])+$/
-      if (!reg.test(url)) {
-        throw new Error('传入参数不合法,不是标准的文件链接')
-      } else {
-        let xhr = new XMLHttpRequest()
-        xhr.open('get', url, true)
-        xhr.setRequestHeader('Content-Type', `application/pdf`)
-        xhr.setRequestHeader('Authorization', this.uploadHeaders.Authorization)
-        xhr.responseType = 'blob'
-        let that = this
-        xhr.onload = function () {
-          if (this.status == 200) {
-            //接受二进制文件流
-            var blob = this.response
-            that.downloadExportFile(blob, fileName)
-          }
-        }
-        xhr.send()
-      }
+    fileLinkToStreamDownload(id) {
+      downloadFile(id)
     },
     downloadExportFile(blob, tagFileName) {
       let downloadElement = document.createElement('a')
@@ -772,12 +754,16 @@ export default {
       }
     }
     .text-space {
-      // 1.先强制一行内显示文本
+      /deep/.el-link--inner{
+        max-width: 650px;
+        // 1.先强制一行内显示文本
       white-space: nowrap;
+
       // 2.超出部分隐藏
       overflow: hidden;
       // 3.文字用省略号替换超出的部分
       text-overflow: ellipsis;
+      }
     }
   }
   .delete-box {
