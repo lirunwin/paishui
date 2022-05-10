@@ -33,6 +33,7 @@ export default {
   },
   mounted () {
     this.getNumPages()
+    console.log("传来的路径",this.pdfUrl);
   },
   methods: {
     getNumPages() {
@@ -42,7 +43,7 @@ export default {
         this.laoclUrl = loadingTask
         this.numPages = pdf.numPages
       }).catch((err) => {
-        console.error('pdf加载失败')
+        // console.error('pdf加载失败')
       })
     },
   }

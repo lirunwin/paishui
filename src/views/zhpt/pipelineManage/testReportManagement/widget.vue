@@ -110,7 +110,7 @@
               size="small"
               :wu="scope"
               v-if="scope.row.state == '0'"
-              @click="testReportDetails(scope.row.id, true)"
+              @click.stop="testReportDetails(scope.row.id, true)"
               >发布</el-button
             >
             <el-button
@@ -118,7 +118,7 @@
               size="small"
               :wu="scope"
               style="margin-left: 10px"
-              @click="testReportDetails(scope.row.id)"
+              @click.stop="testReportDetails(scope.row.id)"
               >详情</el-button
             >
           </template>
@@ -338,7 +338,6 @@
                   <div class="detailsTitle">管道缺陷数量统计图</div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane>
               <el-tab-pane label="管道缺陷" name="third">管道缺陷</el-tab-pane>
               <el-tab-pane label="管段状态评估" name="fourth">管段状态评估</el-tab-pane>
             </el-tabs>
@@ -348,7 +347,7 @@
             <el-tabs v-model="activeRight" @tab-click="handleClick">
               <el-tab-pane label="原始检测报告" name="one">
                 <div class="releaseContent">
-                  <pdf-see></pdf-see>
+                  <pdf-see :pdfUrl="pdfUrl"></pdf-see>
                 </div>
               </el-tab-pane>
               <el-tab-pane label="数据地图" name="two">
@@ -361,6 +360,8 @@
           </div>
         </div>
         <div slot="footer" class="dialog-footer">
+          <!-- <span>备注：</span> -->
+          <!-- <el-input type="textarea" :rows="2" placeholder="请输入内容" v-model="textarea"> </el-input> -->
           <el-button type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
           <el-button @click="dialogFormVisible3 = false">取 消</el-button>
         </div>
@@ -456,6 +457,9 @@ import {
 // 引入预览pdf插件
 import pdfSee from '../components/OpenPdf.vue'
 
+// 引入公共ip地址
+import IP from '@/utils/request.ts'
+
 // 引入发布的组件
 import summaryForm from './components/summaryForm'
 import projectForm from './components/project'
@@ -474,11 +478,11 @@ import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import Text from 'ol/style/Text'
 import { Style } from 'ol/style'
 
-import defectImgR from '@/assets/images/traingle-r.png';
-import defectImgB from '@/assets/images/traingle-b.png';
-import defectImgY from '@/assets/images/traingle-y.png';
+import defectImgR from '@/assets/images/traingle-r.png'
+import defectImgB from '@/assets/images/traingle-b.png'
+import defectImgY from '@/assets/images/traingle-y.png'
 
-import Icon from 'ol/style/Icon';
+import Icon from 'ol/style/Icon'
 
 export default {
   props: ['data'],
@@ -491,6 +495,7 @@ export default {
   },
   data() {
     return {
+      pdfUrl: '', // pdf地址
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
       currentIndex: 0, // 当前页数
@@ -596,9 +601,8 @@ export default {
       map: null
     }
   },
-  async created() {
+  created() {
     let res = this.getDate()
-    queryPipeState('113')
   },
   computed: {
     // 提示框当前信息
@@ -627,11 +631,15 @@ export default {
     }
   },
   mounted() {
+    console.log('IP', IP)
     this.map = this.data.mapView
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
 
-    this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(4, '#0ff', 10, 'rgba(0, 255, 255, 0.6)') })
+    this.lightLayer = new VectorLayer({
+      source: new VectorSource(),
+      style: comSymbol.getAllStyle(4, '#0ff', 10, 'rgba(0, 255, 255, 0.6)')
+    })
     this.vectorLayer = new VectorLayer({ source: new VectorSource() })
     this.map.addLayer(this.vectorLayer)
     this.map.addLayer(this.lightLayer)
@@ -678,14 +686,14 @@ export default {
     openDetails(row, column) {
       this.testReportDetails(row.id)
     },
-    addMapEvent () {
+    addMapEvent() {
       let vectorLayer = new VectorLayer({ source: new VectorSource() })
-      let feature = new Feature({ geometry: new Point([101.731040, 26.505465]) })
-      feature.setStyle(comSymbol.getPointStyle(5, "#f00"))
+      let feature = new Feature({ geometry: new Point([101.73104, 26.505465]) })
+      feature.setStyle(comSymbol.getPointStyle(5, '#f00'))
       vectorLayer.getSource().addFeature(feature)
       this.map.addLayer(vectorLayer)
 
-      this.map.on('click', evt => {
+      this.map.on('click', (evt) => {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         if (features.length !== 0) {
           console.log(features)
@@ -694,7 +702,7 @@ export default {
         }
       })
     },
-    handleAdd () {},
+    handleAdd() {},
     /**
      * 小地图完成加载后
      * */
@@ -798,7 +806,8 @@ export default {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
-            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: defectImgR, scale: 0.4 }) }))
+            hasStyle &&
+              feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: defectImgR, scale: 0.4 }) }))
 
             features.push(feature)
 
@@ -935,8 +944,9 @@ export default {
         this.defectSumObj.total += v.sum
       })
 
-      
-
+      let resUrl = await queryPipeState(id)
+      console.log('url', resUrl)
+      this.pdfUrl = 'http://117.174.10.73:1114/psjc/file' + resUrl.result.pdfFilePath
       this.dialogFormVisible3 = true
     },
     // 单个发布
