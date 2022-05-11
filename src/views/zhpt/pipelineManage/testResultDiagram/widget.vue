@@ -189,6 +189,11 @@ export default {
       if (n !== '检测成果专题图') {
         this.clearAll()
         this.hasData = false
+        this.$store.dispatch('map/handelClose', {
+          box:'Panel',
+          pathId: 'testReportManagement',
+          widgetid: 'Panel',
+        })
       } else {
         this.init()
       }

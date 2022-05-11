@@ -366,6 +366,7 @@ export default {
       console.log('定位')
       if (filterFea) {
         let feature = new Feature({ geometry: filterFea.getGeometry().clone(), style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')})
+        this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(feature)
         let position = feature.getGeometry().getCoordinates().flat()
         position.length = 2
