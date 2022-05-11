@@ -61,7 +61,11 @@
               :header-cell-style="{ fontSize: '14px', fontWeight: '600', background: '#dfeffe', color: '#333333' }"
               height="100%"
               highlight-current-row
-              style="width: 100%;font-size: 14px;border: 0px solid;"
+              style="
+                width: 100%;
+                font-size: 14px;
+                border: 0px solid;
+              "
               @row-click="rowClick"
             >
               <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->

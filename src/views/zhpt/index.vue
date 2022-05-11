@@ -884,10 +884,8 @@ export default class BaseMap extends Vue {
     to { background: #fff0; color: #2D74E7; }
   }
 }
-<<<<<<< HEAD
-=======
 
-// 
+//
 .map-legend {
   background: #fffc;
   position: absolute;
@@ -965,5 +963,4 @@ export default class BaseMap extends Vue {
   width: 36px;
   height: 36px;
 }
->>>>>>> 7b7eb241af0f444ef39a2132a132ac47bf1a52af
 </style>
