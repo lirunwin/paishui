@@ -1,30 +1,43 @@
 <template>
     <div class="portMapView" id="portMapView">
-        <!-- 左下角工具栏 -->
-        <leftBottomTool style="bottom:20px"
-            :toolList="leftBottomTool.children"
-            :map="view"
-            v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
-        ></leftBottomTool>
+
     </div>
 </template>
 
 <script>
 import Map from 'ol/Map'
 import View from 'ol/View'
-import TileLayer from 'ol/layer/Tile'
-import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
-import { esriConfig, appconfig } from 'staticPub/config'
-import leftBottomTool from '@/views/zhpt/tongyonggongju/leftBottomTool/widget.vue'
+import { appconfig } from 'staticPub/config'
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import GeoJSON from 'ol/format/GeoJSON'
+import { Vector as VectorSource } from 'ol/source'
+import { Vector as VectorLayer } from 'ol/layer'
+import Feature from 'ol/Feature';
+import Polygon from 'ol/geom/Polygon';
+import {
+  Style,
+  Circle,
+  Icon,
+  Fill,
+  RegularShape,
+  Stroke,
+  Text
+} from 'ol/style'
 export default {
     name:"portMapView",//
-    components: {
-        leftBottomTool
-    },
     data(){
         return{
             view:null,
-            leftBottomTool:null
+            drawer:null,
+            customFeature:null,
+            ysFeatures:[],
+            wsFeatures:[],
+            yswsFeatures:[],
+            ysLayer:null,
+            wsLayer:null,
+            yswsLayer:null,
         }
     },
     mounted(){
@@ -38,72 +51,195 @@ export default {
                 view: new View({
                     center: initCenter,
                     zoom: initZoom,
+                    maxZoom: 20,
+                    minZoom: 9,
                     projection: 'EPSG:4326'
                 })
             })
-            this.addLayers()
+            this.addLayers();
         },
         addLayers(){
             let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
             layerResource.forEach((layerConfig) => {
-                let { name, url, parentname, id, visible = true } = layerConfig
-                let layer = new TileLayer({
-                    name,
-                    parentname,
-                    id,
-                    visible,
-                    source: new TileSuperMapRest({
-                        url,
-                        crossOrigin: 'anonymous', // 是否请求跨域操作
-                        wrapX: true
-                    }),
-                    properties: {
-                        projection: 'EPSG:4326'
-                    }
-                })
+                let { name, type, url, parentname, id, visible = true } = layerConfig
+                let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
                 this.view.addLayer(layer)
-                this.$nextTick(this.controlToolDisplay)
             })
         },
-        /**
-         * 根据权限控制地图四个角的工具栏的展示
-         */
-        controlToolDisplay() {
-            //本功能必须在权限管理-系统管理-模块管理的系统新增中分配leftTopTool,leftBottomTool,rightTopTool,rightBottomTool四个类型
-            //这四个类型分别对应地图工具栏的左上角,左下角,右上角,右下角
-            //这四个工具栏不在左边的功能列表中展示（改设置在src\layout\components\Sidebar\index.vue中）
-            if (this.$store.state && this.$store.state.routeSetting && this.$store.state.routeSetting.routes) {
-            const allModel = this.$store.state.routeSetting.routes //获取所有功能
-            /**工具栏识别的字符集合*/
-            const toolBoxList = ['leftBottomTool']
-            const toolcomponentList = {
-                leftBottomTool,
+        // 开启缩放和拖动
+        zoomAndMove() {
+            //地图缩放和平移事件回调函数
+            let mapZoomAndMove = () =>{
+                // 展示 extent
+                let extent=this.view.getView().calculateExtent(this.view.getSize());
+                let feature = this.getMapRange(extent)
+                this.query(feature)
             }
-            //根据模块管理将组件注入
-            allModel.forEach((item) => {
-                let index = toolBoxList.findIndex((val) => {
-                return val == item.type
-                })
-                if (index != -1) {
-                this[item.type] = item || []
-                let temp = this.getComponents(item.type)
-                temp.forEach((item2) => {
-                    toolcomponentList[item.type]['components'][item2.name] = item2.component
-                })
+            //注册事件
+            this.registerOnZoom(mapZoomAndMove);
+        },
+        // 注册地图缩放和拖动事件方法
+        // 第一个参数是监听事件，第二个参数为是否开启监听拖动（true为不开启）
+        registerOnZoom(eventListen, notListenMove) {
+            let map =this.view
+            // 记录地图缩放，用于判断拖动
+            map.lastZoom = map.lastZoom || map.getView().getZoom();
+            // 地图缩放事件
+            let registerOnZoom = function (e) {
+                // 不监听地图拖动事件
+                if (notListenMove) {
+                    if (map.lastZoom != map.getView().getZoom()) {
+                        eventListen && eventListen(e);
+                    }
+                } else {
+                    eventListen && eventListen(e);
+                }
+                map.lastZoom = map.getView().getZoom();
+            }
+            // 保存缩放和拖动事件对象，用于后期移除
+            let registerOnZoomArr = map.get('registerOnZoom') || [];
+            registerOnZoomArr.push(registerOnZoom);
+            // 使用地图 set 方法保存事件对象
+            map.set('registerOnZoom', registerOnZoomArr);
+            // 监听地图移动结束事件
+            map.on('moveend', registerOnZoom);
+            return eventListen;
+        },
+        // 移除缩放和拖动事件对象
+        removeZoomRegister() {
+            let map = this.view
+            let registerOnZoomArr = map.get('registerOnZoom');
+            if (registerOnZoomArr && registerOnZoomArr.length > 0) {
+                for (let i = 0; i < registerOnZoomArr.length; i++) {
+                    map.un('moveend', registerOnZoomArr[i]);
+                }
+            }
+        },
+        //自定义范围
+        customRange(type){
+            this.drawer && this.drawer.end()
+            this.removeLayer()
+            // this.queryLayer && this.queryLayer.getSource().clear()
+            this.drawer = new iDraw(this.view, type, {
+                endDrawCallBack: feature => {
+                    this.drawer.remove()
+                    this.customFeature=feature
+                },
+                showCloser: true,
+                drawStyle:{
+                    pointSize:5,
+                    pointColor:'rgb(246,82,82)',
+                    lineWidth:2,
+                    lineColor:'rgb(246,82,82)',
+                    fillColor:'rgba(246,82,82,0.1)',
+                    lineDash:[0,0]
                 }
             })
+            this.drawer.start()
+        },
+        checkType(type){
+            switch(type){
+                // case 'all': this.allRange();
+                //             break;
+                case 'map': let size =this.view.getSize();
+                            let extent = this.view.getView().calculateExtent(size);
+                            let feature=this.getMapRange(extent);
+                            this.query(feature);
+                            break
+                case 'custom':this.query(this.customFeature);
+                            break
             }
         },
-        /**
-         * 获取指定层级下面的组件
-         * @param typeString 指定层级的名称
-         * */
-        getComponents(typeString) {
-            let temp = this.$store.state.routeSetting.addRoutes.find((val) => {
-            return val.name && val.name == typeString
+        //地图范围
+        getMapRange(extent){
+            //创建Feature，并添加进矢量容器中
+            let feature = new Feature({
+                geometry: new Polygon([[[extent[0], extent[1]], [extent[0], extent[3]], [extent[2], extent[3]], [extent[2], extent[1]],[extent[0], extent[1]]]]),
+                name: 'mapRange'
+            });
+            return feature
+        },
+        //空间查询
+        query(feature) {
+            console.log(feature)
+            if(!feature) return
+            let that=this;
+            let dataService = appconfig.gisResource['iserver_resource'].dataService
+            let dataSetInfo = dataService.dataSetInfo.filter(info => info.label === '排放口')
+            console.log("数据服务",dataSetInfo)
+            let queryTask = new iQuery({ dataSetInfo })
+            queryTask.spaceQuery(feature).then(resArr => {
+                let features = []
+                console.log("结果",resArr)
+                resArr.forEach(item => {
+                    if (item && item.result.featureCount !== 0) {
+                        features.push(item.result.features)
+                    }
+                })
+                if(features.length==0){
+                    that.$message('暂无数据！')
+                    return
+                }
+                that.ysFeatures=[];
+                that.wsFeatures=[];
+                that.yswsFeatures=[];
+                features.forEach(feaJson => {
+                    that.classification(new GeoJSON().readFeatures(feaJson))
+                })
+                that.initLayer();
             })
-            return temp.children || []
-        }
+        },
+        classification(features){
+            features.forEach(item=>{
+                switch(item.values_.TYPE){
+                    case '雨水':this.ysFeatures.push(item)
+                              break
+                    case '污水':this.wsFeatures.push(item)
+                              break
+                }
+            })
+        },
+        // 初始化图层
+        initLayer() {
+            this.ysLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    // 将点设置成圆形样式
+                    image: new Circle({
+                        // 点的颜色
+                        fill: new Fill({
+                            color: 'blue'
+                        }),
+                        // 圆形半径
+                        radius: 5
+                    }),
+                })
+            })
+            this.wsLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    // 将点设置成圆形样式
+                    image: new Circle({
+                        // 点的颜色
+                        fill: new Fill({
+                            color: 'red'
+                        }),
+                        // 圆形半径
+                        radius: 5
+                    }),
+                })
+            })
+            this.view.addLayer(this.ysLayer)
+            this.view.addLayer(this.wsLayer)
+            this.ysLayer.getSource().addFeatures(this.ysFeatures)
+            this.wsLayer.getSource().addFeatures(this.wsFeatures)
+        },
+        //删除
+        removeLayer(){
+            this.view.removeLayer(this.ysLayer)
+            this.view.removeLayer(this.wsLayer)
+            this.view.removeLayer(this.yswsLayer)
+        },
     }
 }
 </script>

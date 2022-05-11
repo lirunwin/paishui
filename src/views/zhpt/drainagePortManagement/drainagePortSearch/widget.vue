@@ -85,22 +85,23 @@
     :popupPosition="popupPosition"
     :popupTitle="popupTitle"
     :headerStyle="hstyle"
+    :isHeaderShow="true"
     :isSetCenter="true"
     :operationGroup="operationGroup"
-    @detail="detail()"
+    @detail="detailInfo()"
     >
     <div class="drainagePortInfo">
-        <div class="infoTerm"><div>排放口编码</div><div>PSK987667</div></div>
-        <div class="infoTerm"><div>所在污水分区</div><div>临港污水片区</div></div>
-        <div class="infoTerm"><div>所在排水分区</div><div>临港雨水片区</div></div>
+        <div class="infoTerm"><div>排放口编码</div><div>{{detail.prjNo}}</div></div>
+        <div class="infoTerm"><div>所在污水分区</div><div>{{detail.sewagesystemId}}</div></div>
+        <div class="infoTerm"><div>所在雨水分区</div><div>{{detail.stormsystemId}}</div></div>
         <div class="panelTerm">
             <div class="portTypeItem pfklx">
                 <div class="itemTitle">排放口类型</div>
-                <div class="itemValue">污水</div>
+                <div class="itemValue">{{detail.type}}</div>
             </div>
             <div class="portTypeItem snst">
                 <div class="itemTitle">收纳水体</div>
-                <div class="itemValue">童家河</div>
+                <div class="itemValue">{{detail.receivewater}}</div>
             </div>
             <div class="portTypeItem pfkj">
                 <div class="itemTitle">排放口径</div>
@@ -115,10 +116,24 @@
 <script>
 import axios from "axios";
 import { geteSessionStorage } from '@/utils/auth'
-import {getOutfall} from '@/api/drainage/drainage'
+import { getOutfall } from '@/api/drainage/drainage'
 import Config from "./config.json"
 import tableItem from "@/components/Table/index.vue"
 import commonPopup from "@/components/CommonPopup/index.vue"
+import { Vector as VectorSource } from "ol/source";
+import { Vector as VectorLayer } from "ol/layer";
+import Feature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import proJ4 from "proj4";
+import {
+  Style,
+  Circle,
+  Icon,
+  Fill,
+  RegularShape,
+  Stroke,
+  Text
+} from 'ol/style';
 export default {
     name:"drainagePortSearch",//排水口管理
     components:{
@@ -171,7 +186,19 @@ export default {
             operationGroup:[
                 {icon:"iconfont icondtbz",color:"royalblue",action:"detail"},
             ],
-            hstyle:'font-weight: bold;justify-content: center;'
+            hstyle:'font-weight: bold;justify-content: center;',
+            //定位图标
+            vectorLayer:null,
+            vectorSource:null,
+            feature:null,
+            //详细信息
+            detail:{
+                prjNo:null,
+                sewagesystemId:null,
+                stormsystemId:null,
+                type:null,
+                receivewater:null
+            }
         }
     },
     computed:{
@@ -183,8 +210,32 @@ export default {
         this.getPage();
         this.column=this.config.column
         this.view=this.$attrs.data.mapView
+        this.initMap();
     },
     methods:{
+        initMap(){
+            let gl =this;
+            // 矢量图层源
+            this.vectorSource = new VectorSource({
+                wrapX: false,
+            });
+            //创建矢量层
+            this.vectorLayer = new VectorLayer({
+                source: this.vectorSource
+            });
+            //将图层添加到地图中
+            this.view.addLayer(this.vectorLayer);
+            //地图单击事件
+            this.mapEvent=this.view.on('singleclick', function (evt) {
+                let pixel = gl.view.getEventPixel(evt.originalEvent)
+                gl.view.forEachFeatureAtPixel(pixel,function(feature){
+                    var attr = feature.getProperties();
+                    var coordinate = evt.coordinate;
+                    console.log(attr,coordinate)
+                    gl.showInfoPop(attr.info,coordinate)
+                });
+            });
+        },
         getPage(){
             let data={
                 current:this.pagination.current,
@@ -252,39 +303,72 @@ export default {
         },
         //列表双击定位
         rowDblclick(row, column, event) {
-            console.log(row)
-            this.located()
+            this.located(row,[row.x,row.y]);
         },
         //定位方法
-        located(){
-            
-            let gl =this
-            this.mapEvent=this.view.on('singleclick', function (evt) {
-                let pixel = gl.view.getEventPixel(evt.originalEvent)
-                gl.view.forEachFeatureAtPixel(pixel,function(feature){
-                    var attr = feature.getProperties();
-                    var coordinate = evt.coordinate;
-                    console.log(attr,coordinate)
-                });
-            });
-            let center=[
-                104.75231999734498,
-                31.525963399505617
-            ]
+        located(info,position){
+            let center = this.projectConvert(position)
+            console.log(center)
+            this.showInfoPop(info,center)
+            this.showPointSymbol(info,center)
+        },
+        showInfoPop(info,center){
             this.popupShow=true
             this.popupPosition=center
-            this.popupTitle="（排放口）锦绣家园小区"
-            // this.view.animate({
-            //     center: fromLonLat(center),
-            //     duration: 2000,
-            // });
+            this.popupTitle=`（${info.type}排放口）${info.address}`;
+            for(let i in info){
+                info[i]=info[i]?info[i]:'无'
+            }
+            let {prjNo,sewagesystemId,stormsystemId,type,receivewater}=info
+            this.detail={
+                prjNo,
+                sewagesystemId,
+                stormsystemId,
+                type,
+                receivewater
+            }
         },
-        detail(){
+        showPointSymbol(info,position){
+            this.vectorSource.clear()
+            //创建Feature，并添加进矢量容器中
+            this.feature = new Feature({
+                geometry: new Point(position),
+                name: 'My point',
+                info
+            });
+            //创建标记的样式
+            this.feature.setStyle(this.setFeatureStyle());
+            this.vectorSource.addFeature(this.feature);
+
+        },
+        /**
+         * @description 为要素设置样式
+         */
+        setFeatureStyle() {
+            return new Style({
+                image: new Icon({
+                    anchor: [0.5, 0.7],
+                    scale:0.15,
+                    //图标的url
+                    src: require('@/assets/images/locate.png')
+                })
+            });
+        },
+        //坐标转换
+        projectConvert(position){
+            proJ4.defs("EPSG:4543","+proj=tmerc +lat_0=0 +lon_0=102 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m +no_defs");
+            proJ4.defs("EPSG:4326","+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
+            return proJ4('EPSG:4543', 'EPSG:4326', position) 
+        },
+        detailInfo(){
             
         }
     },
     beforeDestroy(){
-        if(this.view) this.view.un(this.mapEvent.type, this.mapEvent.listener)
+        if(this.view&&this.mapEvent) {
+            this.view.un(this.mapEvent.type, this.mapEvent.listener)
+            this.view.removeLayer(this.vectorLayer)
+        }
         if(this.$refs.commonPopup.isShow) this.$refs.commonPopup.closePopup()
     }
 }
