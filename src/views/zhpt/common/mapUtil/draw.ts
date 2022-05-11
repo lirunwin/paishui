@@ -29,6 +29,8 @@ export default class iDraw {
 
     maxLength = 1e3 // 最多绘制点数
 
+    drawStyle=null //绘制样式
+
     drawType = {
         line: "LineString", // 线
         polygon: "Polygon", // 面
@@ -37,7 +39,7 @@ export default class iDraw {
         circle: "Circle" // 圆
     } // 绘制类型
 
-    constructor (map, type, { startDrawCallBack = null, conditionCallBack = null, endDrawCallBack = null, showCloser = true, maxLength = 1e3 }) {
+    constructor (map, type, { startDrawCallBack = null, conditionCallBack = null, endDrawCallBack = null, showCloser = true, maxLength = 1e3 ,drawStyle=null}) {
         if (!map) throw new Error("绘制器没有地图对象")
         if (!type) throw new Error(`无绘制类型`)
         this.map = map
@@ -47,6 +49,7 @@ export default class iDraw {
         this.conditionCallBack = conditionCallBack
         this.showCloser = showCloser
         this.maxLength = maxLength
+        this.drawStyle = drawStyle
         this.init()
     }
 
@@ -54,7 +57,8 @@ export default class iDraw {
         this.vectorSource = new VectorSource({ wrapX: false })
         this.vectorLayer = new VectorLayer({ 
             source: this.vectorSource,
-            style: comSymbol.getAllStyle(7, "#f40", 5, "#C0DB8D")
+            style: !this.drawStyle?comSymbol.getAllStyle(7, "#f40", 5, "#C0DB8D"):
+                    comSymbol.getAllStyle(this.drawStyle.pointSize, this.drawStyle.pointColor, this.drawStyle.lineWidth, this.drawStyle.lineColor)
         })
         this.map.addLayer(this.vectorLayer);
         this.vectorLayer.setZIndex(99)
@@ -68,7 +72,8 @@ export default class iDraw {
             source: this.vectorSource,
             type: this.drawType[this.type],
             maxPoints: this.maxLength,
-            style: comSymbol.getDrawStyle(5, "#f40", 5, "#C0DB8D"),
+            style: !this.drawStyle?comSymbol.getDrawStyle(5, "#f40", 5, "#C0DB8D"):
+                    comSymbol.getDrawStyle(this.drawStyle.pointSize, this.drawStyle.pointColor, this.drawStyle.lineWidth, this.drawStyle.lineColor,this.drawStyle.fillColor,this.drawStyle.lineDash),
             condition: evt => {
                 this.conditionCallBack && this.conditionCallBack(evt)
                 return true

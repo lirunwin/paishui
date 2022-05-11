@@ -94,23 +94,20 @@
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-popconfirm
-              confirm-button-text="确定"
-              cancel-button-text="取消"
-              icon="el-icon-info"
-              icon-color="##FFDF84"
-              title="确定要撤回吗?"
+            <el-button
+              type="text"
+              size="small"
+              :wu="scope"
               v-if="scope.row.state == '1'"
-              @confirm="withdrawBtn(scope.row.id)"
+              @click.stop="withdrawBtn(scope.row.id, true)"
+              >撤回</el-button
             >
-              <el-button slot="reference" type="text" size="small" :wu="scope">撤回</el-button>
-            </el-popconfirm>
             <el-button
               type="text"
               size="small"
               :wu="scope"
               v-if="scope.row.state == '0'"
-              @click="testReportDetails(scope.row.id, true)"
+              @click.stop="testReportDetails(scope.row.id, true)"
               >发布</el-button
             >
             <el-button
@@ -118,7 +115,7 @@
               size="small"
               :wu="scope"
               style="margin-left: 10px"
-              @click="testReportDetails(scope.row.id)"
+              @click.stop="testReportDetails(scope.row.id)"
               >详情</el-button
             >
           </template>
@@ -186,12 +183,12 @@
             >
               <div class="btn-box">
                 <el-button size="small" type="primary" :disabled="loadingBool">选择报告</el-button>
-                <span class="btns"
-                  ><el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
+                <span class="btns">
+                  <el-button @click.stop="hideUpdataDocx">取 消</el-button>
+                  <el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
                     >确 定</el-button
                   >
-                  <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
-                >
+                </span>
               </div>
               <div slot="tip" class="el-upload__tip">
                 <p style="line-height: 10px">只能上传docx/doc文件</p>
@@ -269,12 +266,12 @@
             >
               <div class="btn-box">
                 <el-button size="small" type="primary" :disabled="loadingBool">选择视频</el-button>
-                <span class="btns"
-                  ><el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
+                <span class="btns">
+                  <el-button @click.stop="hideUpdataDocx">取 消</el-button>
+                  <el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
                     >确 定</el-button
                   >
-                  <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
-                >
+                </span>
               </div>
 
               <div slot="tip" class="el-upload__tip">
@@ -338,7 +335,6 @@
                   <div class="detailsTitle">管道缺陷数量统计图</div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="检查井缺陷" name="second">检查井缺陷</el-tab-pane>
               <el-tab-pane label="管道缺陷" name="third">管道缺陷</el-tab-pane>
               <el-tab-pane label="管段状态评估" name="fourth">管段状态评估</el-tab-pane>
             </el-tabs>
@@ -348,7 +344,7 @@
             <el-tabs v-model="activeRight" @tab-click="handleClick">
               <el-tab-pane label="原始检测报告" name="one">
                 <div class="releaseContent">
-                  <pdf-see></pdf-see>
+                  <pdf-see :pdfUrl="pdfUrl"></pdf-see>
                 </div>
               </el-tab-pane>
               <el-tab-pane label="数据地图" name="two">
@@ -361,6 +357,8 @@
           </div>
         </div>
         <div slot="footer" class="dialog-footer">
+          <!-- <span>备注：</span> -->
+          <!-- <el-input type="textarea" :rows="2" placeholder="请输入内容" v-model="textarea"> </el-input> -->
           <el-button type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
           <el-button @click="dialogFormVisible3 = false">取 消</el-button>
         </div>
@@ -378,6 +376,21 @@
         <span slot="footer" class="dialog-footer">
           <el-button @click="deleteDialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="removeDatas">确 定</el-button>
+        </span>
+      </el-dialog>
+    </div>
+    <!-- 撤回提示框 -->
+    <div class="delete-box">
+      <!-- 撤回提示框 -->
+      <el-dialog title="提示" :visible.sync="withdrawDialogVisible" width="30%">
+        <div style="display: flex; align-items: center">
+          <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
+          <span class="iconfont icondtbz" style="font-size: 22px; color: #e6a23c"></span>
+          &nbsp; 确定要撤回这条检测报告吗?
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="withdrawDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="isWithdraw">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -456,6 +469,9 @@ import {
 // 引入预览pdf插件
 import pdfSee from '../components/OpenPdf.vue'
 
+// 引入公共ip地址
+import IP from '@/utils/request.ts'
+
 // 引入发布的组件
 import summaryForm from './components/summaryForm'
 import projectForm from './components/project'
@@ -479,7 +495,7 @@ import defectImgB from '@/assets/images/traingle-b.png';
 import defectImgY from '@/assets/images/traingle-y.png';
 import defectImgLB from '@/assets/images/traingle-lb.png';
 
-import Icon from 'ol/style/Icon';
+import Icon from 'ol/style/Icon'
 
 export default {
   props: ['data'],
@@ -492,11 +508,13 @@ export default {
   },
   data() {
     return {
+      pdfUrl: '', // pdf地址
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
       currentIndex: 0, // 当前页数
       currentInfoCard: false, // 弹出框
       deleteDialogVisible: false, // 删除提示框显影
+      withdrawDialogVisible: false, // 撤回提示框显影
       // 数据为空时的图片
       // imgUrl:"@/assets/images/nullData.png",
       // 上传文件表格
@@ -597,9 +615,8 @@ export default {
       map: null
     }
   },
-  async created() {
+  created() {
     let res = this.getDate()
-    queryPipeState('113')
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
@@ -638,11 +655,15 @@ export default {
     }
   },
   mounted() {
+    console.log('IP', IP)
     this.map = this.data.mapView
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
 
-    this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(4, '#0ff', 10, 'rgba(0, 255, 255, 0.6)') })
+    this.lightLayer = new VectorLayer({
+      source: new VectorSource(),
+      style: comSymbol.getAllStyle(4, '#0ff', 10, 'rgba(0, 255, 255, 0.6)')
+    })
     this.vectorLayer = new VectorLayer({ source: new VectorSource() })
     this.map.addLayer(this.vectorLayer)
     this.map.addLayer(this.lightLayer)
@@ -656,6 +677,10 @@ export default {
     this.clearAll()
   },
   methods: {
+    // 关闭缩略提示框的方法
+    closePromptBox() {
+      this.currentInfoCard = false
+    },
     // 上一页
     lastPage() {
       if (this.currentIndex <= 0) {
@@ -957,8 +982,9 @@ export default {
         this.defectSumObj.total += v.sum
       })
 
-      
-
+      let resUrl = await queryPipeState(id)
+      console.log('url', resUrl)
+      this.pdfUrl = 'http://117.174.10.73:1114/psjc/file' + resUrl.result.pdfFilePath
       this.dialogFormVisible3 = true
     },
     // 单个发布
@@ -974,14 +1000,22 @@ export default {
       this.dialogFormVisible3 = false
     },
     // 单个撤回
-    async withdrawBtn(id) {
-      let res = await withdrawReport(id)
+    withdrawBtn(id) {
+      this.id = id
+      this.withdrawDialogVisible = true
+    },
+    // 确认撤回
+    async isWithdraw() {
+      let res = await withdrawReport(this.id)
       if (res.result) {
         this.$message({
           message: '撤回成功',
           type: 'success'
         })
+      } else {
+        this.$message.error('撤回失败')
       }
+      this.withdrawDialogVisible = false
       await this.getDate()
     },
     // 批量发布确认
