@@ -24,115 +24,134 @@
     <div class="cus-tab-container">
       <div class="cus-header">
         <div class="cus-header-list">
-          <div v-for="item in splitList.outer" :key="item.com" class="cus-header-item" :class="currentTab === item.com ? 'active' : ''" @click="clickTab(item)">
+          <div
+            v-for="item in splitList.outer"
+            :key="item.com"
+            class="cus-header-item"
+            :class="currentTab === item.com ? 'active' : ''"
+            @click="clickTab(item)"
+          >
             <span>{{ item.title }}</span>
             <i class="el-icon-close" @click.stop="removeTab(item)" />
           </div>
         </div>
         <div class="cus-tab-operations">
-          <i class="el-icon-more tools-viewed-trigger" @click="toggleMore('trigger')">
+          <!-- <i
+            class="el-icon-more tools-viewed-trigger"
+            @click="toggleMore('trigger')"
+          >
             <transition name="fade">
               <div v-show="restListShow" class="tools-viewed-list">
                 <div class="list-container">
-                  <div v-for="item in splitList.rest" :key="item.com" :class="currentTab === item.com ? 'active' : ''" class="tools-item" @click="clickTab(item)">
+                  <div
+                    v-for="item in splitList.rest"
+                    :key="item.com"
+                    :class="currentTab === item.com ? 'active' : ''"
+                    class="tools-item"
+                    @click="clickTab(item)"
+                  >
                     <span>{{ item.title }}</span>
                     <span>
                       <i class="el-icon-close" @click.stop="removeTab(item)" />
                     </span>
                   </div>
                 </div>
-                <i class="el-icon-close close-rest-list" @click.stop="restListShow = false" />
+                <i
+                  class="el-icon-close close-rest-list"
+                  @click.stop="restListShow = false"
+                />
               </div>
             </transition>
-          </i>
-          <i class="el-icon-close" @click="handelClose" />
+          </i> -->
+          <i class="el-icon-close" @click="handelClose" style="cursor: pointer" />
         </div>
       </div>
       <div class="cus-content">
         <template v-for="item in panels">
-          <component :is="Comps[item.com]" v-show="item.com === currentTab" :key="item.com" class="items" :param="item.param" :data="data" :name="item.com" />
+          <component
+            :is="Comps[item.com]"
+            v-show="item.com === currentTab"
+            :key="item.com"
+            class="items"
+            :param="item.param"
+            :data="data"
+            :name="item.com"
+          />
         </template>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script lang='ts'>
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import Comps from './loadComps'
-import { log } from 'util';
-export default {
-  name: 'SidePanels',
-  components: {},
-  props: {
-    panels: {
-      type: Array,
-      default: () => []
-    },
-    data: null,
-    panelVisible: Boolean,
-    sideWidth: String
-  },
-  data() {
-    return {
-      Comps,
-      restListShow: false
-      // editableTabsValue: ''
+import { log } from 'util'
+@Component({
+  name: 'SidePanels'
+})
+export default class SidePanels extends Vue {
+  @Prop({ default: [] }) panels: any[]
+  @Prop({ default: null }) data: any
+  @Prop() panelVisible: boolean
+  @Prop() sideWidth: string
+
+  Comps = Comps
+  restListShow = false
+
+  get currentTab() {
+    return this.$store.state.map.P_editableTabsValue
+  }
+  get splitList() {
+    const outer = this.panels.filter((item, index) => {
+      if (index <= 1) return item
+      else return
+    })
+    const rest = this.panels.filter((item, index) => {
+      if (index > 1) return item
+      else return
+    })
+    if (rest.length === 0) this.restListShow = false
+    return { outer, rest }
+  }
+  @Watch('panels')
+  panelsChange() {
+    if (this.panels.length > 0) {
+      if (this.panelVisible) return
+      this.$emit('update:panelVisible', true)
+      this.$emit('update:sideWidth', '350px')
+    } else {
+      if (!this.panelVisible) return
+      this.$emit('update:panelVisible', false)
+      this.$emit('update:sideWidth', '0%')
+      this.$emit('updateMapSize')
     }
-  },
-  computed: {
-    currentTab() {
-      return this.$store.state.map.P_editableTabsValue
-    },
-    splitList() {
-      const outer = this.panels.filter((item, index) => {
-        if (index <= 1) return item
-        else return
-      })
-      const rest = this.panels.filter((item, index) => {
-        if (index > 1) return item
-        else return
-      })
-      if (rest.length === 0) this.restListShow = false;
-      return { outer, rest }
+  }
+  @Watch('panelVisible')
+  panelVisibleChange(val) {
+    if (val) {
+      this.$store.dispatch('map/delAllFull')
     }
-  },
-  watch: {
-    panels() {
-      if (this.panels.length > 0) {
-        if (this.panelVisible) return
-        this.$emit('update:panelVisible', true)
-        this.$emit('update:sideWidth', '350px')
-      } else {
-        if (!this.panelVisible) return
-        this.$emit('update:panelVisible', false)
-        this.$emit('update:sideWidth', '0%')
-      }
-    },
-    panelVisible(val) {
-      if(val) {
-        this.$store.dispatch('map/delAllFull')
-      }
-    }
-  },
-  methods: {
-    toggleMore(pos) {
-      if (this.splitList.rest.length === 0) return
-      if (pos === 'trigger') this.restListShow = !this.restListShow
-      else if (pos === 'container') this.restListShow = false
-    },
-    handelClose() {
-      // this.$store.dispatch('map/handelClose', data)
-      this.$store.dispatch('map/delAllPanel')
-      this.$emit('handelClose')
-    },
-    removeTab(targetName) {
-      // console.log('333', targetName)
-      this.$store.dispatch('map/delPanels', targetName.com)
-      // this.$store.state.map.panels.length !== 0 && this.clickTab(this.$store.state.map.panels[this.$store.state.map.panels.length - 1]);
-    },
-    clickTab(targetName) {
-      this.$store.dispatch('map/changeTab', targetName.com)
-    }
+  }
+  toggleMore(pos) {
+    if (this.splitList.rest.length === 0) return
+    if (pos === 'trigger') this.restListShow = !this.restListShow
+    else if (pos === 'container') this.restListShow = false
+  }
+  handelClose() {
+    // this.$store.dispatch('map/handelClose', data)
+    this.$store.dispatch('map/delAllPanel')
+    this.$emit('handelClose')
+    this.$emit('updateMapSize') // 更新地图尺寸
+  }
+  removeTab(targetName) {
+    // console.log('333', targetName)
+    this.$store.dispatch('map/delPanels', targetName.com)
+    // this.$store.state.map.panels.length !== 0 && this.clickTab(this.$store.state.map.panels[this.$store.state.map.panels.length - 1]);
+  }
+  clickTab(targetName) {
+    console.log('切换tab时触发')
+    this.$store.dispatch('map/changeTab', targetName.com)
   }
 }
 </script>
@@ -170,8 +189,21 @@ export default {
 .sidepanels {
   position: relative;
   top: 0;
+  right: 0;
   width: 100%;
-  height: 100%;
+  height: 620px;
+  box-shadow: 0 10px 20px 0 rgba(0, 0, 0, 0.1);
+
+  //  position: fixed;
+  // top: 100px;
+  // right: 20px;
+  // // width: 100%;
+  // min-width: 650px;
+  // // height: 100%;
+  // height: 570px;
+  // overflow-y: scroll;
+  // border-radius: 5px;
+  // z-index: 0;
   .close {
     position: absolute;
     top: 10px;
@@ -184,7 +216,7 @@ export default {
     background-color: white;
     height: 100%;
     width: 100%;
-    padding: 5px;
+    padding: 20px;
   }
 }
 .cus-tab-container {
@@ -192,7 +224,7 @@ export default {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  padding: 6px;
+  // padding: 6px;
   box-sizing: border-box;
   .cus-header {
     display: flex;
@@ -200,17 +232,18 @@ export default {
     align-items: center;
     height: 40px;
     border-bottom: 1px solid #eaeaee;
-    .cus-header-list{
+    background-color: #2d74e7;
+    .cus-header-list {
       display: flex;
       width: 86%;
       height: 100%;
-      .cus-header-item{
+      .cus-header-item {
         padding: 0 10px;
         margin: 0 1px;
         box-sizing: border-box;
         min-width: 80px;
         height: 40px;
-        color: black;
+        color: #fff;
         display: flex;
         align-items: center;
         justify-content: space-around;
@@ -218,22 +251,22 @@ export default {
         cursor: pointer;
         box-sizing: border-box;
         font-size: 14px;
-        &.active{
-          color: blue;
-          background: #fff;
-          border: 1px solid #eaeaea;
-          border-bottom: 1px solid #ffffff;
+        &.active {
+          color: #fff;
         }
       }
     }
-    .cus-tab-operations{
+    .cus-tab-operations {
       flex: 1;
       display: flex;
       justify-content: space-between;
-      .tools-viewed-trigger{
+      flex-flow: row-reverse;
+      padding-right: 15px;
+      box-sizing: border-box;
+      .tools-viewed-trigger {
         position: relative;
         cursor: pointer;
-        .tools-viewed-list{
+        .tools-viewed-list {
           z-index: 3;
           position: absolute;
           top: 28px;
@@ -247,7 +280,7 @@ export default {
           box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
           display: flex;
           flex-direction: column;
-          .list-container{
+          .list-container {
             height: 90%;
             overflow-x: hidden;
             &::-webkit-scrollbar {
@@ -270,27 +303,27 @@ export default {
               background-color: #cccccc;
             }
           }
-          .close-rest-list{
+          .close-rest-list {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
           }
-          .tools-item{
+          .tools-item {
             padding: 10px;
             display: flex;
             justify-content: space-evenly;
             cursor: pointer;
-            >span{
-              &:nth-of-type(1){
+            > span {
+              &:nth-of-type(1) {
                 width: 100px;
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 overflow: hidden;
               }
             }
-            &.active{
+            &.active {
               color: blue;
               background: #ecf2fe;
             }
@@ -305,8 +338,12 @@ export default {
     overflow: hidden;
   }
 }
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
+.el-icon-close {
+  color: #fff;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
