@@ -74,20 +74,6 @@
                 "
               />
             </div>
-
-            <!-- 左下角工具栏 -->
-            <leftBottomTool
-              :toolList="leftBottomTool.children"
-              :map="view"
-              v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
-            ></leftBottomTool>
-            <!-- 右上角工具栏 -->
-            <rightTopTool
-              :toolList="rightTopTool.children"
-              :map="view"
-              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
-            ></rightTopTool>
-
             <!-- 视图工具 -->
             <!-- <WidgetGroup :map-view="view" :that="this" /> -->
             <!-- 测量工具 -->
@@ -98,32 +84,33 @@
             <!-- <OverviewMap :map-view="view" /> -->
             <!-- 弹出框 -->
             <popupWindow v-if="view" ref="popupWindow" :map="view"></popupWindow>
+            <!-- 左上角工具栏 -->
+            <leftTopTool
+              :toolList="leftTopTool.children"
+              :map="view"
+              v-if="leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
+            ></leftTopTool>
+            <!-- 左下角工具栏 -->
+            <leftBottomTool
+              :toolList="leftBottomTool.children"
+              :map="view"
+              v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
+            ></leftBottomTool>
+            <!-- 右上角工具栏 -->
+            <rightTopTool
+              :toolList="rightTopTool.children"
+              :map="view"
+              :rootPage="this"
+              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
+            ></rightTopTool>
+            <!-- 右下角工具栏 -->
+            <rightBottomTool
+              :toolList="rightBottomTool.children"
+              :map="view"
+              v-if="rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
+            ></rightBottomTool>
           </div>
-          <!-- 左上角工具栏 -->
-          <leftTopTool
-            :toolList="leftTopTool.children"
-            :map="view"
-            v-if="leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
-          ></leftTopTool>
-          <!-- 左下角工具栏 -->
-          <leftBottomTool
-            :toolList="leftBottomTool.children"
-            :map="view"
-            v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
-          ></leftBottomTool>
-          <!-- 右上角工具栏 -->
-          <rightTopTool
-            :toolList="rightTopTool.children"
-            :map="view"
-            :rootPage="this"
-            v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
-          ></rightTopTool>
-          <!-- 右下角工具栏 -->
-          <rightBottomTool
-            :toolList="rightBottomTool.children"
-            :map="view"
-            v-if="rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
-          ></rightBottomTool>
+
           <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
             <span id="mapView_close" ref="legend_close" title="收缩" @click="legendClick">▼</span>
@@ -263,6 +250,7 @@ import { WMTS } from 'ol/source'
 import * as olExtent from 'ol/extent'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import * as olProj from 'ol/proj'
+import { defaults as controls } from 'ol/control'
 
 @Component({
   components: {
@@ -413,6 +401,10 @@ export default class BaseMap extends Vue {
     let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
     let map = new Map({
       target: 'mapView',
+      controls: controls({
+        zoom: false,
+        attribution: false
+      }),
       view: new View({
         center: initCenter,
         zoom: initZoom,
