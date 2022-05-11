@@ -490,9 +490,10 @@ import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import Text from 'ol/style/Text'
 import { Style } from 'ol/style'
 
-import defectImgR from '@/assets/images/traingle-r.png'
-import defectImgB from '@/assets/images/traingle-b.png'
-import defectImgY from '@/assets/images/traingle-y.png'
+import defectImgR from '@/assets/images/traingle-r.png';
+import defectImgB from '@/assets/images/traingle-b.png';
+import defectImgY from '@/assets/images/traingle-y.png';
+import defectImgLB from '@/assets/images/traingle-lb.png';
 
 import Icon from 'ol/style/Icon'
 
@@ -617,6 +618,16 @@ export default {
   created() {
     let res = this.getDate()
   },
+  watch: {
+    '$store.state.gis.activeSideItem': function (n, o) {
+      if (n !== '检测报告管理') {
+        this.clearAll()
+      } else {
+        this.getPipeDefectData()
+        this.data.that.showLegend('testReport', true)
+      }
+    }
+  },
   computed: {
     // 提示框当前信息
     getCurrentForm() {
@@ -663,10 +674,7 @@ export default {
     this.data.that.showLegend('testReport', true)
   },
   destroyed() {
-    this.vectorLayer.getSource().clear()
-    this.vectorLayer2.getSource().clear()
-    this.lightLayer.getSource().clear()
-    this.data.that.showLegend('testReport', false)
+    this.clearAll()
   },
   methods: {
     // 关闭缩略提示框的方法
@@ -709,23 +717,23 @@ export default {
       }
       // this.testReportDetails(row.id)
     },
-    addMapEvent() {
-      let vectorLayer = new VectorLayer({ source: new VectorSource() })
-      let feature = new Feature({ geometry: new Point([101.73104, 26.505465]) })
-      feature.setStyle(comSymbol.getPointStyle(5, '#f00'))
-      vectorLayer.getSource().addFeature(feature)
-      this.map.addLayer(vectorLayer)
-
-      this.map.on('click', (evt) => {
+    addMapEvent () {
+      this.map.on('click', evt => {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         if (features.length !== 0) {
-          console.log(features)
+          let id = features[0].get('id')
+          this.openPromptBox({ id })
         } else {
-          console.log('无特征点')
+          this.currentInfoCard = false
         }
       })
     },
-    handleAdd() {},
+    clearAll () {
+      this.vectorLayer.getSource().clear()
+      this.vectorLayer2.getSource().clear()
+      this.lightLayer.getSource().clear()
+      this.data.that.showLegend('testReport', false)
+    },
     /**
      * 小地图完成加载后
      * */
@@ -779,7 +787,10 @@ export default {
           if (light) {
             map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
             map.getView().setZoom(16)
-            this.lightLayer.getSource().addFeatures([...dFeas, ...pFeas])
+            this.lightLayer.getSource().addFeatures([
+              // ...dFeas, 
+              ...pFeas
+            ])
           } else {
             this.lightLayer.getSource().clear()
             layer.getSource().clear()
@@ -819,6 +830,9 @@ export default {
             let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
             if (findColor) {
               hasStyle && feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              for (let i in  feaObj) {
+                i !== "geometry" && feature.set(i, feaObj[i])
+              }
               features.push(feature)
             }
           }
@@ -829,9 +843,16 @@ export default {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
-            hasStyle &&
-              feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: defectImgR, scale: 0.4 }) }))
+            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
+            // if (feaObj.defectLevel) {
+            //   let index = ["一级", '二级', '三级', '四级']
+            //   img = imgBox[index.indexOf(feaObj.defectLevel)]
+            // }
+            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img, scale: 0.3 }) }))
 
+            for (let i in  feaObj) {
+              i !== "geometry" && feature.set(i, feaObj[i])
+            }
             features.push(feature)
 
             // let fea = feature.clone()
@@ -1304,7 +1325,11 @@ export default {
     // 表格选中事件
     handleSelectionChange(val) {
       console.log('表格选中事件', val)
-      if (val.length !== 0) this.getPipeDefectData(1, val[0].id, true)
+      if (val.length !== 0) {
+        this.getPipeDefectData(1, val[0].id, true)
+      } else {
+        this.getPipeDefectData()
+      }
       this.multipleSelection = val
     },
     // 分页触发的事件

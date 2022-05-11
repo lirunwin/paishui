@@ -884,4 +884,86 @@ export default class BaseMap extends Vue {
     to { background: #fff0; color: #2D74E7; }
   }
 }
+<<<<<<< HEAD
+=======
+
+// 
+.map-legend {
+  background: #fffc;
+  position: absolute;
+  bottom: 40px;
+  left: 10px;
+  min-height: 30px;
+  width: 200px;
+  border: 1px solid rgb(13, 186, 255);
+}
+
+.map-legend-title {
+  color: #fff;
+  font-weight: 600;
+  padding: 3px 10px;
+  height: 30px;
+  font-size: 15px;
+  line-height: 25px;
+  background-color: rgb(13, 186, 255);
+}
+.map-legend-item {
+  display: flex;
+  height: 20px;
+  line-height: 20px;
+  font-size: 13px;
+  margin: 15px 10px;
+}
+.map-legend-label {
+  margin-left: 5px;
+}
+.map-legend-rect {
+  display: inline-block;
+  width: 30px;
+  height: 100%;
+}
+.map-legend-circle {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.map-legend-line {
+  display: inline-block;
+  width: 50px;
+  height: 8px;
+}
+.map-legend-traingle-r {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle-r.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.map-legend-traingle-y {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle-y.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.map-legend-traingle-b {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle-b.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.map-legend-traingle-lb {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle-lb.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+>>>>>>> 7b7eb241af0f444ef39a2132a132ac47bf1a52af
 </style>

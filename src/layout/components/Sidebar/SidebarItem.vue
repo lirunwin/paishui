@@ -122,6 +122,8 @@ export default class SidebarItem extends Vue {
     if (info.widgetid !== 'FullPanel' && this.$store.state.map.fullPanels.length > 0) {
       this.$store.dispatch('map/delAllFull')
     }
+    // 当前侧边栏改变
+    this.$store.state.gis.activeSideItem = info.label
   }
 }
 </script>
