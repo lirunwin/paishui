@@ -23,20 +23,20 @@ export function getProject (params) {
     })
 }
 // 根据工程 id 获取报告 prjNo
-export function getReportByProjecetId (data) {
+export function getReportByProjecetId (params) {
     return request({
         url: `/psjc/wordInfo/list`,
         method: "get",
-        data
+        params
     })
 }
 
 // 根据日期 报告 获取缺陷
 
-export function getDefectDataByFilter (data) {
+export function getDefectDataByFilter (params) {
     return request({
         url: '/psjc/wordInfo/pipeDataMap',
         method: 'get',
-        data
+        params
     })
 }

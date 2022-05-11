@@ -14,7 +14,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="检测报告:">
-        <el-select v-model="form.report" placeholder="请选择检测报告">
+        <el-select :disabled="!form.project" v-model="form.report" placeholder="请选择检测报告">
           <el-option
             v-for="(item, index) in reportOpt"
             :key="index"
@@ -71,7 +71,7 @@
           </div>
           <div v-else-if="showThemBox[index]" class="transition-box">
             <ul>
-              <li @click="openBox(item.layerName, level.label)" v-for="(level, i) in item.level" :key="i" :class="comStyle(item.type, level.color)">
+              <li @click="openBox(item.layerName, i)" v-for="(level, i) in item.level" :key="i" :class="comStyle(item.type, level.color)">
                 {{ level.label + ' / ' + level.num + level.unit }}
               </li>
             </ul>
@@ -86,8 +86,7 @@
 
 <script>
 import Feature from 'ol/Feature'
-import Point from 'ol/geom/Point'
-import Polygon from 'ol/geom/Polygon'
+import { Point, LineString, Polygon } from 'ol/geom'
 import Heatmap from 'ol/layer/Heatmap'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
@@ -97,6 +96,7 @@ import iQuery from '@/views/zhpt/common/mapUtil/query'
 import { appconfig } from 'staticPub/config'
 import GeoJSON from 'ol/format/GeoJSON'
 import { getDefectDataById, getDefectData, getProject, getReportByProjecetId, getDefectDataByFilter } from '@/api/sysmap/drain'
+import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 
 export default {
   props: { data: Object },
@@ -137,8 +137,9 @@ export default {
           type: 'circle',
           level: [
             { color: 'green', label: 'Ⅰ级', num: 0, unit: '个' },
-            { color: 'red', label: 'Ⅱ级', num: 0, unit: '个' },
-            { color: 'pink', label: 'Ⅲ级', num: 0, unit: '个' }
+            { color: 'blue', label: 'Ⅱ级', num: 0, unit: '个' },
+            { color: 'pink', label: 'Ⅲ级', num: 0, unit: '个' },
+            { color: 'red', label: 'Ⅳ级', num: 0, unit: '个' }
           ]
         },
         // {
@@ -155,13 +156,13 @@ export default {
         {
           title: '管网健康评估专题图',
           layerName: 'pipeHealthLayer',
-          open: false,
+          open: true,
           type: 'line',
           level: [
-            { color: 'red', label: 'Ⅰ级', num: 0, unit: '条' },
-            { color: 'pink', label: 'Ⅱ级', num: 0, unit: '条' },
-            { color: 'blue', label: 'Ⅲ级', num: 0, unit: '条' },
-            { color: 'green', label: 'Ⅳ级', num: 0, unit: '条' }
+            { color: 'green', label: 'Ⅰ级', num: 0, unit: '条' },
+            { color: 'blue', label: 'Ⅱ级', num: 0, unit: '条' },
+            { color: 'pink', label: 'Ⅲ级', num: 0, unit: '条' },
+            { color: 'red', label: 'Ⅳ级', num: 0, unit: '条' }
           ]
         }
       ],
@@ -171,32 +172,53 @@ export default {
       heatLayer: null,
       pipeDefectLayer: null,
       manholeDefectLayer: null,
-      pipeHealthLayer: null
+      pipeHealthLayer: null,
+      currentDataProjName: "proj43",
+      projUtil: null
     }
   },
   mounted() {
-    this.mapView = this.data.mapView
-    this.heatLayer = new Heatmap({
-      source: new VectorSource(),
-      gradient: ['#3ce10f', '#ff0602'],
-      radius: 16,
-      visble: false
-    })
-    this.pipeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
-    this.manholeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
-    this.pipeHealthLayer = new VectorLayer({ source: new VectorSource(), visible: false })
-    this.addLayers([this.heatLayer, this.pipeDefectLayer, this.manholeDefectLayer, this.pipeHealthLayer])
-
-    this.setProjectData()
+    this.init()
   },
   destroyed() {
-    this.heatLayer && this.mapView.removeLayer(this.heatLayer)
-    this.pipeDefectLayer && this.mapView.removeLayer(this.pipeDefectLayer)
-    this.manholeDefectLayer && this.mapView.removeLayer(this.manholeDefectLayer)
-    this.pipeHealthLayer && this.mapView.removeLayer(this.pipeHealthLayer)
+    this.clearAll()
   },
-  watch: {},
+  watch: {
+    '$store.state.gis.activeSideItem': function (n, o) {
+      if (n !== '检测成果专题图') {
+        this.clearAll()
+      } else {
+        this.init()
+      }
+    }
+  },
   methods: {
+    init () {
+      this.projUtil = new projUtil()
+      this.projUtil.resgis(this.currentDataProjName)
+
+      this.mapView = this.data.mapView
+      this.heatLayer = new Heatmap({
+        source: new VectorSource(),
+        gradient: ['#3ce10f', '#ff0602'],
+        radius: 16,
+        visble: false
+      })
+      this.pipeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: true })
+      this.manholeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
+      this.pipeHealthLayer = new VectorLayer({ source: new VectorSource(), visible: true })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)'), visible: true  })
+      this.addLayers([this.heatLayer, this.pipeDefectLayer, this.manholeDefectLayer, this.pipeHealthLayer, this.lightLayer])
+
+      this.setProjectData()
+    },
+    clearAll () {
+      this.heatLayer && this.mapView.removeLayer(this.heatLayer)
+      this.pipeDefectLayer && this.mapView.removeLayer(this.pipeDefectLayer)
+      this.manholeDefectLayer && this.mapView.removeLayer(this.manholeDefectLayer)
+      this.pipeHealthLayer && this.mapView.removeLayer(this.pipeHealthLayer)
+      this.lightLayer && this.mapView.removeLayer(this.lightLayer)
+    },
     setProjectData () {
       getProject({ current: 1, size: 1e5 }).then(res => {
         if (res.code === 1) {
@@ -211,6 +233,7 @@ export default {
       let prjNo = this.form.project
       getReportByProjecetId({ prjNo }).then(res => {
         if (res.code === 1) {
+          this.form.report = ''
           let data = res.result
           this.reportOpt = data.map(d => {
             return { label: d.wordInfoName, value: d.id }
@@ -218,65 +241,124 @@ export default {
         } else this.$message.error('获取报告失败!')
       })
     },
-    openBox (type, level) {
+    openBox (layerName, level) {
       console.log('缺陷信息', type, level)
+      let type = layerName === 'pipeHealthLayer' ? 1 : 0
+      let filter = [
+        { key: 'defectLevel', value: ['一级','二级','三级','四级'] },
+        { key: 'funcClass', value: ['Ⅰ','Ⅱ','Ⅲ','Ⅳ'] }
+      ][type]
+
+      let features = this[layerName].getSource().getFeatures()
+      let filterFeas = features.filter(fea => fea.get(filter.key).includes(filter.value[level]))
+      let lightFeas = filterFeas.map(fea => new Feature({ geometry: fea.getGeometry().clone() }))
+      this.lightLayer.getSource().clear()
+      this.lightLayer.getSource().addFeatures(lightFeas)
       this.openDefect()
     },
     addLayers(layers) {
       layers.forEach((layer) => this.mapView.addLayer(layer))
     },
     initMap(data) {
-      let colorBox = ['#ff0000', '#0c9923', '#f405ff']
-
-      let points = this.randomPoint(center, 0.025, 50)
-      let features = points.map((item) => new Feature({ geometry: new Point(item) }))
-      this.heatLayer.getSource().addFeatures(features)
-
-      // 管网
-      features.forEach((fea, index) => {
-        let color = colorBox[index % 3]
-        let feature = fea.clone()
-        feature.setStyle(comSymbol.getPointStyle(5, color, 2, color))
-        this.pipeDefectLayer.getSource().addFeature(feature)
+      // 管网缺陷
+      let pipeData = [], defectData = []
+      data.forEach(rpt => {
+        let pipeStates = rpt.pipeStates
+        pipeData = [...pipeData, ...pipeStates]
+        defectData = [...defectData, ...pipeStates.map(pipe => pipe.pipeDefects).flat()]
       })
-
-      // // 检查井
-      // let points2 = this.randomPoint(center, 0.01, 50)
-      // let features2 = points2.map((item) => new Feature({ geometry: new Point(item) }))
-      // features2.forEach((fea, index) => {
-      //   let color = colorBox[index % 3]
-      //   fea.setStyle(comSymbol.getPointStyle(5, 'rgba(255,255,255,0)', 2, color))
-      //   this.manholeDefectLayer.getSource().addFeature(fea)
-      // })
-
-      // 管网
-      this.initPipeHealthLayer()
+      let dFeas = this.getFeatures(defectData, 2)
+      let pFeas = this.getFeatures(pipeData, 1)
+      
+      this.lightLayer.getSource().clear()
+      this.pipeHealthLayer.getSource().addFeatures(pFeas)
+      this.pipeDefectLayer.getSource().addFeatures(dFeas)
     },
-    initPipeHealthLayer() {
-      let colorBox = ['#ff0000', '#0c9923', '#f405ff']
-      // 查询的图形坐标
-      let polygonCoors = [
-        [
-          [113.11214127919722, 29.3790030636461],
-          [113.13265481374312, 29.3790030636461],
-          [113.13265481374312, 29.392564312425396],
-          [113.11214127919722, 29.392564312425396],
-          [113.11214127919722, 29.3790030636461]
-        ]
-      ]
-      let polygon = new Feature({ geometry: new Polygon(polygonCoors) })
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
-      let queryTask = new iQuery({ dataSetInfo })
-      queryTask.spaceQuery(polygon).then((resArr) => {
-        let pipeFeaturesObj = resArr.find((res) => res.result.featureCount !== 0)
-        let pipeFeatures = new GeoJSON().readFeatures(pipeFeaturesObj.result.features)
-        let features = pipeFeatures.map((fea, index) => {
-          let color = colorBox[index % 3]
-          fea.setStyle(comSymbol.getLineStyle(5, color))
-          return fea
+
+    /**
+     * 构造要素
+     * @param type 类型1: 线，2：点
+     * @param hasStyle 是否设置样式
+     * */
+    getFeatures(featureArr, type, hasStyle = true) {
+      let style = null,
+        features = []
+      if (type === 1) {
+        let num = [0, 0, 0, 0] // 四个级别缺陷数量
+        featureArr.forEach((feaObj) => {
+          let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
+          if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
+            let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
+            let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+            startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
+            endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
+
+            let coors = [startPoint, endPoint]
+            let feature = new Feature({ geometry: new LineString(coors) })
+            // 健康等级颜色
+            let colors = [
+              { level: 'Ⅰ', color: 'green', index: 0 },
+              { level: 'Ⅱ', color: 'blue', index: 1 },
+              { level: 'Ⅲ', color: 'pink', index: 2 },
+              { level: 'Ⅳ', color: 'red', index: 3 }
+            ]
+            let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
+
+            if (findColor) {
+              num[findColor.index] += 1
+              hasStyle && feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              for (let i in  feaObj) {
+                i !== "geometry" && feature.set(i, feaObj[i])
+              }
+              features.push(feature)
+            }
+          }
         })
-        this.pipeHealthLayer.getSource().addFeatures(features)
-      })
+        // 把数量填充到图例
+        this.defectLegend[1].level.forEach((l, index) => {
+          l.num = num[index]
+        })
+      } else {
+        let num = [0, 0, 0, 0] // 四个级别缺陷数量
+        featureArr.forEach((feaObj, index) => {
+          if (feaObj.geometry) {
+            let coors = JSON.parse(feaObj.geometry)
+            let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
+            let feature = new Feature({ geometry: new Point(point) })
+            let colors = [
+              { level: '一级', color: 'green', index: 0 },
+              { level: '二级', color: 'blue', index: 1 },
+              { level: '三级', color: 'pink', index: 2 },
+              { level: '四级', color: 'red', index: 3 }
+            ]
+            let findColor = colors.find(colorObj => feaObj['defectLevel'].includes(colorObj.level))
+            
+            // let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
+            // if (feaObj.defectLevel) {
+            //   let index = ["一级", '二级', '三级', '四级']
+            //   img = imgBox[index.indexOf(feaObj.defectLevel)]
+            // }
+            if (findColor) {
+              num[findColor.index] += 1
+              hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
+              for (let i in  feaObj) {
+                i !== "geometry" && feature.set(i, feaObj[i])
+              }
+              features.push(feature)
+            }
+            
+
+            // let fea = feature.clone()
+            // fea.setStyle(new Style({ text: new Text({ text: `${index}`, offsetY: -20 }) }))
+            // features.push(fea)
+          }
+        })
+        // 把数量填充到图例
+        this.defectLegend[0].level.forEach((l, index) => {
+          l.num = num[index]
+        })
+      }
+      return features
     },
 
     randomPoint(center, range, num) {
@@ -296,9 +378,11 @@ export default {
         jcEndDate: this.form.endDate ? this.form.endDate.toLocaleDateString().replace(/\//g,   '-') : ''
       }
       getDefectDataByFilter(params).then(res => {
-        console.log(data)
         if (res.code === 1) {
-         this.initMap()
+          let data = res.result
+          if (data.length !== 0) {
+            this.initMap(data)
+          } else this.$message.info('无管线缺陷数据')
         } else this.$message.error('请求缺陷数据出错')
 
       })
@@ -327,7 +411,7 @@ export default {
           return
       }
       layer.setVisible(visible)
-
+      this.lightLayer.getSource().clear()
     },
     changeArrow(index) {
       console.log('点击箭头')
@@ -476,20 +560,20 @@ export default {
 }
 .item-blue {
   &::before {
-    background-color: #0ff;
-    border: 1px solid #0ff;
+    background-color: blue;
+    border: 1px solid blue;
   }
 }
 .item-green {
   &::before {
-    background-color: #f405ff;
-    border: 1px solid #f405ff;
+    background-color: #0c9923;
+    border: 1px solid #0c9923;
   }
 }
 .item-pink {
   &::before {
-    background-color: #0c9923;
-    border: 1px solid #0c9923;
+    background-color: #f405ff;
+    border: 1px solid #f405ff;
   }
 }
 .item-red {
