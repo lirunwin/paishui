@@ -47,7 +47,9 @@
             @keyup.enter.native="handleLogin"
           />
         </el-form>
-        <el-button class="login-btn" :loading="loading" @click.native.prevent="handleLogin">登录</el-button>
+        <el-button type="button" class="login-btn" :loading="loading" @click.native.prevent="handleLogin"
+          >登录</el-button
+        >
       </div>
     </div>
     <el-dialog
@@ -197,6 +199,7 @@ export default class Login extends Vue {
             // 判断是否首次登录或者重置过密码
             userFirstLogin(id)
               .then((res) => {
+                console.log(res)
                 // 先判断用户是否被禁用了 如果是申请的用户 还需要要判断是否同意申请了
                 const { auditstatus, enableFlag } = res.result
                 if (enableFlag === '0') {
@@ -226,7 +229,9 @@ export default class Login extends Vue {
                   this.$store.state.user.userId = undefined
                 } else {
                   this.loading = false
-                  this.$router.push({ path: '/' })
+                  setTimeout(() => {
+                    this.$router.push({ path: '/' })
+                  }, 0)
                 }
               })
               .catch(() => {
