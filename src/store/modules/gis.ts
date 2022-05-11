@@ -2,7 +2,8 @@ const state = {
   view: null,
   evts: [],
   mapExtent: [],
-  map: null
+  map: null,
+  activeSideItem: null
 }
 
 const mutations = {
