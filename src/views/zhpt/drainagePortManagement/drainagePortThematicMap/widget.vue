@@ -8,12 +8,18 @@
         <el-form :model="visibleSettings" :rules="rules" size="mini" label-width="100px" ref="visibleSettings"> 
             <el-form-item label="项目名称：" prop="projectName">
                 <el-select v-model="visibleSettings.projectName" placeholder="请选择项目" multiple clearable>
-                    <el-option label="xxx项目" value="0"></el-option>
+                    <el-option  v-for="item of projectInfo" :key="item"
+                    :label="item" 
+                    :value="item">
+                    </el-option>
                 </el-select>
             </el-form-item>
             <el-form-item label="地址：">
                 <el-select v-model="visibleSettings.address" placeholder="请选择地址" multiple clearable>
-                    <el-option label="xxx路" value="0"></el-option>
+                    <el-option  v-for="item of addressInfo" :key="item"
+                    :label="item" 
+                    :value="item">
+                    </el-option>
                 </el-select>
             </el-form-item>
             <el-form-item label="统计范围：">
@@ -104,11 +110,14 @@
 import { esriConfig, appconfig } from 'staticPub/config'
 import iDraw from '@/views/zhpt/common/mapUtil/draw'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
+import * as turf from '@turf/turf';
 import GeoJSON from 'ol/format/GeoJSON'
 import { Vector as VectorSource } from 'ol/source'
 import { Vector as VectorLayer } from 'ol/layer'
 import Feature from 'ol/Feature';
-import Polygon from 'ol/geom/Polygon';
+import {Polygon, LineString, Point } from 'ol/geom';
+import CircleObject from 'ol/geom/Circle'
+import {fromCircle} from 'ol/geom/Polygon';
 import {
   Style,
   Circle,
@@ -128,6 +137,8 @@ export default {
                 statisticRange:"all",
                 region:""
             },
+            projectInfo:[],//项目信息
+            addressInfo:[],//地址信息
             rules:{
                 projectName: [
                     { required: true, message: '请选择项目', trigger: 'blur' },
@@ -151,19 +162,23 @@ export default {
             ],
             showThem:false,
             showThemBox:true,
-            //
+            //地图要素变量
             drawer:null,
             customFeature:null,
+            limitFeature:null,
             ysFeatures:[],
             wsFeatures:[],
             yswsFeatures:[],
             ysLayer:null,
             wsLayer:null,
             yswsLayer:null,
+            dataSetInfo:null,//查询数据集
         }
     },
     mounted(){
         this.view=this.$attrs.data.mapView
+        this.getDataSet();
+        this.getSelectInfo();
     },
     watch:{
         'visibleSettings.statisticRange':{
@@ -186,6 +201,38 @@ export default {
         }
     },
     methods:{
+        getDataSet(){
+            let dataService = appconfig.gisResource['iserver_resource'].dataService
+            this.dataSetInfo = dataService.dataSetInfo.filter(info => info.label === '排放口')
+            console.log("数据服务",this.dataSetInfo)
+        },
+        //获取项目以及地址下拉框内容
+        getSelectInfo(){
+            let queryTask = new iQuery({ dataSetInfo:this.dataSetInfo })
+            let queryText = `SMID >= 0 `
+            queryTask.sqlQuery(queryText).then(resArr => {
+                let features = []
+                resArr.forEach(item => {
+                    if (item && item.result.featureCount !== 0) {
+                        features.push(item.result.features)
+                    }
+                })
+                if(features.length==0) return
+                this.assembleSelectInfo(features[0].features)
+            }).catch(err=>{
+                console.log(err)
+            })
+        },
+        //组装下拉框信息
+        assembleSelectInfo(featuresInfo){
+            featuresInfo.forEach(item=>{
+                let {PRJ_NAME,ADDRESS} = item.properties
+                this.projectInfo.push(PRJ_NAME)
+                this.addressInfo.push(ADDRESS)
+            })
+            this.projectInfo=[...new Set(this.projectInfo)]
+            this.addressInfo=[...new Set(this.addressInfo)]
+        },
         //专题图查看
         viewThematicMap(){
             this.$refs['visibleSettings'].validate((valid) => {
@@ -207,17 +254,14 @@ export default {
         checkResult(){
             this.removeLayer();
             switch(this.visibleSettings.statisticRange){
-                case 'all': this.allRange();
-                            break;
+                case 'all':this.limitFeature=null;
+                            break
                 case 'map': this.mapRange();
                             break
-                case 'custom': this.query(this.customFeature);
+                case 'custom': this.limitFeature=this.customFeature;
                             break
             }
-        },
-        allRange(){
-            //地图全部
-
+            this.queryTerm();
         },
         //地图范围
         mapRange(){
@@ -229,7 +273,7 @@ export default {
                 geometry: new Polygon([[[extent[0], extent[1]], [extent[0], extent[3]], [extent[2], extent[3]], [extent[2], extent[1]],[extent[0], extent[1]]]]),
                 name: 'mapRange'
             });
-            this.query(feature)
+            this.limitFeature=feature
         },
         //自定义范围
         customRange(type){
@@ -254,53 +298,93 @@ export default {
             })
             this.drawer.start()
         },
-        //空间查询
-        query(feature) {
-            let that=this;
-            let dataService = appconfig.gisResource['iserver_resource'].dataService
-            let dataSetInfo = dataService.dataSetInfo.filter(info => info.label === '排放口')
-            console.log("数据服务",dataSetInfo)
-            // let queryTask = new iQuery({ dataSetInfo })
-            // let queryText = `PRJ_NAME=${}`
-            // queryTask.sqlQuery(queryText).then(resArr => {
-                
-            // })
-            let queryTask = new iQuery({ dataSetInfo })
-            queryTask.spaceQuery(feature).then(resArr => {
-                let features = []
-                resArr.forEach(item => {
-                    if (item && item.result.featureCount !== 0) {
-                        features.push(item.result.features)
-                    }
+        //条件查询
+        queryTerm(){
+            let prjName=[];
+            let address=[];
+            this.visibleSettings.projectName.forEach(item=>{
+                prjName.push(`PRJ_NAME = '${item}'`)
+            })
+            this.visibleSettings.address.forEach(item=>{
+                address.push(`ADDRESS = '${item}'`)
+            })
+            prjName=prjName.join(' or ')
+            address=address.join(' or ')
+            let queryTask = new iQuery({ dataSetInfo:this.dataSetInfo })
+            let queryText = `PRJ_NAME = "" or ${address}`
+            console.log(queryText)
+            queryTask.sqlQuery(queryText).then(resArr => {
+                console.log("条件查询结果",resArr)
+                let featruesData = resArr.filter(item => {
+                    return item.result.featureCount !== 0
                 })
-                if(features.length==0){
-                    that.showThem=false;
-                    that.$message('暂无数据！')
+                // 数据过滤
+                if (featruesData.length !== 0) {
+                    this.filterFeatures(featruesData)
+                }else{
+                    this.showThem=false;
+                    this.$message('暂无数据！')
                     return
                 }
-                that.ysFeatures=[];
-                that.wsFeatures=[];
-                that.yswsFeatures=[];
-                features.forEach(feaJson => {
-                    that.classification(new GeoJSON().readFeatures(feaJson))
-                })
-                that.initLayer();
-                that.showThem=true;
-                that.thematicMapList[0].level.map(item=>{
-                    if(item.label=='雨水') return item.num=that.ysFeatures.length
-                    if(item.label=='污水') return item.num=that.wsFeatures.length
-                })
+            }).catch(err=>{
+                console.log(err)
+            })
+        },
+        filterFeatures(featruesData){
+            // console.log(featruesData)
+            featruesData.forEach(featrueObj => {
+                let features = featrueObj.result.features.features
+                let themFeatures = features.map(feature => new GeoJSON().readFeature(feature))
+                // 范围限制
+                if (this.limitFeature) {
+                    let limitGeometry 
+                    if(this.limitFeature.getGeometry() instanceof CircleObject){
+                        let polygon = fromCircle(this.limitFeature.getGeometry())
+                        console.log(polygon)
+                        limitGeometry=turf.polygon(polygon.getCoordinates())
+                    }else{
+                        limitGeometry = turf.polygon(this.limitFeature.getGeometry().getCoordinates())
+                    }
+                    themFeatures = themFeatures.filter(feature => {
+                        let geomtry = feature.getGeometry(), inGeometry
+                        if (geomtry instanceof Point) {
+                            inGeometry = turf.point(geomtry.getCoordinates())
+                        } else if (geomtry instanceof LineString) {
+                            inGeometry = turf.lineString(geomtry.getCoordinates())
+                        } else return false
+                        return turf.booleanContains(limitGeometry, inGeometry)
+                    })
+                }
+                console.log("过滤结果",themFeatures)
+                this.showTematicMap(themFeatures)
+            })
+        },
+        showTematicMap(themFeatures){
+            if(themFeatures.length==0){
+                this.showThem=false;
+                this.$message('暂无数据！')
+                return
+            }
+            this.ysFeatures=[];
+            this.wsFeatures=[];
+            this.yswsFeatures=[];
+            themFeatures.forEach(feaJson => {
+                this.classification(feaJson)
+            })
+            this.initLayer();
+            this.showThem=true;
+            this.thematicMapList[0].level.map(item=>{
+                if(item.label=='雨水') return item.num=this.ysFeatures.length
+                if(item.label=='污水') return item.num=this.wsFeatures.length
             })
         },
         classification(features){
-            features.forEach(item=>{
-                switch(item.values_.TYPE){
-                    case '雨水':this.ysFeatures.push(item)
-                              break
-                    case '污水':this.wsFeatures.push(item)
-                              break
-                }
-            })
+            switch(features.values_.TYPE){
+                case '雨水':this.ysFeatures.push(features)
+                            break
+                case '污水':this.wsFeatures.push(features)
+                            break
+            }
         },
         // 初始化图层
         initLayer() {

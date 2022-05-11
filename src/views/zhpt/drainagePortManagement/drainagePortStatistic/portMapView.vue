@@ -57,6 +57,7 @@ export default {
                 })
             })
             this.addLayers();
+            this.initDataSet();
         },
         addLayers(){
             let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
@@ -65,6 +66,10 @@ export default {
                 let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
                 this.view.addLayer(layer)
             })
+        },
+        initDataSet(){
+            let dataService = appconfig.gisResource['iserver_resource'].dataService
+            this.dataSetInfo = dataService.dataSetInfo.filter(info => info.label === '排放口')
         },
         // 开启缩放和拖动
         zoomAndMove() {
@@ -107,6 +112,7 @@ export default {
         },
         // 移除缩放和拖动事件对象
         removeZoomRegister() {
+            this.removeLayer()
             let map = this.view
             let registerOnZoomArr = map.get('registerOnZoom');
             if (registerOnZoomArr && registerOnZoomArr.length > 0) {
@@ -114,6 +120,7 @@ export default {
                     map.un('moveend', registerOnZoomArr[i]);
                 }
             }
+            console.log(registerOnZoomArr)
         },
         //自定义范围
         customRange(type){
@@ -164,10 +171,8 @@ export default {
             console.log(feature)
             if(!feature) return
             let that=this;
-            let dataService = appconfig.gisResource['iserver_resource'].dataService
-            let dataSetInfo = dataService.dataSetInfo.filter(info => info.label === '排放口')
-            console.log("数据服务",dataSetInfo)
-            let queryTask = new iQuery({ dataSetInfo })
+            this.removeLayer()
+            let queryTask = new iQuery({ dataSetInfo:this.dataSetInfo })
             queryTask.spaceQuery(feature).then(resArr => {
                 let features = []
                 console.log("结果",resArr)
