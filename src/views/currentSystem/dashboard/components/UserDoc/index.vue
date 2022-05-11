@@ -24,7 +24,7 @@
       </div>
       <div class="userAvatar">
         <!-- <div :style="{width:'100%',height:'100%',backgroundSize:'cover',backgroundRepeat: 'no-repeat','background-image': 'url('+userinfo.avatar+')'}"></div> -->
-        <img :src="userinfo.avatar" width="100%" height="100%" v-if="userinfo.avatar !== ''" />
+        <img :src="avatar" width="100%" height="100%" v-if="avatar !== ''" />
         <img
           src="../../../../../assets/images/home/defultAvatar.png"
           width="100%"
@@ -88,7 +88,11 @@ export default {
   filters: {
     null2empty: (val) => (val === 'null' ? '' : val || '')
   },
-
+  computed: {
+    avatar() {
+      return this.$store.getters.avatar
+    }
+  },
   methods: {
     /**
      * @description 获取用户信息
