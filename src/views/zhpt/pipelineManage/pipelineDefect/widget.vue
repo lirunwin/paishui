@@ -70,8 +70,11 @@
         @selection-change="handleSelectionChange"
         @row-click="openPromptBox"
       >
+        <template slot="empty">
+          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+        </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -106,7 +109,7 @@
 
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div class="detailsCrad" style="top: 10%; left: 20%;right: 62%;" v-if="currentInfoCard">
+      <div class="detailsCrad" style="top: 10%; left: 20%; right: 62%" v-if="currentInfoCard">
         <el-card class="box-card" style="width: 300px">
           <div class="table-content">
             <div
@@ -135,7 +138,7 @@
                 </div>
                 <div style="display: flex; padding: 3px 0">
                   <span style="width: 30px">评价:</span>
-                  <span style="line-height: 16px;padding-left: 10px;">{{ isPromptBox.pipeNote }}</span>
+                  <span style="line-height: 16px; padding-left: 10px">{{ isPromptBox.pipeNote }}</span>
                 </div>
               </div>
               <div class="right">

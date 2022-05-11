@@ -1,15 +1,15 @@
 <template>
     <div ref="commonPopup" class="common-popup" v-show="isShow">
-        <div class="popup-header"  :style="headerStyle">
+        <div class="popup-header"  :style="headerStyle" v-show="isHeaderShow">
             <div class="popup-title">{{ title || ' ' }}</div>
             <div class="popup-operation">
                 <i :class="item.icon" :style="{'color':item.color}" v-for="item of operationGroup" :key="item.action" @click="operationClick(item)"></i>
             </div>
         </div>
-        <a href="#" class="common-popup-closer" @click="closePopup()"></a>
         <div class="popup-content">
             <slot/>
         </div>
+        <a href="#" class="common-popup-closer" @click="closePopup()"></a>
     </div>
 </template>
 
@@ -22,6 +22,7 @@ export default {
         popupPosition: { type: Array },//弹窗位置(经纬度)
         popupShow: { type: Boolean },//弹窗显示
         popupTitle: {type: String },//弹窗标题
+        isHeaderShow:{type: Boolean},//是否显示头部
         headerStyle: {type: String,default:"border-bottom:1px solid #cccccc"},//头部样式
         isSetCenter:{type: Boolean,default: false},//是否视图定位至中心
         operationGroup:{type:Array,default: () => []}//例如：operationGroup:[{icon:"iconfont icondtbz",color:"royalblue",action:"detail"},],
@@ -99,17 +100,20 @@ export default {
     position: absolute;
     background-color: white;
     box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    padding: 15px;
+    // padding: 15px;
     border-radius: 10px;
     border: 1px solid #cccccc;
-    bottom: 12px;
-    left: -50px;
+    // bottom: 12px;
+    // left: -50px;
+    top: 30px;
+    right: -190px;
     min-width: 280px;
 }
 .popup-header{
-    padding-bottom: 4px;
-    margin-bottom: 10px;
-    padding-right: 20px;
+    // padding-bottom: 4px;
+    // margin-bottom: 10px;
+    // padding-right: 20px;
+    padding: 15px;
     min-height: 22px;
     display: flex;
     .popup-title{
@@ -133,22 +137,26 @@ export default {
     pointer-events: none;
 }
 .common-popup:after {
-    border-top-color: white;
+    border-bottom-color: white;
     border-width: 10px;
-    left: 48px;
-    margin-left: -10px;
+    left: 50%;
+    top: -22px;
 }
 .common-popup:before {
-    border-top-color: #cccccc;
-    border-width: 11px;
-    left: 48px;
-    margin-left: -11px;
+    border-bottom-color: #cccccc;
+    border-width: 10px;
+    left: 50%;
+    top: -23px;
 }
 .common-popup-closer {
     text-decoration: none;
     position: absolute;
-    top: 14px;
-    right: 15px;
+    top: 0;
+    /* right: -10px; */
+    right: -20px;
+    background-color: white;
+    padding: 2px;
+    border-radius: 10px;
 }
 .common-popup-closer:after {
     content: "✖";

@@ -18,6 +18,11 @@
             <p class="release-title">检测状态:</p>
             <el-radio v-model="searchParams.jcStatus" label="0">未检测</el-radio>
             <el-radio v-model="searchParams.jcStatus" label="1">已检测</el-radio>
+            <!-- <el-checkbox-group v-model="searchValue.jcStatus">
+              <el-checkbox label="">全部</el-checkbox>
+              <el-checkbox label="0">未检测</el-checkbox>
+              <el-checkbox label="1">已检测</el-checkbox>
+            </el-checkbox-group> -->
           </div>
           <div class="title">结构性缺陷等级：</div>
           <el-select v-model="searchParams.funcClass" placeholder="">
@@ -43,8 +48,11 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
+        <template slot="empty">
+          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+        </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"

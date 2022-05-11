@@ -94,17 +94,14 @@
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-popconfirm
-              confirm-button-text="确定"
-              cancel-button-text="取消"
-              icon="el-icon-info"
-              icon-color="##FFDF84"
-              title="确定要撤回吗?"
+            <el-button
+              type="text"
+              size="small"
+              :wu="scope"
               v-if="scope.row.state == '1'"
-              @confirm="withdrawBtn(scope.row.id)"
+              @click.stop="withdrawBtn(scope.row.id, true)"
+              >撤回</el-button
             >
-              <el-button slot="reference" type="text" size="small" :wu="scope">撤回</el-button>
-            </el-popconfirm>
             <el-button
               type="text"
               size="small"
@@ -186,12 +183,12 @@
             >
               <div class="btn-box">
                 <el-button size="small" type="primary" :disabled="loadingBool">选择报告</el-button>
-                <span class="btns"
-                  ><el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
+                <span class="btns">
+                  <el-button @click.stop="hideUpdataDocx">取 消</el-button>
+                  <el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
                     >确 定</el-button
                   >
-                  <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
-                >
+                </span>
               </div>
               <div slot="tip" class="el-upload__tip">
                 <p style="line-height: 10px">只能上传docx/doc文件</p>
@@ -269,12 +266,12 @@
             >
               <div class="btn-box">
                 <el-button size="small" type="primary" :disabled="loadingBool">选择视频</el-button>
-                <span class="btns"
-                  ><el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
+                <span class="btns">
+                  <el-button @click.stop="hideUpdataDocx">取 消</el-button>
+                  <el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
                     >确 定</el-button
                   >
-                  <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
-                >
+                </span>
               </div>
 
               <div slot="tip" class="el-upload__tip">
@@ -382,6 +379,21 @@
         </span>
       </el-dialog>
     </div>
+    <!-- 撤回提示框 -->
+    <div class="delete-box">
+      <!-- 撤回提示框 -->
+      <el-dialog title="提示" :visible.sync="withdrawDialogVisible" width="30%">
+        <div style="display: flex; align-items: center">
+          <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
+          <span class="iconfont icondtbz" style="font-size: 22px; color: #e6a23c"></span>
+          &nbsp; 确定要撤回这条检测报告吗?
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="withdrawDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="isWithdraw">确 定</el-button>
+        </span>
+      </el-dialog>
+    </div>
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
       <div class="detailsCrad" style="top: 10%; left: 20%; right: 55%" v-if="currentInfoCard">
@@ -478,9 +490,10 @@ import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import Text from 'ol/style/Text'
 import { Style } from 'ol/style'
 
-import defectImgR from '@/assets/images/traingle-r.png'
-import defectImgB from '@/assets/images/traingle-b.png'
-import defectImgY from '@/assets/images/traingle-y.png'
+import defectImgR from '@/assets/images/traingle-r.png';
+import defectImgB from '@/assets/images/traingle-b.png';
+import defectImgY from '@/assets/images/traingle-y.png';
+import defectImgLB from '@/assets/images/traingle-lb.png';
 
 import Icon from 'ol/style/Icon'
 
@@ -501,6 +514,7 @@ export default {
       currentIndex: 0, // 当前页数
       currentInfoCard: false, // 弹出框
       deleteDialogVisible: false, // 删除提示框显影
+      withdrawDialogVisible: false, // 撤回提示框显影
       // 数据为空时的图片
       // imgUrl:"@/assets/images/nullData.png",
       // 上传文件表格
@@ -604,6 +618,16 @@ export default {
   created() {
     let res = this.getDate()
   },
+  watch: {
+    '$store.state.gis.activeSideItem': function (n, o) {
+      if (n !== '检测报告管理') {
+        this.clearAll()
+      } else {
+        this.getPipeDefectData()
+        this.data.that.showLegend('testReport', true)
+      }
+    }
+  },
   computed: {
     // 提示框当前信息
     getCurrentForm() {
@@ -650,12 +674,13 @@ export default {
     this.data.that.showLegend('testReport', true)
   },
   destroyed() {
-    this.vectorLayer.getSource().clear()
-    this.vectorLayer2.getSource().clear()
-    this.lightLayer.getSource().clear()
-    this.data.that.showLegend('testReport', false)
+    this.clearAll()
   },
   methods: {
+    // 关闭缩略提示框的方法
+    closePromptBox() {
+      this.currentInfoCard = false
+    },
     // 上一页
     lastPage() {
       if (this.currentIndex <= 0) {
@@ -686,23 +711,23 @@ export default {
     openDetails(row, column) {
       this.testReportDetails(row.id)
     },
-    addMapEvent() {
-      let vectorLayer = new VectorLayer({ source: new VectorSource() })
-      let feature = new Feature({ geometry: new Point([101.73104, 26.505465]) })
-      feature.setStyle(comSymbol.getPointStyle(5, '#f00'))
-      vectorLayer.getSource().addFeature(feature)
-      this.map.addLayer(vectorLayer)
-
-      this.map.on('click', (evt) => {
+    addMapEvent () {
+      this.map.on('click', evt => {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         if (features.length !== 0) {
-          console.log(features)
+          let id = features[0].get('id')
+          this.openPromptBox({ id })
         } else {
-          console.log('无特征点')
+          this.currentInfoCard = false
         }
       })
     },
-    handleAdd() {},
+    clearAll () {
+      this.vectorLayer.getSource().clear()
+      this.vectorLayer2.getSource().clear()
+      this.lightLayer.getSource().clear()
+      this.data.that.showLegend('testReport', false)
+    },
     /**
      * 小地图完成加载后
      * */
@@ -756,7 +781,10 @@ export default {
           if (light) {
             map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
             map.getView().setZoom(16)
-            this.lightLayer.getSource().addFeatures([...dFeas, ...pFeas])
+            this.lightLayer.getSource().addFeatures([
+              // ...dFeas, 
+              ...pFeas
+            ])
           } else {
             this.lightLayer.getSource().clear()
             layer.getSource().clear()
@@ -796,6 +824,9 @@ export default {
             let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
             if (findColor) {
               hasStyle && feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              for (let i in  feaObj) {
+                i !== "geometry" && feature.set(i, feaObj[i])
+              }
               features.push(feature)
             }
           }
@@ -806,9 +837,16 @@ export default {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
-            hasStyle &&
-              feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: defectImgR, scale: 0.4 }) }))
+            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
+            // if (feaObj.defectLevel) {
+            //   let index = ["一级", '二级', '三级', '四级']
+            //   img = imgBox[index.indexOf(feaObj.defectLevel)]
+            // }
+            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img, scale: 0.3 }) }))
 
+            for (let i in  feaObj) {
+              i !== "geometry" && feature.set(i, feaObj[i])
+            }
             features.push(feature)
 
             // let fea = feature.clone()
@@ -962,14 +1000,22 @@ export default {
       this.dialogFormVisible3 = false
     },
     // 单个撤回
-    async withdrawBtn(id) {
-      let res = await withdrawReport(id)
+    withdrawBtn(id) {
+      this.id = id
+      this.withdrawDialogVisible = true
+    },
+    // 确认撤回
+    async isWithdraw() {
+      let res = await withdrawReport(this.id)
       if (res.result) {
         this.$message({
           message: '撤回成功',
           type: 'success'
         })
+      } else {
+        this.$message.error('撤回失败')
       }
+      this.withdrawDialogVisible = false
       await this.getDate()
     },
     // 批量发布确认
@@ -1273,7 +1319,11 @@ export default {
     // 表格选中事件
     handleSelectionChange(val) {
       console.log('表格选中事件', val)
-      if (val.length !== 0) this.getPipeDefectData(1, val[0].id, true)
+      if (val.length !== 0) {
+        this.getPipeDefectData(1, val[0].id, true)
+      } else {
+        this.getPipeDefectData()
+      }
       this.multipleSelection = val
     },
     // 分页触发的事件

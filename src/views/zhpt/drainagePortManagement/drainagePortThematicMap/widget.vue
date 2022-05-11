@@ -28,17 +28,17 @@
                 </el-radio-group>
                 <div class="right-group">
                     <el-tooltip content="圆形选择" placement="top" effect="light">
-                        <el-button size="mini"  plain :disabled="isCustom">
+                        <el-button size="mini"  plain :disabled="isCustom" @click="customRange('circle')">
                             <img src="../images/C.png" width="20px" height="20px" style="object-fit: contain" />
                         </el-button>
                     </el-tooltip>
                     <el-tooltip content="矩形选择" placement="top" effect="light">
-                        <el-button size="mini"  plain :disabled="isCustom">
+                        <el-button size="mini"  plain :disabled="isCustom" @click="customRange('rect')">
                             <img src="../images/R.png" width="20px" height="20px" style="object-fit: contain" />
                         </el-button>
                     </el-tooltip>
                     <el-tooltip content="多边形选择" placement="top" effect="light">
-                    <el-button size="mini"  plain :disabled="isCustom">
+                    <el-button size="mini"  plain :disabled="isCustom" @click="customRange('polygon')">
                         <img src="../images/P.png" width="20px" height="20px" style="object-fit: contain" />
                     </el-button>
                     </el-tooltip>
@@ -72,31 +72,22 @@
         <div class="titleName">专题图列表</div>
     </div>
     <div class="thematicMapList">
-        <div v-for="(item, index) in thematicMapList" :key="index" class="thematicMap-list">
+        <div v-for="(item, index) in thematicMapList" :key="index" class="thematicMap-list" v-show="showThem">
         <div>
             <div class="thematicMap-title">
             <i
                 style="cursor: pointer"
-                @click="changeArrow(index)"
-                :class="{ 'el-icon-caret-bottom': showThemBox[index], 'el-icon-caret-right': !showThemBox[index] }"
+                :class="{ 'el-icon-caret-bottom': showThemBox, 'el-icon-caret-right': !showThemBox }"
             ></i>
             <el-checkbox
-                @change="setThemLayerVisible(index, item.open)"
                 v-model="item.open"
                 :label="item.title"
             ></el-checkbox>
             </div>
             <transition name="el-zoom-in-top">
-            <div v-if="item.type === 'gradient' && showThemBox[index]" class="transition-box">
-                <div class="line-color"></div>
-                <div class="text-mix-max">
-                <span>{{ item.start }}</span>
-                <span>{{ item.end }}</span>
-                </div>
-            </div>
-            <div v-else-if="showThemBox[index]" class="transition-box">
+            <div class="transition-box">
                 <ul>
-                <li v-for="(level, i) in item.level" :key="i" :class="comStyle(item.type, level.color)">
+                <li v-for="(level, i) in item.level" :key="i" :class="comStyle(level.color)">
                     {{ level.label + "("+level.num + level.unit +")"}}
                 </li>
                 </ul>
@@ -109,7 +100,24 @@
 </template>
 
 <script>
-import VectorSource from 'ol/source/Vector'
+// import VectorSource from 'ol/source/Vector'
+import { esriConfig, appconfig } from 'staticPub/config'
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import GeoJSON from 'ol/format/GeoJSON'
+import { Vector as VectorSource } from 'ol/source'
+import { Vector as VectorLayer } from 'ol/layer'
+import Feature from 'ol/Feature';
+import Polygon from 'ol/geom/Polygon';
+import {
+  Style,
+  Circle,
+  Icon,
+  Fill,
+  RegularShape,
+  Stroke,
+  Text
+} from 'ol/style'
 export default {
     name:"drainagePortThematicMap",//排放口专题图
     data(){
@@ -117,7 +125,7 @@ export default {
             visibleSettings:{
                 projectName:"",
                 address:"",
-                statisticRange:"",
+                statisticRange:"all",
                 region:""
             },
             rules:{
@@ -128,24 +136,34 @@ export default {
             isCustom:true,
             isRegion:true,
             regionType:"按行政区",
-
-            //
             thematicMapList: [
                 {
                     title: '排放口类型专题图',
                     layerName: 'pipeDefectLayer',
-                    open: false,
+                    open: true,
                     type: 'circle',
                     level: [
-                        { color: 'blue', label: '雨水', num: 111, unit: '个' },
-                        { color: 'red', label: '污水', num: 111, unit: '个' },
-                        { color: 'brown', label: '雨污合流', num: 111, unit: '个' }
+                        { color: 'blue', label: '雨水', num: 0, unit: '个' },
+                        { color: 'red', label: '污水', num: 0, unit: '个' },
+                        { color: 'brown', label: '雨污合流', num: 0, unit: '个' }
                     ]
                 },
             ],
-            showThemBox: [true, true, true, true],
-            outletLayer:null,
+            showThem:false,
+            showThemBox:true,
+            //
+            drawer:null,
+            customFeature:null,
+            ysFeatures:[],
+            wsFeatures:[],
+            yswsFeatures:[],
+            ysLayer:null,
+            wsLayer:null,
+            yswsLayer:null,
         }
+    },
+    mounted(){
+        this.view=this.$attrs.data.mapView
     },
     watch:{
         'visibleSettings.statisticRange':{
@@ -153,6 +171,18 @@ export default {
                 this.isCustom=(n=="custom")?false:true
                 this.isRegion=(n=="region")?false:true
             }
+        },
+        'thematicMapList':{
+            handler(n,o){
+                if(n[0].open){
+                    this.ysLayer.setVisible(true)
+                    this.wsLayer.setVisible(true)
+                }else{
+                    this.ysLayer.setVisible(false)
+                    this.wsLayer.setVisible(false)
+                }
+            },
+            deep:true
         }
     },
     methods:{
@@ -160,7 +190,7 @@ export default {
         viewThematicMap(){
             this.$refs['visibleSettings'].validate((valid) => {
                 if (valid) {
-                    
+                    this.checkResult();
                 } else {
                     return false;
                 }
@@ -170,30 +200,154 @@ export default {
         handleCommand(command){
             this.regionType=command
         },
-        changeArrow(index) {
-            this.$set(this.showThemBox, index, !this.showThemBox[index])
+        comStyle(color) {
+            return `item-${color} type-circle`
         },
-        setThemLayerVisible(index, visible) {
-            this.outletLayer = new VectorLayer({ source: new VectorSource(), visible: false })
-            this.outletLayer.setVisible(visible)
-            visible && this.openDefect()
+        //查看结果
+        checkResult(){
+            this.removeLayer();
+            switch(this.visibleSettings.statisticRange){
+                case 'all': this.allRange();
+                            break;
+                case 'map': this.mapRange();
+                            break
+                case 'custom': this.query(this.customFeature);
+                            break
+            }
         },
-        comStyle(type, color) {
-        let className = ''
-        switch (type) {
-            case 'circle':
-            className = 'type-circle'
-            break
-            case 'square':
-            className = 'type-square'
-            break
-            case 'line':
-            className = 'type-line'
-            break
-        }
-        return `item-${color} ${className}`
+        allRange(){
+            //地图全部
+
+        },
+        //地图范围
+        mapRange(){
+            //地图范围
+            let size =this.view.getSize()
+            let extent = this.view.getView().calculateExtent(size)
+            //创建Feature，并添加进矢量容器中
+            let feature = new Feature({
+                geometry: new Polygon([[[extent[0], extent[1]], [extent[0], extent[3]], [extent[2], extent[3]], [extent[2], extent[1]],[extent[0], extent[1]]]]),
+                name: 'mapRange'
+            });
+            this.query(feature)
+        },
+        //自定义范围
+        customRange(type){
+            this.drawer && this.drawer.end()
+            this.showThem=false
+            this.removeLayer()
+            // this.queryLayer && this.queryLayer.getSource().clear()
+            this.drawer = new iDraw(this.view, type, {
+                endDrawCallBack: feature => {
+                    this.drawer.remove()
+                    this.customFeature=feature
+                },
+                showCloser: true,
+                drawStyle:{
+                    pointSize:5,
+                    pointColor:'rgb(246,82,82)',
+                    lineWidth:2,
+                    lineColor:'rgb(246,82,82)',
+                    fillColor:'rgba(246,82,82,0.1)',
+                    lineDash:[0,0]
+                }
+            })
+            this.drawer.start()
+        },
+        //空间查询
+        query(feature) {
+            let that=this;
+            let dataService = appconfig.gisResource['iserver_resource'].dataService
+            let dataSetInfo = dataService.dataSetInfo.filter(info => info.label === '排放口')
+            console.log("数据服务",dataSetInfo)
+            // let queryTask = new iQuery({ dataSetInfo })
+            // let queryText = `PRJ_NAME=${}`
+            // queryTask.sqlQuery(queryText).then(resArr => {
+                
+            // })
+            let queryTask = new iQuery({ dataSetInfo })
+            queryTask.spaceQuery(feature).then(resArr => {
+                let features = []
+                resArr.forEach(item => {
+                    if (item && item.result.featureCount !== 0) {
+                        features.push(item.result.features)
+                    }
+                })
+                if(features.length==0){
+                    that.showThem=false;
+                    that.$message('暂无数据！')
+                    return
+                }
+                that.ysFeatures=[];
+                that.wsFeatures=[];
+                that.yswsFeatures=[];
+                features.forEach(feaJson => {
+                    that.classification(new GeoJSON().readFeatures(feaJson))
+                })
+                that.initLayer();
+                that.showThem=true;
+                that.thematicMapList[0].level.map(item=>{
+                    if(item.label=='雨水') return item.num=that.ysFeatures.length
+                    if(item.label=='污水') return item.num=that.wsFeatures.length
+                })
+            })
+        },
+        classification(features){
+            features.forEach(item=>{
+                switch(item.values_.TYPE){
+                    case '雨水':this.ysFeatures.push(item)
+                              break
+                    case '污水':this.wsFeatures.push(item)
+                              break
+                }
+            })
+        },
+        // 初始化图层
+        initLayer() {
+            this.ysLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    // 将点设置成圆形样式
+                    image: new Circle({
+                        // 点的颜色
+                        fill: new Fill({
+                            color: 'blue'
+                        }),
+                        // 圆形半径
+                        radius: 5
+                    }),
+                })
+            })
+            this.wsLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    // 将点设置成圆形样式
+                    image: new Circle({
+                        // 点的颜色
+                        fill: new Fill({
+                            color: 'red'
+                        }),
+                        // 圆形半径
+                        radius: 5
+                    }),
+                })
+            })
+            this.view.addLayer(this.ysLayer)
+            this.view.addLayer(this.wsLayer)
+            this.ysLayer.getSource().addFeatures(this.ysFeatures)
+            this.wsLayer.getSource().addFeatures(this.wsFeatures)
+        },
+        //删除
+        removeLayer(){
+            this.view.removeLayer(this.ysLayer)
+            this.view.removeLayer(this.wsLayer)
+            this.view.removeLayer(this.yswsLayer)
         },
     },
+    beforeDestroy(){
+        this.removeLayer()
+        if(this.drawer) this.drawer.clear()
+    }
 }
 </script>
 
