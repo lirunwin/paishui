@@ -81,8 +81,8 @@
           :label="v.label"
           align="center"
           show-overflow-tooltip
-          v-for="v in tableContent"
-          :key="v.name"
+          v-for="(v, i) in tableContent"
+          :key="i"
         >
         </el-table-column>
 
@@ -220,7 +220,7 @@
               <div class="box1" v-show="activeIndex == '2'">
                 <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
                   <div class="detailsTitle">结构性缺陷评价(等级：{{ DetailsForm.structClass }})</div>
-                  <el-row v-for="v in structArr" :key="v">
+                  <el-row v-for="(v, i) in structArr" :key="i">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
                         <el-input v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>

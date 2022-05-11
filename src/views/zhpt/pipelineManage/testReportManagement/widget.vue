@@ -701,7 +701,13 @@ export default {
     },
     // 双击打开详情或发布
     openDetails(row, column) {
-      this.testReportDetails(row.id)
+      console.log('row', row)
+      if (row.state == '0') {
+        this.testReportDetails(row.id, true)
+      } else {
+        this.testReportDetails(row.id)
+      }
+      // this.testReportDetails(row.id)
     },
     addMapEvent() {
       let vectorLayer = new VectorLayer({ source: new VectorSource() })

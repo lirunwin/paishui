@@ -706,12 +706,19 @@ export default class BaseMap extends Vue {
   height: 100%;
   .el-main {
     padding: 0px;
-    display: flex; // *
+    // position: absolute;
+    // position: relative;
   }
   .mapView {
     position: relative;
     height: 100%;
     width: 100%;
+    /deep/ .ol-zoom {
+      display: none !important;
+    }
+    /deep/ .ol-attribution {
+      display: none !important;
+    }
   }
 }
 .close {
@@ -733,13 +740,15 @@ export default class BaseMap extends Vue {
     margin-top: 4px;
     overflow: hidden hidden;
     transition: 0.4s;
-    >>> div{
-      padding:2px;
-      img{
-        width:18px;height:18px
+    >>> div {
+      padding: 2px;
+      img {
+        width: 18px;
+        height: 18px;
       }
-      span{
-        padding-left: 3px;font-size:12px
+      span {
+        padding-left: 3px;
+        font-size: 12px;
       }
     }
   }
@@ -758,14 +767,14 @@ export default class BaseMap extends Vue {
     user-select: none;
   }
 }
-.qufen{
+.qufen {
   position: absolute;
   top: 0px;
   background: chartreuse;
   padding: 5px;
 }
-#antherPanel::after{
-  content: "副视图  主视图";
+#antherPanel::after {
+  content: '副视图  主视图';
   border-radius: 0px 0px 5px 5px;
   border: 1px solid #2d74e7;
   background: #ecf2ffcc;
@@ -836,7 +845,7 @@ export default class BaseMap extends Vue {
         }
       }
       .scadaLayer-float-value {
-        color: #2D74E7;
+        color: #2d74e7;
         font-weight: bold;
         margin-left: 8px;
         animation: mymove 0.8s;
@@ -846,12 +855,12 @@ export default class BaseMap extends Vue {
       // }
       .scadaLayer-float-arrow2::after {
         content: '↑';
-        color: #F56C6C;
+        color: #f56c6c;
         animation: mymove 0.8s;
       }
       .scadaLayer-float-arrow0::after {
         content: '↓';
-        color: #67C23A;
+        color: #67c23a;
         animation: mymove 0.8s;
       }
       .scadaLayer-float-arrow1::after {
@@ -878,10 +887,62 @@ export default class BaseMap extends Vue {
       max-height: 500px;
     }
   }
-  @keyframes mymove
-  {
-    from { background: rgb(158,54,153); color: #fff; }
-    to { background: #fff0; color: #2D74E7; }
+  @keyframes mymove {
+    from {
+      background: rgb(158, 54, 153);
+      color: #fff;
+    }
+    to {
+      background: #fff0;
+      color: #2d74e7;
+    }
   }
+}
+
+//
+.map-legend {
+  background: #fffc;
+  position: absolute;
+  bottom: 40px;
+  left: 10px;
+  min-height: 30px;
+  width: 200px;
+  border: 1px solid rgb(13, 186, 255);
+}
+
+.map-legend-title {
+  color: #fff;
+  font-weight: 600;
+  padding: 3px 10px;
+  height: 30px;
+  font-size: 15px;
+  line-height: 25px;
+  background-color: rgb(13, 186, 255);
+}
+.map-legend-item {
+  display: flex;
+  height: 20px;
+  line-height: 20px;
+  font-size: 13px;
+  margin: 15px 10px;
+}
+.map-legend-label {
+  margin-left: 5px;
+}
+.map-legend-rect {
+  display: inline-block;
+  width: 30px;
+  height: 100%;
+}
+.map-legend-circle {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.map-legend-line {
+  display: inline-block;
+  width: 50px;
+  height: 8px;
 }
 </style>
