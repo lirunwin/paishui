@@ -94,17 +94,14 @@
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-popconfirm
-              confirm-button-text="确定"
-              cancel-button-text="取消"
-              icon="el-icon-info"
-              icon-color="##FFDF84"
-              title="确定要撤回吗?"
+            <el-button
+              type="text"
+              size="small"
+              :wu="scope"
               v-if="scope.row.state == '1'"
-              @confirm="withdrawBtn(scope.row.id)"
+              @click.stop="withdrawBtn(scope.row.id, true)"
+              >撤回</el-button
             >
-              <el-button slot="reference" type="text" size="small" :wu="scope">撤回</el-button>
-            </el-popconfirm>
             <el-button
               type="text"
               size="small"
@@ -186,12 +183,12 @@
             >
               <div class="btn-box">
                 <el-button size="small" type="primary" :disabled="loadingBool">选择报告</el-button>
-                <span class="btns"
-                  ><el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
+                <span class="btns">
+                  <el-button @click.stop="hideUpdataDocx">取 消</el-button>
+                  <el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
                     >确 定</el-button
                   >
-                  <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
-                >
+                </span>
               </div>
               <div slot="tip" class="el-upload__tip">
                 <p style="line-height: 10px">只能上传docx/doc文件</p>
@@ -269,12 +266,12 @@
             >
               <div class="btn-box">
                 <el-button size="small" type="primary" :disabled="loadingBool">选择视频</el-button>
-                <span class="btns"
-                  ><el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
+                <span class="btns">
+                  <el-button @click.stop="hideUpdataDocx">取 消</el-button>
+                  <el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
                     >确 定</el-button
                   >
-                  <el-button @click.stop="hideUpdataDocx">取 消</el-button></span
-                >
+                </span>
               </div>
 
               <div slot="tip" class="el-upload__tip">
@@ -379,6 +376,21 @@
         <span slot="footer" class="dialog-footer">
           <el-button @click="deleteDialogVisible = false">取 消</el-button>
           <el-button type="primary" @click="removeDatas">确 定</el-button>
+        </span>
+      </el-dialog>
+    </div>
+    <!-- 撤回提示框 -->
+    <div class="delete-box">
+      <!-- 撤回提示框 -->
+      <el-dialog title="提示" :visible.sync="withdrawDialogVisible" width="30%">
+        <div style="display: flex; align-items: center">
+          <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
+          <span class="iconfont icondtbz" style="font-size: 22px; color: #e6a23c"></span>
+          &nbsp; 确定要撤回这条检测报告吗?
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="withdrawDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="isWithdraw">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -501,6 +513,7 @@ export default {
       currentIndex: 0, // 当前页数
       currentInfoCard: false, // 弹出框
       deleteDialogVisible: false, // 删除提示框显影
+      withdrawDialogVisible: false, // 撤回提示框显影
       // 数据为空时的图片
       // imgUrl:"@/assets/images/nullData.png",
       // 上传文件表格
@@ -656,6 +669,10 @@ export default {
     this.data.that.showLegend('testReport', false)
   },
   methods: {
+    // 关闭缩略提示框的方法
+    closePromptBox() {
+      this.currentInfoCard = false
+    },
     // 上一页
     lastPage() {
       if (this.currentIndex <= 0) {
@@ -962,14 +979,22 @@ export default {
       this.dialogFormVisible3 = false
     },
     // 单个撤回
-    async withdrawBtn(id) {
-      let res = await withdrawReport(id)
+    withdrawBtn(id) {
+      this.id = id
+      this.withdrawDialogVisible = true
+    },
+    // 确认撤回
+    async isWithdraw() {
+      let res = await withdrawReport(this.id)
       if (res.result) {
         this.$message({
           message: '撤回成功',
           type: 'success'
         })
+      } else {
+        this.$message.error('撤回失败')
       }
+      this.withdrawDialogVisible = false
       await this.getDate()
     },
     // 批量发布确认

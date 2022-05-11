@@ -27,11 +27,11 @@
           </el-date-picker>
           <div class="title">结构性缺陷等级：</div>
           <el-select v-model="searchValue.structClass" placeholder="全部">
-            <el-option v-for="(item,i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
+            <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
           <el-select v-model="searchValue.funcClass" placeholder="全部">
-            <el-option v-for="(item,i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
+            <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
           <el-button class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
@@ -70,8 +70,11 @@
         @selection-change="handleSelectionChange"
         @row-click="openPromptBox"
       >
+        <template slot="empty">
+          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+        </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -118,7 +121,7 @@
                 box-sizing: border-box;
               "
             >
-              <span style="font-weight: bold;user-select: none;"
+              <span style="font-weight: bold; user-select: none"
                 >{{ getCurrentForm.expNo + getCurrentForm.pipeType }}
                 <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
                 {{ currentIndex + 1 }}/{{ currentForm.length }}
@@ -175,7 +178,7 @@
               <div class="box1" v-show="activeIndex == '1'">
                 <div class="detailsTitle">管段信息</div>
                 <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
-                  <el-row v-for="(v,i) in cardTableContent" :key="i">
+                  <el-row v-for="(v, i) in cardTableContent" :key="i">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
                         <el-input v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
@@ -243,7 +246,7 @@
                     </el-col>
                   </el-row>
                   <div class="detailsTitle">功能性缺陷评价(等级：{{ DetailsForm.funcClass }})</div>
-                  <el-row v-for="(v,i) in funcArr" :key="i">
+                  <el-row v-for="(v, i) in funcArr" :key="i">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
                         <el-input v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
@@ -281,7 +284,7 @@
         <el-table-column property="address" label="地址"></el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <p v-if="false">{{scope}}</p>
+            <p v-if="false">{{ scope }}</p>
             <el-button type="text" size="small" @click="$message('该功能暂未开放')">报告</el-button>
             <el-button type="text" size="small" @click="dialogEnclosure = false">退出</el-button>
           </template>
@@ -446,7 +449,7 @@ export default {
       console.log('打开缩略提示框', row)
       this.isPromptBox = { ...row }
       let res = await assessmentDefect(row.id)
-       this.currentIndex = 0
+      this.currentIndex = 0
       this.currentForm = res.result
       this.currentInfoCard = true
       console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)

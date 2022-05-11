@@ -84,6 +84,7 @@
             <el-col :span="12">
               <el-form-item :label="item[0].label" :prop="item[0].name">
                 <el-input
+                  :placeholder="item[0].placeholder"
                   v-model="form[item[0].name]"
                   :maxlength="item[0].maxLength"
                   show-word-limit
@@ -94,6 +95,7 @@
             <el-col :span="12">
               <el-form-item :label="item[1].label" :prop="item[1].name">
                 <el-input
+                  :placeholder="item[1].placeholder"
                   v-model="form[item[1].name]"
                   :maxlength="item[1].maxLength"
                   show-word-limit
@@ -104,7 +106,7 @@
           </el-row>
 
           <el-form-item label="隐蔽管线点数量" prop="hpoints">
-            <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails"></el-input>
+            <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails" placeholder="单位：个"></el-input>
           </el-form-item>
           <el-form-item label="工程日期范围">
             <!-- <el-date-picker
@@ -177,7 +179,7 @@
               :auto-upload="false"
             >
               <div class="add-btn">
-                <el-button size="small" type="primary" slot="trigger">选择文件夹</el-button>
+                <el-button size="small" type="primary" slot="trigger">选择文件</el-button>
                 <span class="btns">
                   <el-button @click.stop="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
                   <el-button type="primary" @click.stop="addTable('form')" v-if="!isDetails">确 定</el-button>
@@ -207,7 +209,7 @@
       <el-dialog title="提示" :visible.sync="deleteDialogVisible" width="30%">
         <div style="display: flex; align-items: center">
           <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
-          <span class="iconfont icondtbz" style="font-size: 22px;color: #e6a23c"></span>
+          <span class="iconfont icondtbz" style="font-size: 22px; color: #e6a23c"></span>
           &nbsp; 确认删除选中的{{ multipleSelection.length }}条工程项目吗?
         </div>
         <span slot="footer" class="dialog-footer">
@@ -261,36 +263,36 @@ export default {
       // 表单参数
       formContent: [
         [
-          { maxLength: '100', label: '工程名称', name: 'prjName' },
-          { maxLength: '20', label: '工程编号', name: 'prjNo' }
+          { maxLength: '100', label: '工程名称', name: 'prjName' ,placeholder:""},
+          { maxLength: '20', label: '工程编号', name: 'prjNo' ,placeholder:""}
         ],
         [
-          { maxLength: '50', label: '检测单位', name: 'jcunit' },
-          { maxLength: '50', label: '勘察单位', name: 'kcunit' }
+          { maxLength: '50', label: '检测单位', name: 'jcunit',placeholder:"" },
+          { maxLength: '50', label: '勘察单位', name: 'kcunit',placeholder:"" }
         ],
         [
-          { maxLength: '4', label: '探测单位', name: 'tcunit' },
-          { maxLength: '30', label: '设计单位', name: 'sjunit' }
+          { maxLength: '4', label: '探测单位', name: 'tcunit' ,placeholder:""},
+          { maxLength: '30', label: '设计单位', name: 'sjunit',placeholder:"" }
         ],
         [
-          { maxLength: '4', label: '建设单位', name: 'jsunit' },
-          { maxLength: '50', label: '监理单位', name: 'ctunit' }
+          { maxLength: '4', label: '建设单位', name: 'jsunit' ,placeholder:""},
+          { maxLength: '50', label: '监理单位', name: 'ctunit',placeholder:"" }
         ],
         [
-          { maxLength: '255', label: '施工单位', name: 'sgunit' },
-          { maxLength: '30', label: '施工负责人', name: 'constructionCharge' }
+          { maxLength: '255', label: '施工单位', name: 'sgunit',placeholder:"" },
+          { maxLength: '30', label: '施工负责人', name: 'constructionCharge',placeholder:"" }
         ],
         [
-          { maxLength: '20', label: '高程系统', name: 'ecoord' },
-          { maxLength: '20', label: '平面坐标系统', name: 'pcoord' }
+          { maxLength: '20', label: '高程系统', name: 'ecoord',placeholder:"" },
+          { maxLength: '20', label: '平面坐标系统', name: 'pcoord',placeholder:"" }
         ],
         [
-          { maxLength: '9', label: '管线总长度', name: 'pllength' },
-          { maxLength: '9', label: '管线种类数量', name: 'plnumber' }
+          { maxLength: '9', label: '管线总长度', name: 'pllength',placeholder:"单位：m" },
+          { maxLength: '9', label: '管线种类数量', name: 'plnumber',placeholder:"单位：个" }
         ],
         [
-          { maxLength: '15', label: '接边点数', name: 'jpoints' },
-          { maxLength: '15', label: '明显管线点数量', name: 'epoints' }
+          { maxLength: '15', label: '接边点数', name: 'jpoints',placeholder:"单位：个" },
+          { maxLength: '15', label: '明显管线点数量', name: 'epoints',placeholder:"单位：个" }
         ]
       ],
       isDetails: false, // 判断是否是详情
@@ -345,15 +347,15 @@ export default {
             message: '只能输入数字或英文',
             trigger: 'blur'
           }
-        ],
-        pllength: [
-          { required: true, message: '不能为空', trigger: 'blur' },
-          {
-            pattern: /^[0-9]+([.]{1}[0-9]{1,2})?$/,
-            message: '只能输入数字',
-            trigger: 'blur'
-          }
         ]
+        // pllength: [
+        //   { required: true, message: '不能为空', trigger: 'blur' },
+        //   {
+        //     pattern: /^[0-9]+([.]{1}[0-9]{1,2})?$/,
+        //     message: '只能输入数字',
+        //     trigger: 'blur'
+        //   }
+        // ]
       },
       // 查询附件列表需要的参数id
       updataParamsId: {
@@ -379,27 +381,28 @@ export default {
     // 简化rules
     simplifyRules() {
       // 不能为空
-      let rulesArrNull = ['prjName', 'requiredInput', 'tcunit', 'principal', 'ecoord', 'pcoord', 'constructionCharge']
+      let rulesArrNull = ['prjName']
+      // let rulesArrNull = ['prjName', 'requiredInput', 'tcunit', 'principal', 'ecoord', 'pcoord', 'constructionCharge']
       rulesArrNull.forEach((v) => {
         this.rules[v] = [{ required: true, message: '不能为空', trigger: 'blur' }]
       })
       // 只能输入整数
-      let rulesArrNumber = ['plnumber', 'jpoints', 'epoints', 'hpoints']
-      rulesArrNumber.forEach((v) => {
-        this.rules[v] = [
-          { required: true, message: '不能为空', trigger: 'blur' },
-          {
-            pattern: /^[0-9]+$/,
-            message: '只能输入整数',
-            trigger: 'blur'
-          }
-        ]
-      })
+      // let rulesArrNumber = ['plnumber', 'jpoints', 'epoints', 'hpoints']
+      // rulesArrNumber.forEach((v) => {
+      //   this.rules[v] = [
+      //     { required: true, message: '不能为空', trigger: 'blur' },
+      //     {
+      //       pattern: /^[0-9]+$/,
+      //       message: '只能输入整数',
+      //       trigger: 'blur'
+      //     }
+      //   ]
+      // })
       // 没有验证
-      let wu = ['jsunit', 'sjunit', 'sgunit', 'proIntroduction']
-      wu.forEach((v) => {
-        this.rules[v] = []
-      })
+      // let wu = ['jsunit', 'sjunit', 'sgunit', 'proIntroduction']
+      // wu.forEach((v) => {
+      //   this.rules[v] = []
+      // })
     },
     // 获取字典id
     async getParamsId() {
