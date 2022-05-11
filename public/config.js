@@ -56,6 +56,7 @@ export const appconfig = {
         'dataSetInfo': [
             { 'name': 'TF_PSPS_PIPE_B', 'type': 'line', 'label': '排水管线' },
             { 'name': 'TF_PSPS_POINT_B', 'type': 'point', 'label': '排水管点' },
+            { 'name': 'TF_PSPS_OUTFALL_B', 'type': 'point', 'label': '排放口' },
         ]
       },
       'layerService': {
