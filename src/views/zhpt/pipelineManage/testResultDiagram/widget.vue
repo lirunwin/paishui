@@ -96,7 +96,7 @@ import iDraw from '@/views/zhpt/common/mapUtil/draw'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
 import { appconfig } from 'staticPub/config'
 import GeoJSON from 'ol/format/GeoJSON'
-import { getDefectDataById, getDefectData, getProject, getReportByProjecetId } from '@/api/sysmap/drain'
+import { getDefectDataById, getDefectData, getProject, getReportByProjecetId, getDefectDataByFilter } from '@/api/sysmap/drain'
 
 export default {
   props: { data: Object },
@@ -117,23 +117,19 @@ export default {
 
       // 报告数据
       reportOpt: [
-        { label: '区域一', value: 'area1' },
-        { label: '区域二', value: 'area2' }
       ],
       // 工程数据
       projectOpt: [
-        { label: '区域一', value: 'area1' },
-        { label: '区域二', value: 'area2' }
       ],
       defectLegend: [
-        {
-          title: '管网缺陷密度图',
-          layerName: 'heatLayer',
-          open: false,
-          type: 'gradient',
-          start: '少',
-          end: '多'
-        },
+        // {
+        //   title: '管网缺陷密度图',
+        //   layerName: 'heatLayer',
+        //   open: false,
+        //   type: 'gradient',
+        //   start: '少',
+        //   end: '多'
+        // },
         {
           title: '管网缺陷分布专题图',
           layerName: 'pipeDefectLayer',
@@ -212,13 +208,12 @@ export default {
       })
     },
     projectChange () {
-      let prjId = this.form.project
-      getReportByProjecetId(prjId).then(res => {
+      let prjNo = this.form.project
+      getReportByProjecetId({ prjNo }).then(res => {
         if (res.code === 1) {
-          let data = res.result.records
-          
+          let data = res.result
           this.reportOpt = data.map(d => {
-
+            return { label: d.wordInfoName, value: d.id }
           })
         } else this.$message.error('获取报告失败!')
       })
@@ -230,8 +225,7 @@ export default {
     addLayers(layers) {
       layers.forEach((layer) => this.mapView.addLayer(layer))
     },
-    initMap() {
-      let center = [113.1547, 29.3682]
+    initMap(data) {
       let colorBox = ['#ff0000', '#0c9923', '#f405ff']
 
       let points = this.randomPoint(center, 0.025, 50)
@@ -246,14 +240,14 @@ export default {
         this.pipeDefectLayer.getSource().addFeature(feature)
       })
 
-      // 检查井
-      let points2 = this.randomPoint(center, 0.01, 50)
-      let features2 = points2.map((item) => new Feature({ geometry: new Point(item) }))
-      features2.forEach((fea, index) => {
-        let color = colorBox[index % 3]
-        fea.setStyle(comSymbol.getPointStyle(5, 'rgba(255,255,255,0)', 2, color))
-        this.manholeDefectLayer.getSource().addFeature(fea)
-      })
+      // // 检查井
+      // let points2 = this.randomPoint(center, 0.01, 50)
+      // let features2 = points2.map((item) => new Feature({ geometry: new Point(item) }))
+      // features2.forEach((fea, index) => {
+      //   let color = colorBox[index % 3]
+      //   fea.setStyle(comSymbol.getPointStyle(5, 'rgba(255,255,255,0)', 2, color))
+      //   this.manholeDefectLayer.getSource().addFeature(fea)
+      // })
 
       // 管网
       this.initPipeHealthLayer()
@@ -294,28 +288,28 @@ export default {
     },
 
     showLayer() {
+      if (!this.form.project) return this.$message.warning('请先填写工程名称')
       let params = {
         prjNo: this.form.project,
         ids: this.form.report,
-        jcStartDate: this.form.startDate,
-        jcEndDate: this.form.endDate,
+        jcStartDate: this.form.startDate ? this.form.startDate.toLocaleDateString().replace(/\//g, '-') : '',
+        jcEndDate: this.form.endDate ? this.form.endDate.toLocaleDateString().replace(/\//g,   '-') : ''
       }
-      console.log('参数', params)
-
-      return 
-      getDefectDataByFilter().then(res => {
+      getDefectDataByFilter(params).then(res => {
+        console.log(data)
+        if (res.code === 1) {
+         this.initMap()
+        } else this.$message.error('请求缺陷数据出错')
 
       })
-      if (!this.form.project) return this.$message.warning('请先填写工程名称')
-      this.initMap()
+      
       this.defectLegend.forEach((item) => {
         this[item.layerName].setVisible(item.open)
       })
     },
 
     setThemLayerVisible(index, visible) {
-      let legendParams = this.defectLegend[index],
-        layer
+      let legendParams = this.defectLegend[index], layer
       switch (legendParams.layerName) {
         case 'pipeDefectLayer':
           layer = this.pipeDefectLayer
