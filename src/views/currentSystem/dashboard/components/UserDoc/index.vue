@@ -24,13 +24,8 @@
       </div>
       <div class="userAvatar">
         <!-- <div :style="{width:'100%',height:'100%',backgroundSize:'cover',backgroundRepeat: 'no-repeat','background-image': 'url('+userinfo.avatar+')'}"></div> -->
-        <img :src="avatar" width="100%" height="100%" v-if="avatar !== ''" />
-        <img
-          src="../../../../../assets/images/home/defultAvatar.png"
-          width="100%"
-          height="100%"
-          v-if="userinfo.avatar == ''"
-        />
+        <img :src="avatar" width="100%" height="100%" v-if="!!avatar" />
+        <img src="../../../../../assets/images/home/defultAvatar.png" width="100%" height="100%" v-else />
       </div>
 
       <!-- <el-row>
@@ -90,7 +85,7 @@ export default {
   },
   computed: {
     avatar() {
-      return this.$store.getters.avatar
+      return this.$store.getters.avatar || this.userinfo.avatar
     }
   },
   methods: {
@@ -100,7 +95,6 @@ export default {
     getUserInfo() {
       var that = this
       getInfo({}).then((res) => {
-        console.log(res)
         if (res.code !== -1) {
           let result = res.result
 
@@ -131,7 +125,9 @@ export default {
      * @description 获取用户图片
      */
     getUserAvatar(avatar) {
-      this.userinfo.avatar = imageByName(avatar)
+      const img = imageByName(avatar)
+      this.userinfo.avatar = img
+      this.$store.commit('user/SET_AVATAR', img)
       // imageByName(avatar).then((res) => {
       //   this.userinfo.avatar = null
       //   if (res.status === 200) {
