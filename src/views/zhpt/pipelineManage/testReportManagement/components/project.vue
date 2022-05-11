@@ -1,7 +1,7 @@
 <template>
   <div class="project-box">
     <!-- 主要工程量表 -->
-    <el-table :data="tableData" border :summary-method="getSummaries" show-summary style="width: 100%; margin-top: 20px">
+    <el-table :data="tableData" border :summary-method="getSummaries" show-summary style="width: 100%; margin-top: 20px" stripe>
       <el-table-column type="index" label="序号" width="80" align="center" header-align="center"> </el-table-column>
       <el-table-column prop="material" label="名称" width="400" align="center" header-align="center"> </el-table-column>
       <el-table-column prop="diameter" label="管径(mm)" align="center" header-align="center"> </el-table-column>
@@ -63,18 +63,35 @@ export default {
 
 <style lang="scss" scoped>
 .project-box {
+
   /deep/.el-table {
     font-weight: bold;
-    border: 2px solid #666;
+    // border: 2px solid #666;
 
-    .has-gutter .cell,
-    .el-table__footer-wrapper tbody td.el-table__cell {
-      color: #666;
-      font-weight: bold;
-      background-color: #eeece1 !important;
+    .has-gutter .cell {
+      color: rgb(50, 59, 65);
+      // font-weight: bold;
+      background: rgb(234, 241, 253) !important;
+      word-break: keep-all !important;
+      white-space: nowrap !important;
+      .item {
+        display: inline-block;
+        width: 100%;
+        line-height: 106%;
+
+        /* 1.先强制一行内显示文本 */
+        white-space: nowrap;
+        /* 2.超出部分隐藏 */
+        overflow: hidden;
+        /* 3.文字用省略号替代超出的部分 */
+        text-overflow: ellipsis;
+      }
+    }
+    .el-table__row--striped > td {
+      background-color: #f3f7fe !important;
     }
     .el-table__cell {
-      border: 1px solid #666;
+      // border: 1px solid #666;
     }
   }
 }

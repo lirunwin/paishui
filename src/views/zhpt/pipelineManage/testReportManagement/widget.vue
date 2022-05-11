@@ -32,14 +32,19 @@
             <!-- <el-radio v-model="searchValue.checkList" label="0">未发布</el-radio> -->
             <!-- <el-radio v-model="searchValue.checkList" label="1">已发布</el-radio> -->
           </div>
-          <el-button class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi"> 搜索 </el-button>
-          <el-button class="serch-btn" icon="el-icon-refresh-right" type="primary" @click="resetDate"> 重置 </el-button>
+          <el-button size="small" class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi">
+            搜索
+          </el-button>
+          <el-button size="small" class="serch-btn" icon="el-icon-refresh-right" type="primary" @click="resetDate">
+            重置
+          </el-button>
         </div>
         <div class="right-btn">
-          <el-button class="serch-btn" type="primary" @click="showUpdata">报告上传</el-button>
+          <el-button size="small" class="serch-btn" type="primary" @click="showUpdata">报告上传</el-button>
           <!-- <el-button class="serch-btn" type="primary" @click="dialogFormVisible2 = true">视频上传</el-button> -->
-          <el-button class="serch-btn" type="primary" @click="videoShowUpdata">视频上传</el-button>
+          <el-button size="small" class="serch-btn" type="primary" @click="videoShowUpdata">视频上传</el-button>
           <el-button
+            size="small"
             class="serch-btn"
             type="primary"
             :disabled="!multipleSelection.length"
@@ -47,6 +52,7 @@
             >批量发布</el-button
           >
           <el-button
+            size="small"
             class="serch-btn"
             icon="el-icon-delete"
             type="danger"
@@ -139,8 +145,8 @@
       <el-dialog title="批量发布" :visible.sync="batchReleaseDialog" width="30%">
         <span>确定要发布选中的信息吗?</span>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="batchReleaseDialog = false">取 消</el-button>
-          <el-button type="primary" @click="confirmRelease">确 定</el-button>
+          <el-button size="small" @click="batchReleaseDialog = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="confirmRelease">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -184,8 +190,13 @@
               <div class="btn-box">
                 <el-button size="small" type="primary" :disabled="loadingBool">选择报告</el-button>
                 <span class="btns">
-                  <el-button @click.stop="hideUpdataDocx">取 消</el-button>
-                  <el-button type="primary" :icon="isLoading" @click.stop="uploadWord" :disabled="loadingBool"
+                  <el-button size="small" @click.stop="hideUpdataDocx">取 消</el-button>
+                  <el-button
+                    size="small"
+                    type="primary"
+                    :icon="isLoading"
+                    @click.stop="uploadWord"
+                    :disabled="loadingBool"
                     >确 定</el-button
                   >
                 </span>
@@ -267,8 +278,13 @@
               <div class="btn-box">
                 <el-button size="small" type="primary" :disabled="loadingBool">选择视频</el-button>
                 <span class="btns">
-                  <el-button @click.stop="hideUpdataDocx">取 消</el-button>
-                  <el-button type="primary" :icon="isLoading" @click.stop="uploadVideoWord" :disabled="loadingBool"
+                  <el-button size="small" @click.stop="hideUpdataDocx">取 消</el-button>
+                  <el-button
+                    size="small"
+                    type="primary"
+                    :icon="isLoading"
+                    @click.stop="uploadVideoWord"
+                    :disabled="loadingBool"
                     >确 定</el-button
                   >
                 </span>
@@ -312,7 +328,7 @@
       </el-dialog>
     </div>
     <!-- 发布 -->
-    <div class="public-box">
+    <div class="public-box release-box">
       <el-dialog
         title="检测报告发布"
         :visible.sync="dialogFormVisible3"
@@ -357,10 +373,25 @@
           </div>
         </div>
         <div slot="footer" class="dialog-footer">
-          <!-- <span>备注：</span> -->
-          <!-- <el-input type="textarea" :rows="2" placeholder="请输入内容" v-model="textarea"> </el-input> -->
-          <el-button type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
-          <el-button @click="dialogFormVisible3 = false">取 消</el-button>
+          <div style="justify-content: space-between; display: flex; align-items: center">
+            <div style="display: flex; align-items: center; flex: 1">
+              <span>备注：</span>
+              <el-input
+                style="flex: 1; padding-right: 40px"
+                type="textarea"
+                :rows="2"
+                placeholder="请输入内容"
+                :disabled="!isRelease"
+                resize="none"
+                v-model="remarks"
+              >
+              </el-input>
+            </div>
+            <div>
+              <el-button size="small" type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
+              <el-button size="small" @click="dialogFormVisible3 = false">取 消</el-button>
+            </div>
+          </div>
         </div>
       </el-dialog>
     </div>
@@ -374,8 +405,8 @@
           &nbsp; 确认删除选中的{{ multipleSelection.length }}条检测报告吗?
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="deleteDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="removeDatas">确 定</el-button>
+          <el-button size="small" @click="deleteDialogVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="removeDatas">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -389,8 +420,8 @@
           &nbsp; 确定要撤回这条检测报告吗?
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="withdrawDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="isWithdraw">确 定</el-button>
+          <el-button size="small" @click="withdrawDialogVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="isWithdraw">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -490,10 +521,10 @@ import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import Text from 'ol/style/Text'
 import { Style } from 'ol/style'
 
-import defectImgR from '@/assets/images/traingle-r.png';
-import defectImgB from '@/assets/images/traingle-b.png';
-import defectImgY from '@/assets/images/traingle-y.png';
-import defectImgLB from '@/assets/images/traingle-lb.png';
+import defectImgR from '@/assets/images/traingle-r.png'
+import defectImgB from '@/assets/images/traingle-b.png'
+import defectImgY from '@/assets/images/traingle-y.png'
+import defectImgLB from '@/assets/images/traingle-lb.png'
 
 import Icon from 'ol/style/Icon'
 
@@ -508,6 +539,7 @@ export default {
   },
   data() {
     return {
+      remarks:"", // 备注
       pdfUrl: '', // pdf地址
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
@@ -717,8 +749,8 @@ export default {
       }
       // this.testReportDetails(row.id)
     },
-    addMapEvent () {
-      this.map.on('click', evt => {
+    addMapEvent() {
+      this.map.on('click', (evt) => {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         if (features.length !== 0) {
           let id = features[0].get('id')
@@ -728,7 +760,7 @@ export default {
         }
       })
     },
-    clearAll () {
+    clearAll() {
       this.vectorLayer.getSource().clear()
       this.vectorLayer2.getSource().clear()
       this.lightLayer.getSource().clear()
@@ -788,7 +820,7 @@ export default {
             map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
             map.getView().setZoom(16)
             this.lightLayer.getSource().addFeatures([
-              // ...dFeas, 
+              // ...dFeas,
               ...pFeas
             ])
           } else {
@@ -830,8 +862,8 @@ export default {
             let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
             if (findColor) {
               hasStyle && feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
-              for (let i in  feaObj) {
-                i !== "geometry" && feature.set(i, feaObj[i])
+              for (let i in feaObj) {
+                i !== 'geometry' && feature.set(i, feaObj[i])
               }
               features.push(feature)
             }
@@ -843,15 +875,16 @@ export default {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
-            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
+            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR],
+              img = imgBox[3]
             // if (feaObj.defectLevel) {
             //   let index = ["一级", '二级', '三级', '四级']
             //   img = imgBox[index.indexOf(feaObj.defectLevel)]
             // }
             hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img, scale: 0.3 }) }))
 
-            for (let i in  feaObj) {
-              i !== "geometry" && feature.set(i, feaObj[i])
+            for (let i in feaObj) {
+              i !== 'geometry' && feature.set(i, feaObj[i])
             }
             features.push(feature)
 
@@ -1452,6 +1485,8 @@ $fontSize: 14px !important;
         }
 
         .title {
+          font-size: 14px;
+          color: #606266;
           font-family: Arial;
           white-space: nowrap;
           margin-left: 5px;
@@ -1480,11 +1515,16 @@ $fontSize: 14px !important;
     }
   }
   /deep/ .el-table {
-    font-size: $fontSize;
+    flex: 1;
+    // overflow-y: scroll;
     th.el-table__cell > .cell {
+      color: rgb(50, 59, 65);
       height: 40px;
       line-height: 40px;
-      background-color: #dfeffe;
+      background: rgb(234, 241, 253);
+    }
+    .el-table__row--striped > td {
+      background-color: #f3f7fe !important;
     }
   }
 
@@ -1497,6 +1537,17 @@ $fontSize: 14px !important;
       }
       .el-dialog__headerbtn > .el-icon-close {
         color: #fff !important;
+      }
+    }
+  }
+  // 发布盒子布局
+  .release-box {
+    /deep/ .el-dialog {
+      display: flex;
+      flex-direction: column;
+      .el-dialog__body {
+        flex: 1;
+        padding: 15px 20px !important;
       }
     }
   }
@@ -1552,7 +1603,7 @@ $fontSize: 14px !important;
       }
       /deep/.releaseContent {
         width: 100%;
-        height: 600px;
+        height: 78vh;
         margin-top: -3px;
         padding: 20px;
         box-sizing: border-box;
@@ -1562,7 +1613,7 @@ $fontSize: 14px !important;
     .left {
       flex: 2;
       .releaseContent {
-        height: 597px;
+        height: 78vh;
         border: 1px solid #9a9a9a;
         overflow: scroll;
         .detailsTitle {
@@ -1582,7 +1633,7 @@ $fontSize: 14px !important;
     .right {
       flex: 1;
       .map-box {
-        height: 597px;
+        height: 78vh;
         border: 1px solid #666;
       }
     }

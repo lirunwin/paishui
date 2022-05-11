@@ -34,8 +34,10 @@
           </el-select>
         </div>
         <div class="right-btn">
-          <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
-          <el-button class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
+          <el-button size="small" class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi">
+            搜索
+          </el-button>
+          <el-button size="small" class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
       </div>
 
@@ -352,6 +354,8 @@ export default {
         }
 
         .title {
+          font-size: 14px;
+          color: #606266;
           font-family: Arial;
           white-space: nowrap;
           margin-left: 5px;
@@ -377,10 +381,18 @@ export default {
       }
     }
 
-    /deep/ .el-table th.el-table__cell > .cell {
-      height: 40px;
-      line-height: 40px;
-      background-color: #dfeffe;
+    /deep/ .el-table {
+      flex: 1;
+      // overflow-y: scroll;
+      th.el-table__cell > .cell {
+        color: rgb(50, 59, 65);
+        height: 40px;
+        line-height: 40px;
+        background: rgb(234, 241, 253);
+      }
+      .el-table__row--striped > td {
+        background-color: #f3f7fe !important;
+      }
     }
   }
 

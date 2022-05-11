@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 管道缺陷数量统计表 -->
-    <table width="560" height="300" border="1" class="left-table" cellspacing="0" align="center">
+    <table width="560" height="300" border="1" class="left-table" cellspacing="0" align="center" stripe>
       <thead>
         <tr height="34">
           <th rowspan="2" colspan="2">缺陷名称\缺陷数量\缺陷级别</th>

@@ -1,12 +1,7 @@
 <template>
   <div class="project-box">
     <!-- 检查井检查情况汇总表 -->
-    <el-table
-      ref="singleTable"
-      :data="tableData"
-      highlight-current-row
-      style="width: 100%"
-    >
+    <el-table ref="singleTable" :data="tableData" highlight-current-row style="width: 100%" stripe>
       <el-table-column type="index" label="序号" width="80" align="center" header-align="center"> </el-table-column>
       <el-table-column
         :prop="v.name"
@@ -14,7 +9,7 @@
         :label="v.label"
         align="center"
         show-overflow-tooltip
-        v-for="(v,i) in tableContent"
+        v-for="(v, i) in tableContent"
         :key="i"
         :show-overflow-tooltip="true"
         :render-header="renderHeader"
@@ -87,14 +82,15 @@ export default {
 
 <style lang="scss" scoped>
 .project-box {
+
   /deep/.el-table {
     font-weight: bold;
-    border: 2px solid #666;
+    // border: 2px solid #666;
 
     .has-gutter .cell {
-      color: #666;
-      font-weight: bold;
-      background-color: #eeece1 !important;
+      color: rgb(50, 59, 65);
+      // font-weight: bold;
+      background: rgb(234, 241, 253) !important;
       word-break: keep-all !important;
       white-space: nowrap !important;
       .item {
@@ -110,8 +106,11 @@ export default {
         text-overflow: ellipsis;
       }
     }
+    .el-table__row--striped > td {
+      background-color: #f3f7fe !important;
+    }
     .el-table__cell {
-      border: 1px solid #666;
+      // border: 1px solid #666;
     }
   }
 }

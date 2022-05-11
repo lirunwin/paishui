@@ -7,12 +7,17 @@
           <div class="title">关键字：</div>
           <el-input placeholder="搜索工程编号、工程名称" v-model="searchValue.prjNo" clearable class="serch-input">
           </el-input>
-          <el-button class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
+          <el-button size="small" class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi"
+            >搜索</el-button
+          >
         </div>
         <div class="right-btn">
-          <el-button @click="showForm" class="serch-btn" icon="el-icon-plus" type="primary">添加</el-button>
+          <el-button size="small" @click="showForm" class="serch-btn" icon="el-icon-plus" type="primary"
+            >添加</el-button
+          >
           <!-- multipleSelection -->
           <el-button
+            size="small"
             class="serch-btn"
             :disabled="multipleSelection.length != 1"
             icon="el-icon-edit"
@@ -21,6 +26,7 @@
             >修改</el-button
           >
           <el-button
+            size="small"
             class="serch-btn"
             icon="el-icon-delete"
             type="danger"
@@ -106,7 +112,13 @@
           </el-row>
 
           <el-form-item label="隐蔽管线点数量" prop="hpoints">
-            <el-input v-model="form.hpoints" maxlength="15" show-word-limit :disabled="isDetails" placeholder="单位：个"></el-input>
+            <el-input
+              v-model="form.hpoints"
+              maxlength="15"
+              show-word-limit
+              :disabled="isDetails"
+              placeholder="单位：个"
+            ></el-input>
           </el-form-item>
           <el-form-item label="工程日期范围">
             <!-- <el-date-picker
@@ -181,9 +193,11 @@
               <div class="add-btn">
                 <el-button size="small" type="primary" slot="trigger">选择文件</el-button>
                 <span class="btns">
-                  <el-button @click.stop="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
-                  <el-button type="primary" @click.stop="addTable('form')" v-if="!isDetails">确 定</el-button>
-                  <el-button @click.stop="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
+                  <el-button size="small" @click.stop="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
+                  <el-button size="small" type="primary" @click.stop="addTable('form')" v-if="!isDetails"
+                    >确 定</el-button
+                  >
+                  <el-button size="small" @click.stop="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
                 </span>
               </div>
               <div slot="tip" class="el-upload__tip">
@@ -213,8 +227,8 @@
           &nbsp; 确认删除选中的{{ multipleSelection.length }}条工程项目吗?
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button @click="deleteDialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="removeDatas">确 定</el-button>
+          <el-button size="small" @click="deleteDialogVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="removeDatas">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -263,36 +277,36 @@ export default {
       // 表单参数
       formContent: [
         [
-          { maxLength: '100', label: '工程名称', name: 'prjName' ,placeholder:""},
-          { maxLength: '20', label: '工程编号', name: 'prjNo' ,placeholder:""}
+          { maxLength: '100', label: '工程名称', name: 'prjName', placeholder: '' },
+          { maxLength: '20', label: '工程编号', name: 'prjNo', placeholder: '' }
         ],
         [
-          { maxLength: '50', label: '检测单位', name: 'jcunit',placeholder:"" },
-          { maxLength: '50', label: '勘察单位', name: 'kcunit',placeholder:"" }
+          { maxLength: '50', label: '检测单位', name: 'jcunit', placeholder: '' },
+          { maxLength: '50', label: '勘察单位', name: 'kcunit', placeholder: '' }
         ],
         [
-          { maxLength: '4', label: '探测单位', name: 'tcunit' ,placeholder:""},
-          { maxLength: '30', label: '设计单位', name: 'sjunit',placeholder:"" }
+          { maxLength: '4', label: '探测单位', name: 'tcunit', placeholder: '' },
+          { maxLength: '30', label: '设计单位', name: 'sjunit', placeholder: '' }
         ],
         [
-          { maxLength: '4', label: '建设单位', name: 'jsunit' ,placeholder:""},
-          { maxLength: '50', label: '监理单位', name: 'ctunit',placeholder:"" }
+          { maxLength: '4', label: '建设单位', name: 'jsunit', placeholder: '' },
+          { maxLength: '50', label: '监理单位', name: 'ctunit', placeholder: '' }
         ],
         [
-          { maxLength: '255', label: '施工单位', name: 'sgunit',placeholder:"" },
-          { maxLength: '30', label: '施工负责人', name: 'constructionCharge',placeholder:"" }
+          { maxLength: '255', label: '施工单位', name: 'sgunit', placeholder: '' },
+          { maxLength: '30', label: '施工负责人', name: 'constructionCharge', placeholder: '' }
         ],
         [
-          { maxLength: '20', label: '高程系统', name: 'ecoord',placeholder:"" },
-          { maxLength: '20', label: '平面坐标系统', name: 'pcoord',placeholder:"" }
+          { maxLength: '20', label: '高程系统', name: 'ecoord', placeholder: '' },
+          { maxLength: '20', label: '平面坐标系统', name: 'pcoord', placeholder: '' }
         ],
         [
-          { maxLength: '9', label: '管线总长度', name: 'pllength',placeholder:"单位：m" },
-          { maxLength: '9', label: '管线种类数量', name: 'plnumber',placeholder:"单位：个" }
+          { maxLength: '9', label: '管线总长度', name: 'pllength', placeholder: '单位：m' },
+          { maxLength: '9', label: '管线种类数量', name: 'plnumber', placeholder: '单位：个' }
         ],
         [
-          { maxLength: '15', label: '接边点数', name: 'jpoints',placeholder:"单位：个" },
-          { maxLength: '15', label: '明显管线点数量', name: 'epoints',placeholder:"单位：个" }
+          { maxLength: '15', label: '接边点数', name: 'jpoints', placeholder: '单位：个' },
+          { maxLength: '15', label: '明显管线点数量', name: 'epoints', placeholder: '单位：个' }
         ]
       ],
       isDetails: false, // 判断是否是详情
@@ -690,6 +704,8 @@ export default {
         }
 
         .title {
+          font-size: 14px;
+          color: #606266;
           font-family: Arial;
           white-space: nowrap;
         }
@@ -706,9 +722,13 @@ export default {
       flex: 1;
       // overflow-y: scroll;
       th.el-table__cell > .cell {
+        color: rgb(50, 59, 65);
         height: 40px;
         line-height: 40px;
-        background-color: #dfeffe;
+        background: rgb(234, 241, 253);
+      }
+      .el-table__row--striped > td {
+        background-color: #f3f7fe !important;
       }
     }
   }
