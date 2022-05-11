@@ -174,7 +174,8 @@ export default {
       manholeDefectLayer: null,
       pipeHealthLayer: null,
       currentDataProjName: "proj43",
-      projUtil: null
+      projUtil: null,
+      hasData: false
     }
   },
   mounted() {
@@ -187,6 +188,7 @@ export default {
     '$store.state.gis.activeSideItem': function (n, o) {
       if (n !== '检测成果专题图') {
         this.clearAll()
+        this.hasData = false
       } else {
         this.init()
       }
@@ -207,7 +209,7 @@ export default {
       this.pipeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: true })
       this.manholeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
       this.pipeHealthLayer = new VectorLayer({ source: new VectorSource(), visible: true })
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)'), visible: true  })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
       this.addLayers([this.heatLayer, this.pipeDefectLayer, this.manholeDefectLayer, this.pipeHealthLayer, this.lightLayer])
 
       this.setProjectData()
@@ -242,6 +244,7 @@ export default {
       })
     },
     openBox (layerName, level) {
+      if(!this.hasData) return
       console.log('缺陷信息', type, level)
       let type = layerName === 'pipeHealthLayer' ? 1 : 0
       let filter = [
@@ -254,7 +257,8 @@ export default {
       let lightFeas = filterFeas.map(fea => new Feature({ geometry: fea.getGeometry().clone() }))
       this.lightLayer.getSource().clear()
       this.lightLayer.getSource().addFeatures(lightFeas)
-      this.openDefect()
+      
+      this.openDefect(filter.key, filter.value[level])
     },
     addLayers(layers) {
       layers.forEach((layer) => this.mapView.addLayer(layer))
@@ -379,6 +383,7 @@ export default {
       }
       getDefectDataByFilter(params).then(res => {
         if (res.code === 1) {
+          this.hasData = true
           let data = res.result
           if (data.length !== 0) {
             this.initMap(data)
@@ -433,7 +438,7 @@ export default {
       return `item-${color} ${className}`
     },
     // 管道缺陷管理的信息
-    openDefect() {
+    openDefect(type, level) {
       let info = {
         icon: 'iconfont',
         id: 'pipelineDefect',
@@ -447,10 +452,24 @@ export default {
         path: '',
         type: 'gis',
         widgetid: 'HalfPanel',
-        data: '这是传递的参数'
+        param: { type, level, rootPage: this }
       }
       // 这是map里的跳转方法
       this.$store.dispatch('map/changeMethod', info)
+    },
+    clearLightFeas () {
+      this.lightLayer.getSource().clear()
+    },
+    lightFea (feaid) {
+      console.log(feaid)
+      let feas = this.pipeHealthLayer.getSource().getFeatures()
+      let fea = feas.find(fea => fea.get('id') === feaid)
+      if (fea) {
+        let feaClone = fea.clone()
+        feaClone.setStyle(comSymbol.getLineStyle(5, "#0ff"))
+        this.lightLayer.getSource().addFeature(feaClone)
+        this.mapView.setCenter(feaClone.getGeometry().getCoordinates())
+      }
     }
   }
 }

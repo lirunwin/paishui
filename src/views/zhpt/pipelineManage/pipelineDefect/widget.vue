@@ -306,6 +306,7 @@ import {
 } from '@/api/pipelineManage'
 
 export default {
+  props: ['param'],
   data() {
     return {
       activeName: 'picnum', // 照片视频tab标签
@@ -405,6 +406,16 @@ export default {
       console.log(tab, event)
     }
   },
+  mounted () {
+    let { type, level, rootPage } = this.param
+    this.rootPage = rootPage
+    // type: funcClass表示管段, level表示缺陷
+    // level: 级别
+    console.log("这里是地图传入的参数", this.param)
+  },
+  destroyed () {
+    this.rootPage.clearLightFeas()
+  },
   methods: {
     // 上一页
     lastPage() {
@@ -424,6 +435,7 @@ export default {
     },
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
+      this.rootPage.lightFea(row.id)
       console.log('打开缩略提示框', row)
       this.isPromptBox = { ...row }
       // let res = await assessmentDefect(row.id)
