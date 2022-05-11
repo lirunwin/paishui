@@ -885,6 +885,10 @@ export default class BaseMap extends Vue {
   }
 }
 
+<<<<<<< HEAD
+=======
+//
+>>>>>>> 20b3cb6ab034f419350fcc74d9d20e40c354e56d
 .map-legend {
   background: #fffc;
   position: absolute;

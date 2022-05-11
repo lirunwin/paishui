@@ -75,9 +75,9 @@
           </div>
           <el-dropdown-menu slot="dropdown" class="user-dropdown">
             <el-dropdown-item v-if="showAccountApply" @click.native="openApply = true">账号申请</el-dropdown-item>
-            <el-dropdown-item v-if="showUserInfoEdit" divided @click.native="userEdit = true"
-              >账号编辑</el-dropdown-item
-            >
+            <el-dropdown-item v-if="showUserInfoEdit" divided @click.native="userEdit = true">
+              账号编辑
+            </el-dropdown-item>
             <el-dropdown-item :divided="showAccountApply" @click.native="changePassword">修改密码</el-dropdown-item>
             <el-dropdown-item divided @click.native="logout">
               <span style="display: block">退出登录</span>

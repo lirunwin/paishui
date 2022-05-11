@@ -56,9 +56,9 @@
       <el-button type="primary" size="small" @click="handleClick('query')">查询</el-button>
       <el-button type="primary" size="small" @click="uploadDialog = true">上传</el-button>
       <el-button type="primary" size="small" :disabled="deleteDisabled" @click="handleClick('delete')">删除</el-button>
-      <el-button type="primary" size="small" :disabled="publishDisabled" @click="handleClick('publish')"
-        >发布</el-button
-      >
+      <el-button type="primary" size="small" :disabled="publishDisabled" @click="handleClick('publish')">
+        发布
+      </el-button>
     </div>
     <div style="height:calc(100% - 76px);margin-top: 20px">
       <table-item
@@ -93,7 +93,7 @@
         </el-row>
         <el-row class="info-row">
           <el-col class="info-col" :span="12">
-            <span>上传包文件大小:</span><span>{{ detailInfo.appSize }}</span>
+            <span>上传包文件大小:</span><span>{{ detailInfo.appSize | formatBytes }}</span>
           </el-col>
           <el-col class="info-col" :span="12">
             <span>上传包文件名称:</span><span>{{ detailInfo.filename }}</span>
@@ -181,8 +181,9 @@
                       size="small"
                       type="success"
                       @click.stop="upload"
-                      >上传文件</el-button
                     >
+                      上传文件
+                    </el-button>
                   </div>
                 </el-upload>
               </el-form-item>
@@ -201,7 +202,16 @@ import SelectItem from '@/components/FormItem/Select/index.vue'
 import { recordList, upLoadFiles, deleteRecord, publishRecord } from '@/api/base'
 @Component({
   name: 'APPV',
-  components: { TableItem, SelectItem }
+  components: { TableItem, SelectItem },
+  filters: {
+    formatBytes: (bytes, decimalPoint = 2) => {
+      if (bytes == 0) return '0'
+      let k = 1000,
+        sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+        i = Math.floor(Math.log(bytes) / Math.log(k))
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(decimalPoint)) + ' ' + sizes[i]
+    }
+  }
 })
 export default class APPV extends Vue {
   pagination = { current: 1, size: 30 } // 分页参数信息
@@ -353,6 +363,7 @@ export default class APPV extends Vue {
   success() {
     console.log(arguments)
   }
+
   // 获取记录
   getRecords() {
     var that = this
@@ -385,11 +396,13 @@ export default class APPV extends Vue {
     // this.fileList.push(data.raw);
     if (
       data.raw.type === 'text/plain' ||
-      // data.raw.type === 'application/vnd.android.package-archive' ||
+      data.raw.type === 'application/vnd.android.package-archive' ||
       data.raw.type === 'application/x-zip-compressed'
     ) {
-      this.fileList.push(data.raw)
+      this.fileList = [...this.fileList, data.raw]
     } else {
+      this.fileList = [...(this.fileList || [])]
+
       this.$message({
         message: '只能上传apk、txt、zip文件',
         type: 'error'
