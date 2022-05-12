@@ -53,7 +53,7 @@
             <el-form-item label="">
                 <el-radio-group v-model="visibleSettings.statisticRange" style="float:left">
                     <el-radio label="region">
-                        <el-dropdown @command="handleCommand">
+                        <el-dropdown @command="handleCommand" :disabled="isRegion">
                             <span class="el-dropdown-link">
                                 {{regionType}}<i class="el-icon-arrow-down el-icon--right"></i>
                             </span>

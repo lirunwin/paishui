@@ -109,7 +109,7 @@ export default {
                     {
                         name: '排放口类别',
                         type: 'pie',
-                        radius: '50%',
+                        radius: '65%',
                         data: data,
                         emphasis: {
                             itemStyle: {
@@ -137,14 +137,16 @@ export default {
         },
         initBarChart(){
             this.currentShow=this.chartType[2]
-            let xData=[],data=[],that=this;
+            let xData=[],data=[];
             this.result.forEach(item => {
                 xData.push(item.name)
                 data.push(item.value)
             });
+            let rotate=(this.result.length>5)?-30:0;
             let option = {
                 xAxis: {
                     type: 'category',
+                    axisLabel: { interval: 0, rotate: rotate},
                     data: xData
                 },
                 yAxis: {

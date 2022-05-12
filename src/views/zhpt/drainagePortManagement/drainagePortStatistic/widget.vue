@@ -50,11 +50,11 @@
                         <el-form-item >
                             <el-radio-group v-model="statisticRange" style="margin-left:10px">
                                 <el-radio label="region">
-                                    <el-dropdown @command="handleCommand">
+                                    <el-dropdown @command="handleCommand" :disabled="isRegion">
                                         <span class="el-dropdown-link">
                                             {{regionType}}<i class="el-icon-arrow-down el-icon--right"></i>
                                         </span>
-                                        <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-menu slot="dropdown" >
                                             <el-dropdown-item command="按行政区">按行政区</el-dropdown-item>
                                             <el-dropdown-item command="按排水分区">按排水分区</el-dropdown-item>
                                         </el-dropdown-menu>
@@ -132,6 +132,7 @@ export default {
             isCustom:true,
             isCustomOrg:true,
             isRegion:true,
+            isRegionOrg:true,
             isOpenRange:false,
             //统计结果变量
             statisticResultNum:0,
@@ -149,7 +150,7 @@ export default {
                     this.isCustomOrg=this.isCustom=true
                     if(this.$refs['portMap'].drawer) this.$refs['portMap'].drawer.remove()
                 }
-                this.isRegion=(n=="region")?false:true
+                this.isRegionOrg=this.isRegion=(n=="region")?false:true
             }
         },
         isLinkMap:{
@@ -157,11 +158,13 @@ export default {
                 if(n) {
                     this.isOpenRange=true;
                     this.isCustom=true
+                    this.isRegion=true
                     this.$refs['portMap'].zoomAndMove()
                     this.$refs['portMap'].removeLayer()
                 }else{
                     this.isOpenRange=false;
                     this.isCustom=this.isCustomOrg?true:false
+                    this.isRegion=this.isRegionOrg?true:false
                     this.$refs['portMap'].removeZoomRegister()
                 }
             }

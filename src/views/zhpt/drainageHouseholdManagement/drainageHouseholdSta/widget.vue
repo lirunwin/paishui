@@ -127,6 +127,7 @@ export default {
             isCustom:true,
             isCustomOrg:true,
             isRegion:true,
+            isRegionOrg:true,
             isOpenRange:false,
             //统计结果变量
             statisticResultNum:0,
@@ -143,7 +144,7 @@ export default {
                     this.isCustomOrg=this.isCustom=true
                     if(this.$refs['dhmap'].drawer) this.$refs['dhmap'].drawer.remove()
                 }
-                this.isRegion=(n=="region")?false:true
+                this.isRegionOrg=this.isRegion=(n=="region")?false:true
             }
         },
         isLinkMap:{
@@ -151,11 +152,13 @@ export default {
                 if(n) {
                     this.isOpenRange=true;
                     this.isCustom=true
+                    this.isRegion=true
                     this.$refs['dhmap'].zoomAndMove()
                     this.$refs['dhmap'].removeLayer()
                 }else{
                     this.isOpenRange=false;
                     this.isCustom=this.isCustomOrg?true:false
+                    this.isRegion=this.isRegionOrg?true:false
                     this.$refs['dhmap'].removeZoomRegister()
                 }
             }
