@@ -374,12 +374,17 @@ export default class BaseMap extends Vue {
   }
   @Watch('activeHeaderItem', { immediate: true })
   activeHeaderItemChange(n, o) {
-    this.showTool = n === 'map'
+    // 会先于地图加载，忽略第一次加载
     // 重新配置地图工具
-    if (n === 'map' && !this.hasloadTool) {
-      this.controlToolDisplay()
-      this.hasloadTool = true
+    if (o) {
+      if (!this.hasloadTool && n === 'map') {
+        this.controlToolDisplay()
+        this.hasloadTool = true
+      }
+    } else {
+      this.hasloadTool = n === 'map'
     }
+    this.showTool = n === 'map'
     // 排水检测图例
     this.showLegend('testReport', n === 'psjc')
   }
@@ -439,15 +444,15 @@ export default class BaseMap extends Vue {
     // let extent = projection.getExtent()
     // let width = olExtent.getWidth(extent)
     // let resolutions = [], matrixIds = []
-    // for(let z = 1; z < 19; ++z) {
-    //   resolutions[z] = Math.pow(2, z)
+    // for(let z = 1; z < 19; z++) {
+    //   resolutions[z] = width / (256 * Math.pow(2, z))
     //   matrixIds[z] = z
     // }
     // let tilelayer = new TileLayer({
     //   source: new WMTS({
-    //     url: 'http://t0.tianditu.gov.cn/vec_c/wmts?tk=' + appconfig.tianMapKey,
+    //     url: 'http://t{0-7}.tianditu.gov.cn/vec_c/wmts?tk=' + appconfig.tianMapKey,
     //     layer: 'vec',
-    //     matrixSet: 'w',
+    //     matrixSet: 'c',
     //     format: 'tiles',
     //     style: 'default',
     //     wrapX: true,
@@ -464,10 +469,7 @@ export default class BaseMap extends Vue {
     this.addLayers(layerResource)
 
     this.loading = false
-    // if (this.$store.state.gis.activeHeaderItem === 'map') {
-    //   this.$nextTick(this.controlToolDisplay)
-    //   this.hasloadTool = true
-    // }
+    this.$nextTick(this.controlToolDisplay)
     // 触发地图视野变化
     let timer = null,
       time = 500
