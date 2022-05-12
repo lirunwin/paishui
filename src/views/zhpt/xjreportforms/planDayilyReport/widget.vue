@@ -2,20 +2,54 @@
   <div id="planDayilyReport" class="planDayilyReport">
     <div class="menus">
       <span class="title2">部门：</span>
-      <el-select v-model="chooseGroup" :disabled="hasGroup" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择部门"  @change="Bmchange()">
-        <el-option v-for="item of searchGroupArray" :key="item.id" :index="item.index" :value="item.id" :label="item.name" />
+      <el-select
+        v-model="chooseGroup"
+        :disabled="hasGroup"
+        style="display: inline-block; margin-left: 5px; width:150px;"
+        size="small"
+        placeholder="请选择部门"
+        @change="Bmchange()"
+      >
+        <el-option
+          v-for="item of searchGroupArray"
+          :key="item.id"
+          :index="item.index"
+          :value="item.id"
+          :label="item.name"
+        />
       </el-select>
       <span class="title2">人员：</span>
-      <el-select v-model="chooseWorker" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择巡检人" clearable>
+      <el-select
+        v-model="chooseWorker"
+        style="display: inline-block; margin-left: 5px; width:150px;"
+        size="small"
+        placeholder="请选择巡检人"
+        clearable
+      >
         <el-option v-for="item in searchWorkers" :key="item.id" :label="item.realName" :value="item.id" />
       </el-select>
-      <span class="title2" style="margin-left:8px;">巡查日期：</span> 
+      <span class="title2" style="margin-left:8px;">巡查日期：</span>
       <!-- <el-date-picker v-model="dataTime" type="daterange" size="small" style="width:300px"
           range-separator="至" start-placeholder="起始时间" end-placeholder="结束时间" value-format="yyyy-MM-dd" align="right" clearable/> -->
-      <el-date-picker v-model="startTime"  size="small" type="date" placeholder="请选择开始时间" :picker-options="startOptions" value-format="yyyy-MM-dd"/> ~
-      <el-date-picker v-model="endTime"  size="small" type="date" placeholder="请选择结束时间" :picker-options="endOptions" value-format="yyyy-MM-dd"/>      
+      <el-date-picker
+        v-model="startTime"
+        size="small"
+        type="date"
+        placeholder="请选择开始时间"
+        :picker-options="startOptions"
+        value-format="yyyy-MM-dd"
+      />
+      ~
+      <el-date-picker
+        v-model="endTime"
+        size="small"
+        type="date"
+        placeholder="请选择结束时间"
+        :picker-options="endOptions"
+        value-format="yyyy-MM-dd"
+      />
       <el-button size="small" type="primary" @click="getDailyReportData">查询</el-button>
-      <export-btn table-id="planDayilyReportTable" :file="dataList.title"/>
+      <export-btn table-id="planDayilyReportTable" :file="dataList.title" />
     </div>
     <div class="statistics" style="height:calc(100% - 40px)">
       <report-table :data-list="dataList" />
@@ -35,31 +69,32 @@ export default {
   components: {
     tfLegend,
     reportTable,
-    TableItem, ExportBtn
+    TableItem,
+    ExportBtn
   },
   props: ['data'],
   data() {
     return {
-      startTime:'',
-      endTime:'',
-      startOptions:{
-          disabledDate:time=> {
-          if(this.endTime){
-              return time.getTime() >=new Date(this.endTime);
+      startTime: '',
+      endTime: '',
+      startOptions: {
+        disabledDate: (time) => {
+          if (this.endTime) {
+            return time.getTime() >= new Date(this.endTime)
           }
-          },
+        }
       },
-      endOptions:{
-          disabledDate:time=> {
-          if(this.startTime){
-              return  new Date(this.startTime)-1000*60*60*24>time.getTime();
+      endOptions: {
+        disabledDate: (time) => {
+          if (this.startTime) {
+            return new Date(this.startTime) - 1000 * 60 * 60 * 24 > time.getTime()
           }
-          },
+        }
       },
-      dataList:{
-        title:"2021.6.11日报",
-        tableId:"planDayilyReportTable",
-        data:[]
+      dataList: {
+        title: '2021.6.11日报',
+        tableId: 'planDayilyReportTable',
+        data: []
       },
       searchGroupUserVoList: [],
       searchGroupArray: [], // 巡检组列表
@@ -68,38 +103,37 @@ export default {
       chooseWorker: '', // 巡检人
       dataTime: '', // 查询时间
       deptId: '',
-      hasGroup: false// 是否在巡检组内
+      hasGroup: false // 是否在巡检组内
     }
   },
-  watch: {
-  },
-  mounted:function(){
-    let data=this.getTimeSplit();
-    this.startTime=data.now;
-    this.endTime=data.next;
+  watch: {},
+  mounted: function() {
+    let data = this.getTimeSplit()
+    this.startTime = data.now
+    this.endTime = data.next
     // this.dataTime=[data.now,data.next];
-    this.dataList.title="巡检日报("+data.now+"~"+data.next+")";
-    this.getGroupUserMap();
+    this.dataList.title = '巡检日报(' + data.now + '~' + data.next + ')'
+    this.getGroupUserMap()
   },
   methods: {
     // 获取巡查日报信息
     getDailyReportData() {
-      if(!this.startTime||!this.endTime){
-        this.$message({type: "info", message: "请选择时间段" });
+      if (!this.startTime || !this.endTime) {
+        this.$message({ type: 'info', message: '请选择时间段' })
         return
       }
-      let data={
-        userId:this.chooseWorker,
-        startDate:this.startTime+" 00:00:00",
-        deptId:this.chooseGroup,
-        endDate:this.endTime+" 23:59:59"
+      let data = {
+        userId: this.chooseWorker,
+        startDate: this.startTime + ' 00:00:00',
+        deptId: this.chooseGroup,
+        endDate: this.endTime + ' 23:59:59'
       }
       this.dataList.data = []
       this.dataList.title = '暂无数据'
-      queryDailyReport(data).then(res => {
-        if(res.code==1){
-          this.dataList.data=res.result;
-          this.dataList.title="巡检日报("+this.startTime+"~"+this.endTime+")";
+      queryDailyReport(data).then((res) => {
+        if (res.code == 1) {
+          this.dataList.data = res.result
+          this.dataList.title = '巡检日报(' + this.startTime + '~' + this.endTime + ')'
         }
         console.log(res)
       })
@@ -110,8 +144,8 @@ export default {
       const nextDate = new Date(Date.now() - 8.64e7)
       const nowYear = nowDate.getFullYear()
       const nextYear = nextDate.getFullYear()
-      const nowMonth = nowDate.getMonth() > 9 ? (nowDate.getMonth() + 1) : '0' + (nowDate.getMonth() + 1)
-      const nextMonth = nextDate.getMonth() > 9 ? (nextDate.getMonth() + 1) : '0' + (nextDate.getMonth() + 1)
+      const nowMonth = nowDate.getMonth() > 9 ? nowDate.getMonth() + 1 : '0' + (nowDate.getMonth() + 1)
+      const nextMonth = nextDate.getMonth() > 9 ? nextDate.getMonth() + 1 : '0' + (nextDate.getMonth() + 1)
       const nowDay = nowDate.getDate() > 9 ? nowDate.getDate() : '0' + nowDate.getDate()
       const nextDay = nextDate.getDate() > 9 ? nextDate.getDate() : '0' + nextDate.getDate()
       const now = nowYear + '-' + nowMonth + '-' + nowDay
@@ -123,9 +157,9 @@ export default {
     },
     //获取人员
     Bmchange() {
-      getDeptUserList({ deptId: this.chooseGroup }).then(res => {
+      getDeptUserList({ deptId: this.chooseGroup }).then((res) => {
         if (res.code === 1) {
-          this.chooseWorker='';
+          this.chooseWorker = ''
           this.searchWorkers = res.result
           this.getDailyReportData()
         }
@@ -133,13 +167,13 @@ export default {
     },
     // 获取当前用户下的所有巡检组和人员并初始化巡检组下拉内容
     getGroupUserMap() {
-      this.chooseGroup=parseInt(this.$store.state.user.departmentId);
-      getDepartment().then(res => {
+      this.chooseGroup = parseInt(this.$store.state.user.departmentId)
+      getDepartment().then((res) => {
         if (res.code === 1) {
-          this.searchGroupArray = res.result;
-          this.Bmchange();
+          this.searchGroupArray = res.result
+          this.Bmchange()
         }
-      });
+      })
       // getGroupUserMap().then(res => {
       //   const userId = this.$store.state.user.userId
       //   const groupUserMap = res.result.groupUserVoList
@@ -182,7 +216,7 @@ export default {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .planDayilyReport {
   position: relative;
   height: 100%;
@@ -221,12 +255,12 @@ export default {
       // }
     }
   }
-.statistics{
-  position: relative;
-  width: 100%;
-  top: 35px;
-  height: 500px;
-  background-size: 100% 100%;
-}
+  .statistics {
+    position: relative;
+    width: 100%;
+    top: 35px;
+    height: 500px;
+    background-size: 100% 100%;
+  }
 }
 </style>
