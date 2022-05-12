@@ -40,8 +40,11 @@
           <div class="item-head">查询结果</div>
         </el-col>
         <el-col :span="24">
-          <el-table :data="resultData" v-loading="queryStatus"
-                    :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+          <el-table :data="resultData" v-loading="queryStatus" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+            <template slot="empty">
+              <img src="@/assets/icon/null.png" alt="">
+              <p class="empty-p">暂无数据</p>
+            </template>
             <el-table-column prop="layer" align="center" label="图层"></el-table-column>
             <el-table-column prop="number" align="center" label="数量(个)"></el-table-column>
             <el-table-column align="center" label="操作">

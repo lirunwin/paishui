@@ -77,8 +77,11 @@
     <el-tab-pane label="图层列表" name="listShow" style="height:calc(100% - 40px);">
       <div style="width: 100%; height: 100%; padding: 5px">
         <tf-legend class="legend_dept" label="专题地图图层" isopen="true" title="当前为你创建的专题图。">
-          <el-table ref="multipleTable" :data="themLayerData" tooltip-effect="dark" max-height="400px"
-            style="width: 100%" @select="selectChange" @select-all="selectChange">
+          <el-table ref="multipleTable" :data="themLayerData" tooltip-effect="dark" max-height="400px" style="width: 100%" @select="selectChange" @select-all="selectChange">
+          <template slot="empty">
+            <img src="@/assets/icon/null.png" alt="">
+            <p class="empty-p">暂无数据</p>
+          </template>
             <el-table-column type="selection" width="55" />
             <el-table-column prop="mapName" label="图层" /> 
             <el-table-column prop="size" label="操作" >

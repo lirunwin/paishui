@@ -14,6 +14,10 @@
         <el-col :span="24">
           <el-table ref="markTable" :data="list" stripe style="width: 100%;" max-height="calc(100vh - 431px)" row-class-name="selectRowC">
             <!-- <el-table-column type="selection" width="55" /> -->
+            <template slot="empty">
+              <img src="@/assets/icon/null.png" alt="">
+              <p class="empty-p">暂无数据</p>
+            </template>
             <el-table-column prop="markName" label="名称" width="120">
               <template slot-scope="scope">
                 <el-tooltip class="item" effect="dark" :content="scope.row.markName" placement="top-start">

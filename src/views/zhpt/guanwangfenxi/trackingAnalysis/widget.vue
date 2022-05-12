@@ -36,8 +36,11 @@
     <div class="table-chart">
       <div class="item-head">追踪结果</div>
       <div class="table-container">
-        <el-table ref="resultTable" :data="queryResult" stripe :row-key="getRowKeys" :expand-row-keys="[0]" v-loading="doLoading"
-                  :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+        <el-table ref="resultTable" :data="queryResult" stripe :row-key="getRowKeys" :expand-row-keys="[0]" v-loading="doLoading" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+          <template slot="empty">
+            <img src="@/assets/icon/null.png" alt="">
+            <p class="empty-p">暂无数据</p>
+          </template>
           <el-table-column align="center" type="expand" width="1">
             <template slot-scope="props">
               <transition name="el-zoom-in-top">

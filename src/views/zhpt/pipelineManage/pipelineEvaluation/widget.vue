@@ -607,7 +607,7 @@ export default {
         let position = feature.getGeometry().getCoordinates().flat()
         position.length = 2
         this.map.getView().setCenter(position)
-         this.map.getView().setZoom(21) 
+        this.map.getView().setZoom(21) 
       }
     },
     // 打开缩略提示框
