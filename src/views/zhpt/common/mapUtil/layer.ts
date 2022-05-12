@@ -36,8 +36,8 @@ export class TF_Layer {
             for (let i in properties) {
                 layer.set(i, properties[i])
             }
+            layer.setVisible(visible)
         }
-        layer.setVisible(visible)
         return layer
     }
     // 超图切片图层
@@ -74,11 +74,18 @@ export class TF_Layer {
         let projection = olProj.get(this.projection)
         let extent = projection.getExtent()
         let width = olExtent.getWidth(extent)
+    
         let resolutions = [], matrixIds = []
         for (let z = 1; z < 19; z++) {
             resolutions[z] = width / (256 * Math.pow(2, z))
             matrixIds[z] = z
         }
+
+        let tileGrid = new WMTSTileGrid({
+            origin: olExtent.getTopLeft(extent),
+            resolutions,
+            matrixIds
+        })
         return new TileLayer({
             source: new WMTS({
                 url: url + appconfig.tianMapKey,
@@ -88,11 +95,7 @@ export class TF_Layer {
                 style: 'default',
                 wrapX: true,
                 projection: projection,
-                tileGrid: new WMTSTileGrid({
-                    origin: olExtent.getTopLeft(extent),
-                    resolutions,
-                    matrixIds
-                })
+                tileGrid
             })
         })
     }

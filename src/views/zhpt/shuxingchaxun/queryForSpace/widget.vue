@@ -40,6 +40,10 @@
         row-class-name="selectRowC"
         @row-click="showDetail"
       >
+        <template slot="empty">
+          <img src="@/assets/icon/null.png" alt="">
+          <p class="empty-p">暂无数据</p>
+        </template>
         <el-table-column prop="layer" label="图层名称" width="100" />
         <el-table-column prop="num" label="数量" />
         <el-table-column prop="length" label="总长(m)">

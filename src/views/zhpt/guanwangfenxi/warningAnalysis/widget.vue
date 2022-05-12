@@ -112,6 +112,10 @@
       <div class="item-head">预警结果</div>
       <div class="table-container">
         <el-table :data="totalResultTable" v-loading="loading" stripe max-height="200" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+          <template slot="empty">
+            <img src="@/assets/icon/null.png" alt="">
+            <p class="empty-p">暂无数据</p>
+          </template>
           <el-table-column prop="name" label="图层" align="center" show-overflow-tooltip></el-table-column>
           <el-table-column prop="num" label="数量" align="center" show-overflow-tooltip></el-table-column>
           <el-table-column label="操作" align="center">
