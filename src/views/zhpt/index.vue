@@ -122,10 +122,8 @@
           <transition name="el-zoom-in-top">
           <div v-show="showMapLengend" class="map-legend">
             <div class="map-legend-title">
-              <span>图例</span
-              ><span ref="legendCloser" style="float: right; cursor: pointer" title="收缩" @click="legendChange"
-                >▼</span
-              >
+              <span>图例</span>
+              <!-- <span ref="legendCloser" style="float: right; cursor: pointer" title="收缩" @click="legendChange">▼</span> -->
             </div>
             <div v-show="showLegendBox" class="map-legend-item" v-for="(item, index) in legendData" :key="index">
               <div style="flex: 0.3; text-align: center">

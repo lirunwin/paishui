@@ -240,7 +240,7 @@ export default {
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '管道评估结果管理') {
+      if (n !== '管道检测历史管理') {
         this.clearAll()
         this.hasData = false
       } else {
@@ -263,8 +263,11 @@ export default {
       this.clickEvent = this.map.on('click', evt => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
-          let id = feas[0].get('id')
-          // this.openPromptBox({id})
+          let expNo = feas[0].get('expNo')
+          this.openPromptBox({ expNo })
+        } else {
+          this.currentInfoCard = false
+          this.lightLayer.getSource().clear()
         }
       })
       this.getPipeDefectData()
@@ -337,17 +340,21 @@ export default {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
-            let colors = [
-              { level: '一级', color: 'green', index: 0 },
-              { level: '二级', color: 'blue', index: 1 },
-              { level: '三级', color: 'pink', index: 2 },
-              { level: '四级', color: 'red', index: 3 }
+            let imgs = [
+              { level: '一级', img: defectImgLB, index: 0 },
+              { level: '二级', img: defectImgB, index: 1 },
+              { level: '三级', img: defectImgY, index: 2 },
+              { level: '四级', img: defectImgR, index: 3 }
             ]
-            let findColor = colors.find(colorObj => feaObj['defectLevel'].includes(colorObj.level))
-            if (findColor) {
-              let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
-              feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img, scale: 0.3 }) }))
-              // feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
+            let findimg = null
+
+            if (feaObj.defectLevel) {
+              findimg = imgs.find(colorObj => feaObj['defectLevel'].includes(colorObj.level))
+            }
+            // 缺少 defectLevel 字段
+            if (findimg) {
+              // hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
+              hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
               for (let i in  feaObj) {
                 i !== "geometry" && feature.set(i, feaObj[i])
               }
@@ -373,8 +380,7 @@ export default {
       }
     },
     openPromptBox (row) {
-      let id = row.expNo
-      this.setPositionByPipeId(id)
+      this.setPositionByPipeId(row.expNo)
     },
     // 上一页
     lastPage() {

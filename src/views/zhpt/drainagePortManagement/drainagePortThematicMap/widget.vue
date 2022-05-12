@@ -53,7 +53,7 @@
             <el-form-item label="">
                 <el-radio-group v-model="visibleSettings.statisticRange" style="float:left">
                     <el-radio label="region">
-                        <el-dropdown @command="handleCommand">
+                        <el-dropdown @command="handleCommand" :disabled="isRegion">
                             <span class="el-dropdown-link">
                                 {{regionType}}<i class="el-icon-arrow-down el-icon--right"></i>
                             </span>
@@ -83,15 +83,17 @@
             <div class="thematicMap-title">
             <i
                 style="cursor: pointer"
+                @click="showThemBox=!showThemBox"
                 :class="{ 'el-icon-caret-bottom': showThemBox, 'el-icon-caret-right': !showThemBox }"
             ></i>
             <el-checkbox
+                @change="setThemLayerVisible(index, item.open)"
                 v-model="item.open"
                 :label="item.title"
             ></el-checkbox>
             </div>
             <transition name="el-zoom-in-top">
-            <div class="transition-box">
+            <div v-if="showThemBox" class="transition-box">
                 <ul>
                 <li v-for="(level, i) in item.level" :key="i" :class="comStyle(level.color)">
                     {{ level.label + "("+level.num + level.unit +")"}}
@@ -106,7 +108,6 @@
 </template>
 
 <script>
-// import VectorSource from 'ol/source/Vector'
 import { esriConfig, appconfig } from 'staticPub/config'
 import iDraw from '@/views/zhpt/common/mapUtil/draw'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
@@ -201,6 +202,9 @@ export default {
         }
     },
     methods:{
+        setThemLayerVisible(){
+            
+        },
         getDataSet(){
             let dataService = appconfig.gisResource['iserver_resource'].dataService
             this.dataSetInfo = dataService.dataSetInfo.filter(info => info.label === '排放口')
@@ -460,11 +464,11 @@ export default {
         //     width: 100px;
         //     text-align: right;
         // }
-        /deep/.el-form-item__content{
-            // display: flex;
-            // float:left
-            width: 260px;
-        }
+        // /deep/.el-form-item__content{
+        //     // display: flex;
+        //     // float:left
+        //     width: 260px;
+        // }
         .right-group{
             padding-left: 20px;
             margin-top: -8px;

@@ -316,10 +316,11 @@ export default {
             this.popupShow=true
             this.popupPosition=center
             this.popupTitle=`（${info.type}排放口）${info.address}`;
+            let dinfo={};
             for(let i in info){
-                info[i]=info[i]?info[i]:'无'
+                dinfo[i] = info[i]?info[i]:'无';
             }
-            let {prjNo,sewagesystemId,stormsystemId,type,receivewater}=info
+            let {prjNo,sewagesystemId,stormsystemId,type,receivewater}=dinfo
             this.detail={
                 prjNo,
                 sewagesystemId,

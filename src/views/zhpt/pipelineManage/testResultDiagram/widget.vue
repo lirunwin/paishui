@@ -32,7 +32,7 @@
             style="width: 100%"
           ></el-date-picker>
         </el-col>
-        <el-col style="text-align: center" :span="2">~</el-col>
+        <el-col style="text-align: center" :span="2">至</el-col>
         <el-col :span="11">
           <el-date-picker
             type="date"
@@ -91,12 +91,20 @@ import Heatmap from 'ol/layer/Heatmap'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import { comSymbol } from '@/utils/comSymbol'
+import { Style } from 'ol/style'
+import Icon from 'ol/style/Icon'
 import iDraw from '@/views/zhpt/common/mapUtil/draw'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
 import { appconfig } from 'staticPub/config'
 import GeoJSON from 'ol/format/GeoJSON'
 import { getDefectDataById, getDefectData, getProject, getReportByProjecetId, getDefectDataByFilter } from '@/api/sysmap/drain'
 import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
+import defectImgR from '@/assets/images/traingle-r.png';
+import defectImgB from '@/assets/images/traingle-b.png';
+import defectImgY from '@/assets/images/traingle-y.png';
+import defectImgLB from '@/assets/images/traingle-lb.png';
+
+
 
 export default {
   props: { data: Object },
@@ -134,11 +142,11 @@ export default {
           title: '管网缺陷分布专题图',
           layerName: 'pipeDefectLayer',
           open: true,
-          type: 'circle',
+          type: 'img',
           level: [
-            { color: 'green', label: 'Ⅰ级', num: 0, unit: '个' },
+            { color: 'lightblue', label: 'Ⅰ级', num: 0, unit: '个' },
             { color: 'blue', label: 'Ⅱ级', num: 0, unit: '个' },
-            { color: 'pink', label: 'Ⅲ级', num: 0, unit: '个' },
+            { color: 'yellow', label: 'Ⅲ级', num: 0, unit: '个' },
             { color: 'red', label: 'Ⅳ级', num: 0, unit: '个' }
           ]
         },
@@ -214,8 +222,8 @@ export default {
       this.pipeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: true })
       this.manholeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
       this.pipeHealthLayer = new VectorLayer({ source: new VectorSource(), visible: true })
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
-      this.addLayers([this.heatLayer, this.pipeDefectLayer, this.manholeDefectLayer, this.pipeHealthLayer, this.lightLayer])
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(7, 'rgba(245, 236, 62, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
+      this.addLayers([this.heatLayer, this.manholeDefectLayer, this.pipeHealthLayer, this.lightLayer, this.pipeDefectLayer])
 
       this.setProjectData()
     },
@@ -334,22 +342,22 @@ export default {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
-            let colors = [
-              { level: '一级', color: 'green', index: 0 },
-              { level: '二级', color: 'blue', index: 1 },
-              { level: '三级', color: 'pink', index: 2 },
-              { level: '四级', color: 'red', index: 3 }
+            let imgs = [
+              { level: '一级', img: defectImgLB, index: 0 },
+              { level: '二级', img: defectImgB, index: 1 },
+              { level: '三级', img: defectImgY, index: 2 },
+              { level: '四级', img: defectImgR, index: 3 }
             ]
-            let findColor = colors.find(colorObj => feaObj['defectLevel'].includes(colorObj.level))
-            
-            // let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
-            // if (feaObj.defectLevel) {
-            //   let index = ["一级", '二级', '三级', '四级']
-            //   img = imgBox[index.indexOf(feaObj.defectLevel)]
-            // }
-            if (findColor) {
-              num[findColor.index] += 1
-              hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
+            let findimg = null
+
+            if (feaObj.defectLevel) {
+              findimg = imgs.find(colorObj => feaObj['defectLevel'].includes(colorObj.level))
+            }
+            // 缺少 defectLevel 字段
+            if (findimg) {
+              num[findimg.index] += 1
+              // hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
+              hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
               for (let i in  feaObj) {
                 i !== "geometry" && feature.set(i, feaObj[i])
               }
@@ -428,19 +436,8 @@ export default {
       this.$set(this.showThemBox, index, !this.showThemBox[index])
     },
     comStyle(type, color) {
-      let className = ''
-      switch (type) {
-        case 'circle':
-          className = 'type-circle'
-          break
-        case 'square':
-          className = 'type-square'
-          break
-        case 'line':
-          className = 'type-line'
-          break
-      }
-      return `item-${color} ${className}`
+      if (type === 'img') return `type-${type}-${color}`
+      return `item-${color} type-${type}`
     },
     // 管道缺陷管理的信息
     openDefect(type, level) {
@@ -538,6 +535,66 @@ export default {
   padding: 8px 0;
   box-sizing: border-box;
   justify-content: space-between;
+}
+.type-img-yellow {
+  cursor: pointer;
+  margin: 10px 0 10px 20px !important;
+  &::before {
+    position: relative;
+    left: -20px;
+    top: -2px;
+    content: '';
+    width: 10px;
+    height: 10px;
+    background-image: url('../../../../assets/images/traingle-y.png');
+    background-size: 100% 100%;;
+    display: inline-block;
+  }
+}
+.type-img-blue {
+  cursor: pointer;
+  margin: 10px 0 10px 20px !important;
+  &::before {
+    position: relative;
+    left: -20px;
+    top: -2px;
+    content: '';
+    width: 10px;
+    height: 10px;
+    background-image: url('../../../../assets/images/traingle-b.png');
+    background-size: 100% 100%;;
+    display: inline-block;
+  }
+}
+.type-img-lightblue {
+  cursor: pointer;
+  margin: 10px 0 10px 20px !important;
+  &::before {
+    position: relative;
+    left: -20px;
+    top: -2px;
+    content: '';
+    width: 10px;
+    height: 10px;
+    background-image: url('../../../../assets/images/traingle-lb.png');
+    background-size: 100% 100%;;
+    display: inline-block;
+  }
+}
+.type-img-red {
+  cursor: pointer;
+  margin: 10px 0 10px 20px !important;
+  &::before {
+    position: relative;
+    left: -20px;
+    top: -2px;
+    content: '';
+    width: 10px;
+    height: 10px;
+    background-image: url('../../../../assets/images/traingle-r.png');
+    background-size: 100% 100%;;
+    display: inline-block;
+  }
 }
 .type-circle {
   cursor: pointer;

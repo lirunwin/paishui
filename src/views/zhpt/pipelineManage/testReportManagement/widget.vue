@@ -835,10 +835,11 @@ export default {
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
             let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
-            // if (feaObj.defectLevel) {
-            //   let index = ["一级", '二级', '三级', '四级']
-            //   img = imgBox[index.indexOf(feaObj.defectLevel)]
-            // }
+            if (feaObj.defectLevel) {
+              let index = ["一级", '二级', '三级', '四级']
+              img = imgBox[index.indexOf(feaObj.defectLevel)]
+            }
+
             hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img, scale: 0.3 }) }))
 
             for (let i in  feaObj) {
