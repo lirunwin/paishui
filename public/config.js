@@ -66,7 +66,7 @@ export const appconfig = {
             'parentname': "底图",
             'name': '矢量底图',
             'type': 'tdtlayer',
-            'url': 'http://t4.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
+            'url': 'http://t3.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
             'visible': true,
             "id": 2
           },

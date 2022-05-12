@@ -88,35 +88,38 @@
             <leftTopTool
               :toolList="leftTopTool.children"
               :map="view"
-              v-if="leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
+              v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
             ></leftTopTool>
             <!-- 左下角工具栏 -->
             <leftBottomTool
               :toolList="leftBottomTool.children"
               :map="view"
-              v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
+              v-if="showTool && leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
             ></leftBottomTool>
             <!-- 右上角工具栏 -->
             <rightTopTool
               :toolList="rightTopTool.children"
               :map="view"
               :rootPage="this"
-              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
+              v-if="showTool && rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
             ></rightTopTool>
             <!-- 右下角工具栏 -->
             <rightBottomTool
               :toolList="rightBottomTool.children"
               :map="view"
-              v-if="rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
+              v-if="showTool && rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
             ></rightBottomTool>
           </div>
-
+          <div @click="showMapLengend = !showMapLengend" v-if="showLegendBtn" style='position:absolute;top:10px;left:10px;cursor:pointer;'>
+            <i class="iconfont iconlist" title="图例"></i>
+          </div>
           <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
             <span id="mapView_close" ref="legend_close" title="收缩" @click="legendClick">▼</span>
             <div id="mapView_legend" ref="legend" style="height: 350px" />
           </div>
           <!-- 公共图例 -->
+          <transition name="el-zoom-in-top">
           <div v-show="showMapLengend" class="map-legend">
             <div class="map-legend-title">
               <span>图例</span
@@ -133,6 +136,7 @@
               </div>
             </div>
           </div>
+          </transition>
           <div></div>
           <!-- 鼠标位置 -->
           <!-- <MouseLocation :map-view="view" /> -->
@@ -274,6 +278,9 @@ import { defaults as controls } from 'ol/control'
   }
 })
 export default class BaseMap extends Vue {
+  hasloadTool = false
+  showTool = true
+  showLegendBtn = false
   showMapLengend = false
   //
   showLegendBox = true
@@ -337,6 +344,9 @@ export default class BaseMap extends Vue {
   get jumpText() {
     return this.$store.state.jumpText
   }
+  get activeHeaderItem () {
+    return this.$store.state.gis.activeHeaderItem
+  }
   @Watch('FullPanels')
   FullPanelsChange() {
     this.show = true
@@ -363,6 +373,17 @@ export default class BaseMap extends Vue {
       widgetid: n[1],
       label: n[2]
     })
+  }
+  @Watch('activeHeaderItem', { immediate: true })
+  activeHeaderItemChange(n, o) {
+    this.showTool = n === 'map'
+    // 重新配置地图工具
+    if (n === 'map' && !this.hasloadTool) {
+      this.controlToolDisplay()
+      this.hasloadTool = true
+    }
+    // 排水检测图例
+    this.showLegend('testReport', n === 'psjc')
   }
   created() {
     console.log('=====', this.Comps)
@@ -445,8 +466,10 @@ export default class BaseMap extends Vue {
     this.addLayers(layerResource)
 
     this.loading = false
-    this.$nextTick(this.controlToolDisplay)
-
+    // if (this.$store.state.gis.activeHeaderItem === 'map') {
+    //   this.$nextTick(this.controlToolDisplay)
+    //   this.hasloadTool = true
+    // }
     // 触发地图视野变化
     let timer = null,
       time = 500
@@ -521,8 +544,10 @@ export default class BaseMap extends Vue {
     if (!legendName) return
     if (visible) {
       this.legendData = LegendConfig[legendName]
+    } else {
+      this.showMapLengend = false
     }
-    this.showMapLengend = visible
+    this.showLegendBtn = visible
   }
   legendChange() {
     this.showLegendBox = !this.showLegendBox

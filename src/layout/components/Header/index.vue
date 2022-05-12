@@ -390,6 +390,8 @@ export default class Header extends Vue {
     if (!sideBarShow) this.$store.dispatch('app/toggleSideBarShow', true)
     this.$store.dispatch('routeSetting/changeSys', event.name || event)
     this.$store.commit('map/RESET_ALL')
+    // 
+    this.$store.state.gis.activeHeaderItem = this.defaultActiveIndex
   }
   // scrollPrev() {
   //   this.$refs.navScroll.$el.scrollLeft = 0;

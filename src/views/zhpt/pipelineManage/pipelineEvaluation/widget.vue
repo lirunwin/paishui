@@ -475,7 +475,6 @@ export default {
       this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
       this.map.addLayer(this.vectorLayer)
       this.map.addLayer(this.lightLayer)
-      this.data.that.showLegend('testReport', true)
       this.clickEvent = this.map.on('click', evt => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
@@ -489,7 +488,6 @@ export default {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
-      this.data.that.showLegend('testReport', false)
     },
     getPipeDefectData() {
       getDefectData().then(res => {

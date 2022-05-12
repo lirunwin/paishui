@@ -624,7 +624,6 @@ export default {
         this.clearAll()
       } else {
         this.getPipeDefectData()
-        this.data.that.showLegend('testReport', true)
       }
     }
   },
@@ -671,7 +670,6 @@ export default {
     this.vectorLayer2 = new VectorLayer({ source: new VectorSource() })
     this.getPipeDefectData()
     this.addMapEvent()
-    this.data.that.showLegend('testReport', true)
   },
   destroyed() {
     this.clearAll()
@@ -726,7 +724,6 @@ export default {
       this.vectorLayer.getSource().clear()
       this.vectorLayer2.getSource().clear()
       this.lightLayer.getSource().clear()
-      this.data.that.showLegend('testReport', false)
       this.clickEvent && unByKey(this.clickEvent)
     },
     /**
@@ -780,7 +777,7 @@ export default {
 
           if (light) {
             map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
-            map.getView().setZoom(16)
+            map.getView().setZoom(20)
             this.lightLayer.getSource().addFeatures([
               // ...dFeas, 
               ...pFeas

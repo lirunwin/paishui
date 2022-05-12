@@ -519,7 +519,6 @@ export default {
   background-color: #2d74e7;
 }
 .thematicMap-list {
-  padding-left: 25%;
   display: flex;
   flex-direction: column;
   .transition-box {
