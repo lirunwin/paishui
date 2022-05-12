@@ -1,0 +1,303 @@
+<template>
+	<div class="construction-sit-type-container">
+		<table-component :tableColumns="columns" ref="table1" :tableData="source" @select="tableSelect" :pageInfo="pageInfo" 
+			@selection-change="handleSelectionChange"
+			@size-change="handleSizeChange"
+			@row-dblclick="alterWorkSiteType"
+			@current-change="handleCurrentChange" >
+			<template slot="filter">
+				<span>名称：</span>
+				<el-input v-model="typeName"  placeholder="请输入名称" size="small" style="width: 200px"></el-input>
+				<el-button type="primary" size="small" @click="queryWorkSiteType">查询</el-button>
+				<el-button type="primary" size="small" @click="addWorkSiteType">新增</el-button>
+				<el-button type="primary" :disabled="disabledAlter" size="small" @click="alterWorkSiteType('update')">修改</el-button>
+				<el-button type="primary" :disabled="disabledDelete" size="small" @click="deleteWorkSiteType">删除</el-button>
+			</template>
+		</table-component>
+		<el-dialog v-dialogDrag :title="addTitle" :visible.sync="diaVisibleAdd" width="550px">
+			<el-form :model="addForm" :rules="addRules" ref="addForm" label-width="120px" style="padding: 0px;">
+				<el-form-item label="类型名称：" prop="name" style="margin-top: 5px">
+					<el-input v-model="addForm.name" size="small" placeholder="请输入类型名称" style="width: 350px;"></el-input>
+				</el-form-item>
+				<el-form-item label="备注：" style="margin-top: 20px">
+					<el-input v-model="addForm.notes" type="textarea" size="small" placeholder="请输入备注信息" style="width: 350px;"></el-input>
+				</el-form-item>
+			</el-form>
+			<span slot="footer" class="dialog-footer">
+				<el-button size="small" v-show="showConfirmAddButton" @click="cancelAdd()">取 消</el-button>
+				<el-button size="small" v-show="showConfirmAddButton" type="primary" @click="confirmAdd('addForm')">确 定</el-button>
+				<el-button size="small" v-show="showConfirmAlterButton" @click="cancelAlter()">取 消</el-button>
+				<el-button size="small" v-show="showConfirmAlterButton" type="primary" @click="confirmAlter('addForm')">确 定</el-button>
+			</span>
+		</el-dialog>
+	</div>
+</template>
+
+<script>
+import TableComponent from '../components/TableComponent'
+import { workSiteTypeQuery, workSiteTypeAdd, workSiteTypeAlter, workSiteTypeDelete } from '@/api/xjConfigManageApi'
+const columns = [
+	{
+		type: 'selection',
+		aligin: 'center',
+		width: 55
+	},
+	{
+		label: '序号',
+		aligin: 'center',
+    width: 80,
+		prop: 'index'
+	},
+	{
+		label: '类型名称',
+		aligin: 'center',
+		sortable: true,
+		prop: 'name'
+	},
+	{
+		label: '备注',
+		aligin: 'center',
+		sortable: true,
+		prop: 'notes'
+	}
+]
+export default {
+	components: { TableComponent },
+	data() {
+		return {
+			columns,
+			source : [],
+			pageInfo: { current: 1,  size: 30, tableTotal:1 },			//分页数据
+			typeName: '', //绑定首页名称
+			addTitle: '',
+			multipleSelection: [],
+			updateRow:null,
+			disabledAlter: true, //控制修改按钮是否可点击
+			disabledDelete: true, //控制删除按钮是否可点击
+			diaVisibleAdd: false, //控制新增弹窗的显示
+			addForm: { //新增弹窗的表单数据
+				name: '', //类型名称
+				notes: '' //备注
+			},
+			addRules: {
+				typeName: [
+					{ required: true, message: '请输入类型名称', trigger: 'blur' }
+				]
+			},
+			showConfirmAddButton: false,
+			showConfirmAlterButton: false
+		}
+	},
+	mounted(){
+		this.queryWorkSiteType()
+	},
+	methods: {
+
+		//表格被选中时执行操作
+		handleSelectionChange(val) {
+			this.multipleSelection = val
+		},
+		//表格被选中时进行判断，控制button是否可点击
+		tableSelect(e, s) {
+			if(e.length < 1) {
+				this.disabledAlter = true //不可点击
+				this.disabledDelete = true //不可点击
+			} else if(e.length === 1) {
+				this.disabledAlter = false
+				this.disabledDelete = false
+			} else {
+				this.disabledAlter =true
+				this.disabledDelete = false
+			}
+		},
+		//获取首页表单数据
+		getData() {
+			var that = this;
+			that.source = []
+			that.disabledAlter = true //编辑按钮不可点击
+			that.disabledDelete = true //删除按钮不可点击
+			let data = {
+				name: that.typeName
+			}
+			//追加分页参数
+			const query = that.pageInfo
+      		Object.assign(query, data)
+
+			workSiteTypeQuery(query).then(res => {
+				console.log(res);
+				var totalIndex = ((that.pageInfo.current - 1) * that.pageInfo.size);
+				var _index = 0;
+				that.pageInfo.tableTotal = res.result.total
+				res.result.records.forEach(element => {
+					_index++
+					that.source.push({
+						index:totalIndex+_index,
+						id:element.id,
+						name: element.name,
+						notes: element.notes
+					});
+				});
+			})
+		},
+
+		/**
+		 * @description 分页每页条数
+		 */
+		handleSizeChange(pageSize) {
+			this.pageInfo.size = pageSize
+			this.getData()
+		},
+		/**
+		 * @description 改变当前页
+		 */
+		handleCurrentChange(currentPage) {
+			this.pageInfo.current = currentPage
+			this.getData()
+		},
+
+		//通过接口获取表单数据
+		queryWorkSiteType() {
+			this.pageInfo.current=1
+			this.getData()
+		},
+		//清空addForm里面的数据
+		clearAddFormData() {
+			for(let i in this.addForm) { //清空新增弹窗内的数据
+				this.addForm[i] = ''
+			}
+			this.$refs.table1.$refs.tableRef.clearSelection()
+			this.tableSelect(this.$refs.table1.$refs.tableRef.selection)
+		},
+		//新增工地类型
+		addWorkSiteType() {
+			this.addForm.name =''
+			this.addForm.notes = ''
+			this.addTitle = '新增'
+			this.diaVisibleAdd = true
+			this.showConfirmAddButton = true
+			this.showConfirmAlterButton = false
+		},
+		//取消新增
+		cancelAdd() {
+			this.diaVisibleAdd = false //关闭弹窗
+			this.clearAddFormData()
+		},
+		//确认新增
+		confirmAdd(formName) {
+			this.$refs[formName].validate((valid) => {
+				if (valid) {
+					let addInfo = {
+						name:this.addForm.name, 
+						notes: this.addForm.notes
+					}
+					workSiteTypeAdd(addInfo).then(res => {
+						this.clearAddFormData()
+						this.getData()
+						this.diaVisibleAdd = false //关闭弹窗
+					})
+
+					// this.source.push(addInfo)
+					// this.diaVisibleAdd = false
+					// this.clearAddFormData()
+				} else {
+					console.log('error submit!!');
+					return false;
+				}
+			});
+		},
+		//修改表格数据
+		alterWorkSiteType(type) {
+			this.addTitle = '修改';
+			let data = this.$refs.table1.$refs.tableRef.selection[0]
+			if(type!='update'){
+				data=type;
+			}
+			this.updateRow=data
+			this.addForm.name = data.name
+			this.addForm.notes = data.notes
+			this.showConfirmAlterButton = true
+			this.showConfirmAddButton = false
+			this.diaVisibleAdd = true
+		},
+		//取消修改
+		cancelAlter() {
+			this.diaVisibleAdd = false
+			this.clearAddFormData()
+		},
+		//确认修改
+		confirmAlter(formName) {
+			this.$refs[formName].validate((valid) => {
+				if (valid) {	
+					let info = this.updateRow
+					let data = {
+						id: info.id,
+						name: this.addForm.name,
+						notes: this.addForm.notes
+					}
+
+					workSiteTypeAlter(data).then(res => {
+						this.clearAddFormData()
+						this.getData()
+						this.diaVisibleAdd = false
+					})
+
+
+					// workSiteTypeAlter().then(res => {
+					// 	console.log(res);
+					// })
+					// let data = this.$refs.table1.$refs.tableRef.selection[0]
+					// data.typeName = this.addForm.typeName
+					// data.layerName = this.addForm.layerName
+					// data.notes = this.addForm.notes
+					// this.clearAddFormData()
+					// this.diaVisibleAdd = false
+				} else {
+					console.log('error submit!!');
+					return false;
+				}
+			});
+			
+		},
+		//删除表格数据
+		deleteWorkSiteType() {
+			this.$confirm('确定删除选中的'+this.multipleSelection.length+'条工地类型信息?','提示', {
+				confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+			}).then(() => {
+				this.confirmDelete()
+			}).catch(() => {
+				this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });
+			})
+		},
+		//确认删除
+		confirmDelete() {
+			const ids = []
+			const that = this
+			for(let i = 0; i < this.multipleSelection.length; i++) {
+				ids.push(this.multipleSelection[i].id)
+			}
+			const data = {
+				ids: ids.toString()
+			}
+			workSiteTypeDelete(data).then(res => {
+				console.log(res)
+				that.getData()
+				that.$message({
+					type: 'success',
+					message: '删除成功'
+				})
+			})
+		}
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.construction-sit-type-container {
+	padding: 10px;
+}
+</style>
