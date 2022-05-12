@@ -4,7 +4,9 @@
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
+          <div class="title">关键字：</div>
           <el-input
+            size="small"
             placeholder="支持搜索管段编号、道路名称"
             v-model="searchParams.keyword"
             clearable
@@ -12,17 +14,18 @@
             suffix-icon="el-input__icon el-icon-search"
           >
           </el-input>
-          <el-date-picker v-model="searchParams.jcDate" type="date" placeholder="检测日期" class="date-css">
+          <div class="title">检测日期：</div>
+          <el-date-picker v-model="searchParams.jcDate" type="date" placeholder="选择日期" class="date-css">
           </el-date-picker>
           <div class="release-radio">
-            <p class="release-title">检测状态:</p>
-            <el-radio v-model="searchParams.jcStatus" label="0">未检测</el-radio>
-            <el-radio v-model="searchParams.jcStatus" label="1">已检测</el-radio>
-            <!-- <el-checkbox-group v-model="searchValue.jcStatus">
-              <el-checkbox label="">全部</el-checkbox>
+            <div class="title">检测状态：</div>
+            <!-- <el-radio v-model="searchParams.jcStatus" label="0">未检测</el-radio>
+            <el-radio v-model="searchParams.jcStatus" label="1">已检测</el-radio> -->
+            <el-checkbox-group v-model="searchParams.jcStatus">
+              <!-- <el-checkbox label="">全部</el-checkbox> -->
               <el-checkbox label="0">未检测</el-checkbox>
               <el-checkbox label="1">已检测</el-checkbox>
-            </el-checkbox-group> -->
+            </el-checkbox-group>
           </div>
           <div class="title">结构性缺陷等级：</div>
           <el-select v-model="searchParams.funcClass" placeholder="">
@@ -34,10 +37,8 @@
           </el-select>
         </div>
         <div class="right-btn">
-          <el-button size="small" class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi">
-            搜索
-          </el-button>
-          <el-button size="small" class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
+          <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
+          <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
       </div>
 
@@ -90,7 +91,7 @@
       <div class="detailsCrad" v-show="dialogFormVisible">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span>管道检测详情 ({{ detailsTitle.pipeType + detailsTitle.expNo }})</span>
+            <span style="font-size: 16px">管道检测历史详情（{{ detailsTitle.pipeType + detailsTitle.expNo }}）</span>
             <span style="float: right; padding: 3px 0; cursor: pointer; user-select: none">
               <i class="el-icon-caret-left" type="text" @click="lastPage"></i>
               {{ currentIndex + 1 }}/{{ cardTable.length }}
@@ -105,35 +106,72 @@
                 <el-row v-for="(v, i) in cardTableContent" :key="i">
                   <el-col :span="12" style="padding-right: 15px">
                     <el-form-item :label="v[0].label">
-                      <el-input v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
+                      <el-input size="small" v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="12" style="padding-right: 15px"
                     ><el-form-item :label="v[1].label">
-                      <el-input v-model="tableForm[v[1].name]" disabled show-word-limit></el-input>
+                      <el-input size="small" v-model="tableForm[v[1].name]" disabled show-word-limit></el-input>
                     </el-form-item>
                   </el-col>
                 </el-row>
                 <div class="detailsTitle">检测历史</div>
-                <div class="historyTitle">
-                  <div>
-                    <span style="margin-right: 40px">2021-01-09</span>
-                    <span> (无)</span>
+                <div class="historyList" v-if="currentForm.jcNum" v-for="v in currentForm.jcNum">
+                  <div class="historyTitle">
+                    <div>
+                      <span style="margin-right: 40px">2021-01-2{{ v }}</span>
+                      <span> 功能性缺陷（Ⅱ）</span>
+                    </div>
+                    <el-link type="primary">详情</el-link>
                   </div>
-                  <div>详情</div>
+                  <!-- 内容 -->
+                  <div style="margin-top: 20px; height: 200px">
+                    <div class="info-box">
+                      <div class="info-text">
+                        <el-form label-position="right" label-width="70px" :model="currentForm" size="mini">
+                          <el-form-item label="工程名称">
+                            <el-input v-model="prjName" disabled></el-input>
+                          </el-form-item>
+                          <el-form-item label="工程地点">
+                            <el-input v-model="checkAddress" disabled></el-input>
+                          </el-form-item>
+                          <el-form-item label="检测单位">
+                            <el-input v-model="detectDept" disabled></el-input>
+                          </el-form-item>
+                          <el-form-item label="检测人员">
+                            <el-input v-model="detectPerson" disabled></el-input>
+                          </el-form-item>
+                          <el-form-item label="检测报告">
+                            <!-- :href="'http://117.174.10.73:1114/psjc/file' + item.path" -->
+                            <el-link type="primary">安定东路污水管道检测报告</el-link>
+                          </el-form-item>
+                        </el-form>
+                      </div>
+                      <div class="info-video">
+                        <el-tabs v-model="activeName">
+                          <el-tab-pane label="照片" name="first">
+                            <div class="image-list">
+                              <el-image
+                                style="width: 100%; height: 80%; margin-top: 6px;-webkit-user-drag: none"
+                                :src="srcUrl"
+                                :preview-src-list="urlArr"
+                              >
+                              </el-image>
+                              <!-- <img src="" alt="视频" style="width: 100%; height: 100%" /> -->
+                              <div style="height: 20%; margin-top: 4px">
+                                <el-image style="width: 40px; height: 30px;margin-right: 4px;-webkit-user-drag: none" :src="srcUrl"> </el-image>
+                              </div>
+                            </div>
+                          </el-tab-pane>
+                          <el-tab-pane label="视频" name="second"></el-tab-pane>
+                        </el-tabs>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <el-row>
-                  <el-col :span="12" style="padding-right: 15px">
-                    <el-form-item label="检测方向">
-                      <el-input v-model="tableForm.detectDir" disabled show-word-limit></el-input>
-                    </el-form-item>
-                  </el-col>
-                  <el-col :span="12" style="padding-right: 15px"
-                    ><el-form-item label="检测长度">
-                      <el-input v-model="tableForm.checkLength" disabled show-word-limit></el-input>
-                    </el-form-item>
-                  </el-col>
-                </el-row>
+                <div v-if="!currentForm.jcNum" style="text-align: center">
+                  <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                </div>
               </el-form>
             </div>
           </div>
@@ -149,6 +187,13 @@ import { queryPageHistory, histroyPipeData } from '@/api/pipelineManage'
 export default {
   data() {
     return {
+      urlArr: [
+        'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fwww.tldmbl.com%2FUploadFiles%2FFCK%2F2015-10%2F6358172627494094194284462.jpg&refer=http%3A%2F%2Fwww.tldmbl.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1654934567&t=e55e3f25758fe8055c907d31bc316b40'
+      ],
+      srcUrl:
+        'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fwww.tldmbl.com%2FUploadFiles%2FFCK%2F2015-10%2F6358172627494094194284462.jpg&refer=http%3A%2F%2Fwww.tldmbl.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1654934567&t=e55e3f25758fe8055c907d31bc316b40',
+      activeName: 'first',
+      currentForm: {}, // 当前详情表单
       detailsTitle: {}, // 详情头部信息
       cardTableContent: [
         [
@@ -191,6 +236,7 @@ export default {
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 搜索需要的参数
       searchParams: {
+        jcStatus: [],
         keyword: '',
         jcDate: '',
         defectLevelA: '',
@@ -241,6 +287,7 @@ export default {
     // 详情
     async openDetails(row) {
       console.log('详情触发')
+      this.currentForm = row // 保存当前列信息
       this.isPromptBox = { ...row }
       let res = await histroyPipeData({ expNo: row.expNo })
       this.detailsTitle = {
@@ -344,7 +391,7 @@ export default {
         }
         .serch-input {
           width: 245px;
-          margin-right: 20px;
+          // margin-right: 20px;
         }
         .el-input__inner {
           height: 34px;
@@ -358,19 +405,10 @@ export default {
           color: #606266;
           font-family: Arial;
           white-space: nowrap;
-          margin-left: 5px;
+          margin-left: 10px;
         }
       }
-      .serch-btn {
-        height: 34px;
-        background-color: #2d74e7;
-        padding: 12px;
-        border: none !important;
-      }
 
-      .serch-btn:hover {
-        opacity: 0.8;
-      }
       .right-btn {
         margin-bottom: 14px;
         display: flex;
@@ -443,26 +481,77 @@ export default {
         }
       }
       .content {
+        height: 600px;
         // padding: 22px;
         // box-sizing: border-box;
         /deep/ .box1 {
           overflow-y: scroll;
-          max-height: 545px;
+          // max-height: 545px;
+          height: 100%;
           padding: 10px 20px;
           .el-row {
             padding: 0 10px;
           }
-          .historyTitle {
-            height: 30px;
-            font-weight: bold;
-            padding: 5px 10px;
-            box-sizing: border-box;
-            margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #f6f9fe;
+          .historyList {
+            .historyTitle {
+              height: 30px;
+              color: #555555;
+              font-weight: bold;
+              padding: 5px 10px;
+              box-sizing: border-box;
+              margin: 10px 0;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              background-color: #f6f9fe;
+            }
+
+            .info-box {
+              height: 100%;
+              display: flex;
+              margin: 5px 0;
+              justify-content: space-between;
+              .info-text {
+                width: 48%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                /deep/ .el-form {
+                  .el-link--inner {
+                    max-width: 140px;
+                    /* 1.先强制一行内显示文本 */
+                    white-space: nowrap;
+                    /* 2.超出部分隐藏 */
+                    overflow: hidden;
+                    /* 3.文字用省略号替代超出的部分 */
+                    text-overflow: ellipsis;
+                  }
+                }
+              }
+              .info-video {
+                width: 48%;
+                .image-list {
+                  height: 155px;
+                  display: flex;
+                  flex-direction: column;
+                }
+                /deep/.el-tabs {
+                  .el-tabs__nav-wrap {
+                    width: 100% !important;
+                  }
+                  .el-tabs__item {
+                    margin: 11px 0 0 0 !important;
+                    background: transparent !important;
+                  }
+                  .el-tabs__header {
+                    border-top: 0 !important;
+                    background: transparent !important;
+                  }
+                }
+              }
+            }
           }
+
           .el-textarea__inner,
           .el-input__inner {
             color: #666;
@@ -483,6 +572,19 @@ export default {
             background-color: #2d74e7;
           }
         }
+        /deep/ .el-form {
+          .is-disabled {
+            .el-input__inner {
+              background-color: transparent;
+            }
+            .el-textarea__inner {
+              background-color: transparent;
+            }
+          }
+          .el-form-item {
+            margin-bottom: 10px;
+          }
+        }
       }
       .table-content {
         padding: 15px;
@@ -490,10 +592,12 @@ export default {
           font-size: 12px;
           display: flex;
           justify-content: space-between;
+
           .detailsTitle {
             position: relative;
             padding-left: 10px;
             box-sizing: border-box;
+            margin-bottom: 10px;
           }
           .detailsTitle::after {
             position: absolute;

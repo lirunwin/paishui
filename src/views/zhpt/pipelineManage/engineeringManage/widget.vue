@@ -5,20 +5,21 @@
       <div class="top-tool">
         <div class="serch-engineering">
           <div class="title">关键字：</div>
-          <el-input placeholder="搜索工程编号、工程名称" v-model="searchValue.prjNo" clearable class="serch-input">
-          </el-input>
-          <el-button size="small" class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi"
-            >搜索</el-button
+          <el-input
+            size="small"
+            placeholder="搜索工程编号、工程名称"
+            v-model="searchValue.prjNo"
+            clearable
+            class="serch-input"
           >
+          </el-input>
+          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
         </div>
         <div class="right-btn">
-          <el-button size="small" @click="showForm" class="serch-btn" icon="el-icon-plus" type="primary"
-            >添加</el-button
-          >
+          <el-button size="small" @click="showForm" icon="el-icon-plus" type="primary">添加</el-button>
           <!-- multipleSelection -->
           <el-button
             size="small"
-            class="serch-btn"
             :disabled="multipleSelection.length != 1"
             icon="el-icon-edit"
             type="primary"
@@ -27,7 +28,6 @@
           >
           <el-button
             size="small"
-            class="serch-btn"
             icon="el-icon-delete"
             type="danger"
             :disabled="!multipleSelection.length"
@@ -90,7 +90,7 @@
             <el-col :span="12">
               <el-form-item :label="item[0].label" :prop="item[0].name">
                 <el-input
-                  :placeholder="item[0].placeholder"
+                  size="small"
                   v-model="form[item[0].name]"
                   :maxlength="item[0].maxLength"
                   show-word-limit
@@ -101,7 +101,7 @@
             <el-col :span="12">
               <el-form-item :label="item[1].label" :prop="item[1].name">
                 <el-input
-                  :placeholder="item[1].placeholder"
+                  size="small"
                   v-model="form[item[1].name]"
                   :maxlength="item[1].maxLength"
                   show-word-limit
@@ -111,13 +111,13 @@
             </el-col>
           </el-row>
 
-          <el-form-item label="隐蔽管线点数量" prop="hpoints">
+          <el-form-item label="隐蔽管线点数量(个)" prop="hpoints">
             <el-input
+              size="small"
               v-model="form.hpoints"
               maxlength="15"
               show-word-limit
               :disabled="isDetails"
-              placeholder="单位：个"
             ></el-input>
           </el-form-item>
           <el-form-item label="工程日期范围">
@@ -163,6 +163,7 @@
 
           <el-form-item label="工程简介" prop="proIntroduction">
             <el-input
+              size="small"
               type="textarea"
               resize="none"
               v-model="form.proIntroduction"
@@ -207,8 +208,9 @@
             <!-- 附件列表 -->
             <div v-show="isDetails" style="max-height: 120px; overflow-y: scroll">
               <div v-for="(item, i) in fileListData" :key="i" class="text-space">
-                <el-link type="primary">{{ item.originalName }}</el-link
-                >&nbsp;<el-link :href="'http://117.174.10.73:1114/psjc/file' + item.path" type="success">下载</el-link>
+                <el-link :href="'http://117.174.10.73:1114/psjc/file' + item.path" type="primary">{{
+                  item.originalName
+                }}</el-link>
                 <!-- @click="fileLinkToStreamDownload(item.id)" -->
               </div>
               <p v-if="!fileListData.length" style="text-align: center">暂无附件</p>
@@ -277,36 +279,36 @@ export default {
       // 表单参数
       formContent: [
         [
-          { maxLength: '100', label: '工程名称', name: 'prjName', placeholder: '' },
-          { maxLength: '20', label: '工程编号', name: 'prjNo', placeholder: '' }
+          { maxLength: '100', label: '工程名称', name: 'prjName' },
+          { maxLength: '20', label: '工程编号', name: 'prjNo' }
         ],
         [
-          { maxLength: '50', label: '检测单位', name: 'jcunit', placeholder: '' },
-          { maxLength: '50', label: '勘察单位', name: 'kcunit', placeholder: '' }
+          { maxLength: '50', label: '检测单位', name: 'jcunit' },
+          { maxLength: '50', label: '勘察单位', name: 'kcunit' }
         ],
         [
-          { maxLength: '4', label: '探测单位', name: 'tcunit', placeholder: '' },
-          { maxLength: '30', label: '设计单位', name: 'sjunit', placeholder: '' }
+          { maxLength: '4', label: '探测单位', name: 'tcunit' },
+          { maxLength: '30', label: '设计单位', name: 'sjunit' }
         ],
         [
-          { maxLength: '4', label: '建设单位', name: 'jsunit', placeholder: '' },
-          { maxLength: '50', label: '监理单位', name: 'ctunit', placeholder: '' }
+          { maxLength: '4', label: '建设单位', name: 'jsunit' },
+          { maxLength: '50', label: '监理单位', name: 'ctunit' }
         ],
         [
-          { maxLength: '255', label: '施工单位', name: 'sgunit', placeholder: '' },
-          { maxLength: '30', label: '施工负责人', name: 'constructionCharge', placeholder: '' }
+          { maxLength: '255', label: '施工单位', name: 'sgunit' },
+          { maxLength: '30', label: '施工负责人', name: 'constructionCharge' }
         ],
         [
-          { maxLength: '20', label: '高程系统', name: 'ecoord', placeholder: '' },
-          { maxLength: '20', label: '平面坐标系统', name: 'pcoord', placeholder: '' }
+          { maxLength: '20', label: '高程系统', name: 'ecoord' },
+          { maxLength: '20', label: '平面坐标系统', name: 'pcoord' }
         ],
         [
-          { maxLength: '9', label: '管线总长度', name: 'pllength', placeholder: '单位：m' },
-          { maxLength: '9', label: '管线种类数量', name: 'plnumber', placeholder: '单位：个' }
+          { maxLength: '9', label: '管线总长度(m)', name: 'pllength' },
+          { maxLength: '9', label: '管线种类数量(个)', name: 'plnumber' }
         ],
         [
-          { maxLength: '15', label: '接边点数', name: 'jpoints', placeholder: '单位：个' },
-          { maxLength: '15', label: '明显管线点数量', name: 'epoints', placeholder: '单位：个' }
+          { maxLength: '15', label: '接边点数(个)', name: 'jpoints' },
+          { maxLength: '15', label: '明显管线点数量(个)', name: 'epoints' }
         ]
       ],
       isDetails: false, // 判断是否是详情
@@ -800,15 +802,6 @@ export default {
       }
     }
   }
-}
-.serch-btn {
-  height: 34px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  // background-color: #2d74e7;
-  margin-left: 20px;
-  border: none !important;
 }
 
 /deep/ .upload-demo {

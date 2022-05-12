@@ -65,7 +65,7 @@ export default {
 .project-box {
 
   /deep/.el-table {
-    font-weight: bold;
+    // font-weight: bold;
     // border: 2px solid #666;
 
     .has-gutter .cell {

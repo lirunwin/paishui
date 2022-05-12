@@ -25,7 +25,7 @@
         <td>{{ v.twoValue }}</td>
         <td>{{ v.threeValue }}</td>
         <td>{{ v.fourValue }}</td>
-        <td>{{ v.sum }}</td>
+        <td>{{ v.value }}</td>
       </tr>
       <tr v-for="(v, i) in tabelData.defectQuantityStatisticsB" :key="i">
         <td rowspan="6" v-if="i < 1">功能性缺陷</td>
@@ -34,7 +34,7 @@
         <td>{{ v.twoValue }}</td>
         <td>{{ v.threeValue }}</td>
         <td>{{ v.fourValue }}</td>
-        <td>{{ v.sum }}</td>
+        <td>{{ v.value }}</td>
       </tr>
       <tr class="defectSum">
         <td colspan="2">合计</td>
@@ -55,19 +55,20 @@ export default {
 
 <style lang="scss" scoped>
 .left-table {
+  // border-color: #DEDEDE;
   width: 100%;
   font-weight: bold;
   text-align: center;
   th {
     color: #666;
-    background: #eeece1;
+    background: #f3f7fe;
   }
   tr {
     height: 38px;
   }
   .defectSum {
     height: 45px;
-    background-color: #eeece1;
+    background-color: #f3f7fe;
   }
 }
 </style>

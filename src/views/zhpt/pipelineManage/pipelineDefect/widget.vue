@@ -6,6 +6,7 @@
         <div class="serch-engineering">
           <div class="title">关键字：</div>
           <el-input
+            size="small"
             placeholder="支持搜索管段编号、材质"
             v-model="searchValue.queryParams"
             clearable
@@ -33,10 +34,8 @@
           <el-select v-model="searchValue.funcClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
-          <el-button size="small" class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi">
-            搜索
-          </el-button>
-          <el-button size="small" class="serch-btn" type="primary" @click="resetBtn"> 重置 </el-button>
+          <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
+          <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
           <el-popconfirm
@@ -47,16 +46,11 @@
             title="确定要导出吗?"
             @confirm="$message('该功能暂未开放', scope.row.prjName)"
           >
-            <el-button
-              slot="reference"
-              class="serch-btn"
-              type="primary"
-              size="small"
-              :disabled="multipleSelection.length != 1"
+            <el-button slot="reference" type="primary" size="small" :disabled="multipleSelection.length != 1"
               >导出<i class="el-icon-download el-icon--right"></i
             ></el-button>
           </el-popconfirm>
-          <!-- <el-button class="serch-btn" type="primary" @click="openDialogEnclosure" :disabled="multipleSelection.length != 1"
+          <!-- <el-button  type="primary" @click="openDialogEnclosure" :disabled="multipleSelection.length != 1"
             >导出<i class="el-icon-download el-icon--right"></i
           ></el-button> -->
         </div>
@@ -90,7 +84,6 @@
 
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click.stop="$message('该功能暂未开放')">报告</el-button>
             <el-button type="text" size="small" @click.stop="openDetails(scope.row)">详情</el-button>
           </template>
         </el-table-column>
@@ -164,7 +157,7 @@
       <div class="detailsCrad" v-if="dialogFormVisible">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span>管道检测详情{{ DetailsForm.expNo }}</span>
+            <span style="font-size: 16px">管道检测详情{{ DetailsForm.expNo }}</span>
             <span style="float: right; padding: 3px 0; cursor: pointer">
               <i class="el-icon-close" type="text" @click="dialogFormVisible = false"></i>
             </span>
@@ -181,12 +174,12 @@
                   <el-row v-for="(v, i) in cardTableContent" :key="i">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
-                        <el-input v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
+                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
                       ><el-form-item :label="v[1].label">
-                        <el-input v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -194,9 +187,11 @@
                     <el-col :span="24" style="padding-right: 15px">
                       <el-form-item label="管道描述">
                         <el-input
+                          size="small"
                           type="textarea"
-                          :autosize="{ minRows: 2, maxRows: 4 }"
+                          :autosize="{ minRows: 3, maxRows: 4 }"
                           disabled
+                          resize="none"
                           v-model="DetailsForm.pipeNote"
                         >
                         </el-input>
@@ -211,12 +206,12 @@
                   <el-row v-for="v in structArr" :key="v">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
-                        <el-input v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
+                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
                       ><el-form-item :label="v[1].label">
-                        <el-input v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -224,9 +219,12 @@
                     <el-col :span="24" style="padding-right: 15px">
                       <el-form-item label="评价">
                         <el-input
+                          size="small"
                           type="textarea"
-                          :autosize="{ minRows: 2, maxRows: 4 }"
+                          :autosize="{ minRows: 3, maxRows: 4 }"
                           disabled
+                          placeholder="无"
+                          resize="none"
                           v-model="DetailsForm.structEstimate"
                         >
                         </el-input>
@@ -237,12 +235,12 @@
                   <el-row v-for="(v, i) in funcArr" :key="i">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
-                        <el-input v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
+                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="12" style="padding-right: 15px"
                       ><el-form-item :label="[v[1].label]">
-                        <el-input v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -250,9 +248,12 @@
                     <el-col :span="24" style="padding-right: 15px">
                       <el-form-item label="管道描述">
                         <el-input
+                          size="small"
                           type="textarea"
-                          :autosize="{ minRows: 2, maxRows: 4 }"
+                          :autosize="{ minRows: 3, maxRows: 4 }"
                           disabled
+                          placeholder="无"
+                          resize="none"
                           v-model="DetailsForm.pipeNote"
                         >
                         </el-input>
@@ -365,18 +366,23 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { label: '工程名称', name: 'prjName ' },
         { label: '管段编号', name: 'expNo' },
         { label: '管段类型', name: 'pipeType' },
         { label: '管径(mm)', name: 'diameter' },
         { label: '材质', name: 'material' },
-        { label: '结构性缺陷等级', name: 'structDefect' },
-        { label: '结构性缺陷评价', name: 'structEstimate' },
-        { label: '缺陷数量', name: 'defectNum' },
+        { label: '检测方向', name: 'detectDir' },
+        { label: '距离(m)', name: 'checkLength' },
+        { label: '缺陷名称代码', name: 'defectCode' },
+        { label: '分值', name: 'defectNum' },
+        { label: '等级', name: 'defectLevel' },
+        { label: '管道内部状况描述', name: 'defectDescribe' },
         { label: '检测照片', name: 'picnum' },
         { label: '检测视频', name: 'videoFileName' },
-        { label: '检测地点', name: 'checkAddress' },
+        { label: '工程名称', name: 'prjName' },
+        { label: '工程地点', name: 'checkAddress' },
         { label: '检测日期', name: 'sampleTime' }
+        // { label: '结构性缺陷评价', name: 'structEstimate' },
+        // { label: '检测地点', name: 'checkAddress' },
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       searchValue: {
@@ -582,19 +588,7 @@ export default {
           margin-left: 5px;
         }
       }
-      .serch-btn {
-        height: 34px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        // margin-left: 14px;
-        padding: 12px;
-        border: none !important;
-      }
 
-      .serch-btn:hover {
-        opacity: 0.8;
-      }
       .right-btn {
         margin-bottom: 14px;
         display: inline-block;
@@ -662,12 +656,15 @@ export default {
         padding: 0;
         .el-menu-item {
           height: 45px;
+          font-size: 16px;
         }
       }
       .content {
+        height: 600px;
         /deep/ .content-info {
           overflow-y: scroll;
-          max-height: 545px;
+          // max-height: 545px;
+           height: 100%;
           padding: 10px 20px;
           .el-textarea__inner,
           .el-input__inner {
@@ -687,6 +684,19 @@ export default {
             width: 4px;
             height: 65%;
             background-color: #2d74e7;
+          }
+          /deep/ .el-form {
+            .is-disabled {
+              .el-input__inner {
+                background-color: transparent;
+              }
+              .el-textarea__inner {
+                background-color: transparent;
+              }
+            }
+            .el-form-item{
+              margin-bottom: 10px;
+            }
           }
         }
       }
@@ -731,6 +741,7 @@ export default {
             margin: 6px 0;
             padding-left: 10px;
             box-sizing: border-box;
+            margin-bottom: 10px;
           }
           .detailsTitle::after {
             position: absolute;

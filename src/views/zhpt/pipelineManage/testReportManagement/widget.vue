@@ -6,6 +6,7 @@
         <div class="serch-engineering">
           <div class="title">关键字：</div>
           <el-input
+            size="small"
             placeholder="搜索工程名称、地点、报告名称"
             v-model="searchValue.serchValue"
             clearable
@@ -32,20 +33,15 @@
             <!-- <el-radio v-model="searchValue.checkList" label="0">未发布</el-radio> -->
             <!-- <el-radio v-model="searchValue.checkList" label="1">已发布</el-radio> -->
           </div>
-          <el-button size="small" class="serch-btn" icon="el-icon-search" type="primary" @click="searchApi">
-            搜索
-          </el-button>
-          <el-button size="small" class="serch-btn" icon="el-icon-refresh-right" type="primary" @click="resetDate">
-            重置
-          </el-button>
+          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi"> 搜索 </el-button>
+          <el-button size="small" icon="el-icon-refresh-right" type="primary" @click="resetDate"> 重置 </el-button>
         </div>
         <div class="right-btn">
-          <el-button size="small" class="serch-btn" type="primary" @click="showUpdata">报告上传</el-button>
-          <!-- <el-button class="serch-btn" type="primary" @click="dialogFormVisible2 = true">视频上传</el-button> -->
-          <el-button size="small" class="serch-btn" type="primary" @click="videoShowUpdata">视频上传</el-button>
+          <el-button size="small" type="primary" @click="showUpdata">报告上传</el-button>
+          <!-- <el-button  type="primary" @click="dialogFormVisible2 = true">视频上传</el-button> -->
+          <el-button size="small" type="primary" @click="videoShowUpdata">视频上传</el-button>
           <el-button
             size="small"
-            class="serch-btn"
             type="primary"
             :disabled="!multipleSelection.length"
             @click="batchReleaseDialog = true"
@@ -53,7 +49,6 @@
           >
           <el-button
             size="small"
-            class="serch-btn"
             icon="el-icon-delete"
             type="danger"
             :disabled="!multipleSelection.length"
@@ -141,9 +136,14 @@
       </div>
     </div>
     <!-- 批量发布 -->
-    <div class="public-box">
-      <el-dialog title="批量发布" :visible.sync="batchReleaseDialog" width="30%">
-        <span>确定要发布选中的信息吗?</span>
+    <div class="delete-box">
+      <!-- 删除提示框 -->
+      <el-dialog title="提示" :visible.sync="batchReleaseDialog" width="30%">
+        <div style="display: flex; align-items: center">
+          <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
+          <span class="iconfont icondtbz" style="font-size: 22px; color: #e6a23c"></span>
+          &nbsp; 确认要发布选中的{{ multipleSelection.length }}条检测报告吗?
+        </div>
         <span slot="footer" class="dialog-footer">
           <el-button size="small" @click="batchReleaseDialog = false">取 消</el-button>
           <el-button size="small" type="primary" @click="confirmRelease">确 定</el-button>
@@ -330,7 +330,7 @@
     <!-- 发布 -->
     <div class="public-box release-box">
       <el-dialog
-        title="检测报告发布"
+        :title="setTitle"
         :visible.sync="dialogFormVisible3"
         @open="openRelease"
         @close="closeRelease"
@@ -349,10 +349,25 @@
                   <div class="detailsTitle">管道缺陷数量统计表</div>
                   <summary-form :tabelData="returnTabel"></summary-form>
                   <div class="detailsTitle">管道缺陷数量统计图</div>
+                  <div id="statistics_echatrs" style="width: 600px; display: flex; height: 600px"></div>
                 </div>
               </el-tab-pane>
-              <el-tab-pane label="管道缺陷" name="third">管道缺陷</el-tab-pane>
-              <el-tab-pane label="管段状态评估" name="fourth">管段状态评估</el-tab-pane>
+              <el-tab-pane label="管道缺陷" name="third">
+                <div class="releaseContent">
+                  <div class="detailsTitle">管道缺陷汇总一览表</div>
+                  <defect-one :paramId="id"></defect-one>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="管段状态评估" name="fourth">
+                <div class="releaseContent">
+                  <!-- <div class="detailsTitle">管段状况评估表</div> -->
+                  <!-- <assessment :paramId="id"></assessment> -->
+                  <div class="detailsTitle">检测评估建议</div>
+                  <proposal :paramId="id"></proposal>
+                  <div class="detailsTitle">管段检测与评估成果表</div>
+                  <inspect-form></inspect-form>
+                </div>
+              </el-tab-pane>
             </el-tabs>
           </div>
           <!-- 右边部分 -->
@@ -377,19 +392,22 @@
             <div style="display: flex; align-items: center; flex: 1">
               <span>备注：</span>
               <el-input
+                size="small"
                 style="flex: 1; padding-right: 40px"
                 type="textarea"
                 :rows="2"
-                placeholder="请输入内容"
+                placeholder="请输入备注"
                 :disabled="!isRelease"
                 resize="none"
                 v-model="remarks"
+                v-if="isRelease"
               >
               </el-input>
+              <p v-if="!isRelease">备注信息</p>
             </div>
             <div>
               <el-button size="small" type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
-              <el-button size="small" @click="dialogFormVisible3 = false">取 消</el-button>
+              <el-button size="small" v-if="isRelease" @click="dialogFormVisible3 = false">取 消</el-button>
             </div>
           </div>
         </div>
@@ -507,6 +525,10 @@ import IP from '@/utils/request.ts'
 import summaryForm from './components/summaryForm'
 import projectForm from './components/project'
 import inspectForm from './components/inspect'
+import defectOne from './components/defectOne'
+import assessment from './components/assessment'
+import proposal from './components/proposal'
+
 import simpleMap from '@/components/SimpleMap'
 
 import { getDefectDataById, getDefectData } from '@/api/sysmap/drain'
@@ -528,18 +550,24 @@ import defectImgLB from '@/assets/images/traingle-lb.png'
 
 import Icon from 'ol/style/Icon'
 
+import * as echarts from 'echarts'
+
 export default {
   props: ['data'],
   components: {
     summaryForm,
     projectForm,
     inspectForm,
+    defectOne,
+    assessment,
+    proposal,
     pdfSee,
     simpleMap
   },
   data() {
     return {
-      remarks:"", // 备注
+      fullscreenLoading: false, // 加载
+      remarks: '', // 备注
       pdfUrl: '', // pdf地址
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
@@ -560,24 +588,24 @@ export default {
       isRelease: false, // 判断是否从发布按钮进入详情
       defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }, // 合计
       defectQuantityStatisticsA: [
-        { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(BX)变形', type: 'BX', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(CK)错口', type: 'CK', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(CR)异物穿入', type: 'CR', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(FS)腐蚀', type: 'FS', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(PL)破裂', type: 'PL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(QF)起伏', type: 'QF', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(SL)渗透', type: 'SL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(TJ)脱节', type: 'TJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(TL)接口材料脱落', type: 'TL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 }
+        { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(BX)变形', type: 'BX', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CK)错口', type: 'CK', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CR)异物穿入', type: 'CR', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(FS)腐蚀', type: 'FS', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(PL)破裂', type: 'PL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(QF)起伏', type: 'QF', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(SL)渗透', type: 'SL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(TJ)脱节', type: 'TJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(TL)接口材料脱落', type: 'TL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
       ], // 管道缺陷数量统计表
       defectQuantityStatisticsB: [
-        { title: '(CJ)沉积', type: 'CJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(CQ)残墙、坝根', type: 'CQ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(FZ)浮渣', type: 'FZ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(JG)结垢', type: 'JG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(SG)树根', type: 'SG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 },
-        { title: '(ZW)障碍物', type: 'ZW', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, sum: 0 }
+        { title: '(CJ)沉积', type: 'CJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CQ)残墙、坝根', type: 'CQ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(FZ)浮渣', type: 'FZ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(JG)结垢', type: 'JG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(SG)树根', type: 'SG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(ZW)障碍物', type: 'ZW', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
       ],
       batchReleaseDialog: false, // 批量发布弹框
       // 选择框分页参数
@@ -661,6 +689,23 @@ export default {
     }
   },
   computed: {
+    // 设置发布标题
+    setTitle(){
+      return this.isRelease ? '检测报告发布' : '检测报告详情'
+    },
+    // 统计饼图数据信息
+    defectTotal() {
+      let arr = this.defectQuantityStatisticsA.concat(this.defectQuantityStatisticsB)
+      let newArr = arr.map((v) => {
+        if (!v.value) {
+          return { label: { show: false } }
+        } else {
+          return { value: v.value, title: v.title }
+        }
+      })
+      console.log('newArr', newArr)
+      return newArr
+    },
     // 提示框当前信息
     getCurrentForm() {
       let obj = { ...this.currentForm[this.currentIndex] }
@@ -709,6 +754,41 @@ export default {
     this.clearAll()
   },
   methods: {
+    // 绘制统计饼图
+    renderEcharts() {
+      console.log('渲染echarts')
+      let chartDom = document.getElementById('statistics_echatrs')
+      let myChart = echarts.init(chartDom)
+      let option
+      option = {
+        series: [
+          {
+            name: '管道缺陷数量统计图',
+            type: 'pie',
+            radius: '50%',
+            data: this.defectTotal || [],
+            label: {
+              formatter: function (a) {
+                // console.log('标题参数', a)
+                return `${a['data']['title']} ${a['percent'].toFixed(1) + '%'} `
+              },
+              backgroundColor: '#F6F8FC',
+              borderWidth: 1,
+              borderRadius: 4
+            },
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }
+        ]
+      }
+
+      option && myChart.setOption(option)
+    },
     // 关闭缩略提示框的方法
     closePromptBox() {
       this.currentInfoCard = false
@@ -952,6 +1032,14 @@ export default {
     },
     // 单行管段详情
     async testReportDetails(id, isRelease) {
+      // 显示加载
+      const loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+
       // 判断是否已加载地图
       if (this.hasLoadMap) {
         this.getPipeDefectData(2, id, false)
@@ -1005,26 +1093,31 @@ export default {
       })
 
       this.defectQuantityStatisticsA.forEach((v) => {
-        v.sum = v.oneValue + v.twoValue + v.threeValue + v.fourValue
+        v.value = v.oneValue + v.twoValue + v.threeValue + v.fourValue
         this.defectSumObj.oneSum += v.oneValue
         this.defectSumObj.twoSum += v.twoValue
         this.defectSumObj.threeSum += v.threeValue
         this.defectSumObj.fourSum += v.fourValue
-        this.defectSumObj.total += v.sum
+        this.defectSumObj.total += v.value
       })
       this.defectQuantityStatisticsB.forEach((v) => {
-        v.sum = v.oneValue + v.twoValue + v.threeValue + v.fourValue
+        v.value = v.oneValue + v.twoValue + v.threeValue + v.fourValue
         this.defectSumObj.oneSum += v.oneValue
         this.defectSumObj.twoSum += v.twoValue
         this.defectSumObj.threeSum += v.threeValue
         this.defectSumObj.fourSum += v.fourValue
-        this.defectSumObj.total += v.sum
+        this.defectSumObj.total += v.value
       })
 
       let resUrl = await queryPipeState(id)
       console.log('url', resUrl)
       this.pdfUrl = 'http://117.174.10.73:1114/psjc/file' + resUrl.result.pdfFilePath
       this.dialogFormVisible3 = true
+      this.$nextTick(() => {
+        this.renderEcharts()
+
+        loading.close()
+      })
     },
     // 单个发布
     async oneReleaseBtn() {
@@ -1492,17 +1585,6 @@ $fontSize: 14px !important;
           margin-left: 5px;
         }
       }
-      .serch-btn {
-        height: 34px;
-        display: flex;
-        font-size: $fontSize;
-        justify-content: center;
-        align-items: center;
-        // background-color: #2d74e7;
-        // margin-left: 14px;
-        padding: 10px;
-        border: none !important;
-      }
 
       .right-btn {
         margin-bottom: 14px;
@@ -1604,6 +1686,7 @@ $fontSize: 14px !important;
       /deep/.releaseContent {
         width: 100%;
         height: 78vh;
+        max-width: 64vw;
         margin-top: -3px;
         padding: 20px;
         box-sizing: border-box;
@@ -1747,6 +1830,7 @@ $fontSize: 14px !important;
             margin: 6px 0;
             padding-left: 10px;
             box-sizing: border-box;
+            margin-bottom: 10px;
           }
           .detailsTitle::after {
             position: absolute;

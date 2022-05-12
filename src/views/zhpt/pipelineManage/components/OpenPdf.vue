@@ -12,7 +12,8 @@ export default {
     // 当前pdf的路径
     pdfUrl: {
       type: String,
-      default: 'http://117.174.10.73:1114/psjc/file/opt2/upload/wordInfoDoc/84/202205091057240051.pdf'
+      // default: 'http://117.174.10.73:1114/psjc/file/opt2/upload/wordInfoDoc/84/202205091057240051.pdf'
+      default: ''
     }
   },
   components: {
