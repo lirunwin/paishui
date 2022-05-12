@@ -40,6 +40,9 @@ import XLSX from "xlsx";
 import FileSaver from "file-saver";
 export default {
     name:"ownershipUnitsChart",//按权属单位统计图表
+    props:{
+        resultInfo:{}
+    },
     data(){
         return{
             portTypeChart:null,
@@ -47,41 +50,50 @@ export default {
             result:null,
             isShowTable:false,
             tableData:[],
-            tabelColumn:[
-                {
-                    prop:"rain",
-                    label:"雨水"
-                },
-                {
-                    prop:"sweage",
-                    label:"污水"
-                },
-                {
-                    prop:"mix",
-                    label:"雨污合流"
-                },
-            ]
+            tabelColumn:[],
+            currentShow:null,
+            chartType:['table','pie','bar'],
         }
     },
     mounted(){
         this.result=[
-            { value: 1048, name: '单位1' },
-            { value: 735, name: '单位2' },
-            { value: 580, name: '单位3'},
-            { value: 580, name: '单位4'},
+            { value: 0, name: '无' },
         ]
         this.initPieChart();
     },
+    watch:{
+        resultInfo:{
+            handler(n,o){
+                this.result=n;
+                this.reinitialization()
+            }
+        }
+    },
     methods:{
+        reinitialization(){
+            switch(this.currentShow){
+                case 'table' :this.initTable();
+                            break
+                case 'pie' :this.initPieChart();
+                            break
+                case 'bar' :this.initBarChart();
+                            break
+            }
+        },
         initTable(){
-            this.isShowTable=true
-            this.tableData=[{
-                rain: this.result[0].value,
-                sweage: this.result[1].value,
-                mix: this.result[2].value
-            }]
+            this.currentShow=this.chartType[0]
+            this.isShowTable=true;
+            this.tabelColumn=[];
+            this.tableData=[];
+            let obj={};
+            this.result.forEach(item=>{
+                this.tabelColumn.push({label:item.name,prop:item.name})
+                obj[item.name] = item.value;
+            })
+            this.tableData.push(obj)
         },
         initPieChart(){
+            this.currentShow=this.chartType[1]
             let data=this.result
             let option = {
                 color:this.colorList,
@@ -95,7 +107,7 @@ export default {
                 },
                 series: [
                     {
-                        name: '排放口类别',
+                        name: '按权属单位',
                         type: 'pie',
                         radius: '65%',
                         data: data,
@@ -124,6 +136,7 @@ export default {
             this.initCharts(option)
         },
         initBarChart(){
+            this.currentShow=this.chartType[2]
             let xData=[],data=[],that=this;
             this.result.forEach(item => {
                 xData.push(item.name)

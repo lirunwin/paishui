@@ -9,12 +9,12 @@
             <div class="statisticTerms">
                 <div class="terms">
                     <label>项目名称：</label>
-                    <el-select v-model="projectName" placeholder="请选择" size="small">
+                    <el-select v-model="projectName" placeholder="请选择" size="small" multiple clearable>
                         <el-option
-                        v-for="item in options"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
+                        v-for="item in projectInfo"
+                        :key="item"
+                        :label="item"
+                        :value="item">
                         </el-option>
                     </el-select>
                 </div>
@@ -94,13 +94,13 @@
             </div>
             <div class="chartContainer">
                 <div class="chartItem">
-                    <port-type-chart></port-type-chart>
+                    <port-type-chart :resultInfo="portTypeInfo"></port-type-chart>
                 </div>
                 <div class="chartItem">
-                    <ownership-units-chart></ownership-units-chart>
+                    <ownership-units-chart :resultInfo="ownershipUnits"></ownership-units-chart>
                 </div>
                 <div class="chartItem">
-                    <road-name-chart></road-name-chart>
+                    <road-name-chart :resultInfo="roadName"></road-name-chart>
                 </div>
             </div>
         </div>
@@ -122,27 +122,33 @@ export default {
     },
     data(){
         return{
-            options: [{
-                value: '0',
-                label: 'xxx项目'
-            }],
+            projectInfo: [],
             projectName: '',
-            statisticRange:"",
+            statisticRange:"all",
             regionType:"按行政区",
             region:"",
             isLinkMap:false,
-            statisticResultNum:null,
-            //
+            //统计条件操作变量
             isCustom:true,
             isCustomOrg:true,
             isRegion:true,
             isOpenRange:false,
+            //统计结果变量
+            statisticResultNum:0,
+            portTypeInfo:[],
+            ownershipUnits:[],
+            roadName:[],
         }
     },
     watch:{
         statisticRange:{
             handler(n,o){
-                this.isCustomOrg=this.isCustom=(n=="custom")?false:true
+                if(n=="custom"){
+                    this.isCustomOrg=this.isCustom=false
+                }else{
+                    this.isCustomOrg=this.isCustom=true
+                    if(this.$refs['portMap'].drawer) this.$refs['portMap'].drawer.remove()
+                }
                 this.isRegion=(n=="region")?false:true
             }
         },
@@ -152,11 +158,17 @@ export default {
                     this.isOpenRange=true;
                     this.isCustom=true
                     this.$refs['portMap'].zoomAndMove()
+                    this.$refs['portMap'].removeLayer()
                 }else{
                     this.isOpenRange=false;
                     this.isCustom=this.isCustomOrg?true:false
                     this.$refs['portMap'].removeZoomRegister()
                 }
+            }
+        },
+        projectName:{
+            handler(n,o){
+                this.$refs['portMap'].projectName=n
             }
         }
     },
@@ -174,7 +186,11 @@ export default {
         },
         //开始统计
         checkStatistic(){
-            this.$refs['portMap'].query(this.statisticRange)
+            this.$refs['portMap'].checkResult(this.statisticRange)
+        },
+        //接收项目信息
+        getProjectInfo(value){
+            this.projectInfo=value
         }
     }
 }

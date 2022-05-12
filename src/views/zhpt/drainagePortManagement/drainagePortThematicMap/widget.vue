@@ -340,7 +340,6 @@ export default {
                     let limitGeometry 
                     if(this.limitFeature.getGeometry() instanceof CircleObject){
                         let polygon = fromCircle(this.limitFeature.getGeometry())
-                        console.log(polygon)
                         limitGeometry=turf.polygon(polygon.getCoordinates())
                     }else{
                         limitGeometry = turf.polygon(this.limitFeature.getGeometry().getCoordinates())
@@ -355,7 +354,6 @@ export default {
                         return turf.booleanContains(limitGeometry, inGeometry)
                     })
                 }
-                console.log("过滤结果",themFeatures)
                 this.showTematicMap(themFeatures)
             })
         },
