@@ -7,6 +7,10 @@
       </el-row>
       <el-col :span="24">
         <el-table :data="selectedPipe" stripe style="width: 100%" max-height="200px" row-class-name="selectRowC">
+          <template slot="empty">
+            <img src="@/assets/icon/null.png" alt="">
+            <p class="empty-p">暂无数据</p>
+          </template>
           <el-table-column prop="oid" label="管线编号" />
           <el-table-column prop="STARTSID" label="起点编号" />
           <el-table-column prop="ENDSID" label="终点编号" />
@@ -28,6 +32,10 @@
       </div>
       <div v-show="openstate" class="content">
         <el-table :data="layerData" stripe style="width: 100%" height="250">
+          <template slot="empty">
+            <img src="@/assets/icon/null.png" alt="">
+            <p class="empty-p">暂无数据</p>
+          </template>
           <el-table-column prop="name" label="图层" ></el-table-column>
           <el-table-column prop="num" label="数量/条" ></el-table-column>
           <el-table-column prop="length" label="总长/m" ></el-table-column>     

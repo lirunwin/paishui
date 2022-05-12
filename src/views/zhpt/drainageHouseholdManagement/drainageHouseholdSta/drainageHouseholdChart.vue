@@ -90,7 +90,7 @@ export default {
                     {
                         name: '排水户类别',
                         type: 'pie',
-                        radius: '75%',
+                        radius: '65%',
                         data: data,
                         emphasis: {
                             itemStyle: {

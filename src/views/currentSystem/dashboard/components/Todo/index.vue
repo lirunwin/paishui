@@ -91,6 +91,9 @@ import Echarts from 'echarts'
 import { taskPie, taskList, taskListPage } from '@/api/dashboard'
 import { homeInterval } from 'staticPub/config'
 import MoreInfos from '../Layout/MoreInfos'
+import gisNames from '@/utils/gisNames'
+import gis from '@/store/modules/gis'
+
 const columns = [
   {
     prop: 'order',
@@ -536,7 +539,7 @@ export default {
         } else {
           if (routeStr.indexOf(',') != -1) {
             const routeFirst = routeStr.split(',')[0].toLowerCase()
-            if (['map', 'xjxt', 'whxt', 'monitor', 'psjc'].indexOf(routeFirst) > -1) {
+            if (['map', ...gisNames].indexOf(routeFirst) > -1) {
               const _index = routeStr.indexOf(',')
               const _params = routeStr.substring(_index + 1)
               console.log('参数：' + _params)

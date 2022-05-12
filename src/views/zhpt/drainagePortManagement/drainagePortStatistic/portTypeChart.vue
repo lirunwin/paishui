@@ -40,6 +40,9 @@ import XLSX from "xlsx";
 import FileSaver from "file-saver";
 export default {
     name:"portTypeChart",//按排放口类别统计图表
+    props:{
+        resultInfo:{}
+    },
     data(){
         return{
             portTypeChart:null,
@@ -60,19 +63,41 @@ export default {
                     prop:"mix",
                     label:"雨污合流"
                 },
-            ]
+            ],
+            currentShow:null,
+            chartType:['table','pie','bar'],
         }
     },
     mounted(){
+        //初始化默认显示
         this.result=[
-            { value: 1048, name: '雨水' },
-            { value: 735, name: '污水' },
-            { value: 580, name: '雨污合流'},
+            { name: '雨水',value: 0},
+            { name: '污水',value: 0},
+            { name: '雨污合流',value:0},
         ]
         this.initPieChart();
     },
+    watch:{
+        resultInfo:{
+            handler(n,o){
+                this.result=n;
+                this.reinitialization()
+            }
+        }
+    },
     methods:{
+        reinitialization(){
+            switch(this.currentShow){
+                case 'table' :this.initTable();
+                            break
+                case 'pie' :this.initPieChart();
+                            break
+                case 'bar' :this.initBarChart();
+                            break
+            }
+        },
         initTable(){
+            this.currentShow=this.chartType[0]
             this.isShowTable=true
             this.tableData=[{
                 rain: this.result[0].value,
@@ -81,6 +106,7 @@ export default {
             }]
         },
         initPieChart(){
+            this.currentShow=this.chartType[1]
             let data=this.result
             let option = {
                 color:this.colorList,
@@ -123,6 +149,7 @@ export default {
             this.initCharts(option)
         },
         initBarChart(){
+            this.currentShow=this.chartType[2]
             let xData=[],data=[],that=this;
             this.result.forEach(item => {
                 xData.push(item.name)

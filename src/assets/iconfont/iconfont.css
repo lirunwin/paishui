@@ -1261,3 +1261,7 @@
   content: "\e699"
 }
 
+.iconlist::before {
+  content: "\e774"
+}
+

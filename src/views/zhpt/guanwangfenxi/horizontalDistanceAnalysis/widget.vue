@@ -41,7 +41,11 @@
     <div class="op-box">
       <div class="item-head">详细信息</div>
       <div class="result-total">
-          <el-table max-height='500' empty-text="无分析结果/数据不符合分析条件" @row-click='showPosition' :data="detailData" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+          <el-table max-height='500' @row-click='showPosition' :data="detailData" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+            <template slot="empty">
+              <img src="@/assets/icon/null.png" alt="">
+              <p class="empty-p">暂无数据</p>
+            </template>
             <el-table-column prop="pipeid" align="center" label="分析管线编号"></el-table-column>
             <el-table-column prop="diameter" align="center" label="管径/mm"></el-table-column>
             <el-table-column prop="secpipeid" align="center" label="比较管线编号"></el-table-column>

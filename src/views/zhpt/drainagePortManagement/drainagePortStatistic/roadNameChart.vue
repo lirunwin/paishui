@@ -40,6 +40,9 @@ import XLSX from "xlsx";
 import FileSaver from "file-saver";
 export default {
     name:"roadNameChart",//按排放口类别统计图表
+    props:{
+        resultInfo:{}
+    },
     data(){
         return{
             portTypeChart:null,
@@ -47,45 +50,50 @@ export default {
             result:null,
             isShowTable:false,
             tableData:[],
-            tabelColumn:[
-                {
-                    prop:"rain",
-                    label:"雨水"
-                },
-                {
-                    prop:"sweage",
-                    label:"污水"
-                },
-                {
-                    prop:"mix",
-                    label:"雨污合流"
-                },
-            ]
+            tabelColumn:[],
+            currentShow:null,
+            chartType:['table','pie','bar'],
         }
     },
     mounted(){
         this.result=[
-            { value: 104, name: '道路1' },
-            { value: 73, name: '道路2' },
-            { value: 80, name: '道路2'},
-            { value: 58, name: '道路3'},
-            { value: 68, name: '道路4'},
-            { value: 50, name: '道路5'},
-            { value: 82, name: '道路6'},
-            { value: 53, name: '道路7'},
+            { value: 0, name: '无' },
         ]
         this.initBarChart();
     },
+    watch:{
+        resultInfo:{
+            handler(n,o){
+                this.result=n;
+                this.reinitialization()
+            }
+        }
+    },
     methods:{
+        reinitialization(){
+            switch(this.currentShow){
+                case 'table' :this.initTable();
+                            break
+                case 'pie' :this.initPieChart();
+                            break
+                case 'bar' :this.initBarChart();
+                            break
+            }
+        },
         initTable(){
+            this.currentShow=this.chartType[0]
             this.isShowTable=true
-            this.tableData=[{
-                rain: this.result[0].value,
-                sweage: this.result[1].value,
-                mix: this.result[2].value
-            }]
+            this.tabelColumn=[];
+            this.tableData=[];
+            let obj={};
+            this.result.forEach(item=>{
+                this.tabelColumn.push({label:item.name,prop:item.name})
+                obj[item.name] = item.value;
+            })
+            this.tableData.push(obj)
         },
         initPieChart(){
+            this.currentShow=this.chartType[1]
             let data=this.result
             let option = {
                 color:this.colorList,
@@ -101,7 +109,7 @@ export default {
                     {
                         name: '排放口类别',
                         type: 'pie',
-                        radius: '50%',
+                        radius: '65%',
                         data: data,
                         emphasis: {
                             itemStyle: {
@@ -128,14 +136,17 @@ export default {
             this.initCharts(option)
         },
         initBarChart(){
-            let xData=[],data=[],that=this;
+            this.currentShow=this.chartType[2]
+            let xData=[],data=[];
             this.result.forEach(item => {
                 xData.push(item.name)
                 data.push(item.value)
             });
+            let rotate=(this.result.length>5)?-30:0;
             let option = {
                 xAxis: {
                     type: 'category',
+                    axisLabel: { interval: 0, rotate: rotate},
                     data: xData
                 },
                 yAxis: {

@@ -170,6 +170,7 @@ import { notificationInterval } from 'staticPub/config'
 import { regPassword } from '@/utils/reg'
 import { nextTick } from 'q'
 import UserInfoEdit from './UserInfoEdit.vue'
+import gisNames from '@/utils/gisNames'
 
 const sha1Hex = require('sha1-hex')
 @Component({
@@ -226,7 +227,7 @@ export default class Header extends Vue {
     }
   }
   set defaultActiveIndex(name: string) {
-    if (['map', 'xjxt', 'whxt', 'monitor', 'psjc'].indexOf(name) > -1) this.specialIndex = name
+    if (['map', ...gisNames].indexOf(name) > -1) this.specialIndex = name
     else this.specialIndex = ''
   }
   get avatar() {
@@ -385,11 +386,13 @@ export default class Header extends Vue {
     if (event === 'sysSetting') event = this.$store.state.routeSetting.menus.find((item) => item.name === 'sysSetting')
     this.defaultActiveIndex = event.name
     if (event.path !== undefined && event.path !== '') this.$router.push({ path: event.path })
-    else if (['map', 'xjxt', 'whxt', 'monitor', 'psjc'].indexOf(event.name) > -1) this.$router.push('/map')
+    else if (['map', ...gisNames].indexOf(event.name) > -1) this.$router.push('/map')
     const sideBarShow = this.$store.state.app.sidebar.show
     if (!sideBarShow) this.$store.dispatch('app/toggleSideBarShow', true)
     this.$store.dispatch('routeSetting/changeSys', event.name || event)
     this.$store.commit('map/RESET_ALL')
+    //
+    this.$store.state.gis.activeHeaderItem = this.defaultActiveIndex
   }
   // scrollPrev() {
   //   this.$refs.navScroll.$el.scrollLeft = 0;

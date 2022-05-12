@@ -62,11 +62,35 @@ export const appconfig = {
       'layerService': {
         'name': '图层服务',
         'layers': [
+          // {
+          //   'parentname': "底图",
+          //   'name': '矢量底图',
+          //   'type': 'wmtslayer',
+          //   'url': 'http://t0.tianditu.gov.cn/vec_c/wmts?tk=',
+          //   'visible': true,
+          //   "id": 2
+          // },
+          // {
+          //   'parentname': "底图", 
+          //   'name': '影像底图',
+          //   'type': 'wmtslayer',
+          //   'url': 'http://t0.tianditu.gov.cn/img_c/wmts?tk=',
+          //   'visible': false,
+          //   "id": 3
+          // },
+          // {
+          //   'parentname': "底图", 
+          //   'name': '标注底图',
+          //   'type': 'tdtlayer',
+          //   'url': 'http://t0.tianditu.gov.cn/cva_c/wmts?tk=',
+          //   'visible': true,
+          //   "id": 4
+          // },
           {
             'parentname': "底图",
             'name': '矢量底图',
             'type': 'tdtlayer',
-            'url': 'http://t4.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
+            'url': 'http://t3.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=',
             'visible': true,
             "id": 2
           },
@@ -86,22 +110,6 @@ export const appconfig = {
             'visible': true,
             "id": 4
           },
-          // {
-          //   'parentname': '底图',
-          //   'name': '矢量底图',
-          //   'type': 'smlayer',
-          //   'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_vec',
-          //   'visible': true,
-          //   'id': 2
-          // },
-          // {
-          //   'parentname': '底图',
-          //   'name': '影像底图', 
-          //   'url': iserverConfig.baseUrl + 'services/map-base/rest/maps/kxc_img',
-          //   'type': 'smlayer',
-          //   'visible': false,
-          //   'id': 3
-          // },
           { 
             'parentname': '管线',
             'name': '排水管线',

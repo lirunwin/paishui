@@ -415,10 +415,25 @@ import {
   histroyPipeData,
   assessmentDefect
 } from '@/api/pipelineManage'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
+import { Feature } from 'ol'
+import { LineString, Point } from 'ol/geom'
+import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
+import { comSymbol } from '@/utils/comSymbol'
+import { unByKey } from 'ol/Observable'
+import { Style } from 'ol/style'
+import Icon from 'ol/style/Icon'
+import { getDefectData } from '@/api/sysmap/drain'
+import defectImgR from '@/assets/images/traingle-r.png'
+import defectImgB from '@/assets/images/traingle-b.png'
+import defectImgY from '@/assets/images/traingle-y.png'
+import defectImgLB from '@/assets/images/traingle-lb.png'
 
 import * as echarts from 'echarts'
 
 export default {
+  props: ['data'],
   data() {
     return {
       activeName: 'picnum', // 照片视频tab标签
@@ -521,11 +536,37 @@ export default {
       multipleSelection: [], // 表格被选中的数据
       dialogTableVisible: false,
       isPromptBox: {}, // 当前列信息
-      form: {}
+      form: {},
+      //
+      vectorLayer: null,
+      map: null,
+      lightLayer: null,
+      clickEvent: null,
+      projUtil: null, // 坐标系工具
+      currentDataProjName: 'proj43' // 当前坐标系
     }
   },
   created() {
     let res = this.getDate()
+  },
+  watch: {
+    '$store.state.gis.activeSideItem': function (n, o) {
+      if (n !== '管道评估结果管理') {
+        this.clearAll()
+        this.hasData = false
+      } else {
+        this.init()
+      }
+    }
+  },
+  mounted() {
+    this.map = this.data.mapView
+    this.projUtil = new projUtil()
+    this.projUtil.resgis(this.currentDataProjName)
+    this.init()
+  },
+  destroyed() {
+    this.clearAll()
   },
   computed: {
     // 提示框照片视频
@@ -645,6 +686,121 @@ export default {
 
       option && myChart.setOption(option)
     },
+    init() {
+      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+      this.lightLayer = new VectorLayer({
+        source: new VectorSource(),
+        style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)')
+      })
+      this.map.addLayer(this.vectorLayer)
+      this.map.addLayer(this.lightLayer)
+      this.clickEvent = this.map.on('click', (evt) => {
+        let feas = this.map.getFeaturesAtPixel(evt.pixel)
+        if (feas.length !== 0) {
+          let id = feas[0].get('id')
+          this.openPromptBox({ id })
+        } else {
+          this.currentInfoCard = false
+          this.lightLayer.getSource().clear()
+        }
+      })
+      this.getPipeDefectData()
+    },
+    clearAll() {
+      this.vectorLayer && this.map.removeLayer(this.vectorLayer)
+      this.lightLayer && this.map.removeLayer(this.lightLayer)
+      this.clickEvent && unByKey(this.clickEvent)
+    },
+    getPipeDefectData() {
+      getDefectData().then((res) => {
+        if (res.code === 1) {
+          let dFeas = [],
+            pFeas = []
+          if (res.result && res.result.length !== 0) {
+            let reportInfo = res.result[0] ? res.result : [res.result],
+              pipeData = [],
+              defectData = []
+            reportInfo.forEach((rpt) => {
+              let pipeStates = rpt.pipeStates
+              pipeData = [...pipeData, ...pipeStates]
+              defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects).flat()]
+            })
+            dFeas = this.getFeatures(defectData, 2)
+            pFeas = this.getFeatures(pipeData, 1)
+          }
+          this.vectorLayer.getSource().clear()
+          this.lightLayer.getSource().clear()
+
+          if (dFeas.length !== 0 || pFeas.length !== 0) {
+            this.vectorLayer.getSource().addFeatures([...dFeas, ...pFeas])
+          }
+        } else this.$message.error('管线缺陷数据请求失败')
+      })
+    },
+    getFeatures(featureArr, type, hasStyle = true) {
+      let style = null,
+        features = []
+      if (type === 1) {
+        featureArr.forEach((feaObj) => {
+          let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
+          if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
+            let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
+            let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+            startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
+            endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
+
+            let coors = [startPoint, endPoint]
+            let feature = new Feature({ geometry: new LineString(coors) })
+            // 健康等级颜色
+            let colors = [
+              { level: 'Ⅰ', color: 'green', index: 0 },
+              { level: 'Ⅱ', color: 'blue', index: 1 },
+              { level: 'Ⅲ', color: 'pink', index: 2 },
+              { level: 'Ⅳ', color: 'red', index: 3 }
+            ]
+            let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
+
+            if (findColor) {
+              feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              for (let i in feaObj) {
+                i !== 'geometry' && feature.set(i, feaObj[i])
+              }
+              features.push(feature)
+            }
+          }
+        })
+      } else {
+        featureArr.forEach((feaObj, index) => {
+          if (feaObj.geometry) {
+            let coors = JSON.parse(feaObj.geometry)
+            let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
+            let feature = new Feature({ geometry: new Point(point) })
+            let imgs = [
+              { level: '一级', img: defectImgLB, index: 0 },
+              { level: '二级', img: defectImgB, index: 1 },
+              { level: '三级', img: defectImgY, index: 2 },
+              { level: '四级', img: defectImgR, index: 3 }
+            ]
+            let findimg = null
+
+            if (feaObj.defectLevel) {
+              findimg = imgs.find((colorObj) => feaObj['defectLevel'].includes(colorObj.level))
+            }
+            // 缺少 defectLevel 字段
+            if (findimg) {
+              // hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
+              hasStyle &&
+                feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
+              for (let i in feaObj) {
+                i !== 'geometry' && feature.set(i, feaObj[i])
+              }
+              features.push(feature)
+            }
+          }
+        })
+      }
+      return features
+    },
     // 上一页
     lastPage() {
       if (this.currentIndex <= 0) {
@@ -661,8 +817,26 @@ export default {
       }
       this.currentIndex++
     },
+    setPositionByPipeId(id) {
+      console.log('定位')
+      let features = this.vectorLayer.getSource().getFeatures()
+      let filterFea = features.find((fea) => fea.get('id') === id)
+      if (filterFea) {
+        let feature = new Feature({
+          geometry: filterFea.getGeometry().clone(),
+          style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')
+        })
+        this.lightLayer.getSource().clear()
+        this.lightLayer.getSource().addFeature(feature)
+        let position = feature.getGeometry().getCoordinates().flat()
+        position.length = 2
+        this.map.getView().setCenter(position)
+        this.map.getView().setZoom(21)
+      }
+    },
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
+      this.setPositionByPipeId(row.id)
       console.log('打开缩略提示框', row)
       this.isPromptBox = { ...row }
       let res = await assessmentDefect(row.id)

@@ -3,7 +3,8 @@ const state = {
   evts: [],
   mapExtent: [],
   map: null,
-  activeSideItem: null
+  activeSideItem: '',
+  activeHeaderItem: ''
 }
 
 const mutations = {

@@ -20,7 +20,7 @@ declare module 'axios' {
 // 创建axios实例
 // export const IP = 'http://192.168.2.231:1111'
 // export const IP = 'http://192.168.2.238:8080'
-// export const IP = 'http://192.168.2.203:1111'
+// export const IP = 'http://192.168.2.235:1118'
 export const IP = 'http://117.174.10.73:1114'
 // export const IP = 'http://192.168.2.203:1111'
 

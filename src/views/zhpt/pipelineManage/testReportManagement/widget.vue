@@ -537,8 +537,6 @@ import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
 import { LineString, Point } from 'ol/geom'
 import { comSymbol } from '@/utils/comSymbol'
-import { transform } from 'ol/proj'
-import * as olProj from 'ol/proj'
 import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import Text from 'ol/style/Text'
 import { Style } from 'ol/style'
@@ -549,6 +547,7 @@ import defectImgY from '@/assets/images/traingle-y.png'
 import defectImgLB from '@/assets/images/traingle-lb.png'
 
 import Icon from 'ol/style/Icon'
+import { unByKey } from 'ol/Observable'
 
 import * as echarts from 'echarts'
 
@@ -672,7 +671,8 @@ export default {
       vectorLayer: null,
       vectorLayer2: null,
       hasLoadMap: false,
-      map: null
+      map: null,
+      clickEvent: null
     }
   },
   created() {
@@ -684,7 +684,6 @@ export default {
         this.clearAll()
       } else {
         this.getPipeDefectData()
-        this.data.that.showLegend('testReport', true)
       }
     }
   },
@@ -748,7 +747,6 @@ export default {
     this.vectorLayer2 = new VectorLayer({ source: new VectorSource() })
     this.getPipeDefectData()
     this.addMapEvent()
-    this.data.that.showLegend('testReport', true)
   },
   destroyed() {
     this.clearAll()
@@ -821,16 +819,11 @@ export default {
     },
     // 双击打开详情或发布
     openDetails(row, column) {
-      console.log('row', row)
-      if (row.state == '0') {
-        this.testReportDetails(row.id, true)
-      } else {
-        this.testReportDetails(row.id)
-      }
-      // this.testReportDetails(row.id)
+      this.testReportDetails(row.id)
     },
-    addMapEvent() {
-      this.map.on('click', (evt) => {
+
+    addMapEvent () {
+      this.clickEvent = this.map.on('click', evt => {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         if (features.length !== 0) {
           let id = features[0].get('id')
@@ -844,14 +837,13 @@ export default {
       this.vectorLayer.getSource().clear()
       this.vectorLayer2.getSource().clear()
       this.lightLayer.getSource().clear()
-      this.data.that.showLegend('testReport', false)
+      this.clickEvent && unByKey(this.clickEvent)
     },
     /**
      * 小地图完成加载后
      * */
     afterMapLoad() {
-      let id = this.id
-      this.getPipeDefectData(2, id)
+      this.getPipeDefectData(2, this.id)
     },
     /**
      * 构造要素
@@ -887,10 +879,10 @@ export default {
             let reportInfo = res.result[0] ? res.result : [res.result],
               pipeData = [],
               defectData = []
-            reportInfo.forEach((rpt) => {
-              let { pipeStates } = rpt
-              pipeData = [...pipeData, ...pipeStates.map((pipe) => pipe)]
-              defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects.map((defect) => defect)).flat()]
+            reportInfo.forEach(rpt => {
+              let pipeStates = rpt.pipeStates
+              pipeData = [...pipeData, ...pipeStates]
+              defectData = [...defectData, ...pipeStates.map(pipe => pipe.pipeDefects).flat()]
             })
             dFeas = this.getFeatures(defectData, 2, !light)
             pFeas = this.getFeatures(pipeData, 1, !light)
@@ -898,7 +890,7 @@ export default {
 
           if (light) {
             map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
-            map.getView().setZoom(16)
+            map.getView().setZoom(20)
             this.lightLayer.getSource().addFeatures([
               // ...dFeas,
               ...pFeas
@@ -955,12 +947,13 @@ export default {
             let coors = JSON.parse(feaObj.geometry)
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
-            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR],
-              img = imgBox[3]
-            // if (feaObj.defectLevel) {
-            //   let index = ["一级", '二级', '三级', '四级']
-            //   img = imgBox[index.indexOf(feaObj.defectLevel)]
-            // }
+
+            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
+            if (feaObj.defectLevel) {
+              let index = ["一级", '二级', '三级', '四级']
+              img = imgBox[index.indexOf(feaObj.defectLevel)]
+            }
+
             hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img, scale: 0.3 }) }))
 
             for (let i in feaObj) {
