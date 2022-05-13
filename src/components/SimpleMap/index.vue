@@ -35,7 +35,8 @@ export default {
             let map = new Map({
                 target: this.$refs.mainMap,
                 controls: controls({
-                    zoom: false
+                    zoom: false,
+                    attribution: false
                 }),
                 view: new View({
                     center: initCenter,

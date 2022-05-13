@@ -198,6 +198,7 @@ import defectImgR from '@/assets/images/traingle-r.png';
 import defectImgB from '@/assets/images/traingle-b.png';
 import defectImgY from '@/assets/images/traingle-y.png';
 import defectImgLB from '@/assets/images/traingle-lb.png';
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 
 
 export default {
@@ -312,6 +313,7 @@ export default {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
           let expNo = feas[0].get('expNo')
+          this.setPositionByPipeId(feas[0].get('id'))
           this.openPromptBox({ expNo })
         } else {
           this.currentInfoCard = false
@@ -415,20 +417,19 @@ export default {
     },
     setPositionByPipeId (id) {
       let features = this.vectorLayer.getSource().getFeatures()
-      let filterFea = features.find(fea => fea.get("expNo") === id)
+      let filterFea = features.find(fea => fea.get("id") === id)
       console.log('定位')
       if (filterFea) {
-        let feature = new Feature({ geometry: filterFea.getGeometry().clone(), style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')})
+        let feature = new Feature({ geometry: filterFea.getGeometry().clone() })
         this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(feature)
-        let position = feature.getGeometry().getCoordinates().flat()
-        position.length = 2
-        this.map.getView().setCenter(position)
-        this.map.getView().setZoom(21) 
+        let center = new mapUtil().getCenter(feature)
+        this.map.getView().setCenter(center)
+        this.map.getView().setZoom(20) 
       }
     },
     openPromptBox (row) {
-      this.setPositionByPipeId(row.expNo)
+      
     },
     // 上一页
     lastPage() {

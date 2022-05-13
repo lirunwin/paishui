@@ -579,10 +579,6 @@ export default {
       return obj ? Object.assign(obj, this.isPromptBox) : {}
     }
   },
-  mounted() {
-    // 更新剖面图
-    // this.renderEcharts()
-  },
   methods: {
     // 跳转到pdf页面
     toPdfPage(url) {

@@ -437,6 +437,9 @@ export default {
       } else {
         this.init()
       }
+    },
+    '$store.state.gis.pipeId': function (n, o) {
+      if (n) this.openPromptBox(n)
     }
   },
   created() {

@@ -3,8 +3,11 @@ const state = {
   evts: [],
   mapExtent: [],
   map: null,
-  activeSideItem: '',
-  activeHeaderItem: ''
+  activeSideItem: '', // 侧边栏当前项
+  activeHeaderItem: '', // 导航栏当前项
+
+  // 保存一些业务数据,方便与其他组件交互
+  pipeId: null,
 }
 
 const mutations = {
