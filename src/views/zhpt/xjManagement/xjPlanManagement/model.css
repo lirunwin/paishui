@@ -1,0 +1,62 @@
+
+.flexOne{
+    width: 80%;
+    height: 60px;
+    line-height: 30px;
+    margin-top: 10px;
+}
+.flexOne .flexTitle{
+    position: relative;
+    float: left;
+}
+.flexOne .flexInfo{
+    position: relative;
+    float: left;
+}
+.flexDiv{
+    width: 33%;
+    height: 30px;
+    line-height: 30px;
+    margin-top: 10px;
+}
+.flexTitle{
+    min-width: 90px;
+    display: inline-block;
+    text-align: right;
+}
+.flexInfo{
+    display: inline-block;
+    width: calc(100% - 100px);
+}
+.planPercentSet .flexTitle{
+    width: 76px !important;
+    min-width: 76px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: inline-flex;
+}
+.planPercentSet .flexInfo{
+    display: inline-block;
+    width: calc(100% - 100px);
+}
+.el-table__empty-text{
+  margin-top: 30px;
+  line-height:30px;
+}
+.el-table__empty-text .empty-p{
+    margin-top: -7px;
+}
+.mapTable >>> .el-table__header-wrapper table th{
+  /* height: 60px; */
+  text-align: center;
+}
+.mapTable >>> .el-table__body-wrapper table td{
+  text-align: center;
+}
+i.showOrHideCon{
+    z-index: 100; width: 30px; height: 30px; position: absolute;
+}
+.planMakeLoading{
+    font-size: 20px;
+}
