@@ -23,7 +23,7 @@
             id='portTypeTable'
             :data="tableData"
             v-show="isShowTable"
-            style="width: 100%;height:100%">
+            style="width: 100%;height:100%;overflow: auto;">
             <el-table-column 
             v-for="item of tabelColumn" :key="item.value"
              :prop="item.prop" 
@@ -52,16 +52,16 @@ export default {
             tableData:[],
             tabelColumn:[
                 {
-                    prop:"rain",
-                    label:"雨水"
+                    prop:"categories",
+                    label:"排放口类别"
                 },
                 {
-                    prop:"sweage",
-                    label:"污水"
+                    prop:"number",
+                    label:"数量"
                 },
                 {
-                    prop:"mix",
-                    label:"雨污合流"
+                    prop:"percent",
+                    label:"百分比"
                 },
             ],
             currentShow:null,
@@ -71,9 +71,9 @@ export default {
     mounted(){
         //初始化默认显示
         this.result=[
-            { name: '雨水',value: 0},
-            { name: '污水',value: 0},
-            { name: '雨污合流',value:0},
+            { name: '雨水',value: 0,percent:0},
+            { name: '污水',value: 0,percent:0},
+            { name: '雨污合流',value:0,percent:0},
         ]
         this.initPieChart();
     },
@@ -98,12 +98,11 @@ export default {
         },
         initTable(){
             this.currentShow=this.chartType[0]
-            this.isShowTable=true
-            this.tableData=[{
-                rain: this.result[0].value,
-                sweage: this.result[1].value,
-                mix: this.result[2].value
-            }]
+            this.isShowTable=true;
+            this.tableData=[];
+            this.result.forEach(item=>{
+                this.tableData.push({categories: item.name,number: item.value,percent:item.percent})
+            })
         },
         initPieChart(){
             this.currentShow=this.chartType[1]

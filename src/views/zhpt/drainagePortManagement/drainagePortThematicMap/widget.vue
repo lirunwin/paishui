@@ -193,9 +193,11 @@ export default {
                 if(n[0].open){
                     this.ysLayer.setVisible(true)
                     this.wsLayer.setVisible(true)
+                    this.yswsLayer.setVisible(true)
                 }else{
                     this.ysLayer.setVisible(false)
                     this.wsLayer.setVisible(false)
+                    this.yswsLayer.setVisible(false)
                 }
             },
             deep:true
@@ -378,6 +380,7 @@ export default {
             this.thematicMapList[0].level.map(item=>{
                 if(item.label=='雨水') return item.num=this.ysFeatures.length
                 if(item.label=='污水') return item.num=this.wsFeatures.length
+                if(item.label=='雨污合流') return item.num=this.yswsFeatures.length
             })
         },
         classification(features){
@@ -385,6 +388,8 @@ export default {
                 case '雨水':this.ysFeatures.push(features)
                             break
                 case '污水':this.wsFeatures.push(features)
+                            break
+                case '雨污合流':this.yswsFeatures.push(features)
                             break
             }
         },
@@ -418,10 +423,26 @@ export default {
                     }),
                 })
             })
+            this.yswsLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    // 将点设置成圆形样式
+                    image: new Circle({
+                        // 点的颜色
+                        fill: new Fill({
+                            color: 'brown'
+                        }),
+                        // 圆形半径
+                        radius: 5
+                    }),
+                })
+            })
             this.view.addLayer(this.ysLayer)
             this.view.addLayer(this.wsLayer)
+            this.view.addLayer(this.yswsLayer)
             this.ysLayer.getSource().addFeatures(this.ysFeatures)
             this.wsLayer.getSource().addFeatures(this.wsFeatures)
+            this.yswsLayer.getSource().addFeatures(this.yswsFeatures)
         },
         //删除
         removeLayer(){

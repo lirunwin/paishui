@@ -310,13 +310,11 @@ export default {
         resultStatistic(result){
             this.$parent.statisticResultNum=result.length;//结果总数
             //统计信息
-            this.$parent.portTypeInfo=[
-                { name: '雨水',value: this.ysFeatures.length},
-                { name: '污水',value: this.wsFeatures.length},
-                { name: '雨污合流',value:this.yswsFeatures.length},
-            ];
             // this.$parent.ownershipUnits=this.arrStatistic(result.map(item=>item.values_.BELONG))
             this.$parent.roadName=this.arrStatistic(result.map(item=>item.values_.ADDRESS))
+        },
+        calcPercent(index1,index2){
+            return index2==0?0:((index1/index2)*100).toFixed(2)+"%"
         },
         arrStatistic(arr){
             let resArr=[];
@@ -329,7 +327,7 @@ export default {
                 return obj
             },{})
             for(let key in obj){
-                resArr.push({name:key,value:obj[key]})
+                resArr.push({name:key,value:obj[key],percent:this.calcPercent(obj[key],arr.length)})
             }
             return resArr
         },
