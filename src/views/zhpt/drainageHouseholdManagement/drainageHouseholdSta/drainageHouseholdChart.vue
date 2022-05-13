@@ -49,37 +49,44 @@ export default {
             tableData:[],
             tabelColumn:[
                 {
-                    prop:"normal",
-                    label:"一般排水户"
+                    prop:"type",
+                    label:"排水户类别"
                 },
                 {
-                    prop:"important",
-                    label:"重要排水户"
+                    prop:"number",
+                    label:"数量"
+                },
+                {
+                    prop:"percent",
+                    label:"百分比"
                 },
             ]
         }
     },
     mounted(){
         this.result=[
-            { value: 1048, name: '一般排水户' },
-            { value: 735, name: '重要排水户' },
+            {  name: '一般排水户',value: 10 ,percent:'25%'},
+            {  name: '重要排水户',value: 30 ,percent:'75%'},
         ]
         this.initPieChart();
     },
     methods:{
         initTable(){
             this.isShowTable=true
-            this.tableData=[{
-                normal: this.result[0].value,
-                important: this.result[1].value,
-            }]
+            this.tableData=[];
+            this.result.forEach(item=>{
+                this.tableData.push({type: item.name,number: item.value,percent:item.percent})
+            })
         },
         initPieChart(){
             let data=this.result
             let option = {
                 color:this.colorList,
                 tooltip: {
-                    trigger: 'item'
+                    trigger: 'item',
+                    formatter: function (params) {
+                        return params.marker+params.name+"："+params.percent+"%"
+                    },
                 },
                 legend: {
                     orient: 'horizontal',
@@ -88,7 +95,6 @@ export default {
                 },
                 series: [
                     {
-                        name: '排水户类别',
                         type: 'pie',
                         radius: '65%',
                         data: data,
@@ -100,9 +106,7 @@ export default {
                             }
                         },
                         label:{
-                            formatter: function (params) {
-                                return params.name+"："+params.value
-                            },
+                            formatter:'{b}: {d}%',
                         },
                         labelLine: {
                             length2: 0

@@ -271,6 +271,8 @@ export default {
                             break
                 case '污水':this.wsFeatures.push(features)
                             break
+                case '雨污合流':this.yswsFeatures.push(features)
+                            break
             }
         },
         // 初始化图层
@@ -303,22 +305,42 @@ export default {
                     }),
                 })
             })
+            this.yswsLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    // 将点设置成圆形样式
+                    image: new Circle({
+                        // 点的颜色
+                        fill: new Fill({
+                            color: 'brown'
+                        }),
+                        // 圆形半径
+                        radius: 5
+                    }),
+                })
+            })
             this.view.addLayer(this.ysLayer)
             this.view.addLayer(this.wsLayer)
+            this.view.addLayer(this.yswsLayer)
             this.ysLayer.getSource().addFeatures(this.ysFeatures)
             this.wsLayer.getSource().addFeatures(this.wsFeatures)
+            this.yswsLayer.getSource().addFeatures(this.yswsFeatures)
         },
         //结果统计
         resultStatistic(result){
             this.$parent.statisticResultNum=result.length;//结果总数
             //统计信息
+            let all=this.ysFeatures.length+this.wsFeatures.length+this.yswsFeatures.length
             this.$parent.portTypeInfo=[
-                { name: '雨水',value: this.ysFeatures.length},
-                { name: '污水',value: this.wsFeatures.length},
-                { name: '雨污合流',value:this.yswsFeatures.length},
+                { name: '雨水',value: this.ysFeatures.length,percent:this.calcPercent(this.ysFeatures.length,all)},
+                { name: '污水',value: this.wsFeatures.length,percent:this.calcPercent(this.wsFeatures.length,all)},
+                { name: '雨污合流',value:this.yswsFeatures.length,percent:this.calcPercent(this.yswsFeatures.length,all)},
             ];
             this.$parent.ownershipUnits=this.arrStatistic(result.map(item=>item.values_.BELONG))
             this.$parent.roadName=this.arrStatistic(result.map(item=>item.values_.ADDRESS))
+        },
+        calcPercent(index1,index2){
+            return index2==0?0:((index1/index2)*100).toFixed(2)+"%"
         },
         arrStatistic(arr){
             let resArr=[];
@@ -331,7 +353,7 @@ export default {
                 return obj
             },{})
             for(let key in obj){
-                resArr.push({name:key,value:obj[key]})
+                resArr.push({name:key,value:obj[key],percent:this.calcPercent(obj[key],arr.length)})
             }
             return resArr
         },

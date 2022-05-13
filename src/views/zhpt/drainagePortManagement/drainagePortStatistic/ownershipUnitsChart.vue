@@ -23,7 +23,7 @@
             id="ownershipUnitsTable"
             :data="tableData"
             v-show="isShowTable"
-            style="width: 100%;height:100%">
+            style="width: 100%;height:100%;overflow: auto;">
             <el-table-column 
             v-for="item of tabelColumn" :key="item.value"
              :prop="item.prop" 
@@ -50,14 +50,27 @@ export default {
             result:null,
             isShowTable:false,
             tableData:[],
-            tabelColumn:[],
+            tabelColumn:[
+                {
+                    prop:"ownership",
+                    label:"权属单位"
+                },
+                {
+                    prop:"number",
+                    label:"数量"
+                },
+                {
+                    prop:"percent",
+                    label:"百分比"
+                },
+            ],
             currentShow:null,
             chartType:['table','pie','bar'],
         }
     },
     mounted(){
         this.result=[
-            { value: 0, name: '无' },
+            {  name: '无',value: 0 ,percent:0},
         ]
         this.initPieChart();
     },
@@ -83,14 +96,10 @@ export default {
         initTable(){
             this.currentShow=this.chartType[0]
             this.isShowTable=true;
-            this.tabelColumn=[];
             this.tableData=[];
-            let obj={};
             this.result.forEach(item=>{
-                this.tabelColumn.push({label:item.name,prop:item.name})
-                obj[item.name] = item.value;
+                this.tableData.push({ownership: item.name,number: item.value,percent:item.percent})
             })
-            this.tableData.push(obj)
         },
         initPieChart(){
             this.currentShow=this.chartType[1]
@@ -98,16 +107,19 @@ export default {
             let option = {
                 color:this.colorList,
                 tooltip: {
-                    trigger: 'item'
+                    trigger: 'item',
+                    formatter: function (params) {
+                        return params.marker+params.name+"："+params.percent+"%"
+                    },
                 },
                 legend: {
+                    type: 'scroll',
                     orient: 'horizontal',
                     icon:'circle',
                     bottom:0
                 },
                 series: [
                     {
-                        name: '按权属单位',
                         type: 'pie',
                         radius: '65%',
                         data: data,
@@ -119,9 +131,7 @@ export default {
                             }
                         },
                         label:{
-                            formatter: function (params) {
-                                return params.name+"："+params.value
-                            },
+                            formatter: '{b}: {d}%'
                         },
                         labelLine: {
                             length2: 0
