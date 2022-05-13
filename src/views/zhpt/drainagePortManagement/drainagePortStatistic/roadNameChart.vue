@@ -46,7 +46,6 @@ export default {
     data(){
         return{
             portTypeChart:null,
-            colorList:['#3AA1FF','#36CBCB','#4ECB73'],
             result:null,
             isShowTable:false,
             tableData:[],
@@ -95,21 +94,24 @@ export default {
         initPieChart(){
             this.currentShow=this.chartType[1]
             let data=this.result
+            let radius=(this.result.length>10)?'45%':'65%'
             let option = {
-                color:this.colorList,
                 tooltip: {
-                    trigger: 'item'
+                    trigger: 'item',
+                    formatter: function (params) {
+                        return params.marker+params.name+"："+params.percent+"%"
+                    },
                 },
                 legend: {
+                    type: 'scroll',
                     orient: 'horizontal',
                     icon:'circle',
                     bottom:0
                 },
                 series: [
                     {
-                        name: '排放口类别',
                         type: 'pie',
-                        radius: '65%',
+                        radius: radius,
                         data: data,
                         emphasis: {
                             itemStyle: {
@@ -119,9 +121,7 @@ export default {
                             }
                         },
                         label:{
-                            formatter: function (params) {
-                                return params.name+"："+params.value
-                            },
+                            formatter:'{b}: {d}%',
                         },
                         labelLine: {
                             length2: 0

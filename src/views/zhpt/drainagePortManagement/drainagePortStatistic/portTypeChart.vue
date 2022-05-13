@@ -111,7 +111,10 @@ export default {
             let option = {
                 color:this.colorList,
                 tooltip: {
-                    trigger: 'item'
+                    trigger: 'item',
+                    formatter: function (params) {
+                        return params.marker+params.name+"："+params.percent+"%"
+                    },
                 },
                 legend: {
                     orient: 'horizontal',
@@ -120,7 +123,6 @@ export default {
                 },
                 series: [
                     {
-                        name: '排放口类别',
                         type: 'pie',
                         radius: '65%',
                         data: data,
@@ -132,9 +134,7 @@ export default {
                             }
                         },
                         label:{
-                            formatter: function (params) {
-                                return params.name+"："+params.value
-                            },
+                            formatter:'{b}: {d}%',
                         },
                         labelLine: {
                             length2: 0
