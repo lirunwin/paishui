@@ -133,7 +133,7 @@
         :data="reportDataTotal"
         :header-cell-style="{ 'text-align': 'center' }"
       >
-        <el-table-column type="index" label="序号" width="80px" align="center"></el-table-column>
+        <el-table-column type="index" label="序号" width="80px" align="center" />
         <el-table-column prop="pipeName" label="管线名称" width="100px" align="left" />
         <el-table-column prop="location" label="隐患部位" width="100px" align="center" />
         <el-table-column prop="address" label="地址" width="200px" align="left" />
@@ -158,7 +158,7 @@
 import Vue from 'vue'
 import { esriConfig, appconfig } from 'staticPub/config'
 import { loadModules } from 'esri-loader'
-import ExportBtn from '@/views/zhpt/xjreportforms/troubleSearchReport/components/ExportBtn'
+import ExportBtn from './components/ExportBtn.vue'
 import { reportTroubleRecordLedger, queryGroupUserMap } from '@/api/xjHiddenDangerManageApi'
 import html2pdf from '@/utils/html2pdf'
 import { getDepartment, getDeptUserList } from '@/api/work'
@@ -357,7 +357,7 @@ export default {
       Object.keys(that.postSearch).forEach((key) => {
         formdata.append(key, that.postSearch[key])
       })
-      formdata.append('size', 1000000000)
+      formdata.append('size', '1000000000')
 
       reportTroubleRecordLedger(formdata).then((res) => {
         if (res.code !== 1) {
