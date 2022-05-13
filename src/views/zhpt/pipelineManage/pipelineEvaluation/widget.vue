@@ -613,10 +613,6 @@ export default {
       return obj ? Object.assign(obj, this.isPromptBox) : {}
     }
   },
-  mounted() {
-    // 更新剖面图
-    // this.renderEcharts()
-  },
   methods: {
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {

@@ -66,6 +66,37 @@ export class mapUtil {
             return el.offsetParent ? el.offsetLeft + getOffsetLeft(el.offsetParent) : el.offsetLeft
         }
     }
+
+    // 多个要素点获取中心点
+    getCenterFromFeatures (features) {
+        let pointsArr = []
+        features.forEach(fea => {
+            let geometry = fea.getGeometry()
+            let coordinates = geometry.getCoordinates()
+            if (geometry instanceof Point) {
+                pointsArr.push(coordinates)
+            } else if (geometry instanceof LineString) {
+                pointsArr = [...pointsArr, ...coordinates]
+            } else if (geometry instanceof Polygon) {
+                pointsArr = [...pointsArr, ...coordinates.flat()]
+            } //...
+        })
+        let xmin, xmax, ymin, ymax
+        pointsArr.forEach(point => {
+            let [x, y] = point
+            xmin = xmin ? Math.min.call(null, x, xmin) : x
+            xmax = xmax ? Math.max.call(null, x, xmax) : x
+            ymin = ymin ? Math.min.call(null, y, ymin) : y
+            ymax = ymax ? Math.max.call(null, y, ymax) : y
+        })
+        return [(xmin + xmax) / 2, (ymin + ymax) / 2]
+
+
+        // 把多维坐标转化为一维
+        function format (arr) {
+        }
+    }
+
     // 当前范围内空间查询
     queryForExtent(extent, layer) {
         let [xmin, ymin, xmax, ymax] = extent

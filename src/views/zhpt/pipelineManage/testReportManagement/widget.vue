@@ -94,7 +94,7 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
         @row-dblclick="openDetails"
-        @row-click="openPromptBox"
+        @row-click="lightFea"
       >
         <template slot="empty">
           <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
@@ -485,7 +485,7 @@
               "
             >
               <span style="font-weight: bold; user-select: none"
-                >{{ getCurrentForm.expNo + getCurrentForm.pipeType }}
+                >{{ getCurrentForm.expNo}}
                 <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
                 {{ currentIndex + 1 }}/{{ currentForm.length }}
                 <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
@@ -564,6 +564,8 @@ import { Feature } from 'ol'
 import { LineString, Point } from 'ol/geom'
 import { comSymbol } from '@/utils/comSymbol'
 import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
+
 import Text from 'ol/style/Text'
 import { Style } from 'ol/style'
 
@@ -716,7 +718,7 @@ export default {
       if (n !== '检测报告管理') {
         this.clearAll()
       } else {
-        this.getPipeDefectData()
+        this.init()
       }
     }
   },
@@ -774,18 +776,7 @@ export default {
     this.map = this.data.mapView
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
-
-    this.lightLayer = new VectorLayer({
-      source: new VectorSource(),
-      style: comSymbol.getAllStyle(4, '#0ff', 10, 'rgba(0, 255, 255, 0.6)')
-    })
-    this.vectorLayer = new VectorLayer({ source: new VectorSource() })
-    this.map.addLayer(this.vectorLayer)
-    this.map.addLayer(this.lightLayer)
-
-    this.vectorLayer2 = new VectorLayer({ source: new VectorSource() })
-    this.getPipeDefectData()
-    this.addMapEvent()
+    this.init()
   },
   destroyed() {
     this.clearAll()
@@ -886,19 +877,41 @@ export default {
     addMapEvent() {
       this.clickEvent = this.map.on('click', (evt) => {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
+        this.lightLayer.getSource().clear()
         if (features.length !== 0) {
-          let id = features[0].get('id')
+          let feature = features.find(fea => fea.getGeometry() instanceof Point) || features[0]
+          let id = feature.get('id')
+          let geometry = feature.getGeometry().clone()
+          this.lightLayer.getSource().addFeature(new Feature({ geometry }))
           this.openPromptBox({ id })
         } else {
           this.currentInfoCard = false
         }
       })
     },
+    init () {
+      this.lightLayer = new VectorLayer({
+        source: new VectorSource(),
+        style: comSymbol.getAllStyle(8, 'rgba(0, 255, 255, 0.8)', 10, 'rgba(0, 255, 255, 0.6)')
+      })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+      this.map.addLayer(this.vectorLayer)
+      this.map.addLayer(this.lightLayer)
+
+      this.vectorLayer2 = new VectorLayer({ source: new VectorSource() })
+      this.getPipeDefectData()
+      this.addMapEvent()
+    },
     clearAll() {
-      this.vectorLayer.getSource().clear()
+      this.map.removeLayer(this.vectorLayer)
+      this.map.removeLayer(this.lightLayer)
+      this.$refs.myMap && this.$refs.myMap.map.removeLayer(this.vectorLayer2)
       this.vectorLayer2.getSource().clear()
-      this.lightLayer.getSource().clear()
       this.clickEvent && unByKey(this.clickEvent)
+    },
+    lightFea (row) {
+      console.log('报告数据')
+      let features = this.getPipeDefectData(1, row.id, true)
     },
     /**
      * 小地图完成加载后
@@ -934,13 +947,11 @@ export default {
       }
       dataApi(id).then((res) => {
         if (res.code === 1) {
-          let dFeas = [],
-            pFeas = []
-          if (res.result && res.result.length !== 0) {
-            let reportInfo = res.result[0] ? res.result : [res.result],
-              pipeData = [],
-              defectData = []
-            reportInfo.forEach((rpt) => {
+          let dFeas = [], pFeas = []
+          if (res.result) {
+            let reportInfo = res.result[0] ? res.result : [res.result]
+            let pipeData = [], defectData = []
+            reportInfo.forEach(rpt => {
               let pipeStates = rpt.pipeStates
               pipeData = [...pipeData, ...pipeStates]
               defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects).flat()]
@@ -950,8 +961,11 @@ export default {
           }
 
           if (light) {
-            map.getView().setCenter(dFeas[0].getGeometry().getCoordinates())
-            map.getView().setZoom(20)
+            let center = new mapUtil().getCenterFromFeatures(pFeas)
+            console.log('多管段中心点')
+            map.getView().setCenter(center)
+            map.getView().setZoom(18)
+            this.lightLayer.getSource().clear()
             this.lightLayer.getSource().addFeatures([
               // ...dFeas,
               ...pFeas
@@ -972,8 +986,7 @@ export default {
      * @param hasStyle 是否设置样式
      * */
     getFeatures(featureArr, type, hasStyle) {
-      let style = null,
-        features = []
+      let style = null, features = []
       if (type === 1) {
         featureArr.forEach((feaObj) => {
           let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
@@ -1009,14 +1022,13 @@ export default {
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
 
-            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR],
-              img = imgBox[3]
+            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = null
             if (feaObj.defectLevel) {
               let index = ['一级', '二级', '三级', '四级']
               img = imgBox[index.indexOf(feaObj.defectLevel)]
             }
 
-            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img, scale: 0.3 }) }))
+            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img || imgBox[3], scale: 0.3 }) }))
 
             for (let i in feaObj) {
               i !== 'geometry' && feature.set(i, feaObj[i])

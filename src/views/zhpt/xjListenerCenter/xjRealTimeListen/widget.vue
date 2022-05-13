@@ -160,7 +160,7 @@
       <build-detail :buildAry="buildAry"></build-detail>
     </el-dialog>
     <el-dialog v-dialogDrag title="隐患详情" :visible.sync="errorVisiable" width="976px" top="calc(50vh - 400px)">
-      <troubleDetail :troubleAry="troubleAry" />
+      <!-- <troubleDetail :troubleAry="troubleAry" /> -->
     </el-dialog>
   </el-tabs>
 </template>
@@ -178,7 +178,7 @@ import request from '@/utils/request'
 import tfLegend from '@/views/zhpt/common/TableLegend.vue'
 import tfMission from '@/views/zhpt/common/MissionInfo.vue'
 import buildDetail from '@/views/zhpt/buildsitemanage/components/buildDetails.vue'
-import troubleDetail from '@/views/zhpt/hiddendangermanage/components/troubleDetails.vue'
+// import troubleDetail from '@/views/zhpt/hiddendangermanage/components/troubleDetails.vue'
 import {  getCompany,getGroupUserMap } from '@/api/base'
 import { Map } from 'ol';
 import { ElTabs } from 'element-ui/types/tabs';
@@ -186,7 +186,8 @@ import { ElTable } from 'element-ui/types/table';
 import { ElPagination } from 'element-ui/types/pagination';
 @Component({
   name: 'MapWatching',
-  components: { tfLegend, tfMission, buildDetail, troubleDetail },
+  components: { tfLegend, tfMission, buildDetail },
+  // components: { tfLegend, tfMission, buildDetail, troubleDetail },
 })
 export default class XjRealTimeListen extends Vue {
   @Prop(Object) param:Object

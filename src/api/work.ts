@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 
 /**
-  * 说明：
-  * get和delete传值用params,
-  * post和put传值用data
-  */
+ * 说明：
+ * get和delete传值用params,
+ * post和put传值用data
+ */
 // 获取工单类型数据
 const grouping = '/mis'
 // const grouping = '/meter'
@@ -63,7 +63,7 @@ export function getPersonnel(params) {
 }
 
 // 获取部门
-export function getDepartment(params) {
+export function getDepartment(params = {}) {
   return request({
     url: '/base/department/list',
     method: 'get',

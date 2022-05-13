@@ -44,7 +44,7 @@
       </el-form-item>
     </el-form>
     <div class="see-btn">
-      <el-button type="primary" @click="showLayer">查看</el-button>
+      <el-button type="primary" @click="showLayer">查看<i :class="loading ? 'el-icon-loading' : ''"></i></el-button>
     </div>
     <p class="title">专题图列表</p>
     <div v-for="(item, index) in defectLegend" :key="index" class="thematicMap-list">
@@ -103,8 +103,8 @@ import defectImgR from '@/assets/images/traingle-r.png';
 import defectImgB from '@/assets/images/traingle-b.png';
 import defectImgY from '@/assets/images/traingle-y.png';
 import defectImgLB from '@/assets/images/traingle-lb.png';
-
-
+import { unByKey } from 'ol/Observable'
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 
 export default {
   props: { data: Object },
@@ -183,7 +183,9 @@ export default {
       pipeHealthLayer: null,
       currentDataProjName: "proj43",
       projUtil: null,
-      hasData: false
+      hasData: false,
+      clickEvent: null,
+      loading: false
     }
   },
   mounted() {
@@ -222,8 +224,8 @@ export default {
       this.pipeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: true })
       this.manholeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: false })
       this.pipeHealthLayer = new VectorLayer({ source: new VectorSource(), visible: true })
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(7, 'rgba(245, 236, 62, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
-      this.addLayers([this.heatLayer, this.manholeDefectLayer, this.pipeHealthLayer, this.lightLayer, this.pipeDefectLayer])
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(7, 'rgba(255, 0, 0, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
+      this.addLayers([this.heatLayer, this.manholeDefectLayer, this.pipeHealthLayer, this.pipeDefectLayer, this.lightLayer])
 
       this.setProjectData()
     },
@@ -233,6 +235,7 @@ export default {
       this.manholeDefectLayer && this.mapView.removeLayer(this.manholeDefectLayer)
       this.pipeHealthLayer && this.mapView.removeLayer(this.pipeHealthLayer)
       this.lightLayer && this.mapView.removeLayer(this.lightLayer)
+      this.clickEvent && unByKey(this.clickEvent)
     },
     setProjectData () {
       getProject({ current: 1, size: 1e5 }).then(res => {
@@ -257,7 +260,7 @@ export default {
       })
     },
     openBox (layerName, level) {
-      if(!this.hasData) return
+      if(!this.hasData || layerName === "pipeHealthLayer") return
       console.log('缺陷信息', type, level)
       let type = layerName === 'pipeHealthLayer' ? 1 : 0
       let filter = [
@@ -265,11 +268,11 @@ export default {
         { key: 'funcClass', value: ['Ⅰ','Ⅱ','Ⅲ','Ⅳ'] }
       ][type]
 
-      let features = this[layerName].getSource().getFeatures()
-      let filterFeas = features.filter(fea => fea.get(filter.key).includes(filter.value[level]))
-      let lightFeas = filterFeas.map(fea => new Feature({ geometry: fea.getGeometry().clone() }))
-      this.lightLayer.getSource().clear()
-      this.lightLayer.getSource().addFeatures(lightFeas)
+      // let features = this[layerName].getSource().getFeatures()
+      // let filterFeas = features.filter(fea => fea.get(filter.key).includes(filter.value[level]))
+      // let lightFeas = filterFeas.map(fea => new Feature({ geometry: fea.getGeometry().clone() }))
+      // this.lightLayer.getSource().clear()
+      // this.lightLayer.getSource().addFeatures(lightFeas)
       
       this.openDefect(filter.key, filter.value[level])
     },
@@ -290,6 +293,25 @@ export default {
       this.lightLayer.getSource().clear()
       this.pipeHealthLayer.getSource().addFeatures(pFeas)
       this.pipeDefectLayer.getSource().addFeatures(dFeas)
+
+      this.loading = false
+
+      this.clickEvent = this.mapView.on('click', (evt) => {
+        let feas = this.mapView.getFeaturesAtPixel(evt.pixel)
+        if (feas.length !== 0) {
+          // let id = feas[0].get('id')
+          // this.openPromptBox({ id })
+          let point = feas.find(item => item.getGeometry() instanceof Point)
+          if (point) {
+            this.$store.state.gis.pipeId = point.values_
+          }
+          
+          // console.log(com)
+        } else {
+          // this.currentInfoCard = false
+          this.lightLayer.getSource().clear()
+        }
+      })
     },
 
     /**
@@ -388,6 +410,7 @@ export default {
 
     showLayer() {
       if (!this.form.project) return this.$message.warning('请先填写工程名称')
+      this.loading = true
       let params = {
         prjNo: this.form.project,
         ids: this.form.report,
@@ -464,13 +487,16 @@ export default {
     },
     lightFea (feaid) {
       console.log(feaid)
-      let feas = this.pipeHealthLayer.getSource().getFeatures()
-      let fea = feas.find(fea => fea.get('id') === feaid)
+      let pFeas = this.pipeHealthLayer.getSource().getFeatures()
+      let dFeas = this.pipeDefectLayer.getSource().getFeatures()
+      let fea = [...pFeas, ...dFeas].find(fea => fea.get('id') === feaid)
       if (fea) {
-        let feaClone = fea.clone()
-        feaClone.setStyle(comSymbol.getLineStyle(5, "#0ff"))
-        this.lightLayer.getSource().addFeature(feaClone)
-        this.mapView.setCenter(feaClone.getGeometry().getCoordinates())
+        let geometry = fea.clone().getGeometry()
+        this.lightLayer.getSource().clear()
+        this.lightLayer.getSource().addFeature(new Feature({ geometry }))
+        let coors = geometry.getCoordinates()
+        this.mapView.getView().setCenter(new mapUtil().getCenter(fea))
+        this.mapView.getView().setZoom(19)
       }
     }
   }
@@ -626,7 +652,7 @@ export default {
   }
 }
 .type-line {
-  cursor: pointer;
+  // cursor: pointer;
   margin: 10px 0 10px 18px !important;
   &::before {
     position: relative;

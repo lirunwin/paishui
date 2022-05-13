@@ -20,7 +20,12 @@
                   :rules="appForm.rules"
                   :prop="appForm.prop"
                 >
-                  <el-input v-if="appForm.type === 'input'" v-model="appFormModel[appForm.prop]"></el-input>
+                  <el-input
+                    v-if="appForm.type === 'input'"
+                    step="0.001"
+                    maxlength="20"
+                    v-model.number="appFormModel[appForm.prop]"
+                  ></el-input>
                   <el-select
                     v-if="appForm.type === 'select'"
                     v-model="appFormModel[appForm.prop]"
@@ -45,7 +50,12 @@
                   :rules="webForm.rules"
                   :prop="webForm.prop"
                 >
-                  <el-input v-if="webForm.type === 'input'" v-model="webFormModel[webForm.prop]"></el-input>
+                  <el-input
+                    v-if="webForm.type === 'input'"
+                    step="0.001"
+                    maxlength="20"
+                    v-model.number="webFormModel[webForm.prop]"
+                  ></el-input>
                   <el-color-picker
                     v-if="webForm.type === 'color'"
                     v-model="webFormModel[webForm.prop]"
@@ -286,6 +296,9 @@ export default class ParamSetting extends Vue {
     /deep/ .el-form-item__content {
       display: flex;
       align-items: center;
+    }
+    /deep/ .el-input__inner {
+      padding-right: 0;
     }
     /deep/ .el-form-item__error--inline {
       padding-top: 0;
