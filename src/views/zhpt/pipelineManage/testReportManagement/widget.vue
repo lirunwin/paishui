@@ -844,7 +844,7 @@ export default {
     clearAll() {
       this.map.removeLayer(this.vectorLayer)
       this.map.removeLayer(this.lightLayer)
-      this.$refs.myMap.map.removeLayer(this.vectorLayer2)
+      this.$refs.myMap && this.$refs.myMap.map.removeLayer(this.vectorLayer2)
       this.vectorLayer2.getSource().clear()
       this.clickEvent && unByKey(this.clickEvent)
     },
@@ -900,7 +900,7 @@ export default {
           }
 
           if (light) {
-            let center = new mapUtil().getCenterWithFeatures(pFeas)
+            let center = new mapUtil().getCenterFromFeatures(pFeas)
             console.log('多管段中心点')
             map.getView().setCenter(center)
             map.getView().setZoom(18)
@@ -961,13 +961,13 @@ export default {
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
 
-            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
+            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = null
             if (feaObj.defectLevel) {
               let index = ["一级", '二级', '三级', '四级']
               img = imgBox[index.indexOf(feaObj.defectLevel)]
             }
 
-            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img, scale: 0.3 }) }))
+            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img || imgBox[3], scale: 0.3 }) }))
 
             for (let i in feaObj) {
               i !== 'geometry' && feature.set(i, feaObj[i])
