@@ -1,12 +1,11 @@
 <template>
-    <div class="drainageHouseholdMap" id="drainageHouseholdMap"></div>
+    <div style="width:50%;height:100%">
+        <common-map :mapname="'drainageHouseholdMap'"></common-map>
+    </div>
 </template>
 
 <script>
-import Map from 'ol/Map'
-import View from 'ol/View'
 import { appconfig } from 'staticPub/config'
-import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import iDraw from '@/views/zhpt/common/mapUtil/draw'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
 import * as turf from '@turf/turf';
@@ -26,8 +25,12 @@ import {
   Stroke,
   Text
 } from 'ol/style'
+import commonMap from '@/views/zhpt/drainageManagement/commonMap.vue'
 export default {
     name:"drainageHouseholdMap",//
+    components:{
+        commonMap
+    },
     data(){
         return{
             projectName:'',
@@ -44,33 +47,10 @@ export default {
         }
     },
     mounted(){
-        this.initMap();
+        this.initDataSet();
+        this.getSelectInfo();
     },
     methods:{
-        initMap(){
-            let { initCenter, initZoom } = appconfig
-            this.view = new Map({
-                target: 'drainageHouseholdMap',
-                view: new View({
-                    center: initCenter,
-                    zoom: initZoom,
-                    maxZoom: 20,
-                    minZoom: 9,
-                    projection: 'EPSG:4326'
-                })
-            })
-            this.addLayers();
-            this.initDataSet();
-            this.getSelectInfo();
-        },
-        addLayers(){
-            let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
-            layerResource.forEach((layerConfig) => {
-                let { name, type, url, parentname, id, visible = true } = layerConfig
-                let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-                this.view.addLayer(layer)
-            })
-        },
         initDataSet(){
             let dataService = appconfig.gisResource['iserver_resource'].dataService
             this.dataSetInfo = dataService.dataSetInfo.filter(info => info.label === '排放口')
@@ -101,6 +81,7 @@ export default {
         },
         // 开启缩放和拖动
         zoomAndMove() {
+            console.log(this.view)
             //地图缩放和平移事件回调函数
             let mapZoomAndMove = () =>{
                 this.getMapRange()
@@ -346,15 +327,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-    .drainageHouseholdMap{
-        height: 100%;
-        width: 50%;
-        // float: left;
-        /deep/ .ol-zoom {
-        display: none !important;
-        }
-        /deep/ .ol-attribution {
-            display: none !important;
-        }
-    }
+
 </style>
