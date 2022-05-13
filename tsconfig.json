@@ -15,6 +15,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "typeRoots": ["./typings", "./node_modules/@types"],
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["src/*"]
     },

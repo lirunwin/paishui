@@ -1,6 +1,6 @@
 <template>
     <div class="drainagePortStatistic">
-        <port-map-view ref="portMap"></port-map-view>
+        <drainage-household-map ref="dhmap"></drainage-household-map>
         <div class="statisticContainer">
             <div class="title">
                 <div class="iconSymbol"></div>
@@ -50,11 +50,11 @@
                         <el-form-item >
                             <el-radio-group v-model="statisticRange" style="margin-left:10px">
                                 <el-radio label="region">
-                                    <el-dropdown @command="handleCommand" :disabled="isRegion">
+                                    <el-dropdown @command="handleCommand">
                                         <span class="el-dropdown-link">
                                             {{regionType}}<i class="el-icon-arrow-down el-icon--right"></i>
                                         </span>
-                                        <el-dropdown-menu slot="dropdown" >
+                                        <el-dropdown-menu slot="dropdown">
                                             <el-dropdown-item command="按行政区">按行政区</el-dropdown-item>
                                             <el-dropdown-item command="按排水分区">按排水分区</el-dropdown-item>
                                         </el-dropdown-menu>
@@ -94,10 +94,7 @@
             </div>
             <div class="chartContainer">
                 <div class="chartItem">
-                    <port-type-chart :resultInfo="portTypeInfo"></port-type-chart>
-                </div>
-                <div class="chartItem">
-                    <ownership-units-chart :resultInfo="ownershipUnits"></ownership-units-chart>
+                    <drainage-household-chart></drainage-household-chart>
                 </div>
                 <div class="chartItem">
                     <road-name-chart :resultInfo="roadName"></road-name-chart>
@@ -108,16 +105,14 @@
 </template>
 
 <script>
-import portMapView from './portMapView.vue'
-import portTypeChart from './portTypeChart.vue'
-import ownershipUnitsChart from './ownershipUnitsChart.vue'
-import roadNameChart from './roadNameChart.vue'
+import drainageHouseholdMap from './drainageHouseholdMap.vue'
+import drainageHouseholdChart from './drainageHouseholdChart.vue'
+import roadNameChart from '@/views/zhpt/drainageManagement/roadNameChart.vue'
 export default {
     name:"drainagePortStatistic",//排放口统计
     components:{
-        portMapView,
-        portTypeChart,
-        ownershipUnitsChart,
+        drainageHouseholdMap,
+        drainageHouseholdChart,
         roadNameChart
     },
     data(){
@@ -136,8 +131,7 @@ export default {
             isOpenRange:false,
             //统计结果变量
             statisticResultNum:0,
-            portTypeInfo:[],
-            ownershipUnits:[],
+            householdInfo:[],
             roadName:[],
         }
     },
@@ -148,7 +142,7 @@ export default {
                     this.isCustomOrg=this.isCustom=false
                 }else{
                     this.isCustomOrg=this.isCustom=true
-                    if(this.$refs['portMap'].drawer) this.$refs['portMap'].drawer.remove()
+                    if(this.$refs['dhmap'].drawer) this.$refs['dhmap'].drawer.remove()
                 }
                 this.isRegionOrg=this.isRegion=(n=="region")?false:true
             }
@@ -159,19 +153,19 @@ export default {
                     this.isOpenRange=true;
                     this.isCustom=true
                     this.isRegion=true
-                    this.$refs['portMap'].zoomAndMove()
-                    this.$refs['portMap'].removeLayer()
+                    this.$refs['dhmap'].zoomAndMove()
+                    this.$refs['dhmap'].removeLayer()
                 }else{
                     this.isOpenRange=false;
                     this.isCustom=this.isCustomOrg?true:false
                     this.isRegion=this.isRegionOrg?true:false
-                    this.$refs['portMap'].removeZoomRegister()
+                    this.$refs['dhmap'].removeZoomRegister()
                 }
             }
         },
         projectName:{
             handler(n,o){
-                this.$refs['portMap'].projectName=n
+                this.$refs['dhmap'].projectName=n
             }
         }
     },
@@ -185,11 +179,11 @@ export default {
         },
         //自定义范围
         customRange(type){
-            this.$refs['portMap'].customRange(type)
+            this.$refs['dhmap'].customRange(type)
         },
         //开始统计
         checkStatistic(){
-            this.$refs['portMap'].checkResult(this.statisticRange)
+            this.$refs['dhmap'].checkResult(this.statisticRange)
         },
         //接收项目信息
         getProjectInfo(value){
@@ -264,7 +258,7 @@ export default {
             .chartItem{
                 float: left;
                 height: 50%;
-                width: 50%;
+                width: 100%;
                 padding: 20px;
             }
             .chartItem:last-child{

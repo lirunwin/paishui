@@ -541,6 +541,16 @@ export function getGroupUserMap(params) {
     params
   })
 }
+// 获取当前用户所关联的所有组和所有人员(启用的人员)
+export function getGroupUserMap2(params) {
+  params.enableFlag='1'
+  return request({
+    url: '/gps/groupuser/getGroupUserMap',
+    // url: '/gps/inspectgroup/page',
+    method: 'get',
+    params
+  })
+}
 
 // 获取巡检组下面的人员
 export function getGroupUserInfo(params) {

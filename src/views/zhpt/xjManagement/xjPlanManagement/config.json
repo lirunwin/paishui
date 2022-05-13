@@ -1,0 +1,47 @@
+{
+    "state":[
+        {"value": "0","label": "未提交"},
+        {"value": "1","label": "未审核"},
+        {"value": "2","label": "未开始"},
+        {"value": "3","label": "正在执行"},
+        {"value": "4","label": "计划完成"},
+        {"value": "7","label": "申请暂停"},
+        {"value": "9","label": "申请作废"},
+        {"value": "8","label": "计划已暂停"},
+        {"value": "10","label": "计划已作废"},
+        {"value": "5","label": "已开始未执行"}
+    ],
+    "planHeader":{
+        "xj":[                    
+            {"label": "名称","value":"name"},
+            {"label": "所在片区","value":"regionName"},
+            {"label": "备注信息","value":"note"},
+            {"label": "创建时间","value":"createTime"}
+        ],
+        "yh":[                    
+            {"label": "名称","value":"pipeName"},
+            {"label": "所在片区","value":"regionId"},
+            {"label": "备注信息","value":"notes"},
+            {"label": "创建时间","value":"createTime"}
+        ],
+        "gd":[                    
+            {"label": "类型","value":"uploadType"},
+            {"label": "所在片区","value":"regionId"},
+            {"label": "备注信息","value":"notes"},
+            {"label": "创建时间","value":"createTime"}
+        ],
+        "pipeLine":[
+            {"label": "编号","value":"sid"},
+            {"label": "地址","value":"address"},
+            {"label": "材质","value":"material"},
+            {"label": "管径","value":"diameter"},
+            {"label": "长度","value":"pipelength"}
+        ],
+        "pipePoint":[
+            {"label": "编号","value":"sid"},
+            {"label": "地址","value":"address"},
+            {"label": "材质","value":"material"},
+            {"label": "管径","value":"diameter"}
+        ]   
+    }
+}
