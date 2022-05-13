@@ -15,8 +15,35 @@
           >
           </el-input>
           <div class="title">检测日期：</div>
-          <el-date-picker v-model="searchParams.jcDate" type="date" placeholder="选择日期" class="date-css">
-          </el-date-picker>
+          <!-- <el-date-picker v-model="searchParams.jcDate" type="date" placeholder="选择日期" class="date-css">
+          </el-date-picker> -->
+          <div class="sampleTime">
+            <el-row style="display: flex; justify-content: center; align-items: center">
+              <el-col :span="11">
+                <el-date-picker
+                  v-model="searchParams.jcDate.startDate"
+                  type="date"
+                  placeholder="选择开始日期"
+                  value-format="yyyy-MM-dd"
+                  size="small"
+                  :picker-options="pickerOptions0"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+              <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
+              <el-col :span="12">
+                <el-date-picker
+                  v-model="searchParams.jcDate.finishDate"
+                  type="date"
+                  placeholder="选择结束日期"
+                  value-format="yyyy-MM-dd"
+                  size="small"
+                  :picker-options="pickerOptions1"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+            </el-row>
+          </div>
           <div class="release-radio">
             <div class="title">检测状态：</div>
             <!-- <el-radio v-model="searchParams.jcStatus" label="0">未检测</el-radio>
@@ -131,20 +158,21 @@
                       <div class="info-text">
                         <el-form label-position="right" label-width="70px" :model="currentForm" size="mini">
                           <el-form-item label="工程名称">
-                            <el-input v-model="prjName" disabled></el-input>
+                            <el-input v-model="tableForm.prjName" disabled></el-input>
                           </el-form-item>
                           <el-form-item label="工程地点">
-                            <el-input v-model="checkAddress" disabled></el-input>
+                            <el-input v-model="tableForm.checkAddress" disabled></el-input>
                           </el-form-item>
                           <el-form-item label="检测单位">
-                            <el-input v-model="detectDept" disabled></el-input>
+                            <el-input v-model="tableForm.detectDept" disabled></el-input>
                           </el-form-item>
                           <el-form-item label="检测人员">
-                            <el-input v-model="detectPerson" disabled></el-input>
+                            <el-input v-model="tableForm.detectPerson" disabled></el-input>
                           </el-form-item>
                           <el-form-item label="检测报告">
-                            <!-- :href="'http://117.174.10.73:1114/psjc/file' + item.path" -->
-                            <el-link type="primary">安定东路污水管道检测报告</el-link>
+                            <el-link :href="fileLinkToStreamDownload(tableForm.id)" type="primary">{{
+                              tableForm.prjName
+                            }}</el-link>
                           </el-form-item>
                         </el-form>
                       </div>
@@ -153,14 +181,18 @@
                           <el-tab-pane label="照片" name="first">
                             <div class="image-list">
                               <el-image
-                                style="width: 100%; height: 80%; margin-top: 6px;-webkit-user-drag: none"
+                                style="width: 100%; height: 80%; margin-top: 6px; -webkit-user-drag: none"
                                 :src="srcUrl"
                                 :preview-src-list="urlArr"
                               >
                               </el-image>
                               <!-- <img src="" alt="视频" style="width: 100%; height: 100%" /> -->
                               <div style="height: 20%; margin-top: 4px">
-                                <el-image style="width: 40px; height: 30px;margin-right: 4px;-webkit-user-drag: none" :src="srcUrl"> </el-image>
+                                <el-image
+                                  style="width: 40px; height: 30px; margin-right: 4px; -webkit-user-drag: none"
+                                  :src="srcUrl"
+                                >
+                                </el-image>
                               </div>
                             </div>
                           </el-tab-pane>
@@ -183,7 +215,7 @@
 </template>
 
 <script>
-import { queryPageHistory, histroyPipeData } from '@/api/pipelineManage'
+import { queryPageHistory, histroyPipeData,downloadFile } from '@/api/pipelineManage'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
@@ -194,11 +226,13 @@ import { unByKey } from 'ol/Observable'
 import { Style } from 'ol/style'
 import Icon from 'ol/style/Icon'
 import { getDefectData } from '@/api/sysmap/drain'
-import defectImgR from '@/assets/images/traingle-r.png';
-import defectImgB from '@/assets/images/traingle-b.png';
-import defectImgY from '@/assets/images/traingle-y.png';
-import defectImgLB from '@/assets/images/traingle-lb.png';
+import defectImgR from '@/assets/images/traingle-r.png'
+import defectImgB from '@/assets/images/traingle-b.png'
+import defectImgY from '@/assets/images/traingle-y.png'
+import defectImgLB from '@/assets/images/traingle-lb.png'
 
+// 引入公共ip地址
+import { baseAddress } from '@/utils/request.ts'
 
 export default {
   props: ['data'],
@@ -236,12 +270,11 @@ export default {
       dialogFormVisible: false, // 详情弹框显影
       // 表格参数
       tableContent: [
-        { label: '工程名称', name: 'prjName' },
         { label: '管段编号', name: 'expNo' },
         { label: '管段类型', name: 'pipeType' },
         { label: '管径(mm)', name: 'diameter' },
         { label: '材质', name: 'material' },
-        { label: '道路名称', name: 'address' },
+        { label: '道路名称', name: 'checkAddress' },
         { label: '所属片区', name: 'checkAddress' },
         { label: '检测次数', name: 'jcNum' },
         { label: '最近检测日期', name: 'jcNewDate' },
@@ -251,11 +284,17 @@ export default {
         { label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
+      // 日期选择器规则
+      pickerOptions0: '',
+      pickerOptions1: '',
       // 搜索需要的参数
       searchParams: {
         jcStatus: [],
         keyword: '',
-        jcDate: '',
+        jcDate: {
+          startDate: '',
+          finishDate: ''
+        },
         defectLevelA: '',
         defectLevelB: ''
       },
@@ -271,19 +310,19 @@ export default {
       lightLayer: null,
       clickEvent: null,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43', // 当前坐标系
+      currentDataProjName: 'proj43' // 当前坐标系
     }
   },
   created() {
     let res = this.getDate()
   },
-  mounted () {
+  mounted() {
     this.map = this.data.mapView
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
     this.init()
   },
-  destroyed () {
+  destroyed() {
     this.clearAll()
   },
   watch: {
@@ -303,12 +342,42 @@ export default {
     }
   },
   methods: {
-    init () {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource()})
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
+     // 下载附件
+    fileLinkToStreamDownload(id) {
+      let res =  downloadFile(id)
+      return  baseAddress + res.url
+    },
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    changeDate() {
+      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
+      let date1 = new Date(this.searchParams.jcDate.startDate).getTime()
+      let date2 = new Date(this.searchParams.jcDate.finishDate).getTime()
+      this.pickerOptions0 = {
+        disabledDate: (time) => {
+          if (date2 != '') {
+            // return time.getTime() > Date.now() || time.getTime() > date2
+            return time.getTime() > date2
+          } else {
+            return time.getTime() > Date.now()
+          }
+        }
+      }
+      this.pickerOptions1 = {
+        disabledDate: (time) => {
+          // return time.getTime() < date1 || time.getTime() > Date.now()
+          return time.getTime() < date1
+        }
+      }
+    },
+    init() {
+      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+      this.lightLayer = new VectorLayer({
+        source: new VectorSource(),
+        style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)')
+      })
       this.map.addLayer(this.vectorLayer)
       this.map.addLayer(this.lightLayer)
-      this.clickEvent = this.map.on('click', evt => {
+      this.clickEvent = this.map.on('click', (evt) => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
           let expNo = feas[0].get('expNo')
@@ -320,23 +389,24 @@ export default {
       })
       this.getPipeDefectData()
     },
-    clearAll () {
+    clearAll() {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
     },
     getPipeDefectData() {
-      getDefectData().then(res => {
+      getDefectData().then((res) => {
         if (res.code === 1) {
-          let dFeas = [], pFeas = []
+          let dFeas = [],
+            pFeas = []
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result],
               pipeData = [],
               defectData = []
-            reportInfo.forEach(rpt => {
+            reportInfo.forEach((rpt) => {
               let pipeStates = rpt.pipeStates
               pipeData = [...pipeData, ...pipeStates]
-              defectData = [...defectData, ...pipeStates.map(pipe => pipe.pipeDefects).flat()]
+              defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects).flat()]
             })
             dFeas = this.getFeatures(defectData, 2)
             pFeas = this.getFeatures(pipeData, 1)
@@ -375,8 +445,8 @@ export default {
 
             if (findColor) {
               feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
-              for (let i in  feaObj) {
-                i !== "geometry" && feature.set(i, feaObj[i])
+              for (let i in feaObj) {
+                i !== 'geometry' && feature.set(i, feaObj[i])
               }
               features.push(feature)
             }
@@ -397,14 +467,15 @@ export default {
             let findimg = null
 
             if (feaObj.defectLevel) {
-              findimg = imgs.find(colorObj => feaObj['defectLevel'].includes(colorObj.level))
+              findimg = imgs.find((colorObj) => feaObj['defectLevel'].includes(colorObj.level))
             }
             // 缺少 defectLevel 字段
             if (findimg) {
               // hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
-              hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
-              for (let i in  feaObj) {
-                i !== "geometry" && feature.set(i, feaObj[i])
+              hasStyle &&
+                feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
+              for (let i in feaObj) {
+                i !== 'geometry' && feature.set(i, feaObj[i])
               }
               features.push(feature)
             }
@@ -413,21 +484,24 @@ export default {
       }
       return features
     },
-    setPositionByPipeId (id) {
+    setPositionByPipeId(id) {
       let features = this.vectorLayer.getSource().getFeatures()
-      let filterFea = features.find(fea => fea.get("expNo") === id)
+      let filterFea = features.find((fea) => fea.get('expNo') === id)
       console.log('定位')
       if (filterFea) {
-        let feature = new Feature({ geometry: filterFea.getGeometry().clone(), style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')})
+        let feature = new Feature({
+          geometry: filterFea.getGeometry().clone(),
+          style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')
+        })
         this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(feature)
         let position = feature.getGeometry().getCoordinates().flat()
         position.length = 2
         this.map.getView().setCenter(position)
-        this.map.getView().setZoom(21) 
+        this.map.getView().setZoom(21)
       }
     },
-    openPromptBox (row) {
+    openPromptBox(row) {
       this.setPositionByPipeId(row.expNo)
     },
     // 上一页
@@ -472,10 +546,14 @@ export default {
       this.pagination = { current: 1, size: 30 }
       this.searchParams = {
         keyword: '',
-        jcDate: '',
+        jcDate: {
+          startDate: '',
+          finishDate: ''
+        },
         funcClass: '',
         structClass: ''
       }
+      this.changeDate()
       await this.getDate()
     },
     // 搜索
@@ -502,8 +580,9 @@ export default {
       let data = { ...this.pagination }
       console.log('参数', params)
       if (params) {
+        data.jcStartDate = params.jcDate.startDate
+        data.jcEndDate = params.jcDate.finishDate
         data.queryParams = params.keyword
-        data.jcDate = params.jcDate
         data.state = params.checkList
         data.funcClass = params.funcClass
         data.structClass = params.structClass
@@ -545,6 +624,12 @@ export default {
         // justify-content: space-around;
         align-items: center;
         margin-bottom: 14px;
+        .sampleTime {
+          width: 308px !important;
+          .el-input {
+            width: 140px;
+          }
+        }
         .release-radio {
           display: flex;
           align-items: center;

@@ -12,11 +12,16 @@ let base = "/base"
 
 // 导出 / 下载附件
 export function downloadFile(params) {
-    return request({
-        url: psjc + '/sysUploadFile/downloadFile/' + params,
-        method: 'get',
-    })
+    return {
+        url: psjc + '/sysUploadFile/downloadFile/' + params
+    }
 }
+// export function downloadFile(params) {
+//     return request({
+//         url: psjc + '/sysUploadFile/downloadFile/' + params,
+//         method: 'get',
+//     })
+// }
 
 // 系统码表接口
 // 通过key查询系统码表
@@ -86,7 +91,7 @@ export function queryPageDefectInfo(params) {
 // 通过ID查询管道内窥检测缺陷数据信息 (详情)
 export function queryDefectdetails(params) {
     return request({
-        url: psjc + '/pipeDefect/'+params,
+        url: psjc + '/pipeDefect/' + params,
         method: 'get',
     })
 }
@@ -108,11 +113,13 @@ export function batchRelease(data) {
     })
 }
 
+// 修改管道内窥检测报告信息
 //单个发布 (加备注)
 export function oneRelease(data) {
     return request({
-        url: psjc + '/wordInfo/publishByIds?ids=' + data,
+        url: psjc + '/wordInfo' ,
         method: 'put',
+        data
     })
 }
 

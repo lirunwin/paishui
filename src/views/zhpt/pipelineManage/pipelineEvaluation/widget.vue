@@ -17,7 +17,7 @@
           <div class="title">检测时间：</div>
           <!-- <el-date-picker v-model="searchValue.testTime" type="date" placeholder="入库时间" class="date-css">
           </el-date-picker> -->
-          <el-date-picker
+          <!-- <el-date-picker
             v-model="searchValue.testTime"
             type="daterange"
             value-format="yyyy-MM-dd"
@@ -25,7 +25,34 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
           >
-          </el-date-picker>
+          </el-date-picker> -->
+          <div class="sampleTime">
+            <el-row style="display: flex; justify-content: center; align-items: center">
+              <el-col :span="11">
+                <el-date-picker
+                  v-model="searchValue.testTime.startDate"
+                  type="date"
+                  placeholder="选择开始日期"
+                  value-format="yyyy-MM-dd"
+                  size="small"
+                  :picker-options="pickerOptions0"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+              <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
+              <el-col :span="12">
+                <el-date-picker
+                  v-model="searchValue.testTime.finishDate"
+                  type="date"
+                  placeholder="选择结束日期"
+                  value-format="yyyy-MM-dd"
+                  size="small"
+                  :picker-options="pickerOptions1"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+            </el-row>
+          </div>
           <div class="title">结构性缺陷等级：</div>
           <el-select v-model="searchValue.structClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
@@ -359,11 +386,9 @@
                   <el-row>
                     <el-col :span="24" style="padding-right: 15px">
                       <el-form-item label="检测报告">
-                        <el-link
-                          :href="'http://117.174.10.73:1114/psjc/file' + currentForm.wordFilePath"
-                          type="primary"
-                          >{{ currentForm.wordInfoName }}</el-link
-                        >
+                        <el-link :href="baseAddress + '/psjc/file' + currentForm.wordFilePath" type="primary">{{
+                          currentForm.wordInfoName
+                        }}</el-link>
                       </el-form-item>
                     </el-col>
                   </el-row>
@@ -429,6 +454,9 @@ import defectImgR from '@/assets/images/traingle-r.png'
 import defectImgB from '@/assets/images/traingle-b.png'
 import defectImgY from '@/assets/images/traingle-y.png'
 import defectImgLB from '@/assets/images/traingle-lb.png'
+
+// 引入公共ip地址
+import { baseAddress } from '@/utils/request.ts'
 
 import * as echarts from 'echarts'
 
@@ -515,13 +543,19 @@ export default {
         { label: '功能性缺陷等级', name: 'funcClass' },
         { label: '缺陷数量', name: 'defectnum' },
         { label: '检测照片', name: 'picnum' },
-        { label: '检测视频', name: 'viedoNum' },
+        { label: '检测视频', name: 'videoFileName' },
         { label: '检测地点', name: 'checkAddress' },
         { label: '检测日期', name: 'sampleTime' }
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
+      // 日期选择器规则
+      pickerOptions0: '',
+      pickerOptions1: '',
       searchValue: {
-        testTime: '', // 检测日期
+        testTime: {
+          startDate: '',
+          finishDate: ''
+        }, // 检测日期
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
         structClass: '' // 结构型缺陷等级
@@ -584,10 +618,36 @@ export default {
     // this.renderEcharts()
   },
   methods: {
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    changeDate() {
+      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
+      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
+      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
+      this.pickerOptions0 = {
+        disabledDate: (time) => {
+          if (date2 != '') {
+            // return time.getTime() > Date.now() || time.getTime() > date2
+            return time.getTime() > date2
+          } else {
+            return time.getTime() > Date.now()
+          }
+        }
+      }
+      this.pickerOptions1 = {
+        disabledDate: (time) => {
+          // return time.getTime() < date1 || time.getTime() > Date.now()
+          return time.getTime() < date1
+        }
+      }
+    },
+    // 关闭缩略提示框的方法
+    closePromptBox() {
+      this.currentInfoCard = false
+    },
     // 跳转到pdf页面
     toPdfPage(url) {
       console.log('url', url)
-      window.open('http://117.174.10.73:1114/psjc/file' + url, '_blank')
+      window.open(baseAddress + '/psjc/file' + url, '_blank')
     },
     // 绘制剖面图
     renderEcharts() {
@@ -913,11 +973,15 @@ export default {
     async resetBtn() {
       this.pagination = { current: 1, size: 30 }
       this.searchValue = {
-        testTime: '',
+        testTime: {
+          startDate: '',
+          finishDate: ''
+        },
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
         structClass: '' // 结构型缺陷等级
       }
+      this.changeDate()
       await this.getDate()
     },
     // 搜索
@@ -935,12 +999,13 @@ export default {
     async getDate(params) {
       let data = this.pagination
       if (params) {
-        data.jcStartDate = params.testTime[0]
-        data.jcEndDate = params.testTime[1]
+        data.jcStartDate = params.testTime.startDate
+        data.jcEndDate = params.testTime.finishDate
         data.queryParams = params.queryParams
         data.funcClass = params.funcClass
         data.structClass = params.structClass
       }
+      console.log("上传的参数",params);
       await queryPageAssessment(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
@@ -1024,7 +1089,12 @@ export default {
         // justify-content: space-around;
         align-items: center;
         margin-bottom: 14px;
-
+        .sampleTime {
+          width: 308px !important;
+          .el-input {
+            width: 140px;
+          }
+        }
         .serch-input {
           width: 245px;
         }

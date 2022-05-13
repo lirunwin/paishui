@@ -10,7 +10,7 @@
             placeholder="搜索工程编号、工程名称"
             v-model="searchValue.prjNo"
             clearable
-            class="serch-input"
+            style="margin-right: 10px"
           >
           </el-input>
           <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
@@ -181,7 +181,7 @@
               ref="updataDocx"
               class="upload-demo"
               :headers="uploadHeaders"
-              action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
+              :action="getBaseAddress"
               accept=".doc,.docx"
               :data="getIdData"
               multiple
@@ -208,10 +208,9 @@
             <!-- 附件列表 -->
             <div v-show="isDetails" style="max-height: 120px; overflow-y: scroll">
               <div v-for="(item, i) in fileListData" :key="i" class="text-space">
-                <el-link :href="'http://117.174.10.73:1114/psjc/file' + item.path" type="primary">{{
+                <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{
                   item.originalName
                 }}</el-link>
-                <!-- @click="fileLinkToStreamDownload(item.id)" -->
               </div>
               <p v-if="!fileListData.length" style="text-align: center">暂无附件</p>
             </div>
@@ -251,6 +250,9 @@ import {
   queryPageEnclosure,
   downloadFile
 } from '@/api/pipelineManage'
+
+// 引入公共ip地址
+import { baseAddress } from '@/utils/request.ts'
 
 import deleteDialog from '../components/deleteDialog.vue'
 
@@ -384,6 +386,10 @@ export default {
     }
   },
   computed: {
+    // 动态设置上传地址
+    getBaseAddress() {
+      return baseAddress + '/psjc/sysUploadFile/uploadFile'
+    },
     // 动态设置上传携带参数
     getIdData() {
       return this.updataParamsId
@@ -474,6 +480,7 @@ export default {
       this.isEdit = false
       this.isDetails = false
       this.fileListData = []
+      this.changeDate()
     },
     // 获取日期范围
     // getDateRange() {
@@ -640,8 +647,8 @@ export default {
     },
     // 下载附件
     fileLinkToStreamDownload(id) {
-      console.log('下载附件')
-      downloadFile(id)
+      let res =  downloadFile(id)
+      return  baseAddress + res.url
     },
     downloadExportFile(blob, tagFileName) {
       let downloadElement = document.createElement('a')

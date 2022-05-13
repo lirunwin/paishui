@@ -17,6 +17,9 @@ declare module 'axios' {
     message: string
   }
 }
+
+
+
 // 创建axios实例
 // export const IP = 'http://192.168.2.231:1111'
 // export const IP = 'http://192.168.2.238:8080'
@@ -34,6 +37,11 @@ export const IP = 'http://117.174.10.73:1114'
 //export const NewIp = 'http://58.17.241.6:1212'
 // export const NewIp = 'http://192.168.15.5:8095'
 // export const IP = 'http://192.168.100.204:1111'
+
+// 暴露IP地址
+export const baseAddress = IP
+
+
 const service = axios.create({
   baseURL: IP,
   withCredentials: true, // 跨域请求时发送cookiesokies

@@ -15,7 +15,7 @@
           >
           </el-input>
           <div class="title">检测日期：</div>
-          <el-date-picker
+          <!-- <el-date-picker
             v-model="searchValue.dateTime"
             type="daterange"
             value-format="yyyy-MM-dd"
@@ -23,7 +23,34 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
           >
-          </el-date-picker>
+          </el-date-picker> -->
+          <div class="sampleTime">
+            <el-row style="display: flex; justify-content: center; align-items: center">
+              <el-col :span="11">
+                <el-date-picker
+                  v-model="searchValue.dateTime.startDate"
+                  type="date"
+                  placeholder="选择开始日期"
+                  value-format="yyyy-MM-dd"
+                  size="small"
+                  :picker-options="pickerOptions0"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+              <el-col :span="1" style="text-align: center;margin: 0 5px;">至</el-col>
+              <el-col :span="12">
+                <el-date-picker
+                  v-model="searchValue.dateTime.finishDate"
+                  type="date"
+                  placeholder="选择结束日期"
+                  value-format="yyyy-MM-dd"
+                  size="small"
+                  :picker-options="pickerOptions1"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+            </el-row>
+          </div>
           <div class="release-radio">
             <p class="release-title">发布状态:</p>
             <el-checkbox-group v-model="searchValue.checkList">
@@ -175,7 +202,7 @@
               ref="updataDocx"
               class="upload-demo"
               :headers="uploadHeaders"
-              action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
+              :action="getBaseAddress"
               accept=".doc,.docx"
               :data="getData"
               multiple
@@ -196,7 +223,7 @@
                     type="primary"
                     :icon="isLoading"
                     @click.stop="uploadWord"
-                    :disabled="loadingBool"
+                    :disabled="this.loadingBool || !this.fileList.length"
                     >确 定</el-button
                   >
                 </span>
@@ -225,7 +252,8 @@
                       <p
                         :class="{
                           'font-green': scope.row.status == 'success',
-                          'font-blue': scope.row.status == 'uploading'
+                          'font-blue': scope.row.status == 'uploading',
+                          'font-red': scope.row.status == 'error'
                         }"
                       >
                         {{ scope.row.status | filter_schedule }}
@@ -242,7 +270,7 @@
     <!-- 视频上传 -->
     <div class="public-box">
       <el-dialog title="附件视频上传" @close="closeDialog" :visible.sync="dialogFormVisible2">
-        <el-form ref="form" :model="form" :rules="rules">
+        <el-form ref="formVideo" :model="form" :rules="rules">
           <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
             <el-select
               clearable
@@ -264,7 +292,7 @@
               ref="updataVideo"
               class="upload-demo"
               :headers="uploadHeaders"
-              action="http://117.174.10.73:1114/psjc/sysUploadFile/uploadFile"
+              :action="getBaseAddress"
               accept=".mp4"
               :data="getVideoData"
               multiple
@@ -284,7 +312,7 @@
                     type="primary"
                     :icon="isLoading"
                     @click.stop="uploadVideoWord"
-                    :disabled="loadingBool"
+                    :disabled="this.loadingBool || !this.fileList.length"
                     >确 定</el-button
                   >
                 </span>
@@ -313,7 +341,8 @@
                       <p
                         :class="{
                           'font-green': scope.row.status == 'success',
-                          'font-blue': scope.row.status == 'uploading'
+                          'font-blue': scope.row.status == 'uploading',
+                          'font-red': scope.row.status == 'error'
                         }"
                       >
                         {{ scope.row.status | filter_schedule }}
@@ -344,8 +373,6 @@
                 <div class="releaseContent">
                   <div class="detailsTitle">主要工程量表</div>
                   <project-form :paramId="id"></project-form>
-                  <div class="detailsTitle">检查井检查情况汇总表</div>
-                  <inspect-form></inspect-form>
                   <div class="detailsTitle">管道缺陷数量统计表</div>
                   <summary-form :tabelData="returnTabel"></summary-form>
                   <div class="detailsTitle">管道缺陷数量统计图</div>
@@ -364,8 +391,8 @@
                   <!-- <assessment :paramId="id"></assessment> -->
                   <div class="detailsTitle">检测评估建议</div>
                   <proposal :paramId="id"></proposal>
-                  <div class="detailsTitle">管段检测与评估成果表</div>
-                  <inspect-form></inspect-form>
+                  <!-- <div class="detailsTitle">管段检测与评估成果表</div>
+                  <inspect-form></inspect-form> -->
                 </div>
               </el-tab-pane>
             </el-tabs>
@@ -399,11 +426,11 @@
                 placeholder="请输入备注"
                 :disabled="!isRelease"
                 resize="none"
-                v-model="remarks"
+                v-model="remark"
                 v-if="isRelease"
               >
               </el-input>
-              <p v-if="!isRelease">备注信息</p>
+              <p v-if="!isRelease">{{ remark }}</p>
             </div>
             <div>
               <el-button size="small" type="primary" v-if="isRelease" @click="oneReleaseBtn">发 布</el-button>
@@ -473,7 +500,6 @@
             <div class="content-info">
               <div class="left">
                 <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
-                <p style="padding-left: 10px">无文档</p>
                 <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
                 <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
                 <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
@@ -519,7 +545,7 @@ import {
 import pdfSee from '../components/OpenPdf.vue'
 
 // 引入公共ip地址
-import IP from '@/utils/request.ts'
+import { baseAddress } from '@/utils/request.ts'
 
 // 引入发布的组件
 import summaryForm from './components/summaryForm'
@@ -561,12 +587,13 @@ export default {
     assessment,
     proposal,
     pdfSee,
-    simpleMap
+    simpleMap,
+    oneRelease
   },
   data() {
     return {
       fullscreenLoading: false, // 加载
-      remarks: '', // 备注
+      remark: '', // 备注
       pdfUrl: '', // pdf地址
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
@@ -624,9 +651,15 @@ export default {
         { label: '入库人', name: 'createUserName' },
         { label: '入库时间', name: 'createTime' }
       ],
+      // 日期选择器规则
+      pickerOptions0: '',
+      pickerOptions1: '',
       // 搜索功能参数
       searchValue: {
-        dateTime: '', // 检测日期
+        dateTime: {
+          startDate: '',
+          finishDate: ''
+        }, // 检测日期
         checkList: [], // 发布状态
         serchValue: '' // 搜索关键字
       },
@@ -688,8 +721,10 @@ export default {
     }
   },
   computed: {
+    // 判断加载按钮
+    setDisabled() {},
     // 设置发布标题
-    setTitle(){
+    setTitle() {
       return this.isRelease ? '检测报告发布' : '检测报告详情'
     },
     // 统计饼图数据信息
@@ -722,6 +757,10 @@ export default {
     isLoading() {
       return this.loadingBool ? 'el-icon-loading' : ''
     },
+    // 动态设置上传地址
+    getBaseAddress() {
+      return baseAddress + '/psjc/sysUploadFile/uploadFile'
+    },
     // 动态设置上传携带参数
     getData() {
       return this.updataParamsId
@@ -731,7 +770,7 @@ export default {
     }
   },
   mounted() {
-    console.log('IP', IP)
+    console.log('IP', baseAddress)
     this.map = this.data.mapView
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
@@ -752,6 +791,28 @@ export default {
     this.clearAll()
   },
   methods: {
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    changeDate() {
+      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
+      let date1 = new Date(this.searchValue.dateTime.startDate).getTime()
+      let date2 = new Date(this.searchValue.dateTime.finishDate).getTime()
+      this.pickerOptions0 = {
+        disabledDate: (time) => {
+          if (date2 != '') {
+            // return time.getTime() > Date.now() || time.getTime() > date2
+            return time.getTime() > date2
+          } else {
+            return time.getTime() > Date.now()
+          }
+        }
+      }
+      this.pickerOptions1 = {
+        disabledDate: (time) => {
+          // return time.getTime() < date1 || time.getTime() > Date.now()
+          return time.getTime() < date1
+        }
+      }
+    },
     // 绘制统计饼图
     renderEcharts() {
       console.log('渲染echarts')
@@ -822,8 +883,8 @@ export default {
       this.testReportDetails(row.id)
     },
 
-    addMapEvent () {
-      this.clickEvent = this.map.on('click', evt => {
+    addMapEvent() {
+      this.clickEvent = this.map.on('click', (evt) => {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         if (features.length !== 0) {
           let id = features[0].get('id')
@@ -879,10 +940,10 @@ export default {
             let reportInfo = res.result[0] ? res.result : [res.result],
               pipeData = [],
               defectData = []
-            reportInfo.forEach(rpt => {
+            reportInfo.forEach((rpt) => {
               let pipeStates = rpt.pipeStates
               pipeData = [...pipeData, ...pipeStates]
-              defectData = [...defectData, ...pipeStates.map(pipe => pipe.pipeDefects).flat()]
+              defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects).flat()]
             })
             dFeas = this.getFeatures(defectData, 2, !light)
             pFeas = this.getFeatures(pipeData, 1, !light)
@@ -948,9 +1009,10 @@ export default {
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
 
-            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = imgBox[3]
+            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR],
+              img = imgBox[3]
             if (feaObj.defectLevel) {
-              let index = ["一级", '二级', '三级', '四级']
+              let index = ['一级', '二级', '三级', '四级']
               img = imgBox[index.indexOf(feaObj.defectLevel)]
             }
 
@@ -973,7 +1035,8 @@ export default {
     // 关闭上传弹框时
     closeDialog() {
       this.loadingBool = false
-      this.$refs['form'].resetFields()
+      this.$refs['formVideo'] && this.$refs['formVideo'].resetFields()
+      this.$refs['form'] && this.$refs['form'].resetFields()
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
       this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
       this.upDataTable = []
@@ -1104,7 +1167,7 @@ export default {
 
       let resUrl = await queryPipeState(id)
       console.log('url', resUrl)
-      this.pdfUrl = 'http://117.174.10.73:1114/psjc/file' + resUrl.result.pdfFilePath
+      this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
       this.dialogFormVisible3 = true
       this.$nextTick(() => {
         this.renderEcharts()
@@ -1114,7 +1177,13 @@ export default {
     },
     // 单个发布
     async oneReleaseBtn() {
-      let res = await batchRelease(this.id)
+      // &remark=${this.remark}
+      let param = {
+        id: this.id,
+        remark: this.remark,
+        state: '1'
+      }
+      let res = await oneRelease(param)
       if (res.result) {
         this.$message({
           message: '发布成功',
@@ -1161,10 +1230,11 @@ export default {
     },
     // 文件发生变化时触发
     getFile(file, fileList) {
+      this.fileList = fileList
       let num = 1024.0 //byte
       // console.log('file', file)
-      console.log('上传file的状态', file.status)
-      console.log('fileList', fileList)
+      // console.log('上传file的状态', file.status)
+      // console.log('fileList', fileList)
       this.upDataTable = fileList.map((v) => {
         return {
           name: v.name,
@@ -1173,12 +1243,18 @@ export default {
         }
       })
       console.log('this.upDataTable', this.upDataTable)
+      // console.log('this.fileList',this.fileList);
     },
     // 重置
     async resetDate() {
       this.searchValue.checkList = []
       this.searchValue.serchValue = ''
-      this.searchValue.dateTime = ''
+      this.searchValue.dateTime = {
+        startDate: '',
+        finishDate: ''
+      }
+      
+      this.changeDate()
       await this.getDate()
     },
     // 报告上传取消按钮
@@ -1270,7 +1346,7 @@ export default {
       })
     },
     async uploadVideoWord() {
-      this.$refs['form'].validate(async (valid) => {
+      this.$refs['formVideo'].validate(async (valid) => {
         if (valid) {
           this.loadingBool = true
           // 获取字典id
@@ -1289,6 +1365,7 @@ export default {
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
       // console.log(arrState)
       if (res.result.length == 0) {
+        file.status = 'error'
         this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }
       if (arrState) {
@@ -1315,7 +1392,9 @@ export default {
       //     //   clearTimeout(timeId)
       //     // }, 2000)
       //     // console.log('上传后的code码', res)
-      console.log('上传后的文件信息', file)
+      console.log('上传后的res信息', res)
+      console.log('上传后的file信息', file)
+      console.log('上传后的fileList信息', fileList)
       //     // console.log('上传后的文件列表信息', fileList)
       //   }
       // })
@@ -1325,6 +1404,7 @@ export default {
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
       // console.log(arrState)
       if (res.result.length == 0) {
+        file.status = 'error'
         this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }
       if (arrState) {
@@ -1390,7 +1470,7 @@ export default {
       } else {
         params.checkList = ''
       }
-      console.log('搜索时传的参数', params)
+      // console.log('搜索时传的参数', params)
       this.getDate(params)
     },
     // 删除按钮
@@ -1422,14 +1502,14 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = { ...this.pagination }
-      console.log('参数', params)
+      // console.log('参数', params)
       if (params) {
-        data.jcStartDate = params.dateTime[0]
-        data.jcEndDate = params.dateTime[1]
+        data.jcStartDate = params.dateTime.startDate
+        data.jcEndDate = params.dateTime.finishDate
         data.state = params.checkList
         data.prjNo = params.serchValue
       }
-      console.log('最后传进去的参数', data)
+      // console.log('最后传进去的参数', data)
       await queryPageTestReportNew(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
@@ -1438,12 +1518,12 @@ export default {
     },
     // 发布tab标签点击事件
     handleClick(tab, event) {
-      console.log(tab, event)
+      // console.log(tab, event)
     },
     add() {},
     // 表格选中事件
     handleSelectionChange(val) {
-      console.log('表格选中事件', val)
+      // console.log('表格选中事件', val)
       if (val.length !== 0) {
         this.getPipeDefectData(1, val[0].id, true)
       } else {
@@ -1477,6 +1557,8 @@ export default {
         return '进行中...'
       } else if (value == 'success') {
         return '√'
+      } else if (value == 'error') {
+        return '×'
       } else {
         return value
       }
@@ -1490,10 +1572,14 @@ export default {
 $fontSize: 14px !important;
 // 上传进度样式
 .font-green {
-  color: #26b54b;
+  color: #67c23a;
 }
 .font-blue {
-  color: #2d9eeb;
+  color: #2d74e7;
+}
+.font-red {
+  font-weight: bold;
+  color: #f65252;
 }
 .engineering-manage {
   height: 100vh;
@@ -1541,6 +1627,12 @@ $fontSize: 14px !important;
         // justify-content: space-around;
         align-items: center;
         margin-bottom: 14px;
+        .sampleTime {
+          width: 308px !important;
+          .el-input {
+            width: 140px;
+          }
+        }
         .release-radio {
           display: flex;
           align-items: center;
