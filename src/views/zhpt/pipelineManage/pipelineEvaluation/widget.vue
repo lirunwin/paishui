@@ -592,8 +592,7 @@ export default {
             // 缺少 defectLevel 字段
             if (findimg) {
               // hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
-              hasStyle &&
-                feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
+              hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
               for (let i in feaObj) {
                 i !== 'geometry' && feature.set(i, feaObj[i])
               }

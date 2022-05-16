@@ -567,7 +567,7 @@ import proposal from './components/proposal'
 
 import simpleMap from '@/components/SimpleMap'
 
-import { getDefectDataById, getDefectData } from '@/api/sysmap/drain'
+import { getDefectDataById, getDefectData, getDefectDataBySE } from '@/api/sysmap/drain'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
@@ -899,7 +899,8 @@ export default {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         this.lightLayer.getSource().clear()
         if (features.length !== 0) {
-          let feature = features.find((fea) => fea.getGeometry() instanceof Point) || features[0]
+          console.log('选择的管线', features)
+          let feature = features.find(fea => fea.getGeometry() instanceof Point) || features[0]
           let id = feature.get('id')
           let geometry = feature.getGeometry().clone()
           this.lightLayer.getSource().addFeature(new Feature({ geometry }))
@@ -948,7 +949,8 @@ export default {
     getPipeDefectData(type = 1, id, light = false) {
       let dataApi = null,
         map,
-        layer
+        layer;
+      console.log('打开小地图')
       if (type === 1) {
         map = this.data.mapView
         layer = this.vectorLayer
@@ -983,15 +985,14 @@ export default {
           }
 
           if (light) {
-            let center = new mapUtil().getCenterFromFeatures(pFeas)
-            console.log('多管段中心点')
-            map.getView().setCenter(center)
-            map.getView().setZoom(18)
             this.lightLayer.getSource().clear()
             this.lightLayer.getSource().addFeatures([
               // ...dFeas,
               ...pFeas
             ])
+            let center = new mapUtil().getCenterFromFeatures(pFeas)
+            map.getView().setCenter(center)
+            map.getView().setZoom(18)
           } else {
             this.lightLayer.getSource().clear()
             layer.getSource().clear()
@@ -999,6 +1000,13 @@ export default {
               layer.getSource().addFeatures([...dFeas, ...pFeas])
             }
           }
+          if (id) {
+            let center = new mapUtil().getCenterFromFeatures(pFeas)
+            map.getView().setCenter(center)
+            map.getView().setZoom(18)
+          }
+
+
         } else this.$message.error('管线缺陷数据请求失败')
       })
     },

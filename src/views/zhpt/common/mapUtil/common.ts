@@ -91,7 +91,6 @@ export class mapUtil {
         })
         return [(xmin + xmax) / 2, (ymin + ymax) / 2]
 
-
         // 把多维坐标转化为一维
         function format (arr) {
         }
