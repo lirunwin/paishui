@@ -108,7 +108,17 @@
           :key="v.name"
         >
         </el-table-column>
-
+        <el-table-column
+          width="140"
+          header-align="center"
+          label="管道内部状况描述"
+          align="center"
+          show-overflow-tooltip
+        >
+          <template slot-scope="scope">
+            <div style="text-align: center">{{ scope.row.structEstimate }}}</div>
+          </template>
+        </el-table-column>
         <el-table-column width="120" header-align="center" label="缺陷名称代码" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
             <div style="text-align: center">{{ `(${scope.row.defectCode})${scope.row.defectName}` }}</div>
@@ -136,168 +146,69 @@
 
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div class="detailsCrad" style="top: 10%; left: 20%; right: 62%" v-if="currentInfoCard">
-        <el-card class="box-card" style="width: 300px">
-          <div class="table-content">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                height: 30px;
-                box-sizing: border-box;
-              "
-            >
-              <span style="font-weight: bold"
-                >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
-              </span>
-              <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails(DetailsForm)"
-                >详情</a
+      <div class="histroyPipeData">
+        <div class="detailsCrad" style="top: 10%; left: 20%; right: 62%" v-if="currentInfoCard">
+          <el-card class="box-card" style="width: 300px">
+            <div class="table-content">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  height: 30px;
+                  box-sizing: border-box;
+                "
               >
-            </div>
-            <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
-            <div class="content-info">
-              <div class="left">
-                <div style="padding: 3px 0">检测日期&emsp; {{ DetailsForm.sampleTime }}</div>
-                <div style="display: flex; padding: 3px 0">
-                  <span style="flex: 1">距离:&emsp;{{ DetailsForm.distanceStartPoint }}</span
-                  ><span style="flex: 1">等级:&emsp;{{ DetailsForm.defectLevel }}</span>
-                </div>
-                <div style="display: flex; padding: 3px 0">
-                  <span style="width: 35px">评价:</span>
-                  <span style="line-height: 16px; padding-left: 10px">{{ DetailsForm.pipeNote }}</span>
-                </div>
+                <span style="font-weight: bold"
+                  >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
+                </span>
+                <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails">详情</a>
               </div>
-              <div class="right">
-                <el-tabs v-model="activeName" @tab-click="handleClick">
-                  <el-tab-pane :label="`照片(${DetailsForm.picnum || '0'})`" name="picnum">
-                    <div class="container">
-                      <img src="./testImg/test.png" alt="" srcset="" />
+              <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
+              <div class="content-info">
+                <div class="left">
+                  <div style="padding: 3px 0">检测日期&emsp; {{ DetailsForm.sampleTime }}</div>
+                  <div style="display: flex; padding: 3px 0">
+                    <span style="flex: 1">距离:&emsp;{{ DetailsForm.distanceStartPoint }}</span
+                    ><span style="flex: 1">等级:&emsp;{{ DetailsForm.defectLevel }}</span>
+                  </div>
+                  <div style="display: flex; padding: 3px 0">
+                    <span style="width: 35px">评价:</span>
+                    <span style="line-height: 16px; padding-left: 10px">{{ DetailsForm.pipeNote }}</span>
+                  </div>
+                </div>
+                <div class="right">
+                  <el-tabs v-model="activeName">
+                    <el-tab-pane :label="`照片`" name="picnum">
+                      <div class="container">
+                        <el-image
+                          style="width: 100%; height: 90%; -webkit-user-drag: none"
+                          :src="getImgUrl"
+                          :preview-src-list="[getImgUrl]"
+                        >
+                        </el-image>
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane :label="`视频`" name="viedoNum">
+                      <!-- <div style="width: 100%; height: 100%" v-if="DetailsForm.videoPath">
+                      <video controls="controls" width="100%" height="83%">
+                        <source :src="getVideoUrl" type="video/mp4" />
+                      </video>
                     </div>
-                  </el-tab-pane>
-                  <el-tab-pane :label="`视频(${DetailsForm.viedoNum || '0'})`" name="viedoNum"></el-tab-pane>
-                </el-tabs>
+                    <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">暂无视频</div> -->
+                    </el-tab-pane>
+                  </el-tabs>
+                </div>
               </div>
             </div>
-          </div>
-        </el-card>
+          </el-card>
+        </div>
       </div>
     </transition>
 
-    <!-- 详情卡片 -->
+    <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
-      <div class="detailsCrad" v-if="dialogFormVisible">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span style="font-size: 16px">管道检测详情{{ DetailsForm.expNo }}</span>
-            <span style="float: right; padding: 3px 0; cursor: pointer">
-              <i class="el-icon-close" type="text" @click="dialogFormVisible = false"></i>
-            </span>
-          </div>
-          <div class="content">
-            <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
-              <el-menu-item index="1">检测信息</el-menu-item>
-              <el-menu-item index="2">缺陷信息</el-menu-item>
-            </el-menu>
-            <div class="content-info">
-              <div class="box1" v-show="activeIndex == '1'">
-                <div class="detailsTitle">缺陷详情</div>
-                <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
-                  <el-row v-for="(v, i) in cardTableContent" :key="i">
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item :label="v[0].label">
-                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item :label="v[1].label">
-                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="24" style="padding-right: 15px">
-                      <el-form-item label="管道描述">
-                        <el-input
-                          size="small"
-                          type="textarea"
-                          :autosize="{ minRows: 3, maxRows: 4 }"
-                          disabled
-                          resize="none"
-                          v-model="DetailsForm.pipeNote"
-                        >
-                        </el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                </el-form>
-              </div>
-              <div class="box1" v-show="activeIndex == '2'">
-                <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
-                  <div class="detailsTitle">结构性缺陷评价(等级：{{ DetailsForm.structClass }})</div>
-                  <el-row v-for="v in structArr" :key="v">
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item :label="v[0].label">
-                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item :label="v[1].label">
-                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="24" style="padding-right: 15px">
-                      <el-form-item label="评价">
-                        <el-input
-                          size="small"
-                          type="textarea"
-                          :autosize="{ minRows: 3, maxRows: 4 }"
-                          disabled
-                          placeholder="无"
-                          resize="none"
-                          v-model="DetailsForm.structEstimate"
-                        >
-                        </el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <div class="detailsTitle">功能性缺陷评价(等级：{{ DetailsForm.funcClass }})</div>
-                  <el-row v-for="(v, i) in funcArr" :key="i">
-                    <el-col :span="12" style="padding-right: 15px">
-                      <el-form-item :label="v[0].label">
-                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="12" style="padding-right: 15px"
-                      ><el-form-item :label="[v[1].label]">
-                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="24" style="padding-right: 15px">
-                      <el-form-item label="管道描述">
-                        <el-input
-                          size="small"
-                          type="textarea"
-                          :autosize="{ minRows: 3, maxRows: 4 }"
-                          disabled
-                          placeholder="无"
-                          resize="none"
-                          v-model="DetailsForm.pipeNote"
-                        >
-                        </el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                </el-form>
-              </div>
-            </div>
-          </div>
-        </el-card>
-      </div>
+      <delete-dialog @sendBool="getBool" v-if="dialogFormVisible" :checkParam="id"></delete-dialog>
     </transition>
     <!-- 导出弹框 -->
     <el-dialog title="附件列表" :visible.sync="dialogEnclosure">
@@ -340,6 +251,9 @@ import {
   queryDefectdetails
 } from '@/api/pipelineManage'
 
+// 引入公共ip地址
+import { baseAddress } from '@/utils/request.ts'
+
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
@@ -355,10 +269,18 @@ import defectImgB from '@/assets/images/traingle-b.png'
 import defectImgY from '@/assets/images/traingle-y.png'
 import defectImgLB from '@/assets/images/traingle-lb.png'
 
+// 引入管道检测组件
+import deleteDialog from '../components/checkDetails.vue'
+
 export default {
   props: ['param', 'data'],
+  components: {
+    deleteDialog
+  },
   data() {
     return {
+      currentId: null,
+      id: null,
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
       currentIndex: 0, // 当前页数
@@ -422,7 +344,6 @@ export default {
         { label: '距离(m)', name: 'checkLength' },
         { label: '分值', name: 'defectNum' },
         { label: '等级', name: 'defectLevel' },
-        { label: '管道内部状况描述', name: 'defectDescribe' },
         { label: '检测照片', name: 'picnum' },
         { label: '检测视频', name: 'videoFileName' },
         { label: '工程名称', name: 'prjName' },
@@ -483,9 +404,11 @@ export default {
     let res = this.getDate()
   },
   computed: {
-    // 提示框照片视频
-    handleClick(tab, event) {
-      console.log(tab, event)
+    // 获取文件url
+    getImgUrl() {
+      let address = baseAddress + '/psjc/file' + this.DetailsForm.picPath
+      console.log('address', address)
+      return address
     }
   },
   mounted() {
@@ -510,6 +433,10 @@ export default {
     }
   },
   methods: {
+    // 关闭弹框
+    getBool(bool) {
+      this.dialogFormVisible = bool
+    },
     // 重置
     async resetBtn() {
       this.pagination = { current: 1, size: 30 }
@@ -679,22 +606,7 @@ export default {
         this.map.getView().setZoom(21)
       }
     },
-    // 上一页
-    lastPage() {
-      if (this.currentIndex <= 0) {
-        this.currentIndex = 0
-        return
-      }
-      this.currentIndex--
-    },
-    // 下一页
-    nextPage() {
-      if (this.currentIndex + 1 >= this.currentForm.length) {
-        this.currentIndex = this.currentForm.length - 1
-        return
-      }
-      this.currentIndex++
-    },
+
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
       if (this.rootPage) {
@@ -703,7 +615,9 @@ export default {
         this.setPositionByPipeId(row.id)
       }
       console.log('打开缩略提示框', row)
-      this.openDetails(row)
+      this.currentId = row.id
+      let res = await queryDefectdetails(row.id)
+      this.DetailsForm = res.result
       // this.isPromptBox = { ...row }
       // let res = await assessmentDefect(row.id)
       // this.currentForm = res.result
@@ -717,14 +631,10 @@ export default {
       // console.log(this.activeIndex)
     },
     // 详情
-    async openDetails(row) {
-      console.log('row', row)
-      let res = await queryDefectdetails(row.id)
-      this.DetailsForm = res.result
-      // console.log('res', res)
-      // let res = await histroyPipeData({ expNo: row.expNo })
-      // this.cardTable = res.result
-      // this.dialogFormVisible = true
+    async openDetails() {
+      console.log('DetailsForm', this.DetailsForm)
+      this.id = this.currentId
+      this.dialogFormVisible = true
     },
     async resetBtn() {
       this.pagination = { current: 1, size: 30 }
@@ -751,7 +661,6 @@ export default {
     async getDate(params) {
       let data = this.pagination
       if (params) {
-        
         data.jcStartDate = params.testTime.startDate
         data.jcEndDate = params.testTime.finishDate
         data.queryParams = params.queryParams
@@ -906,127 +815,129 @@ export default {
       left: 72%;
     }
   }
-  // 详情卡片的样式
-  .detailsCrad {
-    position: fixed;
-    top: 100px;
-    right: 24px;
-    z-index: 9;
-    .clearfix:before,
-    .clearfix:after {
-      display: table;
-      content: '';
-    }
-    .clearfix:after {
-      clear: both;
-    }
+  .histroyPipeData {
+    // 详情卡片的样式
+    .detailsCrad {
+      position: fixed;
+      top: 100px;
+      right: 24px;
+      z-index: 9;
+      .clearfix:before,
+      .clearfix:after {
+        display: table;
+        content: '';
+      }
+      .clearfix:after {
+        clear: both;
+      }
 
-    /deep/ .box-card {
-      width: 500px;
-      max-height: 80vh;
-      .el-card__header {
-        height: 48px;
-        color: #fff;
-        background-color: #2d74e7;
-      }
-      .el-card__body {
-        padding: 0;
-        .el-menu-item {
-          height: 45px;
-          font-size: 16px;
+      /deep/ .box-card {
+        width: 500px;
+        max-height: 80vh;
+        .el-card__header {
+          height: 48px;
+          color: #fff;
+          background-color: #2d74e7;
         }
-      }
-      .content {
-        height: 600px;
-        /deep/ .content-info {
-          overflow-y: scroll;
-          // max-height: 545px;
-          height: 100%;
-          padding: 10px 20px;
-          .el-textarea__inner,
-          .el-input__inner {
-            color: #666;
-          }
-          .detailsTitle {
-            position: relative;
+        .el-card__body {
+          padding: 0;
+          .el-menu-item {
+            height: 45px;
             font-size: 16px;
-            padding: 5px 0;
-            box-sizing: border-box;
-          }
-          .detailsTitle::after {
-            position: absolute;
-            top: 5px;
-            left: -10px;
-            content: '';
-            width: 4px;
-            height: 65%;
-            background-color: #2d74e7;
-          }
-          /deep/ .el-form {
-            .is-disabled {
-              .el-input__inner {
-                background-color: transparent;
-              }
-              .el-textarea__inner {
-                background-color: transparent;
-              }
-            }
-            .el-form-item {
-              margin-bottom: 10px;
-            }
           }
         }
-      }
-      .table-content {
-        padding: 15px;
-        .content-info {
-          font-size: 12px;
-          display: flex;
-          // justify-content: space-between;
-          flex-direction: column;
-          align-content: center;
-          .left {
-            font-family: 'Microsoft YaHei UI', sans-serif;
-            flex: 1;
-          }
-          /deep/ .right {
-            flex: 1;
-            .container {
-              height: 100%;
-              width: 100%;
-              padding: 5px;
+        .content {
+          height: 600px;
+          /deep/ .content-info {
+            overflow-y: scroll;
+            // max-height: 545px;
+            height: 100%;
+            padding: 10px 20px;
+            .el-textarea__inner,
+            .el-input__inner {
+              color: #666;
+            }
+            .detailsTitle {
+              position: relative;
+              font-size: 16px;
+              padding: 5px 0;
               box-sizing: border-box;
             }
+            .detailsTitle::after {
+              position: absolute;
+              top: 5px;
+              left: -10px;
+              content: '';
+              width: 4px;
+              height: 65%;
+              background-color: #2d74e7;
+            }
+            /deep/ .el-form {
+              .is-disabled {
+                .el-input__inner {
+                  background-color: transparent;
+                }
+                .el-textarea__inner {
+                  background-color: transparent;
+                }
+              }
+              .el-form-item {
+                margin-bottom: 10px;
+              }
+            }
+          }
+        }
+        .table-content {
+          padding: 15px;
+          .content-info {
+            font-size: 12px;
+            display: flex;
+            // justify-content: space-between;
+            flex-direction: column;
+            align-content: center;
+            .left {
+              font-family: 'Microsoft YaHei UI', sans-serif;
+              flex: 1;
+            }
+            /deep/ .right {
+              flex: 1;
+              .container {
+                height: 100%;
+                width: 100%;
+                padding: 5px;
+                box-sizing: border-box;
+              }
 
-            .is-top {
+              .is-top {
+              }
+              .el-tabs__item {
+                margin: 11px 0 0 0;
+                background: transparent;
+              }
+              .el-tabs__header {
+                border-top: 0;
+                background: #fff;
+              }
+              // .el-tabs__nav-wrap::after {
+              //   z-index: 2;
+              // }
+              // .el-tabs__active-bar
             }
-            .el-tabs__item {
-              margin: 11px 0 0 0;
-              background: transparent;
+            .detailsTitle {
+              position: relative;
+              margin: 6px 0;
+              padding-left: 10px;
+              box-sizing: border-box;
+              margin-bottom: 10px;
             }
-            .el-tabs__header {
-              border-top: 0;
-              background: #fff;
+            .detailsTitle::after {
+              position: absolute;
+              left: 0;
+              content: '';
+              width: 4px;
+              height: 100%;
+              background-color: #2d74e7;
             }
-            // .el-tabs__nav-wrap::after {
-            //   z-index: 2;
-            // }
-            // .el-tabs__active-bar
-          }
-          .detailsTitle {
-            position: relative;
-            margin: 6px 0;
-            padding-left: 10px;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-          }
-          .detailsTitle::after {
-            position: absolute;
-            left: 0;
-            content: '';
-            width: 4px;
-            height: 100%;
-            background-color: #2d74e7;
           }
         }
       }

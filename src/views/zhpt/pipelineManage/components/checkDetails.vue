@@ -57,7 +57,7 @@
                 </el-col>
               </el-row>
               <div class="detailsTitle">管段剖面图</div>
-              <div id="profile_echatrs" style="width: 500px; display: flex; height: 200px"></div>
+              <div ref="profile_echatrs" style="width: 500px; display: flex; height: 200px"></div>
             </el-form>
           </div>
           <!-- 功能性缺陷 -->
@@ -92,28 +92,32 @@
                   </el-form-item>
                 </el-col>
               </el-row>
-              <div class="detailsTitle">功能性缺陷评信息（{{ DetailsForm.funcDensity.toFixed(0) }}）</div>
-              <div v-if="!DetailsForm.funcDensity.toFixed(0)" style="text-align: center">
-                <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+              <div class="detailsTitle">功能性缺陷评信息（{{ structDefectArr.length }}）</div>
+
+              <div v-if="!structDefectArr" style="text-align: center">
+                <img
+                  style="width: 100px; height: 100px; -webkit-user-drag: none"
+                  src="@/assets/images/nullData.png"
+                  alt="暂无数据"
+                  srcset=""
+                />
+                <p style="color: #999999; font-size: 14px">暂无数据</p>
               </div>
-              <div
-                v-if="DetailsForm.funcDensity.toFixed(0) * 1"
-                v-for="v in DetailsForm.funcDensity.toFixed(0)"
-                style="margin-top: 20px; height: 200px"
-              >
-                <div class="info-title">（CJ）沉积 距离：2m</div>
+              <div v-if="structDefectArr" v-for="v in structDefectArr" style="margin-top: 20px; height: 200px">
+                <div class="info-title">（{{ v.defectCode }}）{{ v.defectName }} 距离：{{ v.distanceStartPoint }}m</div>
                 <div class="info-box">
                   <div class="info-text">
-                    <p>分值：2</p>
-                    <p>等级：2</p>
-                    <p style="line-height: 15px">评价： 功能性缺陷，环向0611位置，纵向长度1m。</p>
+                    <p>分值：{{ v.defectNum }}</p>
+                    <p>等级：{{ v.defectLevel }}</p>
+                    <p style="line-height: 15px">评价： {{ v.pipeNote }}</p>
                   </div>
                   <div class="info-video">
-                    <img
-                      src="./testImg/video.png"
-                      alt="视频"
+                    <el-image
                       style="width: 100%; height: 100%; -webkit-user-drag: none"
-                    />
+                      :src="getImgUrl(v.picPath)"
+                      :preview-src-list="[getImgUrl(v.picPath)]"
+                    >
+                    </el-image>
                   </div>
                 </div>
               </div>
@@ -151,33 +155,35 @@
                   </el-form-item>
                 </el-col>
               </el-row>
-              <div class="detailsTitle">结构性缺陷信息（{{ DetailsForm.structDensity.toFixed(0) }}）</div>
-              <div v-if="!DetailsForm.structDensity.toFixed(0)" style="text-align: center">
-                <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+              <div class="detailsTitle">结构性缺陷信息（{{ funcDefectArr.length }}）</div>
+
+              <div v-if="!funcDefectArr" style="text-align: center">
+                <img
+                  style="width: 100px; height: 100px; -webkit-user-drag: none"
+                  src="@/assets/images/nullData.png"
+                  alt="暂无数据"
+                  srcset=""
+                />
+                <p style="color: #999999; font-size: 14px">暂无数据</p>
               </div>
-              <el-row>
-                <el-col :span="24" style="padding-right: 15px">
-                  <div></div>
-                </el-col>
-              </el-row>
-              <div
-                v-if="DetailsForm.structDensity.toFixed(0) * 1"
-                v-for="v in DetailsForm.structDensity.toFixed(0)"
-                style="margin-top: 20px; height: 200px"
-              >
-                <div class="info-title">（BX）变形 距离：1m</div>
+              
+              <div v-if="funcDefectArr" v-for="v in funcDefectArr" style="margin-top: 20px; height: 200px">
+                <div class="info-title">（{{ v.defectCode }}）{{ v.defectName }} 距离：{{ v.distanceStartPoint }}m</div>
                 <div class="info-box">
                   <div class="info-text">
-                    <p>分值：0.50</p>
-                    <p>等级：1</p>
-                    <p style="line-height: 15px">
-                      评价：
-                      (部分或整体缺陷)无或有轻微管道缺陷，结构状况基本不受影响，但具有潜在变坏的可能。结构条件基本完好，不需要修复。
-                    </p>
+                    <p>分值：{{ v.defectNum }}</p>
+                    <p>等级：{{ v.defectLevel }}</p>
+                    <p style="line-height: 15px">评价： {{ v.pipeNote }}</p>
                   </div>
                   <div class="info-video">
-                    <img src="./testImg/video.png" alt="视频" style="width: 100%; height: 100%" />
+                    <el-image
+                      style="width: 100%; height: 100%; -webkit-user-drag: none"
+                      :src="getImgUrl(v.picPath)"
+                      :preview-src-list="[getImgUrl(v.picPath)]"
+                    >
+                    </el-image>
                   </div>
+                  
                 </div>
               </div>
             </el-form>
@@ -208,7 +214,7 @@
                     <div style="max-height: 120px; overflow-y: scroll">
                       <div v-for="(item, i) in fileListData" :key="i" class="text-space">
                         <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{
-                          item.originalName
+                          item.wordInfoName + 'docx'
                         }}</el-link>
                       </div>
                       <p v-if="!fileListData.length" style="text-align: center">暂无报告</p>
@@ -216,14 +222,10 @@
                   </el-form-item>
                 </el-col>
               </el-row>
-              <div style="width: 100%; height: 330px">
-                <video controls="controls" width="100%" height="83%" style="padding-right: 15px;">
-                  <source src="http://gossv.vcg.com/videos/mts_videos/medium/VCG2218090475.mp4" type="video/mp4" />
+              <div style="width: 100%; height: 330px" v-if="DetailsForm.videoPath">
+                <video controls="controls" width="100%" height="83%" style="padding-right: 15px">
+                  <source :src="getVideoUrl(DetailsForm.videoPath)" type="video/mp4" />
                 </video>
-                <!-- <video
-                  src=""
-                 
-                ></video> -->
               </div>
             </el-form>
           </div>
@@ -236,11 +238,17 @@
 <script>
 import { assessmentDetails, queryPageEnclosure, queryDictionariesId } from '@/api/pipelineManage'
 import * as echarts from 'echarts'
+// 引入公共ip地址
+import { baseAddress } from '@/utils/request.ts'
 
 export default {
   props: ['checkParam'],
   data() {
     return {
+      funcDefectArr: [],
+      structDefectArr: [],
+      defectQuantityStatisticsA: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'], // 结构性缺陷
+      defectQuantityStatisticsB: ['CJ', 'CQ', 'FZ', 'JG', 'SG', 'ZW'], // 功能性缺陷
       fileListData: [], // 附件列表数据
       // 附件分页
       paginationEnclosure: { current: 1, size: 30 }, // 分页参数信息
@@ -311,17 +319,46 @@ export default {
     console.log('切换了组价')
   },
   methods: {
+    // 获取视频url
+    getVideoUrl(url) {
+      let address = baseAddress + '/psjc/file' + url
+      console.log('address', address)
+      return address
+    },
+    // 获取文件url
+    getImgUrl(url) {
+      let address = baseAddress + '/psjc/file' + url
+      console.log('address', address)
+      return address
+    },
     //   关闭弹框
     closeDialog() {
       this.$emit('sendBool', false)
     },
     // 详情
     async openDetails() {
-      console.log('管道检测开始', this.checkParam)
+      // console.log('管道检测开始', this.checkParam)
       if (this.checkParam) {
-        console.log('走了有id的方法')
+        // console.log('走了有id的方法')
         let res = await assessmentDetails(this.checkParam)
+        if(!res.result){
+          this.$message.error('管道详情数据为空~!');
+          this.closeDialog()
+          return false
+        }
         this.DetailsForm = res.result
+        // 缺陷信息分类
+        this.DetailsForm.pipeDefects.forEach((v) => {
+          this.funcDefectArr = []
+          this.structDefectArr = []
+          if (this.defectQuantityStatisticsA.includes(v.defectCode)) {
+            // 放入结构性缺陷
+            this.funcDefectArr.push(v)
+          } else if (this.defectQuantityStatisticsB.includes(v.defectCode)) {
+            // 放入功能性缺陷
+            this.structDefectArr.push(v)
+          }
+        })
 
         // 附件
         // 获得字典id
@@ -330,7 +367,7 @@ export default {
         let params = {
           current: this.paginationEnclosure.current,
           size: this.paginationEnclosure.size,
-          itemId: this.checkParam,
+          itemId: res.result.id,
           uploadFileTypeDicId: this.updataParamsId.uploadFileTypeDicId,
           uploadItemDictId: this.updataParamsId.uploadItemDictId
         }
@@ -374,8 +411,12 @@ export default {
     // 绘制剖面图
     renderEcharts() {
       console.log('渲染echarts')
-      let chartDom = document.getElementById('profile_echatrs')
-      let myChart = echarts.init(chartDom)
+      // let chartDom = document.getElementById('profile_echatrs')
+      // let myChart = echarts.init(chartDom)
+      let myChart = echarts.getInstanceByDom(this.$refs.profile_echatrs)
+      if(myChart == null) {
+        myChart = echarts.init(this.$refs.profile_echatrs)
+      }
       let option
       option = {
         xAxis: {
@@ -488,8 +529,9 @@ export default {
 .detailsCrad {
   position: fixed;
   top: 100px;
-  right: 45px;
-  z-index: 9;
+  right: 80px;
+  margin-top: 20px;
+  z-index: 10;
   .clearfix:before,
   .clearfix:after {
     display: table;
@@ -525,7 +567,7 @@ export default {
           margin: 5px 0;
         }
         .info-box {
-          height: 100%;
+          height: 94% !important;
           display: flex;
           justify-content: space-between;
           .info-text {
