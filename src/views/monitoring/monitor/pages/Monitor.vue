@@ -49,7 +49,11 @@ import { settingMonitorCols, monitorResultStates } from '@/views/monitoring/util
 
 @Component({ name: 'Monitor', components: { BaseTitle, BaseTable } })
 export default class Monitor extends Vue {
-  query = { state: [] }
+  query: {
+    team?: number
+    keyword?: string
+    state?: string[]
+  } = { state: [] }
   monitoring = false
   monitorStates = monitorStates
   settingMonitorCols = settingMonitorCols

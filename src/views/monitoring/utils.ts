@@ -249,3 +249,22 @@ export const monitorWarningReportCols: ColItem[] = [
   { prop: 'name', label: '阈值上限容差' },
   { prop: 'name', label: '操作' }
 ]
+
+export const mobileDeviceCols: ColItem[] = [
+  { type: 'selection', width: '50px' },
+  { type: 'index', label: '序号' },
+  { prop: 'name', label: '监测分区' },
+  { prop: 'name1', label: '设备编号' },
+  { prop: 'name2', label: '设备名称' },
+  { prop: 'name3', label: '设备型号' },
+  { prop: 'name4', label: '设备序列号（MEID）' },
+  { prop: 'name5', label: '设备手机号' },
+  { prop: 'name6', label: 'app版本号' },
+  { prop: 'name7', label: '使用部门' },
+  { prop: 'name8', label: '使用人员' },
+  { prop: 'name9', label: '员工编号' },
+  { prop: 'name10', label: '注册时间' },
+  { prop: 'name11', label: '审核状态' },
+  { prop: 'name12', label: '数据（当前、历史）' },
+  { prop: 'name13', label: '操作（编辑）' }
+]

@@ -18,19 +18,19 @@
     <div class="text">采集时间: 2022-03-01 09:03:03</div>
     <div class="item">
       <span class="text">温度【达标: 10-40】</span>
-      <span>12.5 ℃ &uarr;</span>
+      <span>12.5 ℃ {{ arrow.up }}</span>
     </div>
     <div class="item">
       <span class="text">电导率【达标: 40-60】</span>
-      <span>59 ms/m &darr;</span>
+      <span>59 ms/m {{ arrow.down }}</span>
     </div>
     <div class="item">
       <span class="text">浊度【达标: 200-300】</span>
-      <span>211.76 NTU &darr;</span>
+      <span>211.76 NTU {{ arrow.up }}</span>
     </div>
     <div class="item">
       <span class="text">化学需氧量【严重报警: 90-100】</span>
-      <span>97.13 mg/L &uarr;</span>
+      <span>97.13 mg/L {{ arrow.down }}</span>
     </div>
   </el-card>
 </template>
@@ -49,6 +49,10 @@ export default class InfoCard extends Vue {
     distance?: string
     address?: string
     car?: string
+  }
+  arrow: {
+    up: '&uarr;'
+    down: '&darr;'
   }
 }
 </script>

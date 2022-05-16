@@ -41,7 +41,9 @@ export default class DeviceArchives extends Vue {
 
   visible = false
 
-  current = {}
+  current: {
+    [x: string]: string
+  } = {}
 
   selected = []
 

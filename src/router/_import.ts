@@ -20,6 +20,7 @@ const map = {
   paramSetting: () => import('@/views/currentSystem/authorityManagement/paramSetting/index.vue'), // 参数配置
   dictManagement: () => import('@/views/currentSystem/authorityManagement/dictManagement/index.vue'), // 字典管理
   coveringSpecification: () => import('@/views/currentSystem/authorityManagement/coveringSpecification/index.vue'), // 覆土规范
+  mobileDevice: () => import('@/views/currentSystem/authorityManagement/mobileDevice/index.vue'), // 移动设备管理
 
   //综合展示-工具栏
   //左侧顶部工具栏

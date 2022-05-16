@@ -59,7 +59,7 @@ export default class TypeForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   dialogVisible = false
   dialogImageUrl = ''
-  formData = {}
+  formData: { [x: string]: string } = {}
   formItems: {
     label: string
     name: string
