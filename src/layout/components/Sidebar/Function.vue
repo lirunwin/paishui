@@ -33,6 +33,9 @@ export default class FunctionVue extends Vue {
   // 打开或关闭左侧菜单
   toggleSideBar() {
     this.$store.dispatch("app/toggleSideBar");
+    // 20220516 add yj
+    // 改变侧边栏后，openlayer 需要手动更新地图 
+    this.$store.dispatch("gis/updateSize")
   }
 }
 </script>

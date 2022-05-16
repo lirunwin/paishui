@@ -94,24 +94,21 @@
             <leftBottomTool
               :toolList="leftBottomTool.children"
               :map="view"
-              v-if="showTool && leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
+              v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
             ></leftBottomTool>
             <!-- 右上角工具栏 -->
             <rightTopTool
               :toolList="rightTopTool.children"
               :map="view"
               :rootPage="this"
-              v-if="showTool && rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
+              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
             ></rightTopTool>
             <!-- 右下角工具栏 -->
             <rightBottomTool
               :toolList="rightBottomTool.children"
               :map="view"
-              v-if="showTool && rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
+              v-if="rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
             ></rightBottomTool>
-          </div>
-          <div @click="showMapLengend = !showMapLengend" v-if="showLegendBtn" style='position:absolute;top:10px;left:10px;cursor:pointer;'>
-            <i class="iconfont iconlist" title="图例"></i>
           </div>
           <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
@@ -276,9 +273,8 @@ import { defaults as controls } from 'ol/control'
   }
 })
 export default class BaseMap extends Vue {
-  hasloadTool = false
+  currTitle = ''
   showTool = true
-  showLegendBtn = false
   showMapLengend = false
   //
   showLegendBox = true
@@ -374,19 +370,8 @@ export default class BaseMap extends Vue {
   }
   @Watch('activeHeaderItem', { immediate: true })
   activeHeaderItemChange(n, o) {
-    // 会先于地图加载，忽略第一次加载
-    // 重新配置地图工具
-    if (o) {
-      if (!this.hasloadTool && n === 'map') {
-        this.controlToolDisplay()
-        this.hasloadTool = true
-      }
-    } else {
-      this.hasloadTool = n === 'map'
-    }
+    this.currTitle = n
     this.showTool = n === 'map'
-    // 排水检测图例
-    this.showLegend('testReport', n === 'psjc')
   }
   created() {
     console.log('=====', this.Comps)
@@ -438,34 +423,6 @@ export default class BaseMap extends Vue {
       })
     })
     this.panels.mapView = this.view = this.$store.state.gis.map = map
-
-    // console.log('加载 wmts')
-    // let projection = olProj.get("EPSG:4326")
-    // let extent = projection.getExtent()
-    // let width = olExtent.getWidth(extent)
-    // let resolutions = [], matrixIds = []
-    // for(let z = 1; z < 19; z++) {
-    //   resolutions[z] = width / (256 * Math.pow(2, z))
-    //   matrixIds[z] = z
-    // }
-    // let tilelayer = new TileLayer({
-    //   source: new WMTS({
-    //     url: 'http://t{0-7}.tianditu.gov.cn/vec_c/wmts?tk=' + appconfig.tianMapKey,
-    //     layer: 'vec',
-    //     matrixSet: 'c',
-    //     format: 'tiles',
-    //     style: 'default',
-    //     wrapX: true,
-    //     projection: projection,
-    //     tileGrid: new WMTSTileGrid({
-    //       origin: olExtent.getTopLeft(extent),
-    //       resolutions,
-    //       matrixIds
-    //     })
-    //   } as any)
-    // })
-    // this.view.addLayer(tilelayer)
-
     this.addLayers(layerResource)
 
     this.loading = false
@@ -542,12 +499,8 @@ export default class BaseMap extends Vue {
   // 显示图例
   showLegend(legendName, visible) {
     if (!legendName) return
-    if (visible) {
-      this.legendData = LegendConfig[legendName]
-    } else {
-      this.showMapLengend = false
-    }
-    this.showLegendBtn = visible
+    this.legendData = LegendConfig[legendName]
+    this.showMapLengend = visible
   }
   legendChange() {
     this.showLegendBox = !this.showLegendBox
@@ -678,7 +631,11 @@ export default class BaseMap extends Vue {
     //这四个类型分别对应地图工具栏的左上角,左下角,右上角,右下角
     //这四个工具栏不在左边的功能列表中展示（改设置在src\layout\components\Sidebar\index.vue中）
     if (this.$store.state && this.$store.state.routeSetting && this.$store.state.routeSetting.routes) {
-      const allModel = this.$store.state.routeSetting.routes //获取所有功能
+      if (this.currTitle === 'psjc') {
+        this.currTitle = 'map'
+      }
+      const allModel = this.$store.state.routeSetting.dynamicRoutes[this.currTitle] //获取所有功能
+      if (!allModel) return
       /**工具栏识别的字符集合*/
       const toolBoxList = ['leftTopTool', 'leftBottomTool', 'rightBottomTool', 'rightTopTool']
       const toolcomponentList = {

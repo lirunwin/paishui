@@ -251,7 +251,13 @@ export default {
     },
 
     subLayerChange (node) {
-      node.layer.values_.visible = !node.layer.values_.visible;
+      if (node.children) {
+        node.children.forEach(child => {
+          child.layer.values_.visible = !child.layer.values_.visible;
+        })
+      } else {
+        node.layer.values_.visible = !node.layer.values_.visible;
+      }
       this.currMap.render()
     },
     opacityChange (data) {

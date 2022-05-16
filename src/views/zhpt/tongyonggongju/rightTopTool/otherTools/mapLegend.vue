@@ -6,16 +6,20 @@ import { esriConfig, appconfig } from "staticPub/config";
 export default {
     props: {
         map: null,
-        rootPage: null
+        rootPage: null,
     },
     methods: {
         close () {
-            this.rootPage.$data.labelShow = false
+            this.showlegend(false)
         },
-        showlegend () {
+        showlegend (visible) {
+            if (this.$store.state.gis.activeHeaderItem === 'psjc') {
+                this.rootPage.showLegend('testReport', visible)
+            } else {
+                this.rootPage.$data.labelShow = visible
+                if (this.rootPage.$data.labelShow) this.setLegend()
+            }
             console.log("加载图例")
-            this.rootPage.$data.labelShow = true
-            if (this.rootPage.$data.labelShow) this.setLegend()
         },
         setLegend () {
             $.ajax({
@@ -49,7 +53,7 @@ export default {
         this.$nextTick(() => {
             document.addEventListener('keyup', this.keyUpEvent)
         })
-        this.showlegend()
+        this.showlegend(true)
         this.$notify({
             title: '操作提示',
             message: '按ESC键关闭图例',

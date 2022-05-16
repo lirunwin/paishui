@@ -54,7 +54,7 @@ export class TF_Layer {
             }
         })
     }
-    // 天地图
+    // 天地图 瓦片
     TDT_Layer(url = "") {
         if (!url) return null
         return new TileLayer({
@@ -69,7 +69,7 @@ export class TF_Layer {
     VT_Layer() {
         return new VectorLayer({ source: new VectorSource() })
     }
-    // 天地图 WMTS 图层
+    // 天地图 WMTS 
     WMTS_Layer(url) {
         let projection = olProj.get(this.projection)
         let extent = projection.getExtent()
@@ -80,17 +80,20 @@ export class TF_Layer {
             resolutions[z] = width / (256 * Math.pow(2, z))
             matrixIds[z] = z
         }
-
         let tileGrid = new WMTSTileGrid({
             origin: olExtent.getTopLeft(extent),
             resolutions,
             matrixIds
         })
+
+        // 匹配坐标系、图层类型
+        let type = url.match(new RegExp(/\/(.{3})_(c|w)\//))
         return new TileLayer({
             source: new WMTS({
+                crossOrigin: "anonymous",
                 url: url + appconfig.tianMapKey,
-                layer: 'vec',
-                matrixSet: 'c',
+                layer: type[1],
+                matrixSet: type[2],
                 format: 'tiles',
                 style: 'default',
                 wrapX: true,

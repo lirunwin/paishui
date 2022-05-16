@@ -23,7 +23,9 @@ const mutations = {
     alert('destory')
   },
   updateMapSize (state) {
-    state.map.updateSize()
+    setTimeout(() => {
+      state.map.updateSize()
+    }, 500)
   }
 }
 
