@@ -154,8 +154,9 @@
                   <div class="historyList" v-if="currentForm.jcNum">
                     <div class="historyTitle">
                       <div>
-                        <span style="margin-right: 40px">2021-01-2</span>
-                        <span> 功能性缺陷（Ⅱ）</span>
+                        <span style="margin-right: 40px">{{tableForm.sampleTime}}</span>
+                        <span v-if="tableForm.funcClass"> 功能性缺陷（{{tableForm.funcClass}}）</span>
+                        <span v-else> 结构性缺陷（{{tableForm.structClass}}）</span>
                       </div>
                       <el-link type="primary" @click="openCheck">详情</el-link>
                     </div>
