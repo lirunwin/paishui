@@ -12,7 +12,7 @@
     </div>
     <div class="table-container">
       <BaseTable
-        :columns="settingArchiveCols"
+        :columns="mobileDeviceCols"
         :data="archives"
         @row-dblclick="onDblClick"
         @selection-change="onSelectionChange"
@@ -25,7 +25,7 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
-import { settingArchiveCols } from '@/views/monitoring/utils'
+import { mobileDeviceCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
 
@@ -37,13 +37,11 @@ import DeviceForm from './DeviceForm.vue'
 
 @Component({ name: 'DeviceArchives', components: { BaseTable, QueryForm, DeviceForm } })
 export default class DeviceArchives extends Vue {
-  settingArchiveCols = settingArchiveCols
+  mobileDeviceCols = mobileDeviceCols
 
   visible = false
 
-  current: {
-    [x: string]: string
-  } = {}
+  current: { [x: string]: string } = {}
 
   selected = []
 
