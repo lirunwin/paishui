@@ -20,7 +20,7 @@
               </el-select>
             </div>
             <div class="serch-engineering">
-              <el-button class="serch-btn" type="primary"> 绘制 </el-button>
+              <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制 </el-button>
               <el-button class="serch-btn" type="primary"> 清除 </el-button>
               <el-button class="serch-btn" type="primary"> 查询 </el-button>
               <el-button class="serch-btn" type="primary"> 导出 </el-button>
@@ -67,7 +67,7 @@
       <div class="right">
         <!-- 地图 -->
         <div class="map-box">
-          <!-- <simple-map @afterMapLoad="afterMapLoad" ref="myMap"></simple-map> -->
+          <simple-map  @mapMoveEvent='mapMoveEvent' ref="myMap"></simple-map>
         </div>
       </div>
     </div>
@@ -82,8 +82,13 @@ require('echarts/lib/chart/pie')
 // 引入提示框和title组件
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
+
+import simpleMap from '@/components/SimpleMap'
+import { getDefectDataBySE } from '@/api/sysmap/drain'
+
 export default {
   props: ['data'],
+  components: { simpleMap },
   data() {
     return {
       tableData: [], // 表格数据
@@ -141,6 +146,40 @@ export default {
     // document.getElementById('mainB').removeAttribute('_echarts_instance_')
   },
   methods: {
+    // 绘制
+    drawFeature () {
+      this.$refs.myMap.draw(fea => {
+        this.getDataFromExtent({}, fea).then(res => {
+          console.log('绘制,过滤后', res)
+        })
+      })
+    },
+    mapMoveEvent (extent) {
+      this.getDataFromExtent({}, extent).then(res => {
+        console.log('地图变化,过滤后', res)
+      })
+    },
+    async getDataFromExtent (params, extent) {
+      let data = await this.getPipeData(params)
+      if (data.code === 1) {
+        // 地图范围过滤数据
+        return this.$refs.myMap.getDataInMap(data.result, extent)
+      } else this.$message.error('请求数据出错')
+    },
+    // 根据条件获取缺陷数据
+    getPipeData (filter = {}) {
+      let params = {
+        startPoint: "",
+        endPoint: "",
+        funcClass: "",
+        structClass: '',
+        jcStartDate: '',
+        jcEndDate: '',
+        checkSuggest: '修复计划',
+        ...filter
+      }
+      return getDefectDataBySE(params)
+    },
     // 表格选中事件
     handleSelectionChange(val) {
       // console.log('表格选中事件', val)

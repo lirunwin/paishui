@@ -771,28 +771,11 @@ export default {
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
     this.init()
-
-    // this.getPipeData()
   },
   destroyed() {
     this.clearAll()
   },
   methods: {
-    getPipeData () {
-      let params = {
-        startPoint: "",
-        endPoint: "",
-        funcClass: "Ⅲ",
-        structClass: '',
-        jcStartDate: '',
-        jcEndDate: ''
-      }
-      getDefectDataBySE(params).then(res => {
-        if(res.code === 1) {
-          console.log('管段统计数据', res)
-        } else this.$message.error('获取管段数据出错！')
-      })
-    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
@@ -946,7 +929,8 @@ export default {
     getPipeDefectData(type = 1, id, light = false) {
       let dataApi = null,
         map,
-        layer
+        layer;
+      console.log('打开小地图')
       if (type === 1) {
         map = this.data.mapView
         layer = this.vectorLayer
@@ -981,15 +965,14 @@ export default {
           }
 
           if (light) {
-            let center = new mapUtil().getCenterFromFeatures(pFeas)
-            console.log('多管段中心点')
-            map.getView().setCenter(center)
-            map.getView().setZoom(18)
             this.lightLayer.getSource().clear()
             this.lightLayer.getSource().addFeatures([
               // ...dFeas,
               ...pFeas
             ])
+            let center = new mapUtil().getCenterFromFeatures(pFeas)
+            map.getView().setCenter(center)
+            map.getView().setZoom(18)
           } else {
             this.lightLayer.getSource().clear()
             layer.getSource().clear()
@@ -997,6 +980,13 @@ export default {
               layer.getSource().addFeatures([...dFeas, ...pFeas])
             }
           }
+          if (id) {
+            let center = new mapUtil().getCenterFromFeatures(pFeas)
+            map.getView().setCenter(center)
+            map.getView().setZoom(18)
+          }
+
+
         } else this.$message.error('管线缺陷数据请求失败')
       })
     },
