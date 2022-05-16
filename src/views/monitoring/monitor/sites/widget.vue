@@ -1,14 +1,7 @@
 <template>
   <div class="page-container">
     <div class="actions">
-      <QueryForm
-        :selected="selected"
-        @query="onQuery"
-        @add="onAdd"
-        @update="onUpdate"
-        @del="onDel"
-        @export="onExport"
-      />
+      <QueryForm :selected="selected" @query="onQuery" @export="onExport" />
     </div>
     <div class="table-container">
       <BaseTable

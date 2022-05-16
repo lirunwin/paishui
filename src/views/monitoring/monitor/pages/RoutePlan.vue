@@ -6,7 +6,7 @@
         <el-input v-model="query.keyword" disabled />
       </el-form-item>
       <el-form-item label="目标坐标">
-        <el-input v-model="query.keyword" disabled />
+        <el-input v-model="query.coordinate" disabled />
       </el-form-item>
       <el-form-item label="搜索目标">
         <el-select v-model="query.team" placeholder="请选择搜索目标">
@@ -17,7 +17,7 @@
         <el-col>
           <el-form-item label="缓冲距离">
             <el-row type="flex">
-              <el-col><el-input v-model="query.distance"/></el-col><el-col style="padding: 0 20px">公里</el-col>
+              <el-col><el-input v-model.number="query.distance"/></el-col><el-col style="padding: 0 20px">公里</el-col>
             </el-row>
           </el-form-item>
         </el-col>
@@ -49,7 +49,14 @@ import RouteCard from '@/views/monitoring/monitor/components/RouteCard/index.vue
 
 @Component({ name: 'Monitor', components: { BaseTitle, BaseTable, RouteCard } })
 export default class Monitor extends Vue {
-  query = { state: [] }
+  query: {
+    keyword?: string
+    coordinate?: string
+    team?: string
+    distance?: number
+    state?: string[]
+  } = { state: [] }
+
   monitoring = false
   monitorStates = monitorStates
   settingMonitorCols = settingMonitorCols

@@ -94,7 +94,9 @@ import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 @Component({ name: 'IconForm', components: { BaseDialog, BaseTitle } })
 export default class IconForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
-  formData = {}
+  formData: {
+    [x: string]: string
+  } = {}
   fileList = []
 
   rules = {
