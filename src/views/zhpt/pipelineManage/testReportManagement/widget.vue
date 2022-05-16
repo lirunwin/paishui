@@ -66,7 +66,9 @@
         <div class="right-btn">
           <el-button size="small" type="primary" @click="showUpdata">报告上传</el-button>
           <!-- <el-button  type="primary" @click="dialogFormVisible2 = true">视频上传</el-button> -->
-          <el-button size="small" type="primary" :disabled="multipleSelection.length != 1" @click="videoShowUpdata">视频上传</el-button>
+          <el-button size="small" type="primary" :disabled="multipleSelection.length != 1" @click="videoShowUpdata"
+            >视频上传</el-button
+          >
           <el-button
             size="small"
             type="primary"
@@ -97,7 +99,13 @@
         @row-click="lightFea"
       >
         <template slot="empty">
-          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+          <img
+            style="width: 100px; height: 100px; -webkit-user-drag: none"
+            src="@/assets/images/nullData.png"
+            alt="暂无数据"
+            srcset=""
+          />
+          <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" :selectable="checkSelect" align="center" type="selection" width="55">
         </el-table-column>
@@ -239,7 +247,13 @@
                   height="250"
                 >
                   <template slot="empty">
-                    <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                    <img
+                      style="width: 100px; height: 100px; -webkit-user-drag: none"
+                      src="@/assets/images/nullData.png"
+                      alt="暂无数据"
+                      srcset=""
+                    />
+                    <p>暂无数据</p>
                   </template>
 
                   <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
@@ -319,7 +333,13 @@
                   height="250"
                 >
                   <template slot="empty">
-                    <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                    <img
+                      style="width: 100px; height: 100px; -webkit-user-drag: none"
+                      src="@/assets/images/nullData.png"
+                      alt="暂无数据"
+                      srcset=""
+                    />
+                    <p>暂无数据</p>
                   </template>
                   <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
                   <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
@@ -584,9 +604,9 @@ export default {
   },
   data() {
     return {
-      selectWord:{
-        name:"",
-        id:""
+      selectWord: {
+        name: '',
+        id: ''
       }, // 选中的报告的id
       fullscreenLoading: false, // 加载
       remark: '', // 备注
@@ -771,28 +791,11 @@ export default {
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
     this.init()
-
-    // this.getPipeData()
   },
   destroyed() {
     this.clearAll()
   },
   methods: {
-    getPipeData () {
-      let params = {
-        startPoint: "",
-        endPoint: "",
-        funcClass: "Ⅲ",
-        structClass: '',
-        jcStartDate: '',
-        jcEndDate: ''
-      }
-      getDefectDataBySE(params).then(res => {
-        if(res.code === 1) {
-          console.log('管段统计数据', res)
-        } else this.$message.error('获取管段数据出错！')
-      })
-    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
@@ -946,7 +949,8 @@ export default {
     getPipeDefectData(type = 1, id, light = false) {
       let dataApi = null,
         map,
-        layer
+        layer;
+      console.log('打开小地图')
       if (type === 1) {
         map = this.data.mapView
         layer = this.vectorLayer
@@ -981,15 +985,14 @@ export default {
           }
 
           if (light) {
-            let center = new mapUtil().getCenterFromFeatures(pFeas)
-            console.log('多管段中心点')
-            map.getView().setCenter(center)
-            map.getView().setZoom(18)
             this.lightLayer.getSource().clear()
             this.lightLayer.getSource().addFeatures([
               // ...dFeas,
               ...pFeas
             ])
+            let center = new mapUtil().getCenterFromFeatures(pFeas)
+            map.getView().setCenter(center)
+            map.getView().setZoom(18)
           } else {
             this.lightLayer.getSource().clear()
             layer.getSource().clear()
@@ -997,6 +1000,13 @@ export default {
               layer.getSource().addFeatures([...dFeas, ...pFeas])
             }
           }
+          if (id) {
+            let center = new mapUtil().getCenterFromFeatures(pFeas)
+            map.getView().setCenter(center)
+            map.getView().setZoom(18)
+          }
+
+
         } else this.$message.error('管线缺陷数据请求失败')
       })
     },
@@ -1351,7 +1361,6 @@ export default {
     },
     // 视频上传按钮
     async videoShowUpdata() {
-      
       this.selectWord.name = this.multipleSelection[0].prjName
       this.selectWord.id = this.multipleSelection[0].id
       // 选择工程名称的分页查询

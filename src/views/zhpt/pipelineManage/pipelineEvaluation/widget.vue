@@ -94,7 +94,13 @@
         @row-click="openPromptBox"
       >
         <template slot="empty">
-          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+          <img
+            style="width: 100px; height: 100px; -webkit-user-drag: none"
+            src="@/assets/images/nullData.png"
+            alt="暂无数据"
+            srcset=""
+          />
+          <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
@@ -147,7 +153,7 @@
               <span style="font-weight: bold; user-select: none"
                 >{{ getCurrentForm.expNo + getCurrentForm.pipeType }}
                 <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
-                {{ currentIndex + 1 }}/{{ currentForm.length }}
+                {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
                 <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
               </span>
               <a
@@ -161,12 +167,15 @@
               <div class="left">
                 <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
                 <!-- <p style="padding-left: 10px">无文档</p> -->
-                <!-- <el-link
-                  style="font-size: 12px; margin-left: 10px"
-                  :href="baseAddress + '/psjc/file' + getCurrentForm.wordPath"
-                  type="primary"
-                  >{{ getCurrentForm.prjName }}</el-link
-                > -->
+                <div class="text-space">
+                  <el-link
+                    style="font-size: 12px; margin-left: 10px"
+                    v-if="getCurrentForm.wordFilePath"
+                    type="primary"
+                    @click.stop="downloadDocx"
+                    >{{ getCurrentForm.wordInfoName + 'docx' }}</el-link
+                  >
+                </div>
                 <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
                 <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
                 <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
@@ -174,12 +183,31 @@
               </div>
               <div class="right">
                 <el-tabs v-model="activeName">
-                  <el-tab-pane :label="`照片(${getCurrentForm.picnum || '0'})`" name="picnum">
+                  <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
                     <div class="container">
-                      <img src="./testImg/test.png" alt="" srcset="" />
+                      <el-image
+                        style="width: 100%; height: 90%; -webkit-user-drag: none"
+                        :src="getImgUrl"
+                        :preview-src-list="getImgUrlArr"
+                      >
+                      </el-image>
+                      <div style="text-align: center">
+                        <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
+                        {{ getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
+                          getCurrentForm.pipeDefects.length || 0
+                        }}
+                        <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
+                      </div>
                     </div>
                   </el-tab-pane>
-                  <el-tab-pane :label="`视频(${getCurrentForm.viedoNum || '0'})`" name="viedoNum"></el-tab-pane>
+                  <el-tab-pane :label="`视频`" name="viedoNum">
+                    <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
+                      <video controls="controls" width="100%" height="83%">
+                        <source :src="getVideoUrl" type="video/mp4" />
+                      </video>
+                    </div>
+                    <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">暂无视频</div>
+                  </el-tab-pane>
                 </el-tabs>
               </div>
             </div>
@@ -248,6 +276,8 @@ import defectImgLB from '@/assets/images/traingle-lb.png'
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
 
+import axios from 'axios'
+
 // 引入管道检测组件
 import deleteDialog from '../components/checkDetails.vue'
 
@@ -260,6 +290,7 @@ export default {
     return {
       id: null, // 当前列表id
       activeName: 'picnum', // 照片视频tab标签
+      imgArrIndex: 0, // 缩略框照片索引
       currentForm: [], // 缩略提示框
       currentIndex: 0, // 当前页数
       cardTableContent: [
@@ -366,6 +397,25 @@ export default {
     this.clearAll()
   },
   computed: {
+    // 获取照片数组路径
+    getImgUrlArr() {
+      let arr = this.getCurrentForm.pipeDefects.map((v) => {
+        return baseAddress + '/psjc/file' + v.picPath
+      })
+      return arr
+    },
+    // 获取文件url
+    getImgUrl() {
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.pipeDefects[this.imgArrIndex].picPath
+      console.log('address', address)
+      return address
+    },
+    getVideoUrl() {
+      console.log('照片', this.getCurrentForm.pipeDefects.length)
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.videoPath
+      console.log('address', address)
+      return address
+    },
     // 传给管道检测组件的参数
     // sendParam() {
     //   return { bool: this.dialogFormVisible, id: this.id }
@@ -380,6 +430,24 @@ export default {
     }
   },
   methods: {
+    // 下载文档
+    downloadDocx() {
+      this.$message('正在加载文档地址...');
+      let url = baseAddress + '/psjc/file' + this.getCurrentForm.wordFilePath
+      let label = this.getCurrentForm.wordInfoName + '.docx'
+      axios
+        .get(url, { responseType: 'blob' })
+        .then((response) => {
+          const blob = new Blob([response.data])
+          const link = document.createElement('a')
+          link.href = URL.createObjectURL(blob)
+          link.download = label
+          link.click()
+          URL.revokeObjectURL(link.href)
+        })
+        .catch(console.error)
+    },
+
     // 关闭弹框
     getBool(bool) {
       this.dialogFormVisible = bool
@@ -418,7 +486,7 @@ export default {
     // 跳转到pdf页面
     toPdfPage(url) {
       console.log('url', url)
-      // window.open(baseAddress + '/psjc/file' + url, '_blank')
+      window.open(baseAddress + '/psjc/file' + url, '_blank')
     },
 
     init() {
@@ -524,8 +592,7 @@ export default {
             // 缺少 defectLevel 字段
             if (findimg) {
               // hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
-              hasStyle &&
-                feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
+              hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
               for (let i in feaObj) {
                 i !== 'geometry' && feature.set(i, feaObj[i])
               }
@@ -535,6 +602,22 @@ export default {
         })
       }
       return features
+    },
+    // 上一张照片
+    lastImg() {
+      if (this.imgArrIndex <= 0) {
+        this.imgArrIndex = 0
+        return
+      }
+      this.imgArrIndex--
+    },
+    // 下一张照片
+    nextImg() {
+      if (this.imgArrIndex + 1 >= this.getCurrentForm.pipeDefects.length) {
+        this.imgArrIndex = this.getCurrentForm.pipeDefects.length - 1
+        return
+      }
+      this.imgArrIndex++
     },
     // 上一页
     lastPage() {
@@ -573,70 +656,18 @@ export default {
     async openPromptBox(row, column, cell, event) {
       this.setPositionByPipeId(row.id)
       console.log('打开缩略提示框', row)
-      // this.isPromptBox = { ...row }
       let res = await histroyPipeData({ expNo: row.expNo })
       this.currentIndex = 0
       this.currentForm = res.result
       this.currentInfoCard = true
-      // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },
 
     // 详情
     async openDetails(row) {
       this.id = row.id
-      // this.currentForm = row
-      // console.log('row', row)
-      // let res = await assessmentDetails(row.id)
-      // // 绘制剖面图
-      // // console.log('res', res)
-      // let res = await histroyPipeData({ expNo: row.expNo })
-      // this.cardTable = res.result
+     
       this.dialogFormVisible = true
-      
     },
-    // 获取字典id
-    // async getParamsId() {
-    //   // 获取字典id
-    //   // uploadFileType
-    //   let uploadFileTypeDicId = await queryDictionariesId({ keys: 'uploadFileType' })
-    //   // uploadItem
-    //   let uploadItemDictId = await queryDictionariesId({ keys: 'uploadItem' })
-    //   uploadFileTypeDicId = uploadFileTypeDicId.result.uploadFileType
-    //   uploadItemDictId = uploadItemDictId.result.uploadItem
-    //   // await this.$refs.upload.submit()
-    //   uploadFileTypeDicId.forEach((v) => {
-    //     if (v.codeValue == 'wordInfoDoc') {
-    //       this.updataParamsId.uploadFileTypeDicId = v.id
-    //     }
-    //   })
-    //   uploadItemDictId.forEach((v) => {
-    //     if (v.codeValue == 'tf_ywpn_wordinfo_w') {
-    //       this.updataParamsId.uploadItemDictId = v.id
-    //     }
-    //   })
-    // },
-    // 打开附件列表对话框
-    // async openDialogEnclosure() {
-    //   this.updataParamsId.itemId = this.multipleSelection[0].id
-    //   // console.log("this.updataParamsId",this.updataParamsId);
-    //   await this.getParamsId()
-    //   let params = {
-    //     current: this.paginationEnclosure.current,
-    //     size: this.paginationEnclosure.size,
-    //     itemId: this.updataParamsId.itemId,
-    //     uploadFileTypeDicId: this.updataParamsId.uploadFileTypeDicId,
-    //     uploadItemDictId: this.updataParamsId.uploadItemDictId
-    //   }
-    //   let res = await queryPageEnclosure(params)
-    //   this.dialogEnclosure = true
-    // },
-    // 导出
-    // async exportFile() {
-    //   console.log('选择列信息', this.multipleSelection)
-    //   let id = this.multipleSelection[0].id
-    //   let res = await downloadFile(id)
-    //   console.log('res', res)
-    // },
     // 重置
     async resetBtn() {
       this.pagination = { current: 1, size: 30 }
@@ -930,17 +961,33 @@ export default {
 
           .left {
             flex: 1;
+            .text-space {
+              /deep/.el-link--inner {
+                max-width: 240px;
+                // 1.先强制一行内显示文本
+                white-space: nowrap;
+
+                // 2.超出部分隐藏
+                overflow: hidden;
+                // 3.文字用省略号替换超出的部分
+                text-overflow: ellipsis;
+              }
+            }
           }
           /deep/ .right {
             flex: 1;
             .container {
               height: 100%;
               width: 100%;
-              padding: 5px;
+              padding-top: 5px;
               box-sizing: border-box;
             }
 
             .is-top {
+            }
+            .el-tabs__content {
+              height: 150px;
+              width: 234px;
             }
             .el-tabs__item {
               margin: 11px 0 0 0 !important;
