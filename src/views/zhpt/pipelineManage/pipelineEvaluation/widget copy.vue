@@ -161,12 +161,12 @@
               <div class="left">
                 <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
                 <!-- <p style="padding-left: 10px">无文档</p> -->
-                <!-- <el-link
+                <el-link
                   style="font-size: 12px; margin-left: 10px"
                   :href="baseAddress + '/psjc/file' + getCurrentForm.wordPath"
                   type="primary"
                   >{{ getCurrentForm.prjName }}</el-link
-                > -->
+                >
                 <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
                 <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
                 <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
@@ -190,7 +190,232 @@
 
     <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
-      <delete-dialog @sendBool="getBool" v-show="dialogFormVisible" :checkParam="id"></delete-dialog>
+      <div class="detailsCrad" v-if="dialogFormVisible">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span style="font-size: 16px">管道检测详情</span>
+            <span style="float: right; padding: 3px 0; cursor: pointer">
+              <i class="el-icon-close" type="text" @click="dialogFormVisible = false"></i>
+            </span>
+          </div>
+          <div class="content">
+            <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+              <el-menu-item index="1">检测信息</el-menu-item>
+              <el-menu-item index="2">功能性缺陷（{{ DetailsForm.funcClass }}）</el-menu-item>
+              <el-menu-item index="3">结构性缺陷（{{ DetailsForm.structClass }}）</el-menu-item>
+              <el-menu-item index="4">工程信息</el-menu-item>
+            </el-menu>
+            <div class="content-info">
+              <!-- 检测信息 -->
+              <div class="box1" v-show="activeIndex == '1'">
+                <div class="detailsTitle">管段信息</div>
+                <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
+                  <el-row v-for="(v, i) in cardTableContent" :key="i">
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item :label="v[0].label">
+                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item :label="v[1].label">
+                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <div class="detailsTitle">检测信息</div>
+                  <el-row>
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item label="检测方向">
+                        <el-input size="small" v-model="DetailsForm.detectDir" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item label="检测长度">
+                        <el-input size="small" v-model="DetailsForm.checkLength" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item label="修复指数">
+                        <el-input size="small" v-model="DetailsForm.repairIndex" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item label="养护指数">
+                        <el-input size="small" v-model="DetailsForm.maintainIndex" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <div class="detailsTitle">管段剖面图</div>
+                  <div id="profile_echatrs" style="width: 500px; display: flex; height: 200px"></div>
+                </el-form>
+              </div>
+              <!-- 功能性缺陷 -->
+              <div class="box1" v-show="activeIndex == '2'">
+                <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
+                  <div class="detailsTitle">功能性缺陷评价（等级：{{ DetailsForm.funcClass }}）</div>
+                  <el-row v-for="(v, i) in funcArr" :key="v[0].label">
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item :label="v[0].label">
+                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item :label="[v[1].label]">
+                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="24" style="padding-right: 15px">
+                      <el-form-item label="评价">
+                        <el-input
+                          size="small"
+                          type="textarea"
+                          :autosize="{ minRows: 3, maxRows: 4 }"
+                          disabled
+                          placeholder="无"
+                          resize="none"
+                          v-model="DetailsForm.funcEstimate"
+                        >
+                        </el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <div class="detailsTitle">功能性缺陷评信息（{{ DetailsForm.funcDensity.toFixed(0) }}）</div>
+                  <div v-if="!DetailsForm.funcDensity.toFixed(0)" style="text-align: center">
+                    <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                  </div>
+                  <div
+                    v-if="DetailsForm.funcDensity.toFixed(0) * 1"
+                    v-for="v in DetailsForm.funcDensity.toFixed(0)"
+                    style="margin-top: 20px; height: 200px"
+                  >
+                    <div class="info-title">（CJ）沉积 距离：2m</div>
+                    <div class="info-box">
+                      <div class="info-text">
+                        <p>分值：2</p>
+                        <p>等级：2</p>
+                        <p style="line-height: 15px">评价： 功能性缺陷，环向0611位置，纵向长度1m。</p>
+                      </div>
+                      <div class="info-video">
+                        <img
+                          src="./testImg/video.png"
+                          alt="视频"
+                          style="width: 100%; height: 100%; -webkit-user-drag: none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </el-form>
+              </div>
+              <!-- 结构性缺陷 -->
+              <div class="box1" v-show="activeIndex == '3'">
+                <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
+                  <div class="detailsTitle">结构性缺陷评价（等级：{{ DetailsForm.structClass }}）</div>
+                  <el-row v-for="(v, i) in structArr" :key="i">
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item :label="v[0].label">
+                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item :label="v[1].label">
+                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="24" style="padding-right: 15px">
+                      <el-form-item label="评价">
+                        <el-input
+                          size="small"
+                          type="textarea"
+                          :autosize="{ minRows: 3, maxRows: 4 }"
+                          disabled
+                          placeholder="无"
+                          resize="none"
+                          v-model="DetailsForm.structEstimate"
+                        >
+                        </el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <div class="detailsTitle">结构性缺陷信息（{{ DetailsForm.structDensity.toFixed(0) }}）</div>
+                  <div v-if="!DetailsForm.structDensity.toFixed(0)" style="text-align: center">
+                    <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                  </div>
+                  <el-row>
+                    <el-col :span="24" style="padding-right: 15px">
+                      <div></div>
+                    </el-col>
+                  </el-row>
+                  <div
+                    v-if="DetailsForm.structDensity.toFixed(0) * 1"
+                    v-for="v in DetailsForm.structDensity.toFixed(0)"
+                    style="margin-top: 20px; height: 200px"
+                  >
+                    <div class="info-title">（BX）变形 距离：1m</div>
+                    <div class="info-box">
+                      <div class="info-text">
+                        <p>分值：0.50</p>
+                        <p>等级：1</p>
+                        <p style="line-height: 15px">
+                          评价：
+                          (部分或整体缺陷)无或有轻微管道缺陷，结构状况基本不受影响，但具有潜在变坏的可能。结构条件基本完好，不需要修复。
+                        </p>
+                      </div>
+                      <div class="info-video">
+                        <img src="./testImg/video.png" alt="视频" style="width: 100%; height: 100%" />
+                      </div>
+                    </div>
+                  </div>
+                </el-form>
+              </div>
+              <!-- 工程信息 -->
+              <div class="box1" v-show="activeIndex == '4'">
+                <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
+                  <div class="detailsTitle">工程信息</div>
+                  <el-row v-for="(v, i) in projectArr" :key="i">
+                    <el-col :span="12" style="padding-right: 15px">
+                      <el-form-item :label="v[0].label">
+                        <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                    <el-col :span="12" style="padding-right: 15px"
+                      ><el-form-item :label="v[1].label">
+                        <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <el-row>
+                    <el-col :span="24" style="padding-right: 15px">
+                      <el-form-item label="检测报告">
+                        <!-- <el-link :href="baseAddress + '/psjc/file' + DetailsForm.wordFilePath" type="primary">{{
+                          DetailsForm.wordInfoName
+                        }}</el-link> -->
+                        <!-- 附件列表 -->
+                        <!-- <div style="max-height: 120px; overflow-y: scroll">
+                          <div v-for="(item, i) in fileListData" :key="i" class="text-space">
+                            <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{
+                              item.originalName
+                            }}</el-link>
+                          </div>
+                          <p v-if="!fileListData.length" style="text-align: center">暂无附件</p>
+                        </div> -->
+                      </el-form-item>
+                    </el-col>
+                  </el-row>
+                  <div style="width: 100%; height: 330px">
+                    <img src="./testImg/video.png" alt="视频" style="width: 100%; height: 100%" />
+                  </div>
+                </el-form>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </div>
     </transition>
     <!-- 导出弹框 -->
     <el-dialog title="附件列表" :visible.sync="dialogEnclosure">
@@ -228,7 +453,7 @@ import {
   queryDictionariesId,
   assessmentDetails,
   histroyPipeData,
-  assessmentDefect
+  assessmentDefect,
 } from '@/api/pipelineManage'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
@@ -248,20 +473,46 @@ import defectImgLB from '@/assets/images/traingle-lb.png'
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
 
-// 引入管道检测组件
-import deleteDialog from '../components/checkDetails.vue'
+import * as echarts from 'echarts'
 
 export default {
   props: ['data'],
-  components: {
-    deleteDialog
-  },
   data() {
     return {
-      id: null, // 当前列表id
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
       currentIndex: 0, // 当前页数
+      structArr: [
+        [
+          { label: '平均值S', name: 'structYmean' },
+          { label: '最大值Smax', name: 'structYmax' }
+        ],
+        [
+          { label: '缺陷密度', name: 'structDensity' },
+          { label: '修复指数RI', name: 'repairIndex' }
+        ]
+      ], // 结构性数据
+      funcArr: [
+        [
+          { label: '平均值S', name: 'funcYmean' },
+          { label: '最大值Smax', name: 'funcYmax' }
+        ],
+        [
+          { label: '缺陷密度', name: 'funcDensity' },
+          { label: '养护指数MI', name: 'maintainIndex' }
+        ]
+      ], // 功能性数据
+      projectArr: [
+        [
+          { label: '工程名称', name: 'prjName' },
+          { label: '检测地点', name: 'checkAddress' }
+        ],
+        [
+          { label: '检测日期', name: 'sampleTime' },
+          { label: '检测人员', name: 'detectPerson' }
+        ]
+      ], // 工程信息数据
+      DetailsForm: {}, // 详情表单
       cardTableContent: [
         [
           { label: '管段编号', name: 'expNo' },
@@ -280,6 +531,7 @@ export default {
           { label: '长度', name: 'pipeLength' }
         ]
       ], // 详情表格参数
+      activeIndex: '1', // 详情导航索引
       dialogFormVisible: false, // 详情弹框显影
       detailsArr: [], // 缺陷信息
       // 查询附件列表需要的参数id
@@ -366,10 +618,6 @@ export default {
     this.clearAll()
   },
   computed: {
-    // 传给管道检测组件的参数
-    // sendParam() {
-    //   return { bool: this.dialogFormVisible, id: this.id }
-    // },
     // 提示框照片视频
     handleClick(tab, event) {
       console.log(tab, event)
@@ -380,11 +628,7 @@ export default {
     }
   },
   methods: {
-    // 关闭弹框
-    getBool(bool) {
-      this.dialogFormVisible = bool
-    },
-    // 下载附件
+     // 下载附件
     fileLinkToStreamDownload(id) {
       let res = downloadFile(id)
       return baseAddress + res.url
@@ -418,9 +662,109 @@ export default {
     // 跳转到pdf页面
     toPdfPage(url) {
       console.log('url', url)
-      // window.open(baseAddress + '/psjc/file' + url, '_blank')
+      window.open(baseAddress + '/psjc/file' + url, '_blank')
     },
+    // 绘制剖面图
+    renderEcharts() {
+      console.log('渲染echarts')
+      let chartDom = document.getElementById('profile_echatrs')
+      let myChart = echarts.init(chartDom)
+      let option
+      option = {
+        xAxis: {
+          type: 'category',
+          data: [{ value: '起点' + this.DetailsForm.startPoint }, '', { value: '终点' + this.DetailsForm.endPoint }],
+          axisTick: {
+            show: false
+          }
+        },
+        yAxis: {
+          type: 'value',
+          name: '埋深：m',
+          axisLine: {
+            show: true //隐藏y轴
+          },
+          axisLabel: {
+            show: false //隐藏刻度值
+          },
+          axisTick: {
+            show: false
+          },
+          splitLine: {
+            show: false
+          },
+          scale: false
+        },
+        series: [
+          {
+            data: [
+              this.DetailsForm.startDepth,
+              (this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2,
+              this.DetailsForm.endDepth
+            ],
+            type: 'line',
+            color: '#CFCCCC',
+            markLine: {
+              symbol: ['none', 'none'],
+              label: {
+                show: true,
+                formatter: function (a) {
+                  console.log('标题参数', a)
+                  return ` 埋深 ${a['name']}m `
+                }
+              },
+              data: [
+                { xAxis: 0, name: this.DetailsForm.startDepth },
+                { xAxis: 2, name: this.DetailsForm.endDepth }
+              ]
+            }
+          },
 
+          {
+            data: [
+              { value: this.DetailsForm.startDepth, name: '沉积', type: 'CJ' },
+              { value: (this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2, name: '变形', type: 'BX' }
+            ],
+            type: 'line',
+            symbol: 'triangle',
+            symbolSize: 10,
+            symbolOffset: [0, -20],
+            itemStyle: {
+              normal: {
+                label: {
+                  // formatter: '（CJ）{b}[0]，{c}m   ',
+                  formatter: function (a) {
+                    console.log('标题参数', a)
+                    return `（${a['data']['type']}）${a['name']},${a['value']}m  `
+                  },
+                  backgroundColor: '#fff',
+                  borderColor: '#8C8D8E',
+                  borderWidth: 1,
+                  borderRadius: 2,
+                  lineHeight: 15,
+                  padding: 5,
+                  show: true,
+                  textStyle: {
+                    color: '#000'
+                  }
+                },
+                textColor: 'red',
+                borderWidth: 6,
+                borderColor: '#E91111',
+                color: '#2D74E7'
+              },
+              emphasis: {
+                label: {
+                  show: true
+                }
+              }
+            }
+          }
+        ]
+      }
+
+      option && myChart.setOption(option)
+    },
     init() {
       this.vectorLayer = new VectorLayer({ source: new VectorSource() })
       this.lightLayer = new VectorLayer({
@@ -580,19 +924,26 @@ export default {
       this.currentInfoCard = true
       // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },
-
+    // 详情导航选择事件
+    handleSelect(key, keyPath) {
+      this.activeIndex = key
+      // console.log(key, keyPath)
+      // console.log(this.activeIndex)
+    },
     // 详情
     async openDetails(row) {
-      this.id = row.id
       // this.currentForm = row
       // console.log('row', row)
-      // let res = await assessmentDetails(row.id)
+      let res = await assessmentDetails(row.id)
+      this.DetailsForm = res.result
       // // 绘制剖面图
       // // console.log('res', res)
       // let res = await histroyPipeData({ expNo: row.expNo })
       // this.cardTable = res.result
       this.dialogFormVisible = true
-      
+      this.$nextTick(() => {
+        this.renderEcharts()
+      })
     },
     // 获取字典id
     // async getParamsId() {

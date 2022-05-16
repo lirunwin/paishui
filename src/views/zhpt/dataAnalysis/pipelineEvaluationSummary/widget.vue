@@ -38,37 +38,19 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
+        <template slot="empty">
+          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+        </template>
         <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
-        <el-table-column prop="date" header-align="center" label="检测日期" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="name" header-align="center" label="起始井号" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="终止井号" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="起点埋深(m)" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="终点埋深(m)" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="管段类型" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="管段材质" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="管段直径" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="管段长度" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测长度" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="整改建议" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测方向" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="address" header-align="center" label="检测人员" align="center" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
-          <template slot-scope="scope">
-            <el-button type="text" size="small" @click="zero = scope">详情</el-button>
-          </template>
+        <el-table-column
+          :prop="v.name"
+          header-align="center"
+          :label="v.label"
+          align="center"
+          show-overflow-tooltip
+          v-for="v in tableContent"
+          :key="v.name"
+        >
         </el-table-column>
       </el-table>
       <!-- 分页 -->
@@ -76,70 +58,16 @@
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :current-page="currentPage4"
+          :current-page="pagination.current"
           :page-sizes="[10, 20, 30, 50, 100, 1000]"
-          :page-size="30"
+          :page-size="pagination.size"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="400"
+          :total="paginationTotal"
         >
         </el-pagination>
       </div>
     </div>
-    <!-- 添加卡片 -->
-    <el-dialog title="添加工程" :visible.sync="dialogFormVisible">
-      <el-form ref="form" :rules="rules" :model="form" label-width="auto" label-position="right">
-        <el-form-item label="工程名称" prop="name">
-          <el-input v-model="form.name"></el-input>
-        </el-form-item>
-
-        <el-form-item label="工程编号" prop="number">
-          <el-input v-model="form.number"></el-input>
-        </el-form-item>
-        <el-form-item label="建设单位">
-          <el-input v-model="form.constructionUnit"></el-input>
-        </el-form-item>
-        <el-form-item label="设计单位">
-          <el-input v-model="form.designUnit"></el-input>
-        </el-form-item>
-        <el-form-item label="施工单位" prop="workUnit">
-          <el-input v-model="form.workUnit"></el-input>
-        </el-form-item>
-        <el-form-item label="检测单位">
-          <el-input v-model="form.testUnit"></el-input>
-        </el-form-item>
-        <el-form-item label="探测单位">
-          <el-input v-model="form.probeUnit"></el-input>
-        </el-form-item>
-        <el-form-item label="监理单位">
-          <el-input v-model="form.supervisorUnit"></el-input>
-        </el-form-item>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="工程开始日期">
-              <el-date-picker v-model="form.name" placeholder="选择日期" type="date"> </el-date-picker>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="工程结束日期">
-              <el-date-picker v-model="form.name" placeholder="选择日期" type="date"> </el-date-picker>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="工程简介" prop="projectIntroduction">
-          <el-input type="textarea" :rows="5" resize="none" v-model="form.projectIntroduction"> </el-input>
-        </el-form-item>
-        <el-form-item label="附件:">
-          <el-col :span="12">
-            <el-input v-model="form.name"></el-input>
-          </el-col>
-          <el-button type="primary" style="margin-left: 10px">选择文件</el-button>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
-      </div>
-    </el-dialog>
+    
   </div>
 </template>
 
@@ -147,41 +75,29 @@
 export default {
   data() {
     return {
+      pagination: { current: 1, size: 30 }, // 分页参数信息
+      paginationTotal: 0, // 总页数
+      // 表格参数
+      tableContent: [
+        { label: '检测日期', name: 'prjNo' },
+        { label: '起始井号', name: 'prjName' },
+        { label: '终止井号', name: 'sgunit' },
+        { label: '起点埋深(m)', name: 'proIntroduction' },
+        { label: '终点埋深(m)', name: 'createTime' },
+        { label: '管段类型', name: 'prjNo' },
+        { label: '管段材质', name: 'prjName' },
+        { label: '管段直径', name: 'sgunit' },
+        { label: '管段长度', name: 'proIntroduction' },
+        { label: '检测长度', name: 'createTime' },
+        { label: '整改建议', name: 'proIntroduction' },
+        { label: '检测方向', name: 'createTime' },
+        { label: '检测人员', name: 'createTime' }
+      ],
+      multipleSelection: [], // 表格被选中的数据
       zero: '',
-      dialogFormVisible: false,
       tableData: [
         {
           date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-07',
           name: '王小虎',
           address: '上海市普陀区金沙江路 1518 弄'
         }
@@ -197,25 +113,21 @@ export default {
         supervisorUnit: '',
         projectIntroduction: ''
       },
-      rules: {
-        name: [
-          { required: true, message: '不能为空', trigger: 'blur' },
-          { max: 100, message: '内容不能超过100个字符串', trigger: 'blur' }
-        ],
-        number: [
-          { max: 20, message: '内容不能超过20个字符串', trigger: 'blur' },
-          {
-            pattern: /^[a-zA-Z0-9]+$/,
-            message: '只能输入数字或英文',
-            trigger: 'blur'
-          }
-        ],
-        workUnit: [{ max: 255, message: '内容不能超过255个字符串', trigger: 'blur' }],
-        projectIntroduction: [{ max: 1000, message: '内容不能超过1000个字符串', trigger: 'blur' }]
-      }
+      
     }
   },
   methods: {
+    // 分页触发的事件
+    async handleSizeChange(val) {
+      this.pagination.size = val
+      await this.getDate()
+      console.log(`每页 ${val} 条`)
+    },
+    async handleCurrentChange(val) {
+      this.pagination.current = val
+      await this.getDate()
+      console.log(`当前页: ${val}`)
+    },
     handleSelectionChange(val) {
       this.multipleSelection = val
     }

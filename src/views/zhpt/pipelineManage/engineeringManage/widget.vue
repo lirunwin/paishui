@@ -208,9 +208,7 @@
             <!-- 附件列表 -->
             <div v-show="isDetails" style="max-height: 120px; overflow-y: scroll">
               <div v-for="(item, i) in fileListData" :key="i" class="text-space">
-                <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{
-                  item.originalName
-                }}</el-link>
+                <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{ item.originalName }}</el-link>
               </div>
               <p v-if="!fileListData.length" style="text-align: center">暂无附件</p>
             </div>
@@ -647,8 +645,8 @@ export default {
     },
     // 下载附件
     fileLinkToStreamDownload(id) {
-      let res =  downloadFile(id)
-      return  baseAddress + res.url
+      let res = downloadFile(id)
+      return baseAddress + res.url
     },
     downloadExportFile(blob, tagFileName) {
       let downloadElement = document.createElement('a')
