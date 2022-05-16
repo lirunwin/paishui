@@ -1,59 +1,76 @@
 <template>
   <div class="engineering-manage">
     <!-- 管道评估统计 -->
-    <div class="table-box">
-      <div class="top-tool">
-        <div class="serch-engineering">
-          <div class="title">检测日期：</div>
-          <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
-          ~
-          <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
-        </div>
-        <div class="serch-engineering">
-          <div class="title">整改建议：</div>
-          <el-select v-model="form.name" placeholder="--整改建议--">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
-        </div>
-        <div class="serch-engineering">
-          <el-button class="serch-btn" type="primary"> 绘制 </el-button>
-          <el-button class="serch-btn" type="primary"> 清除 </el-button>
-          <el-button class="serch-btn" type="primary"> 查询 </el-button>
-          <el-button class="serch-btn" type="primary"> 导出 </el-button>
-          <div class="right-btn"></div>
+    <div class="releaseTop-box">
+      <!-- 左边部分 -->
+      <div class="left">
+        <div class="table-box">
+          <div class="top-tool">
+            <div class="serch-engineering">
+              <div class="title">检测日期：</div>
+              <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
+              ~
+              <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
+            </div>
+            <div class="serch-engineering">
+              <div class="title">整改建议：</div>
+              <el-select v-model="form.name" placeholder="--整改建议--">
+                <el-option label="区域一" value="shanghai"></el-option>
+                <el-option label="区域二" value="beijing"></el-option>
+              </el-select>
+            </div>
+            <div class="serch-engineering">
+              <el-button class="serch-btn" type="primary"> 绘制 </el-button>
+              <el-button class="serch-btn" type="primary"> 清除 </el-button>
+              <el-button class="serch-btn" type="primary"> 查询 </el-button>
+              <el-button class="serch-btn" type="primary"> 导出 </el-button>
+              <div class="right-btn"></div>
+            </div>
+          </div>
+          <div class="content">
+            <el-radio v-model="radio" label="1">饼状图</el-radio>
+            <el-radio v-model="radio" label="2">柱状图</el-radio>
+            <el-checkbox label="管道数量"></el-checkbox>
+            <el-checkbox label="管道长度"></el-checkbox>
+            <h2 style="text-align: center">管道评估统计图</h2>
+            <div id="mainB" style="height: 250px"></div>
+            <!-- 表格 -->
+            <el-table
+              ref="multipleTable"
+              :data="tableData"
+              tooltip-effect="dark"
+              height="250"
+              stripe
+              style="width: 100%"
+              @selection-change="handleSelectionChange"
+            >
+              <template slot="empty">
+                <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+              </template>
+              <el-table-column header-align="center" align="center" label="管道评估统计表">
+                <el-table-column
+                  :prop="v.name"
+                  header-align="center"
+                  align="center"
+                  :label="v.label"
+                  show-overflow-tooltip
+                  v-for="v in tableContent"
+                  :key="v.name"
+                >
+                </el-table-column>
+              </el-table-column>
+            </el-table>
+          </div>
         </div>
       </div>
-      <div class="content">
-        <el-radio v-model="radio" label="1">饼状图</el-radio>
-        <el-radio v-model="radio" label="2">柱状图</el-radio>
-        <el-checkbox label="管道数量"></el-checkbox>
-        <el-checkbox label="管道长度"></el-checkbox>
-        <h2 style="text-align: center">管道评估统计图</h2>
-        <div id="mainB" style="height: 250px"></div>
-        <div style="border: 1px solid #ccc">
-          <h3 class="title">管道缺陷分类统计表</h3>
-          <ul class="table-content">
-            <li>
-              <div>缺陷类型</div>
-              <div>缺陷名称</div>
-              <div>缺陷数量</div>
-            </li>
-            <li>
-              <div>模拟数据</div>
-              <div>模拟数据</div>
-              <div>模拟数据</div>
-            </li>
-            <li>
-              <div>模拟数据</div>
-              <div>模拟数据</div>
-              <div>模拟数据</div>
-            </li>
-          </ul>
+      <!-- 右边部分 -->
+      <div class="right">
+        <!-- 地图 -->
+        <div class="map-box">
+          <!-- <simple-map @afterMapLoad="afterMapLoad" ref="myMap"></simple-map> -->
         </div>
       </div>
     </div>
-    <!-- 添加卡片 -->
   </div>
 </template>
 
@@ -69,6 +86,14 @@ export default {
   props: ['data'],
   data() {
     return {
+      tableData: [], // 表格数据
+      // 表格参数
+      tableContent: [
+        { label: '整改建议', name: 'wordInfoName' },
+        { label: '数量(条)', name: 'jcnum' },
+        { label: '长度(米)', name: 'jclength' }
+      ],
+      multipleSelection: [], // 被选中的表格数据
       radio: '1', // 单选框的值
       radioB: '', // 管道数量
       radioC: '', // 管道长度
@@ -116,6 +141,11 @@ export default {
     // document.getElementById('mainB').removeAttribute('_echarts_instance_')
   },
   methods: {
+    // 表格选中事件
+    handleSelectionChange(val) {
+      // console.log('表格选中事件', val)
+      this.multipleSelection = val
+    },
     //初始化数据(饼状图)
     initData() {
       // 基于准备好的dom，初始化echarts实例
@@ -205,7 +235,7 @@ export default {
       }
     },
     mapExtent: {
-      handler (nv, ov) {
+      handler(nv, ov) {
         console.log('视图改变')
         if (this.data.mapView.getView().getZoom() > 16) {
           this.data.that.queryForExtent(nv)
@@ -225,112 +255,148 @@ export default {
 .engineering-manage {
   margin: 0;
   box-sizing: border-box;
-  position: relative;
   overflow-y: scroll;
-  // 表格样式
-  .table-box {
-    width: 96%;
+
+  // 分左右布局
+  .releaseTop-box {
     height: 100%;
-    margin: auto;
-    .top-tool {
-      display: flex;
-      // justify-content: space-between;
-      flex-direction: column;
-      // flex-wrap: wrap;
-      font-size: 14px;
-      /deep/ .serch-engineering {
-        display: flex;
-        // justify-content: space-around;
-        align-items: center;
-        margin-bottom: 14px;
-
-        .serch-input {
-          width: 245px;
-        }
-        .el-input__inner {
-          height: 34px;
-        }
-        .date-css {
-          width: 135px;
-        }
-
-        .title {
-          font-family: Arial;
-          white-space: nowrap;
-          margin-left: 5px;
-        }
-      }
-      .serch-btn {
-        height: 34px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #2d74e7;
-        // margin-left: 14px;
-        padding: 12px;
-        border: none !important;
-      }
-
-      .serch-btn:hover {
-        opacity: 0.8;
-      }
-      .right-btn {
-        margin-bottom: 14px;
-        display: inline-block;
-        // display: flex;
-        // align-items: center;
-        // flex-direction: row;
-        // flex-wrap: wrap;
-      }
+    display: flex;
+    justify-content: space-between;
+    .left,
+    .right {
     }
-    .content {
-      height: 92%;
-      width: 100%;
-      // overflow-y: scroll;
-      padding: 10px;
-      box-sizing: border-box;
-      /deep/ .el-checkbox {
-        margin-right: 0px !important;
-        .el-checkbox__label {
-          padding-left: 6px;
-        }
-      }
-      /deep/ .el-radio {
-        margin-right: 9px;
-        .el-radio__label {
-          padding-left: 4px;
-        }
-      }
-      ul,
-      li {
-        direction: none;
-        padding: 0;
-        margin: 0;
-      }
-      .title {
-        text-align: center;
-      }
-      .table-content {
-        display: flex;
-        text-align: center;
-        flex-direction: column;
-        & > li {
+    .left {
+      flex: 3;
+      .table-box {
+        width: 96%;
+        height: 100%;
+        margin: 20px auto;
+        .top-tool {
           display: flex;
-          align-items: center;
-          & > div {
-            height: 38px;
-            line-height: 38px;
+          // justify-content: space-between;
+          // flex-direction: column;
+          // flex-wrap: wrap;
+          font-size: 14px;
+          margin-bottom: 14px;
+          flex-wrap: wrap;
+          /deep/ .serch-engineering {
+            display: flex;
+            // justify-content: space-around;
+            align-items: center;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            // 选择框
+            .el-select {
+              width: 130px;
+            }
+            .serch-input {
+              width: 245px;
+            }
+            .el-input__inner {
+              height: 34px;
+            }
+            .date-css {
+              width: 135px;
+            }
+
+            .title {
+              font-family: Arial;
+              white-space: nowrap;
+              margin-left: 5px;
+            }
+          }
+          .serch-btn {
+            height: 34px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2d74e7;
+            // margin-left: 14px;
+            padding: 12px;
+            border: none !important;
+          }
+
+          .serch-btn:hover {
+            opacity: 0.8;
+          }
+          .right-btn {
+            margin-bottom: 14px;
+            display: inline-block;
+            // display: flex;
+            // align-items: center;
+            // flex-direction: row;
+            // flex-wrap: wrap;
+          }
+        }
+        .content {
+          height: 92%;
+          width: 100%;
+          // overflow-y: scroll;
+          padding: 10px;
+          box-sizing: border-box;
+          /deep/ .el-table {
             flex: 1;
-            border: 1px solid #ccc;
+            // overflow-y: scroll;
+            th.el-table__cell > .cell {
+              color: rgb(50, 59, 65);
+              height: 40px;
+              line-height: 40px;
+              background: rgb(234, 241, 253);
+            }
+            .el-table__row--striped > td {
+              background-color: #f3f7fe !important;
+            }
+          }
+          /deep/ .el-checkbox {
+            margin-right: 0px !important;
+            .el-checkbox__label {
+              padding-left: 6px;
+            }
+          }
+          /deep/ .el-radio {
+            margin-right: 9px;
+            .el-radio__label {
+              padding-left: 4px;
+            }
+          }
+          ul,
+          li {
+            direction: none;
+            padding: 0;
+            margin: 0;
+          }
+          .title {
+            text-align: center;
+          }
+          .table-content {
+            display: flex;
+            text-align: center;
+            flex-direction: column;
+            & > li {
+              display: flex;
+              align-items: center;
+              & > div {
+                height: 38px;
+                line-height: 38px;
+                flex: 1;
+                border: 1px solid #ccc;
+              }
+            }
           }
         }
       }
+      .releaseContent {
+        border: 1px solid #9a9a9a;
+        overflow: scroll;
+      }
     }
-  }
-
-  // 选择框
-  /deep/ .el-select {
-    width: 130px;
+    .right {
+      flex: 2;
+      border: 1px solid #666;
+      .map-box {
+        height: 100%;
+      }
+    }
   }
 }
 </style>

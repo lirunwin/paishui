@@ -111,14 +111,14 @@
 
         <el-table-column width="120" header-align="center" label="缺陷名称代码" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="text-align: center">{{ `(${scope.row.defectCode})${scope.row.defectType}` }}</div>
+            <div style="text-align: center">{{ `(${scope.row.defectCode})${scope.row.defectName}` }}</div>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
+        <!-- <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click.stop="openDetails(scope.row)">详情</el-button>
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
       <div>
         <el-pagination
@@ -149,33 +149,33 @@
               "
             >
               <span style="font-weight: bold"
-                >功能性缺陷:({{ isPromptBox.defectCode }}){{ isPromptBox.defectName }}
+                >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
               </span>
-              <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails(isPromptBox)"
+              <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails(DetailsForm)"
                 >详情</a
               >
             </div>
-            <div style="padding: 3px 0">{{ isPromptBox.expNo + isPromptBox.defectType }}</div>
+            <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
             <div class="content-info">
               <div class="left">
-                <div style="padding: 3px 0">检测日期&emsp; {{ isPromptBox.sampleTime }}</div>
+                <div style="padding: 3px 0">检测日期&emsp; {{ DetailsForm.sampleTime }}</div>
                 <div style="display: flex; padding: 3px 0">
-                  <span style="flex: 1">距离:&emsp;{{ isPromptBox.distanceStartPoint }}</span
-                  ><span style="flex: 1">等级:&emsp;{{ isPromptBoxdefectLevel }}</span>
+                  <span style="flex: 1">距离:&emsp;{{ DetailsForm.distanceStartPoint }}</span
+                  ><span style="flex: 1">等级:&emsp;{{ DetailsForm.defectLevel }}</span>
                 </div>
                 <div style="display: flex; padding: 3px 0">
-                  <span style="width: 30px">评价:</span>
-                  <span style="line-height: 16px; padding-left: 10px">{{ isPromptBox.pipeNote }}</span>
+                  <span style="width: 35px">评价:</span>
+                  <span style="line-height: 16px; padding-left: 10px">{{ DetailsForm.pipeNote }}</span>
                 </div>
               </div>
               <div class="right">
                 <el-tabs v-model="activeName" @tab-click="handleClick">
-                  <el-tab-pane :label="`照片(${isPromptBox.picnum || '0'})`" name="picnum">
+                  <el-tab-pane :label="`照片(${DetailsForm.picnum || '0'})`" name="picnum">
                     <div class="container">
                       <img src="./testImg/test.png" alt="" srcset="" />
                     </div>
                   </el-tab-pane>
-                  <el-tab-pane :label="`视频(${isPromptBox.viedoNum || '0'})`" name="viedoNum"></el-tab-pane>
+                  <el-tab-pane :label="`视频(${DetailsForm.viedoNum || '0'})`" name="viedoNum"></el-tab-pane>
                 </el-tabs>
               </div>
             </div>
@@ -703,7 +703,8 @@ export default {
         this.setPositionByPipeId(row.id)
       }
       console.log('打开缩略提示框', row)
-      this.isPromptBox = { ...row }
+      this.openDetails(row)
+      // this.isPromptBox = { ...row }
       // let res = await assessmentDefect(row.id)
       // this.currentForm = res.result
       this.currentInfoCard = true
@@ -723,7 +724,7 @@ export default {
       // console.log('res', res)
       // let res = await histroyPipeData({ expNo: row.expNo })
       // this.cardTable = res.result
-      this.dialogFormVisible = true
+      // this.dialogFormVisible = true
     },
     async resetBtn() {
       this.pagination = { current: 1, size: 30 }

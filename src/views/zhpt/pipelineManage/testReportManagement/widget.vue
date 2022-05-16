@@ -37,7 +37,7 @@
                   @change="changeDate"
                 ></el-date-picker>
               </el-col>
-              <el-col :span="1" style="text-align: center;margin: 0 5px;">至</el-col>
+              <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
                   v-model="searchValue.dateTime.finishDate"
@@ -66,7 +66,7 @@
         <div class="right-btn">
           <el-button size="small" type="primary" @click="showUpdata">报告上传</el-button>
           <!-- <el-button  type="primary" @click="dialogFormVisible2 = true">视频上传</el-button> -->
-          <el-button size="small" type="primary" @click="videoShowUpdata">视频上传</el-button>
+          <el-button size="small" type="primary" :disabled="multipleSelection.length != 1" @click="videoShowUpdata">视频上传</el-button>
           <el-button
             size="small"
             type="primary"
@@ -271,18 +271,8 @@
     <div class="public-box">
       <el-dialog title="附件视频上传" @close="closeDialog" :visible.sync="dialogFormVisible2">
         <el-form ref="formVideo" :model="form" :rules="rules">
-          <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
-            <el-select
-              clearable
-              v-model="form.name"
-              placeholder="请选择工程名称"
-              v-selectLoadMore="selectLoadMoreVideo"
-              @blur="initSelectDate"
-              filterable
-              :disabled="loadingBool"
-            >
-              <el-option v-for="(item, i) in videoSelectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
-            </el-select>
+          <el-form-item label="报告名称" :label-width="formLabelWidth">
+            <el-input size="small" v-model="selectWord.name" disabled show-word-limit></el-input>
           </el-form-item>
           <el-form-item label="检测视频" :label-width="formLabelWidth" class="hd-input" prop="report">
             <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
@@ -485,7 +475,7 @@
               "
             >
               <span style="font-weight: bold; user-select: none"
-                >{{ getCurrentForm.expNo}}
+                >{{ getCurrentForm.expNo }}
                 <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
                 {{ currentIndex + 1 }}/{{ currentForm.length }}
                 <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
@@ -594,6 +584,10 @@ export default {
   },
   data() {
     return {
+      selectWord:{
+        name:"",
+        id:""
+      }, // 选中的报告的id
       fullscreenLoading: false, // 加载
       remark: '', // 备注
       pdfUrl: '', // pdf地址
@@ -871,7 +865,13 @@ export default {
     },
     // 双击打开详情或发布
     openDetails(row, column) {
-      this.testReportDetails(row.id)
+      if (row.state == '1') {
+        this.testReportDetails(row.id)
+        console.log('详情', row.state)
+      } else {
+        this.testReportDetails(row.id, true)
+        console.log('发布', row.state)
+      }
     },
 
     addMapEvent() {
@@ -879,7 +879,7 @@ export default {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         this.lightLayer.getSource().clear()
         if (features.length !== 0) {
-          let feature = features.find(fea => fea.getGeometry() instanceof Point) || features[0]
+          let feature = features.find((fea) => fea.getGeometry() instanceof Point) || features[0]
           let id = feature.get('id')
           let geometry = feature.getGeometry().clone()
           this.lightLayer.getSource().addFeature(new Feature({ geometry }))
@@ -889,7 +889,7 @@ export default {
         }
       })
     },
-    init () {
+    init() {
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
         style: comSymbol.getAllStyle(8, 'rgba(0, 255, 255, 0.8)', 10, 'rgba(0, 255, 255, 0.6)')
@@ -909,7 +909,7 @@ export default {
       this.vectorLayer2.getSource().clear()
       this.clickEvent && unByKey(this.clickEvent)
     },
-    lightFea (row) {
+    lightFea(row) {
       console.log('报告数据')
       let features = this.getPipeDefectData(1, row.id, true)
     },
@@ -947,11 +947,13 @@ export default {
       }
       dataApi(id).then((res) => {
         if (res.code === 1) {
-          let dFeas = [], pFeas = []
+          let dFeas = [],
+            pFeas = []
           if (res.result) {
             let reportInfo = res.result[0] ? res.result : [res.result]
-            let pipeData = [], defectData = []
-            reportInfo.forEach(rpt => {
+            let pipeData = [],
+              defectData = []
+            reportInfo.forEach((rpt) => {
               let pipeStates = rpt.pipeStates
               pipeData = [...pipeData, ...pipeStates]
               defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects).flat()]
@@ -986,7 +988,8 @@ export default {
      * @param hasStyle 是否设置样式
      * */
     getFeatures(featureArr, type, hasStyle) {
-      let style = null, features = []
+      let style = null,
+        features = []
       if (type === 1) {
         featureArr.forEach((feaObj) => {
           let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
@@ -1022,13 +1025,15 @@ export default {
             let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
             let feature = new Feature({ geometry: new Point(point) })
 
-            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR], img = null
+            let imgBox = [defectImgLB, defectImgB, defectImgY, defectImgR],
+              img = null
             if (feaObj.defectLevel) {
               let index = ['一级', '二级', '三级', '四级']
               img = imgBox[index.indexOf(feaObj.defectLevel)]
             }
 
-            hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img || imgBox[3], scale: 0.3 }) }))
+            hasStyle &&
+              feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: img || imgBox[3], scale: 0.3 }) }))
 
             for (let i in feaObj) {
               i !== 'geometry' && feature.set(i, feaObj[i])
@@ -1056,7 +1061,7 @@ export default {
       return false
     },
     // 获取字典id
-    async getParamsId(type) {
+    async getParamsId(type1, type2) {
       // 获取字典id
       // uploadFileType
       let uploadFileTypeDicId = await queryDictionariesId({ keys: 'uploadFileType' })
@@ -1066,12 +1071,12 @@ export default {
       uploadItemDictId = uploadItemDictId.result.uploadItem
       // await this.$refs.upload.submit()
       uploadFileTypeDicId.forEach((v) => {
-        if (v.codeValue == type) {
+        if (v.codeValue == type1) {
           this.updataParamsId.uploadFileTypeDicId = v.id
         }
       })
       uploadItemDictId.forEach((v) => {
-        if (v.codeValue == 'tf_ywpn_prjinfo_w') {
+        if (v.codeValue == type2) {
           this.updataParamsId.uploadItemDictId = v.id
         }
       })
@@ -1178,7 +1183,7 @@ export default {
       })
 
       let resUrl = await queryPipeState(id)
-      console.log('url', resUrl)
+      console.log('详情', resUrl)
       this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
       this.dialogFormVisible3 = true
       this.$nextTick(() => {
@@ -1265,7 +1270,7 @@ export default {
         startDate: '',
         finishDate: ''
       }
-      
+
       this.changeDate()
       await this.getDate()
     },
@@ -1328,16 +1333,19 @@ export default {
     },
     // 视频上传按钮
     async videoShowUpdata() {
+      
+      this.selectWord.name = this.multipleSelection[0].prjName
+      this.selectWord.id = this.multipleSelection[0].id
       // 选择工程名称的分页查询
-      let res = await projectPagingQuery(this.selectParm)
-      let data = res.result.records
-      this.selectLoadTotal = res.result.records
-      this.videoSelectArr = data.map((v) => {
-        return {
-          name: v.prjName,
-          No: v.id
-        }
-      })
+      // let res = await projectPagingQuery(this.selectParm)
+      // let data = res.result.records
+      // this.selectLoadTotal = res.result.records
+      // this.videoSelectArr = data.map((v) => {
+      //   return {
+      //     name: v.prjName,
+      //     No: v.id
+      //   }
+      // })
       // this.selectArr
       console.log('选择框数据', this.videoSelectArr)
       this.dialogFormVisible2 = true
@@ -1348,7 +1356,7 @@ export default {
         if (valid) {
           this.loadingBool = true
           // 获取字典id
-          await this.getParamsId('wordInfoDoc')
+          await this.getParamsId('wordInfoDoc', 'tf_ywpn_prjinfo_w')
           this.updataParamsId.itemId = this.form.name
           await this.$refs.updataDocx.submit()
         } else {
@@ -1362,8 +1370,8 @@ export default {
         if (valid) {
           this.loadingBool = true
           // 获取字典id
-          await this.getParamsId('pipeVideo')
-          this.updataParamsId.itemId = this.form.name
+          await this.getParamsId('pipeVideo', 'tf_ywpn_wordinfo_w')
+          this.updataParamsId.itemId = this.selectWord.id
           await this.$refs.updataVideo.submit()
         } else {
           console.log('不能提交!!')
