@@ -40,3 +40,13 @@ export function getDefectDataByFilter (params) {
         params
     })
 }
+
+// 根据条件获取缺陷
+
+export function getDefectDataBySE (params) {
+    return request({
+        url: '/psjc/pipeState/getPipeStateConutNew',
+        method: 'get',
+        params
+    })
+}

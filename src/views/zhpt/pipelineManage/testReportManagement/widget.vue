@@ -557,7 +557,7 @@ import proposal from './components/proposal'
 
 import simpleMap from '@/components/SimpleMap'
 
-import { getDefectDataById, getDefectData } from '@/api/sysmap/drain'
+import { getDefectDataById, getDefectData, getDefectDataBySE } from '@/api/sysmap/drain'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
@@ -777,11 +777,28 @@ export default {
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
     this.init()
+
+    // this.getPipeData()
   },
   destroyed() {
     this.clearAll()
   },
   methods: {
+    getPipeData () {
+      let params = {
+        startPoint: "",
+        endPoint: "",
+        funcClass: "Ⅲ",
+        structClass: '',
+        jcStartDate: '',
+        jcEndDate: ''
+      }
+      getDefectDataBySE(params).then(res => {
+        if(res.code === 1) {
+          console.log('管段统计数据', res)
+        } else this.$message.error('获取管段数据出错！')
+      })
+    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
@@ -879,6 +896,7 @@ export default {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         this.lightLayer.getSource().clear()
         if (features.length !== 0) {
+          console.log('选择的管线', features)
           let feature = features.find(fea => fea.getGeometry() instanceof Point) || features[0]
           let id = feature.get('id')
           let geometry = feature.getGeometry().clone()
