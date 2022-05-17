@@ -7,7 +7,7 @@ export const LegendConfig = {
         { type: "rect", color: "#00f", label: "正常", showCheckBox: false },
         { type: "rect", color: "#000", label: "未评价", showCheckBox: false },
     ],
-    // 检测报告
+    // 排水检测
     testReport: [
         { type: "traingle-lb", color: "transparent", label: "Ⅰ级", showCheckBox: false },
         { type: "traingle-b", color: "transparent", label: "Ⅱ级 ", showCheckBox: false },

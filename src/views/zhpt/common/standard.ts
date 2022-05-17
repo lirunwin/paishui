@@ -30,7 +30,7 @@ export const CoverSoilStandard = [{
     ditch: 0.6
 },
 {
-    subtype: '污水排水管道',
+    subtype: '污水',
     direct: 0.65,
     ditch: 0.65
 },

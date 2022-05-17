@@ -273,7 +273,6 @@ export default {
       // let lightFeas = filterFeas.map(fea => new Feature({ geometry: fea.getGeometry().clone() }))
       // this.lightLayer.getSource().clear()
       // this.lightLayer.getSource().addFeatures(lightFeas)
-      
       this.openDefect(filter.key, filter.value[level])
     },
     addLayers(layers) {
