@@ -7,10 +7,7 @@
 // 右下角工具栏的鹰眼管理
 import { OverviewMap } from 'ol/control';
 import { appconfig } from 'staticPub/config' // 查找静态文件下的config 地图配置
-import { TileSuperMapRest } from "@supermap/iclient-ol";
-import TileLayer from "ol/layer/Tile";
-import { XYZ } from 'ol/source';
-
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 
 export default {
   name: 'overView',
@@ -31,17 +28,10 @@ export default {
     */
     initOverView(){
       let vectorLayer = appconfig.gisResource['iserver_resource'].layerService.layers.find(item => item.name === '矢量底图')
-      let viewTileLayers = [
-        new TileLayer({
-          source: new XYZ({
-            url: vectorLayer.url + appconfig.tianMapKey,
-            crossOrigin: 'anonymous',
-          })
-        })
-      ]
+      let viewTileLayer = new TF_Layer().createLayer(vectorLayer)
       let temp= new OverviewMap({
         target: this.$refs['overView'],
-        layers: viewTileLayers,
+        layers: [viewTileLayer],
         collapseLabel: '',
         label: '',
         collapsed: true,
