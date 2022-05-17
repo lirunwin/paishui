@@ -207,13 +207,11 @@ import 'ol/ol.css'
 import Map from 'ol/Map'
 import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
-import * as control from 'ol/control'
 import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
 import axios from 'axios'
 import Comps from '@/layout/components/loadComps'
 import { HalfPanels, FullPanels, FloatPanels, SidePanels } from '@/layout/components/index'
 import { appconfig } from 'staticPub/config'
-import { loadModules } from 'esri-loader'
 import { loadCss } from '@/utils/loadResources'
 import request from '@/utils/request'
 import tfDialog from './common/Dialog.vue'
@@ -228,7 +226,6 @@ import leftBottomTool from './tongyonggongju/leftBottomTool/widget.vue'
 import leftTopTool from './tongyonggongju/leftTopTool/widget.vue'
 import rightBottomTool from './tongyonggongju/rightBottomTool/widget.vue'
 import rightTopTool from './tongyonggongju/rightTopTool/widget.vue'
-import { extend } from 'ol/array'
 import popupWindow from '@/components/PopupWindow/popupWindow.vue'
 
 // 投影
@@ -446,7 +443,7 @@ export default class BaseMap extends Vue {
   }
 
   addLayers(layers) {
-    layers.forEach((layerConfig) => {
+    layers.forEach((layerConfig) => { 
       let { name, type, url, parentname, id, visible = true } = layerConfig
       let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
       this.view.addLayer(layer)
@@ -544,7 +541,7 @@ export default class BaseMap extends Vue {
               })
               .finally(() => {
                 console.log('替换服务')
-                const repItems = ['地图配置服务']
+                const repItems = ['地图配置服务', '图层服务']
                 res.forEach((service) => {
                   let resData = service.child,
                     source = null
@@ -552,8 +549,12 @@ export default class BaseMap extends Vue {
                     if (service.name === '图层服务') {
                       source = resource.layerService.layers
                       resData.forEach((data) => {
-                        let findItem = source.find((sourceItem) => {
-                          return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
+                        let findItem = source.find(sourceItem => {
+                          if (sourceItem.name.includes('底图')) {
+                            return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
+                          } else {
+                            return data.name === sourceItem.name
+                          }
                         })
                         if (findItem) {
                           findItem.url = data.cval

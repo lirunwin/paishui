@@ -503,7 +503,7 @@ export default class UserRights extends Vue {
     },
     {
       label: '创建类型',
-      // width: 120,
+      width: 110,
       prop: 'createType',
       sortable: true,
       formatter: (row, column, cellValue, index) => {
@@ -533,7 +533,7 @@ export default class UserRights extends Vue {
     },
     {
       label: '审核意见',
-      width: 120,
+      width: 110,
       prop: 'auditstatus',
       sortable: true,
       formatter: (row, column, cellValue, index) => {

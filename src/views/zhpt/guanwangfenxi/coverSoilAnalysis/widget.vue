@@ -248,16 +248,11 @@ export default {
       const startDepth = feature.properties[START_DEPTH] // 起点埋深
       const endDepth = feature.properties[END_DEPTH] // 终点埋深
 
-      let standard = null // 获取对应的标准
+      
       let result = []
       let standardDescrip = null
       let standardVal = null // 结果标准
-      CoverSoilStandard.forEach(item => {
-        if (item.subtype == feaType) {
-          standard = item;
-          return
-        }
-      })
+      let standard = CoverSoilStandard.find(item => item.subtype == feaType)
       if (!standard) {
         this.$message.warning(`没有${feaType ? feaType : '未知管线'}的相关标准！`)
         this.doLoading = false // 执行状态

@@ -28,6 +28,7 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { mobileDeviceCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
+import { getDevices, IMobileDeviceQuery } from './api'
 
 // import {
 //   // getJournalList,
@@ -51,8 +52,9 @@ export default class DeviceArchives extends Vue {
     { id: '3', name: '测试2', code: '1233', time: ['00:00', '23:59'] }
   ]
 
-  onQuery(query) {
-    console.log(query)
+  async onQuery(query: IMobileDeviceQuery) {
+    const res = await getDevices(query)
+    console.log(res.result.records)
   }
 
   onAdd() {
