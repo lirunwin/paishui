@@ -1211,6 +1211,7 @@ export default {
       })
 
       let resUrl = await queryPipeState(id)
+      this.remark = resUrl.result.remark
       console.log('详情', resUrl)
       this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
       this.dialogFormVisible3 = true

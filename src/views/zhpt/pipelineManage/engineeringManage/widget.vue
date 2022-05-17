@@ -47,15 +47,15 @@
         @row-dblclick="dblclickUpdata"
         @selection-change="handleSelectionChange"
       >
-       <template slot="empty">
-                    <img
-                      style="width: 100px; height: 100px; -webkit-user-drag: none"
-                      src="@/assets/images/nullData.png"
-                      alt="暂无数据"
-                      srcset=""
-                    />
-                    <p>暂无数据</p>
-                  </template>
+        <template slot="empty">
+          <img
+            style="width: 100px; height: 100px; -webkit-user-drag: none"
+            src="@/assets/images/nullData.png"
+            alt="暂无数据"
+            srcset=""
+          />
+          <p>暂无数据</p>
+        </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
