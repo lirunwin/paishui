@@ -10,8 +10,12 @@
       <div class="content">
         <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
           <el-menu-item index="1">检测信息</el-menu-item>
-          <el-menu-item index="2">功能性缺陷（{{ DetailsForm.funcClass }}）</el-menu-item>
-          <el-menu-item index="3">结构性缺陷（{{ DetailsForm.structClass }}）</el-menu-item>
+          <el-menu-item index="2"
+            >功能性缺陷（{{ DetailsForm.funcClass != '/' ? DetailsForm.funcClass : '无' }}）</el-menu-item
+          >
+          <el-menu-item index="3"
+            >结构性缺陷（{{ DetailsForm.structClass != '/' ? DetailsForm.structClass : '无' }}）</el-menu-item
+          >
           <el-menu-item index="4">工程信息</el-menu-item>
         </el-menu>
         <div class="content-info">
@@ -166,7 +170,7 @@
                 />
                 <p style="color: #999999; font-size: 14px">暂无数据</p>
               </div>
-              
+
               <div v-if="funcDefectArr" v-for="v in funcDefectArr" style="margin-top: 20px; height: 200px">
                 <div class="info-title">（{{ v.defectCode }}）{{ v.defectName }} 距离：{{ v.distanceStartPoint }}m</div>
                 <div class="info-box">
@@ -183,7 +187,6 @@
                     >
                     </el-image>
                   </div>
-                  
                 </div>
               </div>
             </el-form>
@@ -245,6 +248,7 @@ export default {
   props: ['checkParam'],
   data() {
     return {
+      echartsArr: [],
       funcDefectArr: [],
       structDefectArr: [],
       defectQuantityStatisticsA: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'], // 结构性缺陷
@@ -318,6 +322,12 @@ export default {
   activated() {
     console.log('切换了组价')
   },
+  computed: {
+    // 折线图计算
+    // getDefectParam() {
+    //   console.log('arr', arr)
+    // }
+  },
   methods: {
     // 获取视频url
     getVideoUrl(url) {
@@ -341,12 +351,22 @@ export default {
       if (this.checkParam) {
         // console.log('走了有id的方法')
         let res = await assessmentDetails(this.checkParam)
-        if(!res.result){
-          this.$message.error('管道详情数据为空~!');
+        if (!res.result) {
+          this.$message.error('管道详情数据为空~!')
           this.closeDialog()
           return false
         }
+
         this.DetailsForm = res.result
+        // 折线图计算
+        this.echartsArr = res.result.pipeDefects.map((v) => {
+          return {
+            type: v.defectCode,
+            name: v.defectName,
+            value: v.distanceStartPoint * 1 + this.DetailsForm.startDepth * 1
+          }
+        })
+        console.log('折线图数组', this.echartsArr)
         // 缺陷信息分类
         this.DetailsForm.pipeDefects.forEach((v) => {
           this.funcDefectArr = []
@@ -414,7 +434,7 @@ export default {
       // let chartDom = document.getElementById('profile_echatrs')
       // let myChart = echarts.init(chartDom)
       let myChart = echarts.getInstanceByDom(this.$refs.profile_echatrs)
-      if(myChart == null) {
+      if (myChart == null) {
         myChart = echarts.init(this.$refs.profile_echatrs)
       }
       let option
@@ -457,7 +477,7 @@ export default {
               label: {
                 show: true,
                 formatter: function (a) {
-                  console.log('标题参数', a)
+                  // console.log('标题参数', a)
                   return ` 埋深 ${a['name']}m `
                 }
               },
@@ -469,10 +489,12 @@ export default {
           },
 
           {
-            data: [
-              { value: this.DetailsForm.startDepth, name: '沉积', type: 'CJ' },
-              { value: (this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2, name: '变形', type: 'BX' }
-            ],
+            data:
+              //  this.echartsArr,
+              [
+                { value: this.DetailsForm.startDepth, name: '沉积', type: 'CJ' },
+                { value: (this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2, name: '变形', type: 'BX' }
+              ],
             type: 'line',
             symbol: 'triangle',
             symbolSize: 10,
@@ -482,8 +504,8 @@ export default {
                 label: {
                   // formatter: '（CJ）{b}[0]，{c}m   ',
                   formatter: function (a) {
-                    console.log('标题参数', a)
-                    return `（${a['data']['type']}）${a['name']},${a['value']}m  `
+                    console.log('标题参数折线图', a)
+                    return `（${a['data']['type']}）${a['data']['name']},${a['data']['value']}m  `
                   },
                   backgroundColor: '#fff',
                   borderColor: '#8C8D8E',

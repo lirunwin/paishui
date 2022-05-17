@@ -190,12 +190,14 @@
                       </div>
                     </el-tab-pane>
                     <el-tab-pane :label="`视频`" name="viedoNum">
-                      <!-- <div style="width: 100%; height: 100%" v-if="DetailsForm.videoPath">
-                      <video controls="controls" width="100%" height="83%">
-                        <source :src="getVideoUrl" type="video/mp4" />
-                      </video>
-                    </div>
-                    <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">暂无视频</div> -->
+                      <div style="width: 100%; height: 100%" v-if="DetailsForm.videopath">
+                        <video controls="controls" width="100%" height="83%">
+                          <source :src="getVideoUrl" type="video/mp4" />
+                        </video>
+                      </div>
+                      <div v-show="!DetailsForm.videopath" style="text-align: center; margin-top: 20px">
+                        暂无视频
+                      </div>
                     </el-tab-pane>
                   </el-tabs>
                 </div>
@@ -344,7 +346,6 @@ export default {
         { label: '距离(m)', name: 'checkLength' },
         { label: '分值', name: 'defectNum' },
         { label: '等级', name: 'defectLevel' },
-        { label: '检测照片', name: 'picnum' },
         { label: '检测视频', name: 'videoFileName' },
         { label: '工程名称', name: 'prjName' },
         { label: '工程地点', name: 'checkAddress' },
@@ -405,11 +406,17 @@ export default {
   },
   computed: {
     // 获取文件url
+    getVideoUrl() {
+      let address = baseAddress + '/psjc/file' + this.DetailsForm.videopath
+      console.log('address', address)
+      return address
+    },
     getImgUrl() {
       let address = baseAddress + '/psjc/file' + this.DetailsForm.picPath
       console.log('address', address)
       return address
     }
+    // ----->
   },
   mounted() {
     if (this.param && this.param.rootPage) {
