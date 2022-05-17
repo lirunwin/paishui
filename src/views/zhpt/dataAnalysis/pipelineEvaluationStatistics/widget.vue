@@ -3,14 +3,49 @@
     <!-- 管道评估统计 -->
     <div class="releaseTop-box">
       <!-- 左边部分 -->
+      <div class="right">
+        <!-- 地图 -->
+        <div class="map-box">
+          <simple-map @mapMoveEvent="mapMoveEvent" ref="myMap"></simple-map>
+        </div>
+      </div>
+      <!-- 右边部分 -->
       <div class="left">
         <div class="table-box">
           <div class="top-tool">
+            <div class="itmetitle">
+              <div class="iconSymbol"></div>
+              <div class="titleName">统计条件</div>
+            </div>
             <div class="serch-engineering">
               <div class="title">检测日期：</div>
-              <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
-              ~
-              <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
+              <div class="sampleTime">
+                <el-row style="display: flex; justify-content: center; align-items: center">
+                  <el-col :span="11">
+                    <el-date-picker
+                      v-model="searchValue.testTime.startDate"
+                      type="date"
+                      placeholder="选择开始日期"
+                      value-format="yyyy-MM-dd"
+                      size="small"
+                      :picker-options="pickerOptions0"
+                      @change="changeDate"
+                    ></el-date-picker>
+                  </el-col>
+                  <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
+                  <el-col :span="12">
+                    <el-date-picker
+                      v-model="searchValue.testTime.finishDate"
+                      type="date"
+                      placeholder="选择结束日期"
+                      value-format="yyyy-MM-dd"
+                      size="small"
+                      :picker-options="pickerOptions1"
+                      @change="changeDate"
+                    ></el-date-picker>
+                  </el-col>
+                </el-row>
+              </div>
             </div>
             <div class="serch-engineering">
               <div class="title">整改建议：</div>
@@ -19,19 +54,26 @@
                 <el-option label="区域二" value="beijing"></el-option>
               </el-select>
             </div>
-            <div class="serch-engineering">
-              <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制 </el-button>
-              <el-button class="serch-btn" type="primary"> 清除 </el-button>
-              <el-button class="serch-btn" type="primary"> 查询 </el-button>
-              <el-button class="serch-btn" type="primary"> 导出 </el-button>
-              <div class="right-btn"></div>
+            <div class="operation-box">
+              <div class="serch-engineering">
+                <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制 </el-button>
+                <el-button class="serch-btn" type="primary"> 清除 </el-button>
+                <el-button class="serch-btn" type="primary"> 查询 </el-button>
+                <el-button class="serch-btn" type="primary"> 导出 </el-button>
+              </div>
             </div>
           </div>
+          <div class="itmetitle">
+            <div class="iconSymbol"></div>
+            <div class="titleName">统计结果</div>
+          </div>
           <div class="content">
-            <el-radio v-model="radio" label="1">饼状图</el-radio>
-            <el-radio v-model="radio" label="2">柱状图</el-radio>
-            <el-checkbox label="管道数量"></el-checkbox>
-            <el-checkbox label="管道长度"></el-checkbox>
+            <div style="padding-left: 12px">
+              <el-radio v-model="radio" label="1">饼状图</el-radio>
+              <el-radio v-model="radio" label="2">柱状图</el-radio>
+              <el-checkbox label="管道数量"></el-checkbox>
+              <el-checkbox label="管道长度"></el-checkbox>
+            </div>
             <h2 style="text-align: center">管道评估统计图</h2>
             <div id="mainB" style="height: 250px"></div>
             <!-- 表格 -->
@@ -45,7 +87,13 @@
               @selection-change="handleSelectionChange"
             >
               <template slot="empty">
-                <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+                <img
+                  style="width: 100px; height: 100px; -webkit-user-drag: none"
+                  src="@/assets/images/nullData.png"
+                  alt="暂无数据"
+                  srcset=""
+                />
+                <p style="padding: 0; margin: 0;padding-bottom: 20px;">暂无数据</p>
               </template>
               <el-table-column header-align="center" align="center" label="管道评估统计表">
                 <el-table-column
@@ -61,13 +109,6 @@
               </el-table-column>
             </el-table>
           </div>
-        </div>
-      </div>
-      <!-- 右边部分 -->
-      <div class="right">
-        <!-- 地图 -->
-        <div class="map-box">
-          <simple-map  @mapMoveEvent='mapMoveEvent' ref="myMap"></simple-map>
         </div>
       </div>
     </div>
@@ -98,10 +139,7 @@ export default {
         { label: '数量(条)', name: 'jcnum' },
         { label: '长度(米)', name: 'jclength' }
       ],
-      multipleSelection: [], // 被选中的表格数据
       radio: '1', // 单选框的值
-      radioB: '', // 管道数量
-      radioC: '', // 管道长度
       zero: '',
       form: {
         name: '',
@@ -114,23 +152,15 @@ export default {
         supervisorUnit: '',
         projectIntroduction: ''
       },
-      rules: {
-        name: [
-          { required: true, message: '不能为空', trigger: 'blur' },
-          { max: 100, message: '内容不能超过100个字符串', trigger: 'blur' }
-        ],
-        number: [
-          { max: 20, message: '内容不能超过20个字符串', trigger: 'blur' },
-          {
-            pattern: /^[a-zA-Z0-9]+$/,
-            message: '只能输入数字或英文',
-            trigger: 'blur'
-          }
-        ],
-        workUnit: [{ max: 255, message: '内容不能超过255个字符串', trigger: 'blur' }],
-        projectIntroduction: [{ max: 1000, message: '内容不能超过1000个字符串', trigger: 'blur' }]
-      },
-      value1: ''
+      searchValue: {
+        testTime: {
+          startDate: '',
+          finishDate: ''
+        } // 检测日期
+      }, // 搜索关键字的值
+      // 日期选择器规则
+      pickerOptions0: '',
+      pickerOptions1: ''
     }
   },
   mounted() {
@@ -147,19 +177,19 @@ export default {
   },
   methods: {
     // 绘制
-    drawFeature () {
-      this.$refs.myMap.draw(fea => {
-        this.getDataFromExtent({}, fea).then(res => {
+    drawFeature() {
+      this.$refs.myMap.draw((fea) => {
+        this.getDataFromExtent({}, fea).then((res) => {
           console.log('绘制,过滤后', res)
         })
       })
     },
-    mapMoveEvent (extent) {
-      this.getDataFromExtent({}, extent).then(res => {
+    mapMoveEvent(extent) {
+      this.getDataFromExtent({}, extent).then((res) => {
         console.log('地图变化,过滤后', res)
       })
     },
-    async getDataFromExtent (params, extent) {
+    async getDataFromExtent(params, extent) {
       let data = await this.getPipeData(params)
       if (data.code === 1) {
         // 地图范围过滤数据
@@ -167,11 +197,11 @@ export default {
       } else this.$message.error('请求数据出错')
     },
     // 根据条件获取缺陷数据
-    getPipeData (filter = {}) {
+    getPipeData(filter = {}) {
       let params = {
-        startPoint: "",
-        endPoint: "",
-        funcClass: "",
+        startPoint: '',
+        endPoint: '',
+        funcClass: '',
         structClass: '',
         jcStartDate: '',
         jcEndDate: '',
@@ -180,11 +210,7 @@ export default {
       }
       return getDefectDataBySE(params)
     },
-    // 表格选中事件
-    handleSelectionChange(val) {
-      // console.log('表格选中事件', val)
-      this.multipleSelection = val
-    },
+
     //初始化数据(饼状图)
     initData() {
       // 基于准备好的dom，初始化echarts实例
@@ -292,20 +318,38 @@ export default {
 
 <style lang="scss" scoped>
 .engineering-manage {
+  height: 100%;
   margin: 0;
   box-sizing: border-box;
-  overflow-y: scroll;
+  //   overflow-y: scroll;
+  padding: 20px;
+  overflow: hidden;
 
+  /deep/.itmetitle {
+    height: 20px;
+    width: 100%;
+    font-size: 16px;
+    margin: 14px 0;
+    .iconSymbol {
+      height: 100%;
+      width: 5px;
+      background-color: royalblue;
+      float: left;
+    }
+    .titleName {
+      margin-left: 20px;
+      line-height: 24px;
+    }
+  }
   // 分左右布局
   .releaseTop-box {
     height: 100%;
     display: flex;
     justify-content: space-between;
-    .left,
-    .right {
-    }
+
     .left {
-      flex: 3;
+      flex: 4;
+      overflow-y: scroll;
       .table-box {
         width: 96%;
         height: 100%;
@@ -322,8 +366,16 @@ export default {
             display: flex;
             // justify-content: space-around;
             align-items: center;
-            margin-right: 10px;
+            // margin-right: 10px;
+            padding-left: 16px;
+            box-sizing: border-box;
             margin-bottom: 10px;
+            .sampleTime {
+              width: 308px !important;
+              .el-input {
+                width: 140px;
+              }
+            }
             // 选择框
             .el-select {
               width: 130px;
@@ -357,14 +409,6 @@ export default {
 
           .serch-btn:hover {
             opacity: 0.8;
-          }
-          .right-btn {
-            margin-bottom: 14px;
-            display: inline-block;
-            // display: flex;
-            // align-items: center;
-            // flex-direction: row;
-            // flex-wrap: wrap;
           }
         }
         .content {
@@ -430,8 +474,10 @@ export default {
       }
     }
     .right {
-      flex: 2;
-      border: 1px solid #666;
+      flex: 3;
+      box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 12px 0px;
+      //   border: 1px solid #666;
+
       .map-box {
         height: 100%;
       }
