@@ -7,7 +7,7 @@
           <div class="title">关键字：</div>
           <el-input
             size="small"
-            placeholder="支持搜索管段编号、道路名称"
+            placeholder="请输入管段编号、道路名称"
             v-model="searchParams.keyword"
             clearable
             class="serch-input"
@@ -384,6 +384,9 @@ export default {
       } else {
         this.init()
       }
+    },
+    'searchParams.jcDate.startDate': function (n) {
+      this.searchParams.jcDate.finishDate = n
     }
   },
   computed: {
@@ -468,7 +471,7 @@ export default {
       this.pickerOptions1 = {
         disabledDate: (time) => {
           // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1
+          return time.getTime() < date1 - 8.64e7
         }
       }
     },

@@ -36,27 +36,32 @@ export default {
           trigger: 'item'
         },
         legend: {
+          orient: 'vertical',
           bottom: 'bottom'
         },
         series: [
           {
             name: 'Access From',
             type: 'pie',
-            radius: ['20%', '70%'],
-            avoidLabelOverlap: false,
-            label: {
-              show: false,
-              position: 'center'
-            },
-
+            radius: ['20%', '65%'],
             labelLine: {
               show: true
+            },
+            label: {
+              formatter: '{d}% '
             },
             data: [
               { value: 1048, name: 'Search Engine' },
               { value: 735, name: 'Direct' },
-              { value: 580, name: 'Email' }
-            ]
+              { value: 484, name: 'Union Ads' },
+            ],
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
           }
         ]
       }

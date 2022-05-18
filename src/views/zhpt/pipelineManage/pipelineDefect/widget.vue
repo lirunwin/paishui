@@ -7,14 +7,14 @@
           <div class="title">关键字：</div>
           <el-input
             size="small"
-            placeholder="支持搜索管段编号、材质"
+            placeholder="请输入管段编号、材质"
             v-model="searchValue.queryParams"
             clearable
             class="serch-input"
             suffix-icon="el-input__icon el-icon-search"
           >
           </el-input>
-          <div class="title">入库时间：</div>
+          <div class="title">检测日期：</div>
           <!-- <el-date-picker v-model="searchValue.testTime" type="date" placeholder="入库时间" class="date-css">
           </el-date-picker> -->
           <!-- <el-date-picker
@@ -195,9 +195,7 @@
                           <source :src="getVideoUrl" type="video/mp4" />
                         </video>
                       </div>
-                      <div v-show="!DetailsForm.videopath" style="text-align: center; margin-top: 20px">
-                        暂无视频
-                      </div>
+                      <div v-show="!DetailsForm.videopath" style="text-align: center; margin-top: 20px">暂无视频</div>
                     </el-tab-pane>
                   </el-tabs>
                 </div>
@@ -399,6 +397,9 @@ export default {
     },
     '$store.state.gis.pipeId': function (n, o) {
       if (n) this.openPromptBox(n)
+    },
+    'searchValue.testTime.startDate': function (n) {
+      this.searchValue.testTime.finishDate = n
     }
   },
   created() {
@@ -477,7 +478,7 @@ export default {
       this.pickerOptions1 = {
         disabledDate: (time) => {
           // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1
+          return time.getTime() < date1 - 8.64e7
         }
       }
     },

@@ -7,7 +7,7 @@
           <div class="title">关键字：</div>
           <el-input
             size="small"
-            placeholder="搜索工程编号、工程名称"
+            placeholder="请输入工程编号、工程名称"
             v-model="searchValue.prjNo"
             clearable
             style="margin-right: 10px"
@@ -404,6 +404,23 @@ export default {
     this.simplifyRules()
   },
   methods: {
+    // 管道缺陷管理的信息
+    openDefect() {
+      let info = {
+        icon: 'iconfont ',
+        id: 'pipelineDefect',
+        label: '管道缺陷管理',
+        meta: { title: '管道缺陷管理' },
+        name: 'PipelineDefect',
+        noShowingChildren: true,
+        parentPathid: '/pipelineDefect',
+        path: '',
+        type: 'gis',
+        widgetid: 'HalfPanel'
+      }
+      // 这是map里的跳转方法
+      this.$store.dispatch('map/changeMethod', info)
+    },
     // 简化rules
     simplifyRules() {
       // 不能为空
