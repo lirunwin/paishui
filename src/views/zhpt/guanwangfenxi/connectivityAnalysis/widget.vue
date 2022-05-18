@@ -32,6 +32,10 @@
       </div>
       <div v-show="openstate" class="content">
         <el-table :data="layerData" stripe style="width: 100%" height="250">
+          <template slot="empty">
+            <img src="@/assets/icon/null.png" alt="">
+            <p class="empty-p">暂无数据</p>
+          </template>
           <el-table-column prop="name" label="图层" ></el-table-column>
           <el-table-column prop="value" label="数量" ></el-table-column>          
           <el-table-column label="操作">

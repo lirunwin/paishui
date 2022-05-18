@@ -385,14 +385,34 @@ export default class Header extends Vue {
   handleSys(event) {
     if (event === 'sysSetting') event = this.$store.state.routeSetting.menus.find((item) => item.name === 'sysSetting')
     this.defaultActiveIndex = event.name
+    console.log('导航栏变化')
     if (event.path !== undefined && event.path !== '') this.$router.push({ path: event.path })
     else if (['map', ...gisNames].indexOf(event.name) > -1) this.$router.push('/map')
+
     const sideBarShow = this.$store.state.app.sidebar.show
     if (!sideBarShow) this.$store.dispatch('app/toggleSideBarShow', true)
     this.$store.dispatch('routeSetting/changeSys', event.name || event)
     this.$store.commit('map/RESET_ALL')
     //
     this.$store.state.gis.activeHeaderItem = this.defaultActiveIndex
+    if (this.defaultActiveIndex === 'psjc') {
+      let info = {
+        icon: "iconfont ",
+        id: "testResultDiagram",
+        label: "检测成果专题图",
+        meta: { title: '检测成果专题图' },
+        name: "TestResultDiagram",
+        noShowingChildren: true,
+        parentPathid: "/pipelineManage",
+        path: "",
+        type: "gis",
+        widgetid: "Panel"
+      }
+      this.$store.dispatch('map/changeMethod', info)
+      this.$nextTick(() => {
+        this.$route.params.activeMenu = '检测成果专题图'
+      })
+    }
   }
   // scrollPrev() {
   //   this.$refs.navScroll.$el.scrollLeft = 0;
