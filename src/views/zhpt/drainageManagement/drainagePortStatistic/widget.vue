@@ -19,8 +19,9 @@
                     </el-select>
                 </div>
                 <div class="terms">
+                    <label style="white-space:nowrap">统计范围：</label>
                     <el-form :inline="true" :disabled="isOpenRange">
-                        <el-form-item label="统计范围">
+                        <el-form-item>
                             <!-- <label style="white-space:nowrap">统计范围：</label> -->
                             <el-radio-group v-model="statisticRange">
                                 <el-radio label="all">全部</el-radio>
@@ -61,11 +62,8 @@
                                     </el-dropdown>
                                 </el-radio>
                             </el-radio-group>
-                        </el-form-item>
-                        <el-form-item>
                             <el-select v-model="region" 
                                 placeholder="请选择" 
-                                style="margin-left:14px;width:164px" 
                                 :disabled="isRegion"
                                 multiple 
                                 clearable 
@@ -251,6 +249,11 @@ export default {
                     margin: 0;
                     /deep/.el-form-item__label{
                         white-space:nowrap
+                    }
+                    /deep/.el-form-item__content{
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
                     }
                 }
             }

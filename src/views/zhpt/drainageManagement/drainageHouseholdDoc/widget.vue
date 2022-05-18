@@ -40,7 +40,7 @@
                     <el-button type="primary" icon="el-icon-search" size="mini" @click="getPage()">查询</el-button>
                     <el-button type="primary" icon="el-icon-plus" size="mini" @click="addOperation()">添加</el-button>
                     <el-button type="primary" icon="el-icon-edit" size="mini" @click="modifyOperation()">修改</el-button>
-                    <el-button type="primary" icon="el-icon-upload" size="mini">导入</el-button>
+                    <el-button type="primary" icon="el-icon-upload" size="mini" @click="importOPeration()">导入</el-button>
                     <el-button type="primary" icon="el-icon-download" size="mini" @click="exportConfirm()">导出</el-button>
                     <el-button type="danger" icon="el-icon-delete" size="mini" @click="deleteOPeration()">删除</el-button>
                 </div>
@@ -141,7 +141,7 @@ export default {
         //获取排水户类型下拉菜单
         getSort(){
             getSortList().then(res=>{
-                const result = res.data;
+                const result = res;
                 this.householdTypeOptions=result.result.map((item)=>{return{...item}})
             }).catch(err=>console.log(err))
         },
@@ -154,7 +154,7 @@ export default {
                 nameAndAddress:this.keyValue
             }
             getDischarger(data).then(res=>{
-                const result = res.data;
+                const result = res;
                 this.list=result.result.records.map((item)=>{return{...item}})
                 this.total=result.result.total
             }).catch(err=>console.log(err))
@@ -162,7 +162,7 @@ export default {
         //修改排水户档案数据
         modifyDrainfageHh(data){
             modifyDischarger(data).then(res=>{
-                const result=res.data;
+                const result=res;
                 if(result.code==1) {
                     this.$message.success("修改成功")
                     this.dialogVisible=false
@@ -178,7 +178,7 @@ export default {
         //新增排水户档案
         addDrainfageHh(data){
             addDischarger(data).then(res=>{
-                const result=res.data;
+                const result=res;
                 if(result.code==1) {
                     this.$message.success("添加成功")
                     this.dialogVisible=false
@@ -194,7 +194,7 @@ export default {
         //删除排水户档案
         deleteDrainfageHh(data){
             deleteDischarger(data).then(res=>{
-                const result=res.data;
+                const result=res;
                 if(result.code==1) {
                     this.$message.success("删除成功")
                     this.getPage()
@@ -291,6 +291,10 @@ export default {
             }).catch(err=>{
                 console.log(err)
             })
+        },
+        //数据导入操作
+        importOPeration(){
+            this.$message('导入功能暂未开发')
         },
         //操作列方法
         modifyInfo(row,field){

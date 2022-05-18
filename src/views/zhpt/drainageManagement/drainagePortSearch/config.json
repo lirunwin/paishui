@@ -2,11 +2,13 @@
     "column":[
         {
             "prop":"expNo",
-            "label":"排放口编号"
+            "label":"排放口编号",
+            "width":120
         },
         {
             "prop":"outfalltype",
-            "label":"排放口类别"
+            "label":"排放口类别",
+            "width":120
         },
         {
             "prop":"outfallshape",
@@ -14,11 +16,13 @@
         },
         {
             "prop":"sewagesystemId",
-            "label":"所在污水分区"
+            "label":"所在污水分区",
+            "width":120
         },
         {
             "prop":"stormsystemId",
-            "label":"所在雨水分区"
+            "label":"所在雨水分区",
+            "width":120
         },
         {
             "prop":"receivewater",

@@ -243,7 +243,7 @@ export default {
                 nameAndAddress:this.keyValue
             }
             getOutfall(data).then(res=>{
-                const result = res.data;
+                const result = res;
                 this.list=result.result.records.map((item)=>{
                     return{
                         ...item
