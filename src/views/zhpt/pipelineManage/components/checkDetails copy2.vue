@@ -166,7 +166,7 @@
                 />
                 <p style="color: #999999; font-size: 14px">暂无数据</p>
               </div>
-
+              
               <div v-if="funcDefectArr" v-for="v in funcDefectArr" style="margin-top: 20px; height: 200px">
                 <div class="info-title">（{{ v.defectCode }}）{{ v.defectName }} 距离：{{ v.distanceStartPoint }}m</div>
                 <div class="info-box">
@@ -183,6 +183,7 @@
                     >
                     </el-image>
                   </div>
+                  
                 </div>
               </div>
             </el-form>
@@ -244,9 +245,6 @@ export default {
   props: ['checkParam'],
   data() {
     return {
-      nullArr: [],
-      seriesXArr: [],
-      echartsArr: [],
       funcDefectArr: [],
       structDefectArr: [],
       defectQuantityStatisticsA: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'], // 结构性缺陷
@@ -343,36 +341,12 @@ export default {
       if (this.checkParam) {
         // console.log('走了有id的方法')
         let res = await assessmentDetails(this.checkParam)
-        if (!res.result) {
-          this.$message.error('管道详情数据为空~!')
+        if(!res.result){
+          this.$message.error('管道详情数据为空~!');
           this.closeDialog()
           return false
         }
         this.DetailsForm = res.result
-        let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, { value: '终点' + this.DetailsForm.endPoint }]
-        let seriesXArr = [this.DetailsForm.startDepth + '', this.DetailsForm.endDepth + '']
-        for (let i = 0; i < this.DetailsForm.pipeDefects.length - 1; i++) {
-          nullArr.splice(1, 0, '')
-          seriesXArr.splice(
-            1,
-            0,
-            (((this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2) * (i + 1)).toFixed(10)
-          )
-        }
-
-        // 折线图计算
-        let ecArr = res.result.pipeDefects.map((v, i) => {
-          return {
-            type: v.defectCode,
-            name: v.defectName,
-            value: seriesXArr[i],
-            distance: v.distanceStartPoint
-          }
-        })
-
-        this.nullArr = nullArr
-        this.seriesXArr = seriesXArr
-        this.echartsArr = ecArr
         // 缺陷信息分类
         this.DetailsForm.pipeDefects.forEach((v) => {
           this.funcDefectArr = []
@@ -440,14 +414,14 @@ export default {
       // let chartDom = document.getElementById('profile_echatrs')
       // let myChart = echarts.init(chartDom)
       let myChart = echarts.getInstanceByDom(this.$refs.profile_echatrs)
-      if (myChart == null) {
+      if(myChart == null) {
         myChart = echarts.init(this.$refs.profile_echatrs)
       }
       let option
       option = {
         xAxis: {
           type: 'category',
-          data: this.nullArr,
+          data: [{ value: '起点' + this.DetailsForm.startPoint }, '', { value: '终点' + this.DetailsForm.endPoint }],
           axisTick: {
             show: false
           }
@@ -471,7 +445,11 @@ export default {
         },
         series: [
           {
-            data: this.seriesXArr,
+            data: [
+              this.DetailsForm.startDepth,
+              (this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2,
+              this.DetailsForm.endDepth
+            ],
             type: 'line',
             color: '#CFCCCC',
             markLine: {
@@ -484,14 +462,17 @@ export default {
                 }
               },
               data: [
-                { xAxis: 0, name: this.DetailsForm.startDepth + '' },
-                { xAxis: this.DetailsForm.pipeDefects.length * 1, name: this.DetailsForm.endDepth + '' }
+                { xAxis: 0, name: this.DetailsForm.startDepth },
+                { xAxis: 2, name: this.DetailsForm.endDepth }
               ]
             }
           },
 
           {
-            data: this.echartsArr,
+            data: [
+              { value: this.DetailsForm.startDepth, name: '沉积', type: 'CJ' },
+              { value: (this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2, name: '变形', type: 'BX' }
+            ],
             type: 'line',
             symbol: 'triangle',
             symbolSize: 10,
@@ -502,7 +483,7 @@ export default {
                   // formatter: '（CJ）{b}[0]，{c}m   ',
                   formatter: function (a) {
                     console.log('标题参数', a)
-                    return `（${a['data']['type']}）${a['data']['name']},${a['data']['distance']}m   `
+                    return `（${a['data']['type']}）${a['name']},${a['value']}m  `
                   },
                   backgroundColor: '#fff',
                   borderColor: '#8C8D8E',

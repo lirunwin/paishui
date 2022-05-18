@@ -1,144 +1,225 @@
 <template>
-  <!-- // 管道检测数据挖掘  -->
-  <div id="dataMining">
-    <div id="main"></div>
-    <!-- <div class="pipelineLegend">
-      <div>水流</div>
-      <div>管径</div>
-      <div>管道长度</div>
-      <div>检测长度</div>
-    </div> -->
+  <div class="engineering-manage">
+    <!-- 管道检测数据挖掘 -->
+    <div class="releaseTop-box">
+      <!-- 左边部分 -->
+      <div class="right">
+        <!-- 地图 -->
+        <div class="map-box">
+          <simple-map @mapMoveEvent="mapMoveEvent" ref="myMap"></simple-map>
+        </div>
+      </div>
+      <!-- 右边部分 -->
+      <div class="left">
+        <div class="top-title">管道检测数据挖掘</div>
+        <el-divider></el-divider>
+        <div class="top-title flexCss">
+          <el-checkbox v-model="linkage">联动</el-checkbox>
+          <el-button type="primary" size="small" @confirm="$message('该功能暂未开放')"
+            >导出<i class="el-icon-download el-icon--right"></i
+          ></el-button>
+        </div>
+        <el-divider></el-divider>
+        <!-- 视图列表 -->
+        <div class="echarts-list">
+          <div class="threeTop">
+            <div class="threeTop-item">
+              <echarts-one :paramData="'1'"></echarts-one>
+            </div>
+            <div class="threeTop-item">
+              <echarts-two :paramData="'1'"></echarts-two>
+            </div>
+            <div class="threeTop-item">
+              <echarts-three :paramData="'1'"></echarts-three>
+            </div>
+          </div>
+          <div class="threeBottom">
+            <div class="threeBottom-one">
+              <echarts-four :paramData="'1'"></echarts-four>
+            </div>
+            <div class="threeBottom-two">
+              <echarts-five :paramData="'1'"></echarts-five>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import * as echarts from 'echarts'
+import simpleMap from '@/components/SimpleMap'
+import { getDefectDataBySE } from '@/api/sysmap/drain'
+import echartsOne from './components/echartsOne.vue'
+import echartsTwo from './components/echartsTwo.vue'
+import echartsThree from './components/echartsThree.vue'
+import echartsFour from './components/echartsFour.vue'
+import echartsFive from './components/echartsFive.vue'
 
-@Component({
-  name: 'dataMining',
-  components: {}
-})
-export default class template extends Vue {
-  renderEcharts() {
-    console.log('渲染echarts')
-    let chartDom = document.getElementById('main')
-    let myChart = echarts.init(chartDom)
-    let option
-    option = {
-      xAxis: {
-        type: 'category',
-        data: [{ value: '起点ADDLWS0001' }, '', { value: '终点ADDLWS0001-1' }],
-        axisTick: {
-          show: false
-        }
-      },
-      yAxis: {
-        type: 'value',
-        name: '埋深：m',
-        axisLine: {
-          show: true //隐藏y轴
-        },
-        axisLabel: {
-          show: false //隐藏刻度值
-        },
-        axisTick: {
-          show: false
-        },
-        splitLine: {
-          show: false
-        },
-        scale: false
-      },
-      series: [
-        {
-          data: [10, 11.5, 13],
-          type: 'line',
-          color: '#CFCCCC',
-          markLine: {
-            symbol: ['none', 'none'],
-            label: {
-              show: true,
-              formatter: function (a) {
-                console.log('标题参数', a)
-                return ` 埋深 ${a['name']}m `
-              }
-            },
-            data: [
-              { xAxis: 0, name: 2.15 },
-              { xAxis: 2, name: 2.15 }
-            ]
-          }
-        },
-
-        {
-          data: [
-            { value: 10, name: '沉积', type: 'CJ' },
-            { value: 11.5, name: '变形', type: 'BX' }
-          ],
-          type: 'line',
-          symbol: 'triangle',
-          symbolSize: 10,
-          symbolOffset: [0, -20],
-          itemStyle: {
-            normal: {
-              label: {
-                // formatter: '（CJ）{b}[0]，{c}m   ',
-                formatter: function (a) {
-                  console.log('标题参数', a)
-                  return `（${a['data']['type']}）${a['name']} ，${a['value']}m  `
-                },
-                backgroundColor: '#fff',
-                borderColor: '#8C8D8E',
-                borderWidth: 1,
-                borderRadius: 2,
-                lineHeight: 20,
-                padding: 10,
-                show: true,
-                textStyle: {
-                  color: '#000'
-                }
-              },
-              textColor: 'red',
-              borderWidth: 6,
-              borderColor: '#E91111',
-              color: '#2D74E7'
-            },
-            emphasis: {
-              label: {
-                show: true
-              }
-            }
-          }
-        }
-      ]
+export default {
+  props: ['data'],
+  components: { simpleMap, echartsOne, echartsTwo, echartsThree, echartsFour, echartsFive },
+  data() {
+    return {
+      linkage: false // 是否联动
     }
-
-    option && myChart.setOption(option)
-  }
-
+  },
   mounted() {
-    this.renderEcharts()
+    this.data.that.showLegend('pipelineEvaluate', true)
+  },
+  destroyed() {
+    this.data.that.showLegend('pipelineEvaluate', false)
+    this.data.that.clearMap()
+  },
+  beforeCreate() {
+    console.log('销毁echatrs')
+    // document.getElementById('mainB').removeAttribute('_echarts_instance_')
+  },
+  methods: {
+    // 绘制
+    drawFeature() {
+      this.$refs.myMap.draw((fea) => {
+        this.getDataFromExtent({}, fea).then((res) => {
+          console.log('绘制,过滤后', res)
+        })
+      })
+    },
+    mapMoveEvent(extent) {
+      this.getDataFromExtent({}, extent).then((res) => {
+        console.log('地图变化,过滤后', res)
+      })
+    },
+    async getDataFromExtent(params, extent) {
+      let data = await this.getPipeData(params)
+      if (data.code === 1) {
+        // 地图范围过滤数据
+        return this.$refs.myMap.getDataInMap(data.result, extent)
+      } else this.$message.error('请求数据出错')
+    },
+    // 根据条件获取缺陷数据
+    getPipeData(filter = {}) {
+      let params = {
+        startPoint: '',
+        endPoint: '',
+        funcClass: '',
+        structClass: '',
+        jcStartDate: '',
+        jcEndDate: '',
+        checkSuggest: '修复计划',
+        ...filter
+      }
+      return getDefectDataBySE(params)
+    }
+  },
+  computed: {
+    mapExtent() {
+      return this.$store.state.gis.mapExtent
+    }
+  },
+  watch: {
+    mapExtent: {
+      handler(nv, ov) {
+        console.log('视图改变')
+        if (this.data.mapView.getView().getZoom() > 16) {
+          this.data.that.queryForExtent(nv)
+        } else {
+          // 在地图界别较小时，移除管网
+          this.data.that.clearMap()
+        }
+      },
+      deep: true,
+      immediate: true
+    }
   }
-  created() {}
 }
 </script>
 
 <style lang="scss" scoped>
-#dataMining {
-  // position: relative;
-  display: flex;
-  #main {
-    // height: 100%;
-    // width: 100%;
-    flex: 2;
-  }
-  .pipelineLegend {
-    flex: 1;
-    // position: absolute;
-        // top: 15%;
-    // right: 4%;
-    // display: flex;
+.engineering-manage {
+  height: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  //   overflow-y: scroll;
+  padding: 20px;
+  overflow: hidden;
+
+  // 分左右布局
+  .releaseTop-box {
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    .left {
+      flex: 4;
+      // overflow-y: scroll;
+
+      .echarts-list {
+        padding: 0 20px;
+        box-sizing: border-box;
+        .threeTop {
+          width: 100%;
+          height: 300px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          & > .threeTop-item:nth-child(1),
+          & > .threeTop-item:nth-child(2) {
+            border-right: 1px solid #dedede;
+          }
+          .threeTop-item {
+            height: 100%;
+            // flex: 1;
+            width: 32%;
+            // border: 1px solid #666;
+          }
+        }
+        .threeBottom {
+          width: 100%;
+          height: 333px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 20px;
+
+          .threeBottom-one,
+          .threeBottom-two {
+            height: 100%;
+            // flex: 1;
+            // border: 1px solid #666;
+          }
+          .threeBottom-one {
+            width: 66%;
+            border-right: 1px solid #dedede;
+          }
+          .threeBottom-two {
+            width: 32%;
+          }
+        }
+      }
+
+      /deep/ .el-divider--horizontal {
+        margin: 10px 0 !important;
+      }
+      .top-title {
+        color: #555555;
+        font-size: 16px;
+        margin: 0 20px;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .flexCss {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+    .right {
+      flex: 3;
+      box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 12px 0px;
+      //   border: 1px solid #666;
+      .map-box {
+        height: 100%;
+      }
+    }
   }
 }
 </style>
