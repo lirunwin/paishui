@@ -26,7 +26,7 @@ import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 @Component({ name: 'TypeForm', components: { BaseDialog } })
 export default class TypeForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
-  formData = {}
+  formData: { [x: string]: string } = {}
   formItems = [
     {
       label: '设备类型名称',

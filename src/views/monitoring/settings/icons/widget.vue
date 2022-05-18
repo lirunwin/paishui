@@ -45,8 +45,7 @@ export default class MonitoringIcons extends Vue {
 
   keyword = ''
 
-  current = {}
-
+  current: { id?: string; [x: string]: string } = {}
   selected = []
 
   archives = [

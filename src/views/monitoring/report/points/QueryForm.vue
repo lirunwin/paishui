@@ -67,7 +67,7 @@ export default class QueryForm extends Vue {
 
   @Prop({ type: Array, default: () => [] }) selected!: { id?: string }[]
 
-  formData = {}
+  formData: { [x: string]: any } = {}
 
   get ids() {
     return this.selected.map((item) => item.id)

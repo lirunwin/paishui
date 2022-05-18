@@ -2,7 +2,7 @@
   <BaseDialog width="450px" v-bind="$attrs" v-on="$listeners" @submit="onSubmit">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '10em', size: 'medium' }" :model="formData">
       <template v-for="{ name, label, type, required = true, rules, ...rest } of formItems">
-        <el-form-item :key="name" v-if="name === 'time'" :required="required" :label="label" :rules="rules">
+        <el-form-item :key="`if-${name}`" v-if="name === 'time'" :required="required" :label="label" :rules="rules">
           <el-row type="flex" justify="space-between">
             <el-col>
               <el-form-item :rules="rules[0]" prop="time.0">
@@ -17,7 +17,7 @@
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item v-else-if="type === 'select'" :key="name" :label="label" :rules="rules" :prop="name">
+        <el-form-item v-else-if="type === 'select'" :key="`else-if-${name}`" :label="label" :rules="rules" :prop="name">
           <el-select v-model="formData[name]" :placeholder="`请选择${label}`" clearable>
             <el-option
               v-for="item of options[name]"
@@ -27,7 +27,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-else :key="name" :label="label" :rules="rules" :prop="name">
+        <el-form-item v-else :key="`else-${name}`" :label="label" :rules="rules" :prop="name">
           <el-input
             v-model="formData[name]"
             :placeholder="`请输入${label}`"
@@ -55,7 +55,7 @@ export default class ParamForm extends Vue {
     this.formData = { ...rest, time, display, msg }
   }
 
-  formData = {}
+  formData: { [x: string]: string } = {}
 
   get options() {
     return {

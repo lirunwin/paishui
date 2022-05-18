@@ -63,7 +63,14 @@ export default class DeviceTypes extends Vue {
 
   visible = { type: false, param: false }
 
-  current = { type: {}, param: {} }
+  current: {
+    type: { id?: string; [x: string]: string }
+    param: { id?: string; [x: string]: string }
+    [x: string]: any
+  } = {
+    type: {},
+    param: {}
+  }
 
   selected = { type: [], param: [] }
 

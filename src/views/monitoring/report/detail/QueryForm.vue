@@ -64,8 +64,8 @@
     <el-button
       type="primary"
       size="small"
-      :loading="loading.query"
-      :disabled="loading.query"
+      :loading="loading"
+      :disabled="loading"
       icon="el-icon-search"
       @click="onQuery"
       style="width:100%"
@@ -77,18 +77,25 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
-
+interface IBesides {
+  from: string
+  to: string
+  checked: boolean
+}
 @Component({ name: 'QueryForm', components: {} })
 export default class QueryForm extends Vue {
   @Prop({ type: Boolean, default: false }) loading!: boolean
 
   @Prop({ type: Array, default: () => [] }) selected!: { id?: string }[]
 
-  getDefaultBeside() {
+  getDefaultBeside(): [IBesides, IBesides] {
     return [{ from: '', to: '', checked: true }, { from: '', to: '', checked: true }]
   }
 
-  formData = {
+  formData: {
+    besides: [IBesides, IBesides][]
+    [key: string]: any
+  } = {
     besides: [this.getDefaultBeside()]
   }
 

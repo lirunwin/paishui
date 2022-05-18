@@ -1,11 +1,16 @@
 import request from '@/utils/request'
-import { AxiosPromise } from 'axios'
 
-type IRes<T> = Promise<{
+type IRes<T = any> = Promise<{
   code: number
   message: string
   result: T
 }>
+
+interface IPagination {
+  current?: string | number
+  size?: string | number
+  total?: string | number
+}
 
 export interface IMobileDevice extends IPagination {
   /** 审核状态 0 未审核 1已审核 */
@@ -77,12 +82,6 @@ interface IMobileDeviceRes extends IPagination {
   searchCount: boolean
 }
 
-interface IPagination {
-  current?: string | number
-  size?: string | number
-  total?: string | number
-}
-
 const uris = {
   review: '/gps/mobiledevice',
   device: '/gps/mobiledevice',
@@ -96,7 +95,7 @@ export const getReviews = (data: { auditStatus?: string; ids?: string }) =>
 export const getMobileDevice = (id: string): IRes<IMobileDevice> =>
   request({ url: `${uris.device}/${id}`, method: 'get' })
 
-export const delMobileDevice = (id: string) => request({ url: `${uris.device}/${id}`, method: 'delete' })
+export const delMobileDevice = (id: string): IRes => request({ url: `${uris.device}/${id}`, method: 'delete' })
 
 export const postMobileDevice = (data: {
   auditStataus?: string
@@ -113,7 +112,7 @@ export const postMobileDevice = (data: {
   type?: string
   useDeptId?: string | number
   userUserId?: string | number
-}) => request({ url: uris.device, method: 'post', data })
+}): IRes => request({ url: uris.device, method: 'post', data })
 
 export const putMobileDevice = (data: {
   auditStataus?: string
@@ -130,9 +129,9 @@ export const putMobileDevice = (data: {
   type?: string
   useDeptId: string | number
   userUserId: string | number
-}) => request({ url: uris.device, method: 'put', data })
+}): IRes => request({ url: uris.device, method: 'put', data })
 
-export const deleteMobileDeviceByIds = (data: { ids: string }) =>
+export const deleteMobileDeviceByIds = (data: { ids: string }): IRes =>
   request({ url: uris.deleteDeviceByIds, method: 'delete', data })
 
 export const getDevices = (data?: IMobileDeviceQuery): IRes<IMobileDeviceRes> =>
