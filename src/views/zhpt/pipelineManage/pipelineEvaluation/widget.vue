@@ -279,7 +279,7 @@ import { baseAddress } from '@/utils/request.ts'
 import axios from 'axios'
 
 // 引入管道检测组件
-import deleteDialog from '../components/checkDetails.vue'
+import deleteDialog from '../components/checkDetails copy2.vue'
 
 export default {
   props: ['data'],

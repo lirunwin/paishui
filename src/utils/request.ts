@@ -11,14 +11,22 @@ declare module 'axios' {
      */
     file?: boolean
   }
-  export interface AxiosResponse {
-    result: any
+  export interface AxiosResponse<T = any> {
+    result: T
     code: number
     message: string
   }
+  export interface AxiosInstance {
+    <T = any>(config: AxiosRequestConfig): Promise<T>
+    request<T = any>(config: AxiosRequestConfig): Promise<T>
+    get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>
+    delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>
+    head<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>
+    post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>
+    put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>
+    patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>
+  }
 }
-
-
 
 // 创建axios实例
 // export const IP = 'http://192.168.2.231:1111'
@@ -40,7 +48,6 @@ export const IP = 'http://117.174.10.73:1114'
 
 // 暴露IP地址
 export const baseAddress = IP
-
 
 const service = axios.create({
   baseURL: IP,

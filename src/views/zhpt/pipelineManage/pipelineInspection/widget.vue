@@ -154,9 +154,9 @@
                   <div class="historyList" v-if="currentForm.jcNum">
                     <div class="historyTitle">
                       <div>
-                        <span style="margin-right: 40px">{{tableForm.sampleTime}}</span>
-                        <span v-if="tableForm.funcClass"> 功能性缺陷（{{tableForm.funcClass}}）</span>
-                        <span v-else> 结构性缺陷（{{tableForm.structClass}}）</span>
+                        <span style="margin-right: 40px">{{ tableForm.sampleTime }}</span>
+                        <span v-if="tableForm.funcClass"> 功能性缺陷（{{ tableForm.funcClass }}）</span>
+                        <span v-else> 结构性缺陷（{{ tableForm.structClass }}）</span>
                       </div>
                       <el-link type="primary" @click="openCheck">详情</el-link>
                     </div>
@@ -229,6 +229,9 @@
                                   <source :src="getVideoUrl" type="video/mp4" />
                                 </video>
                               </div>
+                              <div v-show="!tableForm.videoPath" style="text-align: center; margin-top: 20px">
+                                暂无视频
+                              </div>
                             </el-tab-pane>
                           </el-tabs>
                         </div>
@@ -276,7 +279,7 @@ import defectImgY from '@/assets/images/traingle-y.png'
 import defectImgLB from '@/assets/images/traingle-lb.png'
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 // 引入管道检测组件
-import deleteDialog from '../components/checkDetails.vue'
+import deleteDialog from '../components/checkDetails copy2.vue'
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
 
@@ -403,7 +406,7 @@ export default {
   methods: {
     // 下载文档
     downloadDocx() {
-      this.$message('正在加载文档地址...');
+      this.$message('正在加载文档地址...')
       let url = baseAddress + '/psjc/file' + this.tableForm.wordFilePath
       let label = this.tableForm.wordInfoName + '.docx'
       axios

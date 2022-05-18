@@ -141,6 +141,7 @@
         :close-on-click-modal="false"
         :close-on-press-escape="false"
         :show-close="false"
+        width="500px"
       >
         <span>密码修改成功，请退出重新登录。</span>
         <span slot="footer" class="dialog-footer">
