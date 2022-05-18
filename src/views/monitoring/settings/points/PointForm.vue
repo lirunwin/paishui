@@ -2,7 +2,9 @@
   <BaseDialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="876px" top="7vh">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'small' }" :model="formData" :rules="rules">
       <template v-for="{ name: sectionName, title, items } of formItems">
-        <BaseTitle :key="`${sectionName}-title`">{{ title }}</BaseTitle>
+        <template
+          ><BaseTitle :key="`${sectionName}-title`">{{ title }}</BaseTitle></template
+        >
         <el-row v-if="sectionName === 'device'" :key="`${sectionName}-items`" :gutter="20">
           <el-col :span="12">
             <el-row type="flex" :gutter="10">
@@ -28,10 +30,10 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row v-else :gutter="20" :key="`${sectionName}-items`">
+        <el-row v-else :gutter="20" :key="`else-${sectionName}-items`">
           <el-col :span="12">
             <el-form-item
-              v-for="{ name, label, type, required = true, disabled } of items"
+              v-for="{ name, label, type = 'text', required = true, disabled = false } of items"
               :key="name"
               :required="required"
               :label="label"
@@ -295,8 +297,9 @@ interface FormItem {
 }
 
 interface FormData {
-  system?: object[]
-  param?: object[]
+  system?: { [x: string]: string }[]
+  param?: { [x: string]: string }[]
+  [x: string]: any
 }
 
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
@@ -308,7 +311,17 @@ export default class PointForm extends Vue {
   settingPointBasisCols = settingPointBasisCols
   settingPointParamCols = settingPointParamCols
 
-  formItems = [
+  formItems: {
+    name: string
+    title: string
+    items: {
+      label: string
+      name: string
+      required?: boolean
+      disabled?: boolean
+      type?: 'txt' | 'date' | 'textarea' | 'select'
+    }[]
+  }[] = [
     {
       name: 'basis',
       title: '监测站点基本信息',
@@ -417,10 +430,14 @@ export default class PointForm extends Vue {
   getDefaultParam() {
     return settingPointParamCols
       .filter((item) => item._interval)
-      .reduce((data, current) => {
-        data[current.prop] = []
-        return data
-      }, {})
+      .reduce(
+        (data, current = {}) => {
+          const temp = { ...data }
+          temp[current.prop] = []
+          return temp
+        },
+        {} as { [x: string]: any }
+      )
   }
 
   onSystemChange(id) {

@@ -165,10 +165,8 @@ export default {
   },
   mounted() {
     this.initData()
-    this.data.that.showLegend('pipelineEvaluate', true)
   },
   destroyed() {
-    this.data.that.showLegend('pipelineEvaluate', false)
     this.data.that.clearMap()
   },
   beforeCreate() {
@@ -177,16 +175,20 @@ export default {
   },
   methods: {
     // 绘制
-    drawFeature() {
-      this.$refs.myMap.draw((fea) => {
-        this.getDataFromExtent({}, fea).then((res) => {
-          console.log('绘制,过滤后', res)
-        })
+    drawFeature () {
+      let type = 'polygon'
+      this.$refs.myMap.draw({
+        type,
+        callback: fea => {
+          this.getDataFromExtent({}, fea).then(res => {
+            console.log('绘制,过滤后', res)
+          })
+        }
       })
     },
-    mapMoveEvent(extent) {
-      this.getDataFromExtent({}, extent).then((res) => {
-        console.log('地图变化,过滤后', res)
+    mapMoveEvent (extent) {
+      this.getDataFromExtent({}, extent).then(res => {
+        // console.log('地图变化,过滤后', res)
       })
     },
     async getDataFromExtent(params, extent) {
@@ -298,19 +300,6 @@ export default {
       if (old != newValue) {
         this.initData()
       }
-    },
-    mapExtent: {
-      handler(nv, ov) {
-        console.log('视图改变')
-        if (this.data.mapView.getView().getZoom() > 16) {
-          this.data.that.queryForExtent(nv)
-        } else {
-          // 在地图界别较小时，移除管网
-          this.data.that.clearMap()
-        }
-      },
-      deep: true,
-      immediate: true
     }
   }
 }

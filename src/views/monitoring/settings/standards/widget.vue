@@ -64,7 +64,14 @@ export default class MonitoringStandards extends Vue {
 
   visible = { standard: false, param: false }
 
-  current = { standard: {}, param: {} }
+  current: {
+    standard: { id?: string; [x: string]: any }
+    param: { id?: string; [x: string]: any }
+    [x: string]: any
+  } = {
+    standard: {},
+    param: {}
+  }
 
   selected = { standard: [], param: [] }
 

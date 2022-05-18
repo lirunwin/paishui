@@ -21,7 +21,7 @@ export function addThemLayer (data) {
 // 删除专题地图
 export function deleteThemLayer (id) {
     return request({
-        url: "/psgw/thematicMap/" + id,
+        url: `/psgw/thematicMap/${id}`,
         method: "delete"
     })
 }

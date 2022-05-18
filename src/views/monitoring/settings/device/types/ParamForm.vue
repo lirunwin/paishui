@@ -17,13 +17,13 @@
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item v-else-if="name === 'display'" :key="name" :label="label" :rules="rules" :prop="name">
+        <el-form-item v-else-if="name === 'display'" :key="`if-${name}`" :label="label" :rules="rules" :prop="name">
           <el-select v-model="formData.display" :placeholder="`请选择${label}`" clearable>
             <el-option label="是" value="1" />
             <el-option label="否" value="0" />
           </el-select>
         </el-form-item>
-        <el-form-item v-else :key="name" :label="label" :rules="rules" :prop="name">
+        <el-form-item v-else :key="`else-${name}`" :label="label" :rules="rules" :prop="name">
           <el-input
             v-model="formData[name]"
             :placeholder="`请输入${label}`"
@@ -50,7 +50,7 @@ export default class ParamForm extends Vue {
     const { distance = [], display = '1', ...rest } = val || {}
     this.formData = { ...rest, distance, display }
   }
-  formData = {
+  formData: { [x: string]: any } = {
     distance: [],
     display: '1'
   }

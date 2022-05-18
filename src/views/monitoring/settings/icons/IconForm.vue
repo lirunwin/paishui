@@ -66,7 +66,7 @@ export default class IconForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   dialogVisible = false
   dialogImageUrl = ''
-  formData = {}
+  formData: { [x: string]: string } = {}
   fileList = []
 
   rules = {
