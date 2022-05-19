@@ -78,6 +78,7 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
         @row-click="openPromptBox"
+        :default-sort="{ prop: 'date', order: 'descending' }"
       >
         <template slot="empty">
           <img
@@ -89,7 +90,7 @@
           <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
+        <el-table-column fixed="left"  align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -98,6 +99,8 @@
           show-overflow-tooltip
           v-for="v in tableContent"
           :key="v.name"
+          :width="v.width"
+          :sortable="v.sortable"
         >
         </el-table-column>
 
@@ -321,18 +324,18 @@ export default {
       dialogFormVisible: false, // 详情弹框显影
       // 表格参数
       tableContent: [
-        { label: '管段编号', name: 'expNo' },
-        { label: '管段类型', name: 'pipeType' },
-        { label: '管径(mm)', name: 'diameter' },
-        { label: '材质', name: 'material' },
-        // { label: '道路名称', name: 'checkAddress' },
-        { label: '所属片区', name: 'checkAddress' },
-        { label: '检测次数', name: 'jcNum' },
-        { label: '最近检测日期', name: 'newJcDate' },
-        { label: '最新结构性缺陷等级', name: 'newStructClass' },
-        { label: '最新结构性缺陷评价', name: 'newStructEstimate' },
-        { label: '最新功能性缺陷等级', name: 'newFuncClass' },
-        { label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
+        { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
+        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
+        { width: '100', sortable: false, label: '材质', name: 'material' },
+        // { width: '100',sortable: false,label: '道路名称', name: 'checkAddress' },
+        { width: '100', sortable: false, label: '所属片区', name: 'checkAddress' },
+        { width: '100', sortable: true, label: '检测次数', name: 'jcNum' },
+        { width: '100', sortable: true, label: '最近检测日期', name: 'newJcDate' },
+        { width: '180', sortable: true, label: '最新结构性缺陷等级', name: 'newStructClass' },
+        { width: '180', sortable: false, label: '最新结构性缺陷评价', name: 'newStructEstimate' },
+        { width: '180', sortable: true, label: '最新功能性缺陷等级', name: 'newFuncClass' },
+        { width: '180', sortable: false, label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则

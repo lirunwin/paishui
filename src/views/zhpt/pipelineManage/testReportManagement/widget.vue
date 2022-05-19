@@ -1237,7 +1237,7 @@ export default {
       if (resUrl.result.pdfFilePath) {
         this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
         // console.log('this.pdfUrl',this.pdfUrl);
-      }else {
+      } else {
         this.pdfUrl = null
       }
       this.dialogFormVisible3 = true
@@ -1449,8 +1449,8 @@ export default {
       }
       if (arrState) {
         this.$message({
-          message: '文件上传完成',
-          type: 'success'
+          showClose: true,
+          message: '文件上传结束'
         })
         this.lastFileList = fileList
         this.loadingBool = false
@@ -1501,8 +1501,8 @@ export default {
       }
       if (arrState) {
         this.$message({
-          message: '文件上传完成',
-          type: 'success'
+          showClose: true,
+          message: '文件上传结束'
         })
         this.loadingBool = false
         // let timeId = setTimeout(() => {
