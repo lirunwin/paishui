@@ -57,7 +57,27 @@
                 </el-col>
               </el-row>
               <div class="detailsTitle">管段剖面图</div>
-              <div ref="profile_echatrs" style="width: 500px; display: flex; height: 200px"></div>
+              <div class="profile-box">
+                <div ref="profile_echatrs" class="profile-echarts"></div>
+                <div class="profile-info">
+                  <div class="info-item">
+                    <div class="profile-text">管径</div>
+                    <span>{{ DetailsForm.diameter || 0 }}mm</span>
+                  </div>
+                  <div class="info-item">
+                    <div class="profile-text">管道长度</div>
+                    <span>{{ DetailsForm.pipeLength || 0 }}m</span>
+                  </div>
+                  <div class="info-item">
+                    <div class="profile-text">检测方向</div>
+                    <span>{{ DetailsForm.detectDir }}</span>
+                  </div>
+                  <div class="info-item">
+                    <div class="profile-text">检测长度</div>
+                    <span>{{ DetailsForm.jclength || 0 }}m</span>
+                  </div>
+                </div>
+              </div>
             </el-form>
           </div>
           <!-- 功能性缺陷 -->
@@ -339,7 +359,7 @@ export default {
     },
     // 详情
     async openDetails() {
-      // console.log('管道检测开始', this.checkParam)
+      console.log('管道检测开始', this.checkParam)
       if (this.checkParam) {
         // console.log('走了有id的方法')
         let res = await assessmentDetails(this.checkParam)
@@ -351,6 +371,7 @@ export default {
         this.DetailsForm = res.result
         let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, { value: '终点' + this.DetailsForm.endPoint }]
         let seriesXArr = [this.DetailsForm.startDepth + '', this.DetailsForm.endDepth + '']
+        // let seriesXArr = []
         for (let i = 0; i < this.DetailsForm.pipeDefects.length - 1; i++) {
           nullArr.splice(1, 0, '')
           seriesXArr.splice(
@@ -362,6 +383,7 @@ export default {
 
         // 折线图计算
         let ecArr = res.result.pipeDefects.map((v, i) => {
+          // seriesXArr.push(v.distanceStartPoint)
           return {
             type: v.defectCode,
             name: v.defectName,
@@ -456,7 +478,10 @@ export default {
           type: 'value',
           name: '埋深：m',
           axisLine: {
-            show: true //隐藏y轴
+            show: true, //隐藏y轴
+            axisLine: {
+              bottom: 'bottom'
+            }
           },
           axisLabel: {
             show: false //隐藏刻度值
@@ -478,6 +503,7 @@ export default {
               symbol: ['none', 'none'],
               label: {
                 show: true,
+                padding:[0,0,-60,0],
                 formatter: function (a) {
                   console.log('标题参数', a)
                   return ` 埋深 ${a['name']}m `
@@ -515,10 +541,12 @@ export default {
                     color: '#000'
                   }
                 },
-                textColor: 'red',
-                borderWidth: 6,
-                borderColor: '#E91111',
-                color: '#2D74E7'
+                textColor: '#8C8D8E',
+                // textColor: 'red',
+                borderWidth: 6
+                // borderColor: '#E91111',
+                // color: '#2D74E7'
+                // color: '#8C8D8E'
               },
               emphasis: {
                 label: {
@@ -570,6 +598,31 @@ export default {
     margin-top: 4%;
     box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 12px 0px;
     border: none;
+    .box1 {
+      .profile-box {
+        display: flex;
+        align-items: center;
+        .profile-echarts {
+          // width: 80%;
+          flex: 1;
+          height: 200px;
+        }
+        .profile-info {
+          height: 200px;
+          width: 200px;
+          .info-item {
+            display: flex;
+            margin-top: 10px;
+            align-items: center;
+            .profile-text {
+              width: 50px;
+              text-align: right;
+              margin-right: 10px;
+            }
+          }
+        }
+      }
+    }
     .el-card__header {
       height: 48px;
       color: #fff;
@@ -587,6 +640,7 @@ export default {
         overflow-y: scroll;
         height: 600px;
         padding: 10px 30px;
+
         .info-title {
           font-size: 14px;
           font-weight: bold;

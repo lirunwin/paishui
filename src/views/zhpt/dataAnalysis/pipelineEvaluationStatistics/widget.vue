@@ -84,7 +84,6 @@
               height="250"
               stripe
               style="width: 100%"
-              @selection-change="handleSelectionChange"
             >
               <template slot="empty">
                 <img
@@ -93,7 +92,7 @@
                   alt="暂无数据"
                   srcset=""
                 />
-                <p style="padding: 0; margin: 0;padding-bottom: 20px;">暂无数据</p>
+                <p style="padding: 0; margin: 0; padding-bottom: 20px">暂无数据</p>
               </template>
               <el-table-column header-align="center" align="center" label="管道评估统计表">
                 <el-table-column
@@ -135,9 +134,9 @@ export default {
       tableData: [], // 表格数据
       // 表格参数
       tableContent: [
-        { label: '整改建议', name: 'wordInfoName' },
-        { label: '数量(条)', name: 'jcnum' },
-        { label: '长度(米)', name: 'jclength' }
+        { label: '整改建议', name: 'proposal' },
+        { label: '数量(条)', name: 'num' },
+        { label: '长度(米)', name: 'pipeLength' }
       ],
       radio: '1', // 单选框的值
       zero: '',
@@ -174,21 +173,76 @@ export default {
     // document.getElementById('mainB').removeAttribute('_echarts_instance_')
   },
   methods: {
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    changeDate() {
+      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
+      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
+      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
+      this.pickerOptions0 = {
+        disabledDate: (time) => {
+          if (date2 != '') {
+            // return time.getTime() > Date.now() || time.getTime() > date2
+            return time.getTime() > date2
+          } else {
+            return time.getTime() > Date.now()
+          }
+        }
+      }
+      this.pickerOptions1 = {
+        disabledDate: (time) => {
+          // return time.getTime() < date1 || time.getTime() > Date.now()
+          return time.getTime() < date1 - 8.64e7
+        }
+      }
+    },
+    // 处理地图给的数据
+    getMapData(newValue) {
+      if (newValue) {
+        let dataArr = newValue.pipeData
+        let setArr = []
+        // console.log('newValue', newValue)
+         dataArr.forEach((dv) => {
+          dv.pipeDefects.forEach((pv) => {
+            setArr.forEach((sv) => {
+              if (sv.checkSuggest == pv.checkSuggest) {
+                sv.num += 1
+                sv.pipeLength += dv.pipeLength
+              } else {
+                setArr.push({
+                  proposal: pv.checkSuggest,
+                  num: 1,
+                  pipeLength: dv.pipeLength
+                })
+              }
+            })
+          })
+        })
+        this.tableData = setArr
+      }else{
+          this.$message({
+          showClose: true,
+          message: '当前模块暂无数据',
+          type: 'warning'
+        });
+      }
+    },
     // 绘制
-    drawFeature () {
+    drawFeature() {
       let type = 'polygon'
       this.$refs.myMap.draw({
         type,
-        callback: fea => {
-          this.getDataFromExtent({}, fea).then(res => {
+        callback: (fea) => {
+          this.getDataFromExtent({}, fea).then((res) => {
             console.log('绘制,过滤后', res)
+            this.getMapData(res)
           })
         }
       })
     },
-    mapMoveEvent (extent) {
-      this.getDataFromExtent({}, extent).then(res => {
+    mapMoveEvent(extent) {
+      this.getDataFromExtent({}, extent).then((res) => {
         console.log('地图变化,过滤后', res)
+        this.getMapData(res)
       })
     },
     async getDataFromExtent(params, extent) {
@@ -301,6 +355,7 @@ export default {
         this.initData()
       }
     }
+   
   }
 }
 </script>

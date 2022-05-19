@@ -106,10 +106,11 @@
           show-overflow-tooltip
           v-for="v in tableContent"
           :key="v.name"
+          :width="v.width"
+          :sortable="v.sortable"
         >
         </el-table-column>
         <el-table-column
-          width="140"
           header-align="center"
           label="管道内部状况描述"
           align="center"
@@ -271,7 +272,7 @@ import defectImg4 from '@/assets/images/traingle4.png'
 import defectImg0 from '@/assets/images/traingle0.png'
 
 // 引入管道检测组件
-import deleteDialog from '../components/checkDetails copy2.vue'
+import deleteDialog from '../components/checkDetails.vue'
 import { mapUtil } from '../../common/mapUtil/common'
 import { Overlay } from 'ol';
 
@@ -339,18 +340,18 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { label: '管段编号', name: 'expNo' },
-        { label: '管段类型', name: 'pipeType' },
-        { label: '管径(mm)', name: 'diameter' },
-        { label: '材质', name: 'material' },
-        { label: '检测方向', name: 'detectDir' },
-        { label: '距离(m)', name: 'checkLength' },
-        { label: '分值', name: 'defectNum' },
-        { label: '等级', name: 'defectLevel' },
-        { label: '检测视频', name: 'videoFileName' },
-        { label: '工程名称', name: 'prjName' },
-        { label: '工程地点', name: 'checkAddress' },
-        { label: '检测日期', name: 'sampleTime' }
+        { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
+        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
+        { width: '100', sortable: false, label: '材质', name: 'material' },
+        { width: '100', sortable: false, label: '检测方向', name: 'detectDir' },
+        { width: '100', sortable: true, label: '距离(m)', name: 'checkLength' },
+        { width: '100', sortable: true, label: '分值', name: 'defectNum' },
+        { width: '100', sortable: true, label: '等级', name: 'defectLevel' },
+        { width: '100', sortable: false, label: '检测视频', name: 'videoFileName' },
+        { width: '100', sortable: false, label: '工程名称', name: 'prjName' },
+        { width: '100', sortable: false, label: '工程地点', name: 'checkAddress' },
+        { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' }
         // { label: '结构性缺陷评价', name: 'structEstimate' },
         // { label: '检测地点', name: 'checkAddress' },
       ],
@@ -681,7 +682,7 @@ export default {
     // 详情
     async openDetails() {
       console.log('DetailsForm', this.DetailsForm)
-      this.id = this.currentId
+      this.id = this.DetailsForm.stateId
       this.dialogFormVisible = true
     },
     async resetBtn() {
