@@ -1,5 +1,5 @@
 <template>
-  <div class="detailsCrad">
+  <div class="detailsCradS">
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span style="font-size: 16px">管道检测详情</span>
@@ -167,7 +167,7 @@
                 <p style="color: #999999; font-size: 14px">暂无数据</p>
               </div>
 
-              <div v-if="funcDefectArr" v-for="v in funcDefectArr" style="margin-top: 20px; height: 200px">
+              <div v-if="funcDefectArr" v-for="v in funcDefectArr" style="margin-top: 20px; height: 240px">
                 <div class="info-title">（{{ v.defectCode }}）{{ v.defectName }} 距离：{{ v.distanceStartPoint }}m</div>
                 <div class="info-box">
                   <div class="info-text">
@@ -545,12 +545,16 @@ export default {
 
 <style lang="scss" scoped>
 // 详情卡片的样式
-.detailsCrad {
+.detailsCradS {
   position: fixed;
-  top: 100px;
-  right: 80px;
-  margin-top: 20px;
-  z-index: 10;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba($color: #333333, $alpha: 0.7);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
   .clearfix:before,
   .clearfix:after {
     display: table;
@@ -561,8 +565,11 @@ export default {
   }
 
   /deep/ .box-card {
-    width: 550px;
+    width: 50vw;
     max-height: 80vh;
+    margin-top: 4%;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 12px 0px;
+    border: none;
     .el-card__header {
       height: 48px;
       color: #fff;
@@ -579,7 +586,7 @@ export default {
       /deep/ .content-info {
         overflow-y: scroll;
         height: 600px;
-        padding: 10px 20px;
+        padding: 10px 30px;
         .info-title {
           font-size: 14px;
           font-weight: bold;

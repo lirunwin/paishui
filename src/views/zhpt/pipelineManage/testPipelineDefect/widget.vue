@@ -270,7 +270,7 @@ import defectImgY from '@/assets/images/traingle-y.png'
 import defectImgLB from '@/assets/images/traingle-lb.png'
 
 // 引入管道检测组件
-import deleteDialog from '../components/checkDetails.vue'
+import deleteDialog from '@/views/zhpt/pipelineManage/components/checkDetails.vue'
 
 export default {
   props: ['param', 'data'],

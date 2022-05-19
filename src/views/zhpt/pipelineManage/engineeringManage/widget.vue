@@ -46,6 +46,7 @@
         style="width: 100%"
         @row-dblclick="dblclickUpdata"
         @selection-change="handleSelectionChange"
+        :default-sort="{ prop: 'date', order: 'descending' }"
       >
         <template slot="empty">
           <img
@@ -66,6 +67,7 @@
           show-overflow-tooltip
           v-for="v in tableContent"
           :key="v.name"
+          :sortable="v.sortable"
         >
         </el-table-column>
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
@@ -275,12 +277,12 @@ export default {
       }, // 上传附件需要的参数id
       // 表格参数
       tableContent: [
-        { label: '工程编号', name: 'prjNo' },
-        { label: '工程名称', name: 'prjName' },
-        // { label: '行政区划', name: 'area' },
-        { label: '施工单位', name: 'sgunit' },
-        { label: '工程简介', name: 'proIntroduction' },
-        { label: '创建时间', name: 'createTime' }
+        { sortable: false, label: '工程编号', name: 'prjNo' },
+        { sortable: false, label: '工程名称', name: 'prjName' },
+        // { sortable:false,label: '行政区划', name: 'area' },
+        { sortable: false, label: '施工单位', name: 'sgunit' },
+        { sortable: false, label: '工程简介', name: 'proIntroduction' },
+        { sortable: true, label: '创建时间', name: 'createTime' }
       ],
       // 表单参数
       formContent: [
@@ -698,6 +700,11 @@ export default {
         day = time.getDate(),
         timeStem = time.getTime()
       return `${year}/${month}/${day}/${timeStem}.jpg`
+    }
+  },
+  watch: {
+    'form.startDate': function (n) {
+      this.form.finishDate = n
     }
   }
 }

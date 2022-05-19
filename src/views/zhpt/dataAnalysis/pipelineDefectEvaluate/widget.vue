@@ -35,7 +35,7 @@
         <div class="right-btn"></div>
       </div>
       <div class="content">
-        <div id="mainC" style="height: 500px"></div>
+        <div id="mainD" style="height: 500px"></div>
         <div style="border: 1px solid #ccc">
           <h3 class="title">管道缺陷分类统计表</h3>
           <ul class="table-content">
@@ -112,13 +112,13 @@ export default {
   },
  beforeCreate() {
     console.log('销毁echatrs')
-    document.getElementById('mainC').removeAttribute('_echarts_instance_')
+    document.getElementById('mainD').removeAttribute('_echarts_instance_')
   },
   methods: {
     //初始化数据
     initData() {
       // 基于准备好的dom，初始化echarts实例
-      let myChart = echarts.init(document.getElementById('mainC'))
+      let myChart = echarts.init(document.getElementById('mainD'))
       // 绘制图表
       myChart.setOption(
         {
