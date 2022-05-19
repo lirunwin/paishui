@@ -396,25 +396,6 @@ export default class Header extends Vue {
     this.$store.commit('map/RESET_ALL')
     //
     this.$store.state.gis.activeHeaderItem = this.defaultActiveIndex
-    if (this.defaultActiveIndex === 'psjc') {
-      this.$nextTick(() => {
-        this.$nextTick(()=> {
-          let info = {
-        icon: "iconfont ",
-        id: "testResultDiagram",
-        label: "检测成果专题图",
-        meta: { title: '检测成果专题图' },
-        name: "TestResultDiagram",
-        noShowingChildren: true,
-        parentPathid: "/pipelineManage",
-        path: "",
-        type: "gis",
-        widgetid: "Panel"
-      }
-      this.$store.dispatch('map/changeMethod', info)
-        })
-      })
-    }
   }
   // scrollPrev() {
   //   this.$refs.navScroll.$el.scrollLeft = 0;
