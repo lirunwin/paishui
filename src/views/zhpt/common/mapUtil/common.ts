@@ -70,6 +70,9 @@ export class mapUtil {
     // 多个要素点获取中心点
     getCenterFromFeatures (features) {
         let pointsArr = []
+        if (!Array.isArray(features)) {
+            features = [features]
+        }
         features.forEach(fea => {
             let geometry = fea.getGeometry()
             let coordinates = geometry.getCoordinates()

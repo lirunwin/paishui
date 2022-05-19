@@ -3,7 +3,7 @@
     <!-- 管道评估结果管理 -->
     <div class="table-box">
       <div class="top-tool">
-        <div class="serch-engineering">
+        <!-- <div class="serch-engineering">
           <div class="title">关键字：</div>
           <el-input
             size="small"
@@ -15,17 +15,6 @@
           >
           </el-input>
           <div class="title">检测时间：</div>
-          <!-- <el-date-picker v-model="searchValue.testTime" type="date" placeholder="入库时间" class="date-css">
-          </el-date-picker> -->
-          <!-- <el-date-picker
-            v-model="searchValue.testTime"
-            type="daterange"
-            value-format="yyyy-MM-dd"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-          >
-          </el-date-picker> -->
           <div class="sampleTime">
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
@@ -63,7 +52,7 @@
           </el-select>
           <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
           <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
-        </div>
+        </div> -->
         <div class="right-btn">
           <el-popconfirm
             confirm-button-text="确定"
@@ -244,7 +233,7 @@
         >
         </el-pagination>
       </div>
-    </el-dialog>
+    </el-dialog>  
   </div>
 </template>
 
@@ -654,12 +643,7 @@ export default {
     },
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
-      this.setPositionByPipeId(row.id)
-      console.log('打开缩略提示框', row)
-      let res = await histroyPipeData({ expNo: row.expNo })
-      this.currentIndex = 0
-      this.currentForm = res.result
-      this.currentInfoCard = true
+      console.log('打开弹窗', row)
     },
 
     // 详情

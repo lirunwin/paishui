@@ -5,7 +5,7 @@
 <script>
 import { appconfig } from "staticPub/config";
 import "ol/ol.css";
-import Map from "ol/Map";
+import { Map as olMap } from "ol";
 import View from "ol/View";
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 
@@ -56,7 +56,7 @@ export default {
         initMap() {
             let { initCenter, initZoom } = appconfig
             let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
-            let map = new Map({
+            let map = new olMap({
                 target: this.$refs.mainMap,
                 controls: controls({
                     zoom: false,
@@ -151,7 +151,6 @@ export default {
             })
             drawer.start()
         },
-        // 
         getDataInMap (data, extent) {
             let that = this
             // 无范围 默认全图
@@ -161,16 +160,29 @@ export default {
                 extent = new Feature({ geometry: new Polygon(coors) })
             }
             let filterExtent = turf.polygon(extent.getGeometry().getCoordinates())
-            let dFeas = data.map(pipeData => pipeData.pipeDefects).flat()
-            let pFeas = data
-            // 范围过滤
-            let defectData = filter(dFeas, 1)
-            let pipeData = filter(pFeas, 2)
-            // 添加要素
-            this.vectorLayer.getSource().clear()
-            this.vectorLayer.getSource().addFeatures([...this.getFeatures(pipeData, 2), ...this.getFeatures(defectData, 1)])
-            
-            return { pipeData, defectData }
+
+            let resData = new Map()
+            data = filter(data, 2)
+            // 地图加入整改建议
+            // 数据整理
+            data.forEach(pipeData => {
+                let len = pipeData.pipeLength
+                let defectData = pipeData.pipeDefects
+                defectData.forEach(defect => {
+                    if (!resData.has(defect.checkSuggest)) {
+                        resData.set(defect.checkSuggest, { num: 1, len })
+                    } else {
+                        let data = resData.get(defect.checkSuggest)
+                        data.num += 1
+                        data.len += len
+                    }
+                })
+            })
+            let obj = {}
+            resData.forEach((value, key) => {
+                obj[key] = value
+            })
+            return obj
 
             function filter(features, type) {
                 let feas = []
@@ -207,6 +219,29 @@ export default {
                 })
                 return feas.filter(fea => fea && turf.booleanContains(filterExtent, fea.geometry))
             }
+        },
+        // 
+        getDataInMap_old (data, extent) {
+            let that = this
+            // 无范围 默认全图
+            if (!extent) {
+                let [xmin, ymin, xmax, ymax] = new mapUtil(this.map).getCurrentViewExtent()
+                let coors = [[[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax],]]
+                extent = new Feature({ geometry: new Polygon(coors) })
+            }
+            let filterExtent = turf.polygon(extent.getGeometry().getCoordinates())
+            let dFeas = data.map(pipeData => pipeData.pipeDefects).flat()
+            let pFeas = data
+            // 范围过滤
+            let defectData = filter(dFeas, 1)
+            let pipeData = filter(pFeas, 2)
+            // 添加要素
+            this.vectorLayer.getSource().clear()
+            this.vectorLayer.getSource().addFeatures([...this.getFeatures(pipeData, 2), ...this.getFeatures(defectData, 1)])
+            
+            return { pipeData, defectData }
+
+
         }
     },
 

@@ -30,7 +30,6 @@
             placeholder="开始日期"
             v-model="form.startDate"
             :picker-options="sOpition"
-            @change="changeDate"
             style="width: 100%"
           ></el-date-picker>
         </el-row>
@@ -41,7 +40,6 @@
             placeholder="结束日期"
             v-model="form.endDate"
             :picker-options="eOpition"
-            @change="changeDate"
             style="width: 100%"
           ></el-date-picker>
         </el-row>
@@ -76,7 +74,7 @@
           <div v-else-if="showThemBox[index]" class="transition-box">
             <ul>
               <li @click="openBox(item.layerName, i)" v-for="(level, i) in item.level" :key="i" :class="comStyle(item.type, level.color)">
-                {{ level.label + ' / ' + level.num + level.unit }}
+                {{ level.label + ' / ' + level.num + level.unit }}<i :class="(level.num || hasLoad) ? '' : 'el-icon-loading'"></i>
               </li>
             </ul>
           </div>
@@ -85,8 +83,8 @@
     </div>
     <!-- 表格当前列信息弹出框 -->
 
-      <div id='popupCard' class="histroyPipeData">
-        <div class="detailsCrad"  v-if="currentInfoCard">
+      <div id='popupCard' class="histroyPipeData" v-show="currentInfoCard">
+        <div class="detailsCrad">
           <el-card class="box-card" style="width: 300px">
             <div class="table-content">
               <div
@@ -103,7 +101,7 @@
                 </span>
                 <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails">详情</a>
               </div>
-              <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
+              <div style="padding: 3px 0">{{ DetailsForm.expNo + (DetailsForm.pipeType ? DetailsForm.pipeType : '') }}</div>
               <div class="content-info">
                 <div class="left">
                   <div style="padding: 3px 0">检测日期&emsp; {{ DetailsForm.sampleTime }}</div>
@@ -143,7 +141,9 @@
           </el-card>
         </div>
       </div>
-    <!-- <button type="primary" @click="openDefect">打开管道缺陷管理模块</button> -->
+    <transition name="el-fade-in-linear">
+      <check-details @close="dialogClose" v-show="dialogFormVisible" :checkParam="pipeId"></check-details>
+    </transition>
   </div>
 </template>
 
@@ -172,9 +172,11 @@ import { unByKey } from 'ol/Observable'
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 import { queryDefectdetails } from '@/api/pipelineManage'
 import { Overlay } from 'ol';
-import { baseAddress } from '@/utils/request.ts';
+import { baseAddress } from '@/utils/request';
+import checkDetails from '@/views/zhpt/pipelineManage/components/checkDetails.vue'
 
 export default {
+  components: { checkDetails }, 
   props: { data: Object },
   data() {
     return {
@@ -219,17 +221,6 @@ export default {
             { color: '0', label: '未定级', num: 0, unit: '个' }
           ]
         },
-        // {
-        //   title: '检查井缺陷分布专题图',
-        //   layerName: 'manholeDefectLayer',
-        //   open: false,
-        //   type: 'square',
-        //   level: [
-        //     { color: 'green', label: '井盖缺失', num: 111, unit: '个' },
-        //     { color: 'red', label: '井盖破损', num: 111, unit: '个' },
-        //     { color: 'pink', label: '井盖移位', num: 111, unit: '个' }
-        //   ]
-        // },
         {
           title: '管道结构性缺陷等级分布图',
           layerName: 'pipeStrucLayer',
@@ -289,7 +280,11 @@ export default {
           }
           return time > new Date().getTime()
         }
-      }
+      },
+      // 
+      dialogFormVisible: false,
+      pipeId: 0,
+      hasLoad: false
     }
   },
   mounted() {
@@ -326,9 +321,6 @@ export default {
     }
   },
   methods: {
-    changeDate () {
-      console.log('时间变化')
-    },
     init () {
       this.projUtil = new projUtil()
       this.projUtil.resgis(this.currentDataProjName)
@@ -355,6 +347,7 @@ export default {
       this.pipeFuncLayer && this.mapView.removeLayer(this.pipeFuncLayer)
       this.lightLayer && this.mapView.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
+      this.popup && this.mapView.removeOverlay(this.popup)
     },
     setProjectData () {
       getProject({ current: 1, size: 1e5 }).then(res => {
@@ -385,6 +378,7 @@ export default {
       })
     },
     openBox (layerName, level) {
+      if(!this.hasLoad) return
       let type = ['pipeDefectLayer', 'pipeFuncLayer', 'pipeStrucLayer'].indexOf(layerName)
       let filter = [
         { key: 'defectLevel', value: ['一','二','三','四', '/'] },
@@ -425,20 +419,22 @@ export default {
       this.pipeDefectLayer.getSource().addFeatures(pipeDefectFeatures)
 
       this.loading = false
+      this.hasLoad = true
 
       this.clickEvent = this.mapView.on('click', (evt) => {
         let feas = this.mapView.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
           // let id = feas[0].get('id')
           // this.openPromptBox({ id })
-          let point = feas.find(item => item.getGeometry() instanceof Point)
-          if (point) {
-            this.$store.state.gis.pipeId = point.values_
-          }
+          // let point = feas.find(item => item.getGeometry() instanceof Point)
+          // if (point) {
+          //   this.$store.state.gis.pipeId = point.values_
+          // }
           
           // console.log(com)
         } else {
           // this.currentInfoCard = false
+          this.currentInfoCard = false
           this.lightLayer.getSource().clear()
         }
       })
@@ -446,15 +442,13 @@ export default {
 
     /**
      * 构造要素
-     * @param type 类型1: 线，2：点
-     * @param hasStyle 是否设置样式
+     * @param featureArr 数据
      * */
     getFeatures(featureArr) {
       let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
-        let funcNum = [0, 0, 0, 0, 0] // 四个级别缺陷数量
+        let funcNum = [0, 0, 0, 0, 0]
         let strucNum = [0, 0, 0, 0, 0]
-        let defectNum = [0, 0, 0, 0, 0] // 四个级别缺陷数量
-        console.log('管线数据', featureArr)
+        let defectNum = [0, 0, 0, 0, 0]
         featureArr.forEach((feaObj) => {
           let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
           if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
@@ -477,20 +471,22 @@ export default {
             let findStrucColor = colors.find(colorObj => feaObj['structClass'] && feaObj['structClass'].includes(colorObj.level))
 
             if (findFuncColor) {
+              let fFea = feature.clone()
               funcNum[findFuncColor.index] += 1
-              feature.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
+              fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
               for (let i in  feaObj) {
-                i !== "geometry" && feature.set(i, feaObj[i])
+                i !== "geometry" && fFea.set(i, feaObj[i])
               }
-              features.funcDefectFeatures.push(feature)
+              features.funcDefectFeatures.push(fFea)
             }
             if (findStrucColor) {
+              let sFea = feature.clone()
               strucNum[findStrucColor.index] += 1
-              feature.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
+              sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
               for (let i in  feaObj) {
-                i !== "geometry" && feature.set(i, feaObj[i])
+                i !== "geometry" && sFea.set(i, feaObj[i])
               }
-              features.strucDefectFeatures.push(feature)
+              features.strucDefectFeatures.push(sFea)
             }
             // 缺陷数据
             feaObj.pipeDefects.forEach((feaObj, index) => {
@@ -629,12 +625,14 @@ export default {
       // 这是map里的跳转方法
       this.$store.dispatch('map/changeMethod', info)
     },
+    // 打开弹窗
     async openPromptBox (id, layerName) {
       console.log('打开弹窗')
       let res = await queryDefectdetails(id)
       let position = this.lightFea(id, layerName)
       this.DetailsForm = res.result
       this.currentInfoCard = true
+      // 
       if (position) {
         this.popup = new Overlay({
           element: document.getElementById("popupCard"),
@@ -656,13 +654,14 @@ export default {
       let feas = this[layerName].getSource().getFeatures()
       let fea = feas.find(fea => fea.get('id') === feaid)
       if (fea) {
-        let geometry = fea.clone().getGeometry()
+        let geometry = fea.getGeometry().clone()
         this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(new Feature({ geometry }))
         let coors = geometry.getCoordinates()
         let center = new mapUtil().getCenter(fea)
+        
         this.mapView.getView().setCenter(center)
-        this.mapView.getView().setZoom(19)
+        this.mapView.getView().setZoom(20)
         return center
       } else {
         this.$message.warning('该点无位置信息')
@@ -670,7 +669,13 @@ export default {
       }
     },
     openDetails () {
-      console.log('详情')
+      console.log('打开详情', this.DetailsForm)
+      this.pipeId = this.DetailsForm.id
+      this.dialogFormVisible = true
+    },
+    // 详情关闭
+    dialogClose () {
+      this.dialogFormVisible = false
     },
   }
 }
@@ -1016,7 +1021,7 @@ export default {
     display: block;
     width: 45px;
     height: 27px;
-    background: url('./img/corner.png');
+    background: url('../components/testImg/corner.png');
     position: absolute;
     bottom: -26px;
     left: 50%;

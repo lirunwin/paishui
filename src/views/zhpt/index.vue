@@ -905,7 +905,7 @@ export default class BaseMap extends Vue {
   width: 50px;
   height: 8px;
 }
-.map-legend-traingle-1 {
+.map-legend-traingle1 {
   transform: scale(0.4);
   background-size: 100% 100%;
   background-image: url('../../assets/images/traingle1.png');
@@ -929,7 +929,7 @@ export default class BaseMap extends Vue {
   width: 36px;
   height: 36px;
 }
-.map-legend-traingl4 {
+.map-legend-traingle4 {
   transform: scale(0.4);
   background-size: 100% 100%;
   background-image: url('../../assets/images/traingle4.png');
@@ -937,7 +937,7 @@ export default class BaseMap extends Vue {
   width: 36px;
   height: 36px;
 }
-.map-legend-traingl0 {
+.map-legend-traingle0 {
   transform: scale(0.4);
   background-size: 100% 100%;
   background-image: url('../../assets/images/traingle0.png');
