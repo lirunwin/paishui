@@ -197,34 +197,31 @@ export default {
     },
     // 处理地图给的数据
     getMapData(newValue) {
-      if (newValue) {
-        let dataArr = newValue.pipeData
-        let setArr = []
-        // console.log('newValue', newValue)
-         dataArr.forEach((dv) => {
+      let dataArr = newValue.pipeData
+      let setArr = []
+      if (dataArr) {
+        dataArr.forEach((dv) => {
           dv.pipeDefects.forEach((pv) => {
-            setArr.forEach((sv) => {
-              if (sv.checkSuggest == pv.checkSuggest) {
-                sv.num += 1
-                sv.pipeLength += dv.pipeLength
-              } else {
-                setArr.push({
-                  proposal: pv.checkSuggest,
-                  num: 1,
-                  pipeLength: dv.pipeLength
-                })
-              }
+            setArr.push({
+              proposal: pv.checkSuggest,
+              num: 1,
+              pipeLength: dv.pipeLength
             })
           })
         })
-        this.tableData = setArr
-      }else{
-          this.$message({
-          showClose: true,
-          message: '当前模块暂无数据',
-          type: 'warning'
-        });
+        // this.tableData = setArr
+        // console.log('this.tableData', this.tableData)
+      } else {
+        // console.log('走的没有数据')
+        // this.$message({
+        //   showClose: true,
+        //   message: '当前模块暂无数据',
+        //   type: 'warning'
+        // })
       }
+      // Promise.all(setArr).then(()=>{
+      console.log('setArr', setArr)
+      // })
     },
     // 绘制
     drawFeature() {
@@ -354,8 +351,10 @@ export default {
       if (old != newValue) {
         this.initData()
       }
+    },
+    'searchValue.testTime.startDate': function (n) {
+      this.searchValue.testTime.finishDate = n
     }
-   
   }
 }
 </script>

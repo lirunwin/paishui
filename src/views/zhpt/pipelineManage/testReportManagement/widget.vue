@@ -1443,7 +1443,7 @@ export default {
       // this.imageUrl = URL.createObjectURL(file.raw)
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
       // console.log(arrState)
-      if (res.result.length == 0) {
+      if (!res.result) {
         file.status = 'error'
         // this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }
@@ -1495,7 +1495,7 @@ export default {
     handleAvatarSuccessVideo(res, file, fileList) {
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
       // console.log(arrState)
-      if (res.result.length == 0) {
+      if (!res.result) {
         file.status = 'error'
         // this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }

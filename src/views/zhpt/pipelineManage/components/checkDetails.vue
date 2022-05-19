@@ -593,7 +593,8 @@ export default {
   }
 
   /deep/ .box-card {
-    width: 50vw;
+    // width: 50vw;
+    width: 1000px;
     max-height: 80vh;
     margin-top: 4%;
     box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 12px 0px;
@@ -608,6 +609,7 @@ export default {
           height: 200px;
         }
         .profile-info {
+          padding-top: 48px;
           height: 200px;
           width: 200px;
           .info-item {
