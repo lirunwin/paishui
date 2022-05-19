@@ -14,9 +14,11 @@ export const LegendConfig = {
         { type: "traingle3", color: "transparent", label: "三级", showCheckBox: false },
         { type: "traingle4", color: "transparent", label: "四级", showCheckBox: false },
         { type: "traingle0", color: "transparent", label: "未定级", showCheckBox: false },
-        { type: "line", color: "#0c9923", label: "Ⅰ级", showCheckBox: false },
-        { type: "line", color: "rgb(18, 150, 219)", label: "Ⅱ级", showCheckBox: false },
-        { type: "line", color: "rgb(244, 234, 42)", label: "Ⅲ级", showCheckBox: false },
-        { type: "line", color: "#f00", label: "Ⅳ级", showCheckBox: false },
+
+        { type: "line", color: "green", label: "Ⅰ级", showCheckBox: false },
+        { type: "line", color: "blue", label: "Ⅱ级", showCheckBox: false },
+        { type: "line", color: "pink", label: "Ⅲ级", showCheckBox: false },
+        { type: "line", color: "red", label: "Ⅳ级", showCheckBox: false },
+        { type: "line", color: "#070358", label: "未定级", showCheckBox: false },
     ]
 }

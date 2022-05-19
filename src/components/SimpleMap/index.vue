@@ -5,7 +5,7 @@
 <script>
 import { appconfig } from "staticPub/config";
 import "ol/ol.css";
-import Map from "ol/Map";
+import { Map as olMap } from "ol";
 import View from "ol/View";
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 
@@ -56,7 +56,7 @@ export default {
         initMap() {
             let { initCenter, initZoom } = appconfig
             let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
-            let map = new Map({
+            let map = new olMap({
                 target: this.$refs.mainMap,
                 controls: controls({
                     zoom: false,
@@ -151,8 +151,39 @@ export default {
             })
             drawer.start()
         },
-        // 
         getDataInMap (data, extent) {
+            let that = this
+            // 无范围 默认全图
+            if (!extent) {
+                let [xmin, ymin, xmax, ymax] = new mapUtil(this.map).getCurrentViewExtent()
+                let coors = [[[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax],]]
+                extent = new Feature({ geometry: new Polygon(coors) })
+            }
+            let filterExtent = turf.polygon(extent.getGeometry().getCoordinates())
+
+            let resData = new Map()
+            data.forEach(pipeData => {
+                let len = pipeData.pipeLength
+                let defectData = pipeData.pipeDefects
+                defectData.forEach(defect => {
+                    if (!resData.has(defect.checkSuggest)) {
+                        resData.set(defect.checkSuggest, { num: 1, len })
+                    } else {
+                        let data = resData.get(defect.checkSuggest)
+                        data.num += 1
+                        data.len += len
+                    }
+                })
+            })
+            console.log(1111)
+            let obj = {}
+            resData.forEach((value, key) => {
+                obj[key] = value
+            })
+            return obj
+        },
+        // 
+        getDataInMap_old (data, extent) {
             let that = this
             // 无范围 默认全图
             if (!extent) {
