@@ -111,7 +111,6 @@
         >
         </el-table-column>
         <el-table-column
-          width="140"
           header-align="center"
           label="管道内部状况描述"
           align="center"
@@ -340,7 +339,7 @@ export default {
       tableContent: [
         { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
         { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
-        { width: '100', sortable: true, label: '管径(mm)', name: 'diameter' },
+        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
         { width: '100', sortable: false, label: '材质', name: 'material' },
         { width: '100', sortable: false, label: '检测方向', name: 'detectDir' },
         { width: '100', sortable: true, label: '距离(m)', name: 'checkLength' },

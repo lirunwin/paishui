@@ -90,7 +90,7 @@
           <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-        <el-table-column fixed="left"  align="center" type="index" label="序号" width="50"> </el-table-column>
+        <el-table-column fixed="left" align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
