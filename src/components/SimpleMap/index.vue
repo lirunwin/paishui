@@ -293,7 +293,7 @@ export default {
       }
     },
     //
-    getDataInMap_old(data, extent) {
+    getDefectDataInMap(data, extent) {
       let that = this
       // 无范围 默认全图
       if (!extent) {
@@ -320,6 +320,42 @@ export default {
       this.vectorLayer.getSource().addFeatures([...this.getFeatures(pipeData, 2), ...this.getFeatures(defectData, 1)])
 
       return { pipeData, defectData }
+
+      function filter(features, type) {
+        let feas = []
+        feas = features.map((feaObj) => {
+          let fea = {}
+          if (type === 1) {
+            let coors = JSON.parse(feaObj.geometry)
+            if (!coors) {
+              return null
+            }
+            fea.geometry = turf.point(that.projUtil.transform([coors.x, coors.y], that.currentDataProjName, 'proj84'))
+            for (let key in feaObj) {
+              if (key !== 'geometry') {
+                fea[key] = feaObj[key]
+              }
+            }
+          } else {
+            let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
+            if (!(startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation)) {
+              return null
+            }
+            let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
+            let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+            startPoint = that.projUtil.transform(startPoint, that.currentDataProjName, 'proj84')
+            endPoint = that.projUtil.transform(endPoint, that.currentDataProjName, 'proj84')
+            fea.geometry = turf.lineString([startPoint, endPoint])
+            for (let key in feaObj) {
+              if (key !== 'geometry') {
+                fea[key] = feaObj[key]
+              }
+            }
+          }
+          return fea
+        })
+        return feas.filter((fea) => fea && turf.booleanContains(filterExtent, fea.geometry))
+      }
     }
   },
 
@@ -392,5 +428,45 @@ export default {
   display: inline-block;
   width: 50px;
   height: 8px;
+}
+.map-legend-traingle1 {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle1.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.map-legend-traingle2 {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle2.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.map-legend-traingle3 {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle3.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.map-legend-traingle4 {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle4.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.map-legend-traingle0 {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle0.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
 }
 </style>
