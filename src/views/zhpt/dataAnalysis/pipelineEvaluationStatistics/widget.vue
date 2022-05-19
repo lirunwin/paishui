@@ -81,9 +81,9 @@
               ref="multipleTable"
               :data="tableData"
               tooltip-effect="dark"
-              height="250"
               stripe
               style="width: 100%"
+              show-summary
             >
               <template slot="empty">
                 <img
@@ -134,11 +134,14 @@ export default {
       tableData: [], // 表格数据
       // 表格参数
       tableContent: [
-        { label: '整改建议', name: 'proposal' },
+        { label: '整改建议', name: 'type' },
         { label: '数量(条)', name: 'num' },
-        { label: '长度(米)', name: 'pipeLength' }
+        { label: '长度(米)', name: 'len' }
       ],
-      radio: '1', // 单选框的值
+      typeArr: [], // 建议类型数组
+      nunArr: [], // 管道数量
+      lengthArr: [], // 管道长度
+      radio: '2', // 单选框的值
       zero: '',
       form: {
         name: '',
@@ -163,7 +166,9 @@ export default {
     }
   },
   mounted() {
-    this.initData()
+    this.$nextTick(() => {
+      // this.initData()
+    })
   },
   destroyed() {
     this.data.that.clearMap()
@@ -196,32 +201,37 @@ export default {
       }
     },
     // 处理地图给的数据
-    getMapData(newValue) {
-      let dataArr = newValue.pipeData
-      let setArr = []
-      if (dataArr) {
-        dataArr.forEach((dv) => {
-          dv.pipeDefects.forEach((pv) => {
-            setArr.push({
-              proposal: pv.checkSuggest,
-              num: 1,
-              pipeLength: dv.pipeLength
-            })
-          })
-        })
-        // this.tableData = setArr
-        // console.log('this.tableData', this.tableData)
-      } else {
-        // console.log('走的没有数据')
-        // this.$message({
-        //   showClose: true,
-        //   message: '当前模块暂无数据',
-        //   type: 'warning'
-        // })
-      }
-      // Promise.all(setArr).then(()=>{
-      console.log('setArr', setArr)
-      // })
+    getMapData(res) {
+      // this.tableData = [...res]
+      let arrV = Object.values(res)
+      let arrK = Object.keys(res)
+      arrV.forEach((v, i) => {
+        v.type = arrK[i]
+        v.len = v.len.toFixed(2)
+      })
+      // console.log('res', arrV)
+      this.tableData = arrV
+      // 建议类型数组
+      this.typeArr = this.tableData.map((v) => {
+        return v.type
+      })
+      // 管道长度统计
+      this.lengthArr = this.tableData.map((v) => {
+        return {
+          value: v.len,
+          name: v.type
+        }
+      })
+      // 管道数量统计
+      this.nunArr = this.tableData.map((v) => {
+        return {
+          value: v.num,
+          name: v.type
+        }
+      })
+      this.$nextTick(() => {
+        this.initData()
+      })
     },
     // 绘制
     drawFeature() {
@@ -272,41 +282,39 @@ export default {
       if (this.radio == '1') {
         myChart.setOption(
           {
-            title: {
-              // text: "某站点用户访问来源", //主标题
-              // subtext: "纯属虚构", //副标题
-              x: 'center' //x轴方向对齐方式
-            },
             tooltip: {
               trigger: 'item',
-              formatter: '{a} <br/>{b} : {c} ({d}%)'
+              formatter: '{a} <br/>{b}: {c} ({d}%)'
             },
             legend: {
-              orient: 'horizontal',
-              // top: '20',
               right: 'right',
-              data: ['直接访问', '邮件营销', '联盟广告', '视频广告', '搜索引擎']
+              top: 'center',
+              data: this.typeArr
             },
             series: [
               {
-                name: '访问来源',
+                name: '管道数量统计',
                 type: 'pie',
-                radius: '55%',
-                center: ['50%', '60%'],
-                data: [
-                  { value: 335, name: '直接访问' },
-                  { value: 310, name: '邮件营销' },
-                  { value: 234, name: '联盟广告' },
-                  { value: 135, name: '视频广告' },
-                  { value: 1548, name: '搜索引擎' }
-                ],
-                itemStyle: {
-                  emphasis: {
-                    shadowBlur: 10,
-                    shadowOffsetX: 0,
-                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-                  }
-                }
+                selectedMode: 'single',
+                radius: [0, '50%'],
+                label: {
+                  show: false,
+                  position: 'inner',
+                  fontSize: 10
+                },
+                labelLine: {
+                  show: false
+                },
+                data: this.nunArr
+              },
+              {
+                name: '管道长度统计',
+                type: 'pie',
+                radius: ['60%', '80%'],
+                labelLine: {
+                  length: 30
+                },
+                data: this.lengthArr
               }
             ]
           },
