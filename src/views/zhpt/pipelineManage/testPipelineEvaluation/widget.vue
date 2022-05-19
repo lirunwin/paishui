@@ -282,7 +282,7 @@ import axios from 'axios'
 import deleteDialog from '../components/checkDetails.vue'
 
 export default {
-  props: ['data'],
+  props: ['data', 'param'],
   components: {
     deleteDialog
   },
@@ -375,26 +375,22 @@ export default {
     }
   },
   created() {
-    let res = this.getDate()
+    // let res = this.getDate()
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '管道评估结果管理') {
-        this.clearAll()
-        this.hasData = false
-      } else {
-        this.init()
-      }
     },
     'searchValue.testTime.startDate': function (n) {
       this.searchValue.testTime.finishDate = n
     }
   },
   mounted() {
-    this.map = this.data.mapView
-    this.projUtil = new projUtil()
-    this.projUtil.resgis(this.currentDataProjName)
-    this.init()
+    console.log('这里是地图传入的数据', this.tableData)
+    if (this.param && this.param.rootPage) {
+      let { type, level, rootPage, data } = this.param
+      this.rootPage = rootPage
+      this.tableData = data.map(fea => fea.values_)
+    }
   },
   destroyed() {
     this.clearAll()

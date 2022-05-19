@@ -23,10 +23,11 @@ import VectorLayer from 'ol/layer/Vector';
 import { comSymbol } from '@/utils/comSymbol';
 import { Style } from 'ol/style'
 import Icon from 'ol/style/Icon'
-import defectImgR from '@/assets/images/traingle-r.png'
-import defectImgB from '@/assets/images/traingle-b.png'
-import defectImgY from '@/assets/images/traingle-y.png'
-import defectImgLB from '@/assets/images/traingle-lb.png'
+import defectImg1 from '@/assets/images/traingle1.png'
+import defectImg2 from '@/assets/images/traingle2.png'
+import defectImg3 from '@/assets/images/traingle3.png'
+import defectImg4 from '@/assets/images/traingle4.png'
+import defectImg0 from '@/assets/images/traingle0.png'
 import { unByKey } from 'ol/Observable';
 
 export default {
@@ -97,10 +98,11 @@ export default {
                 if (type === 1) {
                     let feature = new Feature({ geometry: new Point(coors)})
                     let imgs = [
-                        { level: '一级', img: defectImgLB, index: 0 },
-                        { level: '二级', img: defectImgB, index: 1 },
-                        { level: '三级', img: defectImgY, index: 2 },
-                        { level: '四级', img: defectImgR, index: 3 }
+                        { level: '一级', img: defectImg1, index: 0 },
+                        { level: '二级', img: defectImg2, index: 1 },
+                        { level: '三级', img: defectImg3, index: 2 },
+                        { level: '四级', img: defectImg4, index: 3 },
+                        { level: '/', img: defectImg0, index: 4 },
                     ]
                     let findimg = null
 

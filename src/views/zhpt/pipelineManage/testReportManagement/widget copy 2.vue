@@ -7,7 +7,7 @@
           <div class="title">关键字：</div>
           <el-input
             size="small"
-            placeholder="搜索工程名称、地点、报告名称"
+            placeholder="请输入工程名称、地点、报告名称"
             v-model="searchValue.serchValue"
             clearable
             class="serch-input"
@@ -66,9 +66,7 @@
         <div class="right-btn">
           <el-button size="small" type="primary" @click="showUpdata">报告上传</el-button>
           <!-- <el-button  type="primary" @click="dialogFormVisible2 = true">视频上传</el-button> -->
-          <el-button size="small" type="primary" :disabled="multipleSelection.length != 1" @click="videoShowUpdata"
-            >视频上传</el-button
-          >
+          <el-button size="small" type="primary" @click="videoShowUpdata">视频上传</el-button>
           <el-button
             size="small"
             type="primary"
@@ -217,6 +215,7 @@
               :data="getData"
               multiple
               :show-file-list="false"
+              :before-upload="checkState"
               :on-success="handleAvatarSuccess"
               :before-remove="beforeRemove"
               :on-progress="beforeUpload"
@@ -259,9 +258,9 @@
                   </template>
 
                   <el-table-column type="index" label="序号" width="50" align="center"> </el-table-column>
-                  <el-table-column property="name" label="视频名称" show-overflow-tooltip align="center">
+                  <el-table-column property="name" label="报告名称" show-overflow-tooltip align="center">
                   </el-table-column>
-                  <el-table-column property="size" label="视频大小" align="center" width="80"> </el-table-column>
+                  <el-table-column property="size" label="报告大小" align="center" width="80"> </el-table-column>
                   <el-table-column property="status" label="上传进度" align="center" width="80">
                     <!-- filter_schedule -->
                     <template slot-scope="scope">
@@ -287,8 +286,19 @@
     <div class="public-box">
       <el-dialog title="附件视频上传" @close="closeDialog" :visible.sync="dialogFormVisible2">
         <el-form ref="formVideo" :model="form" :rules="rules">
-          <el-form-item label="报告名称" :label-width="formLabelWidth">
-            <el-input size="small" v-model="selectWord.name" disabled show-word-limit></el-input>
+          <!-- <el-input size="small" v-model="selectWord.name" disabled show-word-limit></el-input> -->
+          <el-form-item label="报告名称" :label-width="formLabelWidth" prop="name">
+            <el-select
+              clearable
+              v-model="form.name"
+              placeholder="请选择报告名称"
+              v-selectLoadMore="selectLoadMore"
+              @blur="initSelectDate"
+              filterable
+              :disabled="loadingBool"
+            >
+              <el-option v-for="(item, i) in videoSelectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
+            </el-select>
           </el-form-item>
           <el-form-item label="检测视频" :label-width="formLabelWidth" class="hd-input" prop="report">
             <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
@@ -302,6 +312,7 @@
               accept=".mp4"
               :data="getVideoData"
               multiple
+              :before-upload="checkState"
               :on-success="handleAvatarSuccessVideo"
               :before-remove="beforeRemove"
               :on-progress="beforeUpload"
@@ -606,10 +617,7 @@ export default {
   },
   data() {
     return {
-      selectWord: {
-        name: '',
-        id: ''
-      }, // 选中的报告的id
+      lastFileList: [], //上次上次的文件列表
       fullscreenLoading: false, // 加载
       remark: '', // 备注
       pdfUrl: '', // pdf地址
@@ -710,7 +718,7 @@ export default {
       dialogFormVisible3: false,
       form: {
         name: '',
-        report: ''
+        report: '1'
       },
       formLabelWidth: '120px',
       loadingBool: false, // 加载按钮显隐
@@ -736,6 +744,9 @@ export default {
       } else {
         this.init()
       }
+    },
+    'searchValue.dateTime.startDate': function (n) {
+      this.searchValue.dateTime.finishDate = n
     }
   },
   computed: {
@@ -789,7 +800,6 @@ export default {
   },
   mounted() {
     console.log('IP', baseAddress)
-    console.log('加载管道检测结果专题图')
     this.map = this.data.mapView
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
@@ -808,16 +818,16 @@ export default {
         disabledDate: (time) => {
           if (date2 != '') {
             // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
+            return time.getTime() >= date2
           } else {
-            return time.getTime() > Date.now()
+            return time.getTime() >= Date.now()
           }
         }
       }
       this.pickerOptions1 = {
         disabledDate: (time) => {
           // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1
+          return time.getTime() <= date1 - 8.64e7
         }
       }
     },
@@ -1086,6 +1096,10 @@ export default {
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
       this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
       this.upDataTable = []
+      this.selectParm = { current: 1, size: 30 }
+      this.selectLoadTotal = 0 // 选择框总页数
+      this.getPipeDefectData() // 刷新地图
+      this.getDate()
       console.log('关闭了弹框')
       return false
     },
@@ -1336,8 +1350,8 @@ export default {
       console.log('data', data)
       data.forEach((v) => {
         this.selectArr.push({
-          name: v.prjName,
-          No: v.prjNo
+          name: v.wordInfoName,
+          No: v.id
         })
       })
       console.log('下滑到底了')
@@ -1346,11 +1360,14 @@ export default {
     async selectLoadMoreVideo() {
       if (this.selectParm.current * this.selectParm.size >= this.selectLoadTotal) return
       this.selectParm.current++
-      let res = await projectPagingQuery(this.selectParm)
-      let data = res.result.records
-      data.forEach((v) => {
+      let arr
+      // 选择报告名称的分页查询
+      await queryPageTestReportNew(this.selectParm).then((res) => {
+        arr = res.result.records
+      })
+      arr.forEach((v) => {
         this.videoSelectArr.push({
-          name: v.prjName,
+          name: v.wordInfoName,
           No: v.id
         })
       })
@@ -1374,20 +1391,19 @@ export default {
     },
     // 视频上传按钮
     async videoShowUpdata() {
-      this.selectWord.name = this.multipleSelection[0].prjName
-      this.selectWord.id = this.multipleSelection[0].id
-      // 选择工程名称的分页查询
-      // let res = await projectPagingQuery(this.selectParm)
-      // let data = res.result.records
-      // this.selectLoadTotal = res.result.records
-      // this.videoSelectArr = data.map((v) => {
-      //   return {
-      //     name: v.prjName,
-      //     No: v.id
-      //   }
-      // })
-      // this.selectArr
-      console.log('选择框数据', this.videoSelectArr)
+      let arr
+      // 选择报告名称的分页查询
+      await queryPageTestReportNew(this.selectParm).then((res) => {
+        arr = res.result.records
+        this.selectLoadTotal = res.result.total
+      })
+      this.videoSelectArr = arr.map((v) => {
+        return {
+          name: v.wordInfoName,
+          No: v.id
+        }
+      })
+      console.log('视频选择框数据', this.videoSelectArr)
       this.dialogFormVisible2 = true
     },
     // 上传按钮
@@ -1398,7 +1414,9 @@ export default {
           // 获取字典id
           await this.getParamsId('wordInfoDoc', 'tf_ywpn_prjinfo_w')
           this.updataParamsId.itemId = this.form.name
+          //  console.log('提交前', this.$refs.updataDocx.submit)
           await this.$refs.updataDocx.submit()
+          //  console.log('提交后', this.$refs.updataDocx.submit)
         } else {
           console.log('不能提交!!')
           return false
@@ -1411,7 +1429,8 @@ export default {
           this.loadingBool = true
           // 获取字典id
           await this.getParamsId('pipeVideo', 'tf_ywpn_wordinfo_w')
-          this.updataParamsId.itemId = this.selectWord.id
+          this.updataParamsId.itemId = this.form.name
+          console.log('提交前', this.$refs.updataVideo)
           await this.$refs.updataVideo.submit()
         } else {
           console.log('不能提交!!')
@@ -1426,17 +1445,20 @@ export default {
       // console.log(arrState)
       if (res.result.length == 0) {
         file.status = 'error'
-        this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
+        // this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }
       if (arrState) {
         this.$message({
           showClose: true,
           message: '文件上传结束'
         })
-        this.getPipeDefectData() // 刷新地图
-        this.getDate()
-        this.dialogFormVisible = false
-        this.form.name = ''
+        this.lastFileList = fileList
+        this.loadingBool = false
+        // let timeId = setTimeout(() => {
+        //   this.dialogFormVisible = false
+        //   this.form.name = ''
+        //   clearTimeout(timeId)
+        // }, 1500)
       }
 
       // fileList.forEach((v) => {
@@ -1449,12 +1471,25 @@ export default {
       //     //   clearTimeout(timeId)
       //     // }, 2000)
       //     // console.log('上传后的code码', res)
-      console.log('上传后的res信息', res)
-      console.log('上传后的file信息', file)
-      console.log('上传后的fileList信息', fileList)
+      // console.log('上传后的res信息', res)
+      // console.log('上传后的file信息', file)
+      // console.log('上传后的fileList信息', fileList)
       //     // console.log('上传后的文件列表信息', fileList)
       //   }
       // })
+    },
+    // 检测报告是否已被上传成功过
+    checkState(file) {
+      console.log('当前文件状态', file)
+      console.log('上传的文件列表', this.upDataTable)
+      if (file.status == 'success') {
+        this.$message({
+          message: '文件都已上传完成',
+          type: 'success'
+        })
+        this.loadingBool = false
+        return false
+      }
     },
     // 视频
     handleAvatarSuccessVideo(res, file, fileList) {
@@ -1462,16 +1497,45 @@ export default {
       // console.log(arrState)
       if (res.result.length == 0) {
         file.status = 'error'
-        this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
+        // this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }
       if (arrState) {
         this.$message({
           showClose: true,
           message: '文件上传结束'
         })
+        this.loadingBool = false
+        // let timeId = setTimeout(() => {
+        //   this.dialogFormVisible2 = false
+        //   this.form.name = ''
+        //   clearTimeout(timeId)
+        // }, 1500)
       }
+      // fileList.forEach((v) => {
+      //   if (v.status == 'ready' || v.status == 'uploading') {
+      //     return false
+      //   } else {
+      //     if (res.result.length != 0) {
+      //       this.$message({
+      //         message: '上传成功',
+      //         type: 'success'
+      //       })
+      //       this.getDate()
+      //     } else {
+      //       this.$message.error('上传文件失败,请检查文件格式')
+      //     }
+      //     let timeId = setTimeout(() => {
+      //       this.dialogFormVisible2 = false
+      //       this.form.name = ''
+      //       clearTimeout(timeId)
+      //     }, 2000)
+      //     // console.log('上传后的code码', res)
+      // console.log('上传后的文件信息', file)
+      //   }
+      // })
     },
     beforeUpload(event, file, fileList) {
+      console.log('文件上传中', file)
       let num = 1024.0 //byte
       // console.log('file', file)
       // console.log('上传file的状态', file.status)

@@ -905,34 +905,42 @@ export default class BaseMap extends Vue {
   width: 50px;
   height: 8px;
 }
-.map-legend-traingle-r {
+.map-legend-traingle-1 {
   transform: scale(0.4);
   background-size: 100% 100%;
-  background-image: url('../../assets/images/traingle-r.png');
+  background-image: url('../../assets/images/traingle1.png');
   background-repeat: no-repeat;
   width: 36px;
   height: 36px;
 }
-.map-legend-traingle-y {
+.map-legend-traingle2 {
   transform: scale(0.4);
   background-size: 100% 100%;
-  background-image: url('../../assets/images/traingle-y.png');
+  background-image: url('../../assets/images/traingle2.png');
   background-repeat: no-repeat;
   width: 36px;
   height: 36px;
 }
-.map-legend-traingle-b {
+.map-legend-traingle3 {
   transform: scale(0.4);
   background-size: 100% 100%;
-  background-image: url('../../assets/images/traingle-b.png');
+  background-image: url('../../assets/images/traingle3.png');
   background-repeat: no-repeat;
   width: 36px;
   height: 36px;
 }
-.map-legend-traingle-lb {
+.map-legend-traingl4 {
   transform: scale(0.4);
   background-size: 100% 100%;
-  background-image: url('../../assets/images/traingle-lb.png');
+  background-image: url('../../assets/images/traingle4.png');
+  background-repeat: no-repeat;
+  width: 36px;
+  height: 36px;
+}
+.map-legend-traingl0 {
+  transform: scale(0.4);
+  background-size: 100% 100%;
+  background-image: url('../../assets/images/traingle0.png');
   background-repeat: no-repeat;
   width: 36px;
   height: 36px;

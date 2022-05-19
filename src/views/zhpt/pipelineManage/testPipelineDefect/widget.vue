@@ -148,7 +148,7 @@
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
       <div class="histroyPipeData">
-        <div class="detailsCrad" style="top: 10%; left: 20%; right: 62%" v-if="currentInfoCard">
+        <div class="detailsCrad" :style="{ 'top': cardTop, 'right': cardRight }" v-if="currentInfoCard">
           <el-card class="box-card" style="width: 300px">
             <div class="table-content">
               <div
@@ -384,27 +384,22 @@ export default {
       lightLayer: null,
       clickEvent: null,
       projUtil: null,
-      currentDataProjName: 'proj43'
+      currentDataProjName: 'proj43',
+      cardRight: "20%",
+      cardTop: "10%"
     }
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
-      if (this.param) return
-      if (n !== '管道缺陷管理') {
-        this.clearAll()
-      } else {
-        this.init()
-      }
     },
     '$store.state.gis.pipeId': function (n, o) {
-      if (n) this.openPromptBox(n)
     },
     'searchValue.testTime.startDate': function (n) {
       this.searchValue.testTime.finishDate = n
     }
   },
   created() {
-    let res = this.getDate()
+    // let res = this.getDate()
   },
   computed: {
     // 获取文件url
@@ -422,16 +417,10 @@ export default {
   },
   mounted() {
     if (this.param && this.param.rootPage) {
-      let { type, level, rootPage } = this.param
+      let { type, level, rootPage, data } = this.param
       this.rootPage = rootPage
-      // type: funcClass表示管段, level表示缺陷
-      // level: 级别
-      console.log('这里是地图传入的参数', this.param)
-    } else {
-      this.projUtil = new projUtil()
-      this.projUtil.resgis(this.currentDataProjName)
-      this.map = this.data.mapView
-      this.init()
+      this.tableData = data.map(fea => fea.values_)
+      console.log('这里是地图传入的数据', this.tableData)
     }
   },
   destroyed() {
@@ -488,149 +477,9 @@ export default {
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
     },
-    init() {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
-      this.lightLayer = new VectorLayer({
-        source: new VectorSource(),
-        style: comSymbol.getAllStyle(8, 'rgba(255, 0, 0, 0.8)', 9, 'rgba(0, 255, 255, 0.6)')
-      })
-      this.map.addLayer(this.vectorLayer)
-      this.map.addLayer(this.lightLayer)
-      this.getPipeDefectData()
-      this.clickEvent = this.map.on('click', (evt) => {
-        let features = this.map.getFeaturesAtPixel(evt.pixel)
-        if (features.length !== 0) {
-          let id = features[0].get('id')
-          this.openPromptBox({ id })
-        } else {
-          this.currentInfoCard = false
-          this.lightLayer.getSource().clear()
-        }
-      })
-    },
-    getPipeDefectData() {
-      getDefectData().then((res) => {
-        if (res.code === 1) {
-          let dFeas = [],
-            pFeas = []
-          if (res.result && res.result.length !== 0) {
-            let reportInfo = res.result[0] ? res.result : [res.result],
-              pipeData = [],
-              defectData = []
-            reportInfo.forEach((rpt) => {
-              let pipeStates = rpt.pipeStates
-              // pipeData = [...pipeData, ...pipeStates]
-              defectData = [...defectData, ...pipeStates.map((pipe) => pipe.pipeDefects).flat()]
-            })
-            dFeas = this.getFeatures(defectData, 2)
-            // pFeas = this.getFeatures(pipeData, 1)
-          }
-          this.vectorLayer.getSource().clear()
-          this.lightLayer.getSource().clear()
-
-          if (dFeas.length !== 0 || pFeas.length !== 0) {
-            this.vectorLayer.getSource().addFeatures([...dFeas, ...pFeas])
-          }
-        } else this.$message.error('管线缺陷数据请求失败')
-      })
-    },
-    getFeatures(featureArr, type, hasStyle = true) {
-      let style = null,
-        features = []
-      if (type === 1) {
-        featureArr.forEach((feaObj) => {
-          let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
-          if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
-            let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
-            let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
-            startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
-            endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
-
-            let coors = [startPoint, endPoint]
-            let feature = new Feature({ geometry: new LineString(coors) })
-            // 健康等级颜色
-            let colors = [
-              { level: 'Ⅰ', color: 'green', index: 0 },
-              { level: 'Ⅱ', color: 'blue', index: 1 },
-              { level: 'Ⅲ', color: 'pink', index: 2 },
-              { level: 'Ⅳ', color: 'red', index: 3 }
-            ]
-            let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
-
-            if (findColor) {
-              feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
-              for (let i in feaObj) {
-                i !== 'geometry' && feature.set(i, feaObj[i])
-              }
-              features.push(feature)
-            }
-          }
-        })
-      } else {
-        featureArr.forEach((feaObj, index) => {
-          if (feaObj.geometry) {
-            let coors = JSON.parse(feaObj.geometry)
-            let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
-            let feature = new Feature({ geometry: new Point(point) })
-            let imgs = [
-              { level: '一级', img: defectImgLB, index: 0 },
-              { level: '二级', img: defectImgB, index: 1 },
-              { level: '三级', img: defectImgY, index: 2 },
-              { level: '四级', img: defectImgR, index: 3 }
-            ]
-            let findimg = null
-
-            if (feaObj.defectLevel) {
-              findimg = imgs.find((colorObj) => feaObj['defectLevel'].includes(colorObj.level))
-            }
-            // 缺少 defectLevel 字段
-            if (findimg) {
-              // hasStyle && feature.setStyle(comSymbol.getAllStyle(5, findColor.color, 0, 'rgba(0,0,0,0)'))
-              hasStyle &&
-                feature.setStyle(new Style({ image: new Icon({ size: [48, 48], src: findimg.img, scale: 0.3 }) }))
-              for (let i in feaObj) {
-                i !== 'geometry' && feature.set(i, feaObj[i])
-              }
-              features.push(feature)
-            }
-          }
-        })
-      }
-      return features
-    },
-    setPositionByPipeId(id) {
-      console.log('定位')
-      let features = this.vectorLayer.getSource().getFeatures()
-      let filterFea = features.find((fea) => fea.get('id') === id)
-      if (filterFea) {
-        let feature = new Feature({
-          geometry: filterFea.getGeometry().clone(),
-          style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')
-        })
-        this.lightLayer.getSource().clear()
-        this.lightLayer.getSource().addFeature(feature)
-        let position = feature.getGeometry().getCoordinates().flat()
-        position.length = 2
-        this.map.getView().setCenter(position)
-        this.map.getView().setZoom(21)
-      }
-    },
-
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
-      if (this.rootPage) {
-        this.rootPage.lightFea(row.id)
-      } else {
-        this.setPositionByPipeId(row.id)
-      }
-      console.log('打开缩略提示框', row)
-      this.currentId = row.id
-      let res = await queryDefectdetails(row.id)
-      this.DetailsForm = res.result
-      // this.isPromptBox = { ...row }
-      // let res = await assessmentDefect(row.id)
-      // this.currentForm = res.result
-      this.currentInfoCard = true
+      this.rootPage.openPromptBox(row.id, this.param.layerName)
       // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },
     // 详情导航选择事件

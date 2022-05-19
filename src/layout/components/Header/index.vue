@@ -397,7 +397,9 @@ export default class Header extends Vue {
     //
     this.$store.state.gis.activeHeaderItem = this.defaultActiveIndex
     if (this.defaultActiveIndex === 'psjc') {
-      let info = {
+      this.$nextTick(() => {
+        this.$nextTick(()=> {
+          let info = {
         icon: "iconfont ",
         id: "testResultDiagram",
         label: "检测成果专题图",
@@ -410,8 +412,7 @@ export default class Header extends Vue {
         widgetid: "Panel"
       }
       this.$store.dispatch('map/changeMethod', info)
-      this.$nextTick(() => {
-        this.$route.params.activeMenu = '检测成果专题图'
+        })
       })
     }
   }

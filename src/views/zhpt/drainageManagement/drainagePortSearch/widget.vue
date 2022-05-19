@@ -116,7 +116,7 @@
 <script>
 import axios from "axios";
 import { geteSessionStorage } from '@/utils/auth'
-import { getOutfall } from '@/api/drainage/drainage'
+import { getOutfall,getDepartment,getKeyPage } from '@/api/drainage/drainage'
 import Config from "./config.json"
 import tableItem from "@/components/Table/index.vue"
 import commonPopup from "@/components/CommonPopup/index.vue"
@@ -145,18 +145,8 @@ export default {
             keyValue:"",//关键字
             portType: '',//排放口类型
             ownershipUnits:"",//权属单位
-            portTypeOptions: [
-                {
-                    value: '1',
-                    label: '排放口'
-                }
-            ],
-            ownershipUnitsOptions:[
-                {
-                    value:"1",
-                    label:"xxxx监管单位"
-                }
-            ],
+            portTypeOptions: [],
+            ownershipUnitsOptions:[],
             //表格内容
             //表头样式
             headerStyle:{
@@ -208,6 +198,8 @@ export default {
     },
     mounted(){
         this.getPage();
+        this.getPortType();
+        this.getDepartMentAll();
         this.column=this.config.column
         this.view=this.$attrs.data.mapView
         this.initMap();
@@ -236,11 +228,38 @@ export default {
                 });
             });
         },
+        //获取排放口类别
+        getPortType(){
+            let keys={
+                ulevel: 2,
+                codeKey:"outfall_type"
+            }
+            getKeyPage(keys).then(res=>{
+                const result = res
+                result.result.records.forEach(item=>{
+                    if(item.notes) 
+                    this.portTypeOptions.push({value:item.notes,label:item.notes})
+                })
+            })
+        },
+        //获取部门（权属单位）
+        getDepartMentAll(){
+            getDepartment().then(res=>{
+                const result = res
+                this.ownershipUnitsOptions=result.result.map(item=>{
+                    return {value:item.name,label:item.name}
+                })
+            }).catch(err=>{
+                console.log(err)
+            })
+        },
         getPage(){
             let data={
                 current:this.pagination.current,
                 size:this.pagination.size,
-                nameAndAddress:this.keyValue
+                nameAndAddress:this.keyValue,
+                belong:this.ownershipUnits,
+                type:this.portType
             }
             getOutfall(data).then(res=>{
                 const result = res;
