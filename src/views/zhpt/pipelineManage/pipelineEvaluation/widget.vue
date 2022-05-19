@@ -92,6 +92,7 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
         @row-click="openPromptBox"
+        :default-sort="{ prop: 'date', order: 'descending' }"
       >
         <template slot="empty">
           <img
@@ -103,7 +104,7 @@
           <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
+        <el-table-column header-align="center" align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -112,6 +113,31 @@
           show-overflow-tooltip
           v-for="(v, i) in tableContent"
           :key="i"
+          :sortable="v.sortable"
+          :width="v.width"
+        >
+        </el-table-column>
+
+        <el-table-column
+          prop="structClass"
+          header-align="center"
+          label="结构性缺陷等级"
+          align="center"
+          show-overflow-tooltip
+          width="170"
+          :sort-method="sortStruct"
+          :sortable="true"
+        >
+        </el-table-column>
+        <el-table-column
+          prop="funcClass"
+          header-align="center"
+          label="功能性缺陷等级"
+          align="center"
+          show-overflow-tooltip
+          width="180"
+          :sortable="true"
+          :sort-method="sortFunc"
         >
         </el-table-column>
 
@@ -279,7 +305,7 @@ import { baseAddress } from '@/utils/request.ts'
 import axios from 'axios'
 
 // 引入管道检测组件
-import deleteDialog from '../components/checkDetails copy2.vue'
+import deleteDialog from '../components/checkDetails.vue'
 
 export default {
   props: ['data'],
@@ -327,19 +353,17 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { label: '工程名称', name: 'prjName' },
-        { label: '管段编号', name: 'expNo' },
-        { label: '管段类型', name: 'pipeType' },
-        { label: '管径(mm)', name: 'diameter' },
-        { label: '材质', name: 'material' },
-        { label: '结构性缺陷等级', name: 'structClass' },
-        { label: '结构性缺陷评价', name: 'structEstimate' },
-        { label: '功能性缺陷等级', name: 'funcClass' },
-        { label: '缺陷数量', name: 'defectnum' },
-        { label: '检测照片', name: 'picnum' },
-        { label: '检测视频', name: 'videoFileName' },
-        { label: '检测地点', name: 'checkAddress' },
-        { label: '检测日期', name: 'sampleTime' }
+        { width: '100', sortable: false, label: '工程名称', name: 'prjName' },
+        { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
+        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
+        { width: '100', sortable: false, label: '材质', name: 'material' },
+        { width: '', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
+        { width: '100', sortable: true, label: '缺陷数量', name: 'defectnum' },
+        { width: '100', sortable: true, label: '检测照片', name: 'picnum' },
+        { width: '100', sortable: false, label: '检测视频', name: 'videoFileName' },
+        { width: '100', sortable: false, label: '检测地点', name: 'checkAddress' },
+        { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' }
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
@@ -433,6 +457,55 @@ export default {
     }
   },
   methods: {
+    // 转换缺陷等级
+    getDefectValue(level) {
+      switch (level) {
+        case 'Ⅰ':
+          return 1
+          break
+        case 'Ⅱ':
+          return 2
+          break
+        case 'Ⅲ':
+          return 3
+          break
+        case 'Ⅳ':
+          return 4
+          break
+        default:
+          return 0
+      }
+      // let arr = [
+      //   { name: , value: 1 },
+      //   { name: 'Ⅱ', value: 2 },
+      //   { name: 'Ⅲ', value: 3 },
+      //   { name: 'Ⅳ', value: 4 }
+      // ]
+      // let rvalue
+      // arr.forEach((v) => {
+      //   if (level == v.name) {
+      //     rvalue = v.value
+      //   } else {
+      //     rvalue = 0
+      //   }
+      // })
+      // return rvalue
+    },
+    // 自定义排序
+    sortStruct(a, b) {
+      let av = this.getDefectValue(a.structClass)
+      let bv = this.getDefectValue(b.structClass)
+      if (av < bv) {
+        return -1
+      }
+    },
+    sortFunc(a, b) {
+      let av = this.getDefectValue(a.funcClass)
+      let bv = this.getDefectValue(b.funcClass)
+      if (av < bv) {
+        return -1
+      }
+    },
     // 下载文档
     downloadDocx() {
       this.$message('正在加载文档地址...')
@@ -488,8 +561,17 @@ export default {
     },
     // 跳转到pdf页面
     toPdfPage(url) {
-      console.log('url', url)
-      window.open(baseAddress + '/psjc/file' + url, '_blank')
+      if (!url) {
+        console.log('没有url', url)
+        this.$message({
+          message: '暂无报告地址',
+          type: 'warning'
+        })
+        return false
+      } else {
+        window.open(baseAddress + '/psjc/file' + url, '_blank')
+      }
+      console.log('url', !url)
     },
 
     init() {
@@ -875,6 +957,8 @@ export default {
     /deep/ .box-card {
       width: 550px;
       max-height: 80vh;
+      border: none;
+      border-radius: 5px;
       .el-card__header {
         height: 48px;
         color: #fff;

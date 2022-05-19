@@ -188,7 +188,7 @@ export default {
     },
     mapMoveEvent (extent) {
       this.getDataFromExtent({}, extent).then(res => {
-        // console.log('地图变化,过滤后', res)
+        console.log('地图变化,过滤后', res)
       })
     },
     async getDataFromExtent(params, extent) {
@@ -233,7 +233,7 @@ export default {
             legend: {
               orient: 'horizontal',
               // top: '20',
-              // right: '20',
+              right: 'right',
               data: ['直接访问', '邮件营销', '联盟广告', '视频广告', '搜索引擎']
             },
             series: [

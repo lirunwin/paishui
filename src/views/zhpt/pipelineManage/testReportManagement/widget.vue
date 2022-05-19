@@ -95,6 +95,7 @@
         @selection-change="handleSelectionChange"
         @row-dblclick="openDetails"
         @row-click="lightFea"
+        :default-sort="{ prop: 'date', order: 'descending' }"
       >
         <template slot="empty">
           <img
@@ -116,6 +117,7 @@
           show-overflow-tooltip
           v-for="v in tableContent"
           :key="v.name"
+          :sortable="v.sortable"
         >
         </el-table-column>
 
@@ -665,15 +667,15 @@ export default {
       videoSelectArr: [], // 选择工程数组(视频上传)
       // 表格参数
       tableContent: [
-        { label: '检测报告名称', name: 'wordInfoName' },
-        { label: '检测段数', name: 'jcnum' },
-        { label: '检测长度', name: 'jclength' },
-        { label: '工程名称', name: 'prjName' },
-        { label: '工程地点', name: 'address' },
-        { label: '施工单位', name: 'sgunit' },
-        { label: '检测日期', name: 'jcDate' },
-        { label: '入库人', name: 'createUserName' },
-        { label: '入库时间', name: 'createTime' }
+        { sortable: false, label: '检测报告名称', name: 'wordInfoName' },
+        { sortable: true, label: '检测段数', name: 'jcnum' },
+        { sortable: true, label: '检测长度', name: 'jclength' },
+        { sortable: false, label: '工程名称', name: 'prjName' },
+        { sortable: false, label: '工程地点', name: 'address' },
+        { sortable: false, label: '施工单位', name: 'sgunit' },
+        { sortable: true, label: '检测日期', name: 'jcDate' },
+        { sortable: false, label: '入库人', name: 'createUserName' },
+        { sortable: true, label: '入库时间', name: 'createTime' }
       ],
       // 日期选择器规则
       pickerOptions0: '',
@@ -1149,10 +1151,16 @@ export default {
       // 显示加载
       const loading = this.$loading({
         lock: true,
-        text: 'Loading',
+        text: '拼命加载中',
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       })
+
+      let timeId = setTimeout(() => {
+        loading.close()
+        this.$message.error('系统错误')
+        clearTimeout(timeId)
+      }, 8000)
 
       // 判断是否已加载地图
       if (this.hasLoadMap) {
@@ -1226,7 +1234,12 @@ export default {
       let resUrl = await queryPipeState(id)
       this.remark = resUrl.result.remark
       console.log('详情', resUrl)
-      this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
+      if (resUrl.result.pdfFilePath) {
+        this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
+        // console.log('this.pdfUrl',this.pdfUrl);
+      }else {
+        this.pdfUrl = null
+      }
       this.dialogFormVisible3 = true
       this.$nextTick(() => {
         this.renderEcharts()
