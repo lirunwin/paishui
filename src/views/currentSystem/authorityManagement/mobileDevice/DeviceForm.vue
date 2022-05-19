@@ -1,51 +1,71 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="876px" top="7vh">
-    <BaseTitle>设备基本信息</BaseTitle>
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <el-form
-          class="form"
-          ref="form"
-          v-bind="{ labelWidth: '8em', size: 'medium' }"
-          :model="formData"
-          :rules="rules"
-        >
-          <el-form-item
-            v-for="{ name, label, type, required = true, disabled } of formItems"
-            :key="name"
-            :required="required"
-            :label="label"
-            :prop="name"
-          >
-            <el-input
-              :type="type || 'text'"
-              v-model="formData[name]"
-              :disabled="disabled"
-              :placeholder="`请输入${label}`"
-              clearable
-            />
-          </el-form-item>
-        </el-form>
-      </el-col>
-      <el-col :span="12">
-        设备照片
-        <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
-        <div style="margin-top:20px" class="upload">
-          <el-upload
-            action="https://jsonplaceholder.typicode.com/posts/"
-            list-type="picture-card"
-            :on-preview="handlePictureCardPreview"
-            :on-remove="handleRemove"
-          >
-            <i class="el-icon-plus"></i>
-          </el-upload>
-        </div>
-
-        <el-dialog :visible.sync="dialogVisible" title="" append-to-body class="preview">
-          <img width="100%" :src="dialogImageUrl" alt="" />
-        </el-dialog>
-      </el-col>
-    </el-row>
+  <BaseDialog
+    v-bind="$attrs"
+    v-on="listeners"
+    @submit="onSubmit"
+    :loading="loading"
+    width="768px"
+    @open="onOpen"
+    :disabled="disabled"
+  >
+    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData">
+      <template v-for="form of formItems">
+        <template>
+          <BaseTitle :key="`title-${form.name}`">{{ form.name }}</BaseTitle>
+        </template>
+        <template>
+          <el-row :key="form.name" :gutter="20">
+            <el-col
+              v-for="{
+                label,
+                name,
+                col,
+                type = 'text',
+                disabled,
+                required,
+                rows,
+                options = [],
+                onChange,
+                ...rest
+              } of form.items"
+              :span="col"
+              :key="name"
+            >
+              <el-form-item :label="label" :prop="name" :required="required">
+                <template v-if="type === 'select'">
+                  <el-select
+                    v-model="formData[name]"
+                    :placeholder="`请选择${label}`"
+                    v-bind="rest"
+                    clearable
+                    @change="onChange"
+                  >
+                    <el-option
+                      v-for="item of options"
+                      :key="item.id"
+                      :index="item.id"
+                      :value="item.id"
+                      :label="item.name"
+                    />
+                  </el-select>
+                </template>
+                <template v-else>
+                  <el-input
+                    :type="type || 'text'"
+                    v-model="formData[name]"
+                    :placeholder="`请输入${label}`"
+                    :disabled="disabled"
+                    :rows="rows"
+                    clearable
+                    v-bind="rest"
+                  />
+                </template>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+      </template>
+    </el-form>
   </BaseDialog>
 </template>
 
@@ -53,144 +73,121 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
+import { getDepartments, getUsers } from './api'
 
-@Component({ name: 'TypeForm', components: { BaseDialog, BaseTitle } })
-export default class TypeForm extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) data!: object
+@Component({ name: 'DeviceForm', components: { BaseDialog, BaseTitle } })
+export default class DeviceForm extends Vue {
+  @Prop({ type: Object, default: () => ({}) }) data!: { id?: string; dataSource?: 'web' | 'app' }
+  @Prop({ type: Boolean, default: false }) loading!: boolean
+  @Prop({ type: Boolean, default: false }) disabled!: boolean
+
+  get isApp(): boolean {
+    return (this.data || {}).dataSource === 'app'
+  }
+
+  get listeners() {
+    const { submit, ...rest } = this.$listeners
+    return rest
+  }
+
   dialogVisible = false
   dialogImageUrl = ''
   formData: { [x: string]: string } = {}
-  formItems: {
-    label: string
+  departments = []
+  users = []
+  get formItems(): {
     name: string
-    type?: string
-    required?: boolean
-    disabled?: boolean
-  }[] = [
-    {
-      /** ①	设备编码: 系统维护。编码规则: 项目编号 + JCSB_+ 4位流水号，如: HN01JCSB0004。（JCSB表示监测设备） */
-      label: '设备编码',
-      name: 'no'
-    },
-    {
-      /** ②	设备出厂唯一编号: 必填，自定义录入文本，要求与设备上的信息一致。 */
-      label: '设备SN码',
-      name: 'no1'
-    },
-    {
-      /** ③	设备型号: 必填，自定义录入文本。 */
-      label: '设备型号',
-      name: 'mode'
-    },
-    {
-      /** ④	设备类型: 必填，下拉框，在【设备类型配置】中配置的设备类型。 */
-      label: '设备类型',
-      name: 'type',
-      type: 'select'
-    },
-    {
-      /** ⑤	监测参数: 系统自动显示，根据设备类型关联显示该设备监测参数。 */
-      label: '监测参数',
-      name: 'param',
-      type: 'textarea',
-      required: false,
-      disabled: true
-    },
-    {
-      /** ⑥	设备厂商: 必填，自定义录入文本。 */
-      label: '设备厂商',
-      name: 'factor'
-    },
-    {
-      /** ⑦	厂家联系人: 必填，自定义录入文本。 */
-      label: '厂家联系人',
-      name: 'name'
-    },
-    {
-      /** ⑧	联系方式: 必填，自定义录入文本。 */
-      label: '联系方式',
-      name: 'tel'
-    },
-    {
-      /** ⑨	采购时间: 必填，自定义录入文本。 */
-      label: '采购时间',
-      name: 'date'
-    },
-    {
-      label: '备注',
-      name: 'note',
-      type: 'textarea',
-      required: false
-    }
-    // {
-    //   /** ⑩	设备照片: 选填，最多上传9张，格式支持jpg、jpeg、png，单个图片大小不超过10M，上传后照片压缩不超过1M，同时生成一套缩略图，用于前端展示。 */
-    //   label: '设备照片',
-    //   name: 'photo',
-    //   type: 'textarea'
-    // }
-  ]
-  rules = {
-    /** ①	设备编码: 系统维护。编码规则: 项目编号 + JCSB_+ 4位流水号，如: HN01JCSB0004。（JCSB表示监测设备） */
-    no: [
-      { required: true, message: '设备编码不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '设备编码不能超过50个字符' }
-    ],
-    /** ②	设备出厂唯一编号: 必填，自定义录入文本，要求与设备上的信息一致。 */
-    no1: [
-      { required: true, message: '设备SN码不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '设备SN码不能超过50个字符' }
-    ],
-    /** ③	设备型号: 必填，自定义录入文本。 */
-    mode: [
-      { required: true, message: '设备型号不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '设备型号不能超过50个字符' }
-    ],
-    /** ④	设备类型: 必填，下拉框，在【设备类型配置】中配置的设备类型。 */
-    type: [{ required: true, message: '请选择设备类型', trigger: 'blur' }],
-    /** ⑤	监测参数: 系统自动显示，根据设备类型关联显示该设备监测参数。 */
-    param: [],
-    /** ⑥	设备厂商: 必填，自定义录入文本。 */
-    factor: [
-      { required: true, message: '设备厂商不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '设备厂商不能超过50个字符' }
-    ],
-    /** ⑦	厂家联系人: 必填，自定义录入文本。 */
-    name: [
-      { required: true, message: '厂家联系人不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '厂家联系人不能超过50个字符' }
-    ],
-    /** ⑧	联系方式: 必填，自定义录入文本。 */
-    tel: [
-      { required: true, message: '联系方式不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '联系方式不能超过50个字符' }
-    ],
-    /** ⑨	采购时间: 必填，自定义录入文本。 */
-    date: [
-      { required: true, message: '采购时间不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '采购时间不能超过50个字符' }
-    ],
-    note: [{ type: 'string', required: false, max: 255, message: '备注不能超过255个字符' }]
+    items: {
+      label: string
+      name: string
+      col?: number
+      type?: string
+      disabled?: boolean
+      required?: boolean
+      rows?: number
+      options?: { id?: string; name?: string }[]
+      onChange?: (val: any) => void
+      [x: string]: any
+    }[]
+  }[] {
+    return [
+      {
+        name: '基本信息',
+        items: [
+          { label: '设备编号', name: 'no', col: 12, disabled: this.isApp },
+          { label: '设备名称', name: 'name', col: 12, disabled: this.isApp, required: !this.isApp },
+          { label: '设备型号', name: 'type', col: 12, disabled: this.isApp, required: !this.isApp },
+          { label: '设备手机号', name: 'devicePhone', col: 12, required: !this.isApp, type: 'tel' },
+          { label: '设备序列号', name: 'meid', col: 24, disabled: this.isApp, required: !this.isApp },
+          { label: '备注', name: 'note', col: 24, type: 'textarea', rows: 3 }
+        ]
+      },
+      {
+        name: '绑定人员',
+        items: [
+          {
+            label: '使用部门',
+            name: 'useDeptId',
+            col: 12,
+            type: 'select',
+            options: this.departments,
+            required: true,
+            onChange: () => {
+              this.$set(this.formData, 'userUserId', '')
+            }
+          },
+          {
+            label: '使用人员',
+            name: 'userUserId',
+            col: 12,
+            type: 'select',
+            options: this.users,
+            required: true,
+            onChange: this.onUserChange
+          },
+          { label: '员工编号', name: 'worknumber', col: 12, disabled: true },
+          { label: '联系电话', name: 'phone', col: 12, disabled: true, type: 'tel' }
+        ]
+      }
+    ]
   }
+
   onSubmit() {
-    console.log('submit')
     const form = this.$refs['form'] as any
     form.validate((valid) => {
       if (valid) {
-        console.log('valid')
+        this.$emit('submit', this.formData)
       }
     })
   }
 
-  handleRemove(file, fileList) {
-    console.log(file, fileList)
+  onUserChange(val) {
+    const { worknumber, phone } = this.users.find(({ id }) => id === val) || {}
+    this.formData = { ...this.formData, worknumber, phone }
   }
-  handlePictureCardPreview(file) {
-    this.dialogImageUrl = file.url
-    this.dialogVisible = true
+
+  async onOpen() {
+    const { result = [] } = (await getDepartments()) || {}
+    this.departments = result
   }
+
   @Watch('data', { immediate: true })
   setDefaultData(val) {
-    this.formData = val || {}
+    this.formData = { ...(val || {}) }
+  }
+
+  @Watch('formData.useDeptId')
+  async getUsersByDepartmentId(val) {
+    this.users = []
+    if (val) {
+      const { result = [] } = (await getUsers(val)) || {}
+      this.users = result.map(({ id, realName: name, username, ...rest }) => ({
+        id,
+        name: `${name} | ${username}`,
+        ...rest
+      }))
+      this.onUserChange(this.formData.userUserId)
+    }
   }
 }
 </script>
