@@ -1,43 +1,44 @@
 <template>
   <div class="page-container">
     <div class="actions">
-      <QueryForm
-        :selected="selected"
-        @query="onQuery"
-        @add="onAdd"
-        @update="onUpdate"
-        @del="onDel"
-        @export="onExport"
-      />
+      <QueryForm :selected="selected" @query="onQuery" @add="onAdd" @del="onDel" :loading="loading" />
     </div>
     <div class="table-container">
       <BaseTable
+        v-loading="loading.query"
         :columns="mobileDeviceCols"
-        :data="archives"
-        @row-dblclick="onDblClick"
+        :data="devices"
+        @row-dblclick="onEdit"
         @selection-change="onSelectionChange"
-      />
+        @page-change="onPageChange"
+        :pagination="pagination"
+      >
+        <template v-for="(item, index) of devices" v-slot:[`action-${index}`]="{ row }">
+          <el-button type="text" :key="`${index}-${row.id}`" @click.stop="() => onEdit(row)">编辑</el-button>
+        </template>
+      </BaseTable>
     </div>
-    <DeviceForm :visible.sync="visible" :title="`${current.id ? '修改' : '新增'}采集设备`" :data="current" />
+    <DeviceForm
+      :visible.sync="visible"
+      :title="`${current.id ? '修改' : '新增'}采集设备`"
+      :data="current"
+      :loading="loading.addOrUpdate"
+      :disabled="query.status === '0'"
+      @submit="onSubmit"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+import { Vue, Component, Watch } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
-import { mobileDeviceCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
-import { getDevices, IMobileDeviceQuery } from './api'
+import { getDevices, IMobileDeviceQuery, IPagination, postMobileDevice, putMobileDevice } from './api'
+import { mobileDeviceCols } from './utils'
 
-// import {
-//   // getJournalList,
-//   // getFiles,
-//   // getCountLogType
-// } from '@/api/base'
-
-@Component({ name: 'DeviceArchives', components: { BaseTable, QueryForm, DeviceForm } })
-export default class DeviceArchives extends Vue {
+@Component({ name: 'MobileDevice', components: { BaseTable, QueryForm, DeviceForm } })
+export default class MobileDevice extends Vue {
   mobileDeviceCols = mobileDeviceCols
 
   visible = false
@@ -46,23 +47,43 @@ export default class DeviceArchives extends Vue {
 
   selected = []
 
-  archives = [
-    { id: '1', name: '测试', code: '1231', time: ['00:00', '23:59'] },
-    { id: '2', name: '测试1', code: '1232', time: ['00:00', '23:59'] },
-    { id: '3', name: '测试2', code: '1233', time: ['00:00', '23:59'] }
-  ]
+  devices = []
 
-  async onQuery(query: IMobileDeviceQuery) {
-    const res = await getDevices(query)
-    console.log(res.result.records)
+  loading = {
+    query: false,
+    addOrUpdate: false
+  }
+  pagination: IPagination = {}
+  query: IMobileDeviceQuery = {}
+
+  async onQuery(query: IMobileDeviceQuery = {}) {
+    this.query = { ...this.query, ...query, current: 1 }
+  }
+
+  onPageChange(pagination) {
+    this.pagination = { ...this.pagination, ...pagination }
+    this.query = { ...this.query, ...this.pagination }
+  }
+
+  @Watch('query')
+  async doQuery(query) {
+    this.loading.query = true
+    try {
+      const {
+        result: { records, total }
+      } = await getDevices(query)
+      this.pagination = { ...this.pagination, total }
+
+      this.devices = records
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading.query = false
   }
 
   onAdd() {
     this.visible = true
     this.current = {}
-  }
-  onUpdate(id) {
-    console.log(id)
   }
 
   onDel(ids) {
@@ -73,13 +94,40 @@ export default class DeviceArchives extends Vue {
     console.log(ids)
   }
 
-  onDblClick(row) {
-    this.current = { ...row }
+  async onSubmit(data: any = {}) {
+    this.loading.addOrUpdate = true
+    const { result } = await (this.current.id ? putMobileDevice(data) : postMobileDevice(data))
+    if (result) {
+      this.$message.success(`${this.current.id ? '修改' : '新增'}移动设备成功`)
+      this.visible = false
+      this.onQuery()
+    }
+    // try {
+    //   const { result } = await (data.id ? putMobileDevice(data) : postMobileDevice(data))
+    //   if (result) {
+    //     this.$message.success(`${data.id ? '修改' : '新增'}移动设备成功`)
+    //     this.visible = false
+    //     this.onQuery()
+    //   }
+    // } catch (error) {
+    //   console.log(error)
+    // }
+    this.loading.addOrUpdate = false
+  }
+
+  onEdit(row) {
+    console.log(row)
+    const { useUser, department, ...rest } = row || {}
+    this.current = { userUserId: useUser.id, useDeptId: department.departmentId, ...rest }
     this.visible = true
   }
 
   onSelectionChange(selections) {
     this.selected = [...selections]
+  }
+
+  created() {
+    this.onQuery()
   }
 }
 </script>

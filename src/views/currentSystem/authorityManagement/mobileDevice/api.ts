@@ -6,7 +6,7 @@ type IRes<T = any> = Promise<{
   result: T
 }>
 
-interface IPagination {
+export interface IPagination {
   current?: string | number
   size?: string | number
   total?: string | number
@@ -86,11 +86,14 @@ const uris = {
   review: '/gps/mobiledevice',
   device: '/gps/mobiledevice',
   deleteDeviceByIds: '/gps/mobiledevice/deleteByIds',
-  page: '/gps/mobiledevice/page'
+  page: '/gps/mobiledevice/page',
+  departments: '/base/department/list',
+  users: '/base/user/getDeptUserList',
+  registers: '/gps/mobiledevice/register'
 }
 
-export const getReviews = (data: { auditStatus?: string; ids?: string }) =>
-  request({ url: uris.review, method: 'get', data })
+export const getReviews = (params: { auditStatus?: string; ids?: string }) =>
+  request({ url: uris.review, method: 'get', params })
 
 export const getMobileDevice = (id: string): IRes<IMobileDevice> =>
   request({ url: `${uris.device}/${id}`, method: 'get' })
@@ -134,5 +137,19 @@ export const putMobileDevice = (data: {
 export const deleteMobileDeviceByIds = (data: { ids: string }): IRes =>
   request({ url: uris.deleteDeviceByIds, method: 'delete', data })
 
-export const getDevices = (data?: IMobileDeviceQuery): IRes<IMobileDeviceRes> =>
-  request({ url: uris.page, method: 'get', data })
+export const getDevices = (params?: IMobileDeviceQuery): IRes<IMobileDeviceRes> =>
+  request({ url: uris.page, method: 'get', params })
+
+export const getDepartments = () =>
+  request({
+    url: uris.departments,
+    method: 'get'
+  })
+
+export const getUsers = (deptId: string) =>
+  request({
+    url: uris.users,
+    method: 'get',
+    params: { deptId }
+  })
+export const getRegisters = (): IRes => request({ url: uris.registers, method: 'get' })
