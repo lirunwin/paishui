@@ -162,6 +162,9 @@ export default {
             let filterExtent = turf.polygon(extent.getGeometry().getCoordinates())
 
             let resData = new Map()
+            data = filter(data, 2)
+            // 地图加入整改建议
+            // 数据整理
             data.forEach(pipeData => {
                 let len = pipeData.pipeLength
                 let defectData = pipeData.pipeDefects
@@ -175,33 +178,11 @@ export default {
                     }
                 })
             })
-            console.log(1111)
             let obj = {}
             resData.forEach((value, key) => {
                 obj[key] = value
             })
             return obj
-        },
-        // 
-        getDataInMap_old (data, extent) {
-            let that = this
-            // 无范围 默认全图
-            if (!extent) {
-                let [xmin, ymin, xmax, ymax] = new mapUtil(this.map).getCurrentViewExtent()
-                let coors = [[[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax],]]
-                extent = new Feature({ geometry: new Polygon(coors) })
-            }
-            let filterExtent = turf.polygon(extent.getGeometry().getCoordinates())
-            let dFeas = data.map(pipeData => pipeData.pipeDefects).flat()
-            let pFeas = data
-            // 范围过滤
-            let defectData = filter(dFeas, 1)
-            let pipeData = filter(pFeas, 2)
-            // 添加要素
-            this.vectorLayer.getSource().clear()
-            this.vectorLayer.getSource().addFeatures([...this.getFeatures(pipeData, 2), ...this.getFeatures(defectData, 1)])
-            
-            return { pipeData, defectData }
 
             function filter(features, type) {
                 let feas = []
@@ -238,6 +219,29 @@ export default {
                 })
                 return feas.filter(fea => fea && turf.booleanContains(filterExtent, fea.geometry))
             }
+        },
+        // 
+        getDataInMap_old (data, extent) {
+            let that = this
+            // 无范围 默认全图
+            if (!extent) {
+                let [xmin, ymin, xmax, ymax] = new mapUtil(this.map).getCurrentViewExtent()
+                let coors = [[[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin], [xmin, ymax],]]
+                extent = new Feature({ geometry: new Polygon(coors) })
+            }
+            let filterExtent = turf.polygon(extent.getGeometry().getCoordinates())
+            let dFeas = data.map(pipeData => pipeData.pipeDefects).flat()
+            let pFeas = data
+            // 范围过滤
+            let defectData = filter(dFeas, 1)
+            let pipeData = filter(pFeas, 2)
+            // 添加要素
+            this.vectorLayer.getSource().clear()
+            this.vectorLayer.getSource().addFeatures([...this.getFeatures(pipeData, 2), ...this.getFeatures(defectData, 1)])
+            
+            return { pipeData, defectData }
+
+
         }
     },
 
