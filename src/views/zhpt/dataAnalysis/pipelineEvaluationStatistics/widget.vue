@@ -136,15 +136,9 @@ export default {
       tableData: [], // 表格数据
       // 表格参数
       tableContent: [
-<<<<<<< HEAD
         { label: '整改建议', name: 'type' },
         { label: '数量(条)', name: 'num' },
         { label: '长度(米)', name: 'len' }
-=======
-        { label: '整改建议', name: 'wordInfoName' },
-        { label: '数量(条)', name: 'jcnum' },
-        { label: '长度(米)', name: 'jclength' }
->>>>>>> 856959ca7b37655dbb877b44e1a902d47de2c06d
       ],
       typeArr: [], // 建议类型数组
       nunArr: [], // 管道数量
@@ -174,14 +168,9 @@ export default {
     }
   },
   mounted() {
-<<<<<<< HEAD
     this.$nextTick(() => {
       // this.initData()
     })
-=======
-    this.initData()
-    this.$refs.myMap.showLegend('pipelineEvaluate', true)
->>>>>>> 856959ca7b37655dbb877b44e1a902d47de2c06d
   },
   destroyed() {
     this.data.that.clearMap()
