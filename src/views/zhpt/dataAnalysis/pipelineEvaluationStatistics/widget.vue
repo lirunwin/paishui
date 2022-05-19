@@ -174,6 +174,56 @@ export default {
     // document.getElementById('mainB').removeAttribute('_echarts_instance_')
   },
   methods: {
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    changeDate() {
+      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
+      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
+      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
+      this.pickerOptions0 = {
+        disabledDate: (time) => {
+          if (date2 != '') {
+            // return time.getTime() > Date.now() || time.getTime() > date2
+            return time.getTime() > date2
+          } else {
+            return time.getTime() > Date.now()
+          }
+        }
+      }
+      this.pickerOptions1 = {
+        disabledDate: (time) => {
+          // return time.getTime() < date1 || time.getTime() > Date.now()
+          return time.getTime() < date1 - 8.64e7
+        }
+      }
+    },
+    // 处理地图给的数据
+    getMapData(newValue) {
+      let dataArr = newValue.pipeData
+      let setArr = []
+      if (dataArr) {
+        dataArr.forEach((dv) => {
+          dv.pipeDefects.forEach((pv) => {
+            setArr.push({
+              proposal: pv.checkSuggest,
+              num: 1,
+              pipeLength: dv.pipeLength
+            })
+          })
+        })
+        // this.tableData = setArr
+        // console.log('this.tableData', this.tableData)
+      } else {
+        // console.log('走的没有数据')
+        // this.$message({
+        //   showClose: true,
+        //   message: '当前模块暂无数据',
+        //   type: 'warning'
+        // })
+      }
+      // Promise.all(setArr).then(()=>{
+      console.log('setArr', setArr)
+      // })
+    },
     // 绘制
     drawFeature () {
       let type = 'polygon'
@@ -300,6 +350,9 @@ export default {
       if (old != newValue) {
         this.initData()
       }
+    },
+    'searchValue.testTime.startDate': function (n) {
+      this.searchValue.testTime.finishDate = n
     }
   }
 }
