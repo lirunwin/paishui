@@ -14,7 +14,9 @@
     </div>
     <slot />
     <span slot="footer">
-      <el-button type="primary" size="small" @click="$emit('submit')" :loading="loading">提 交</el-button>
+      <el-button type="primary" size="small" @click="$emit('submit')" :loading="loading" :disabled="disabled"
+        >提 交</el-button
+      >
       <el-button size="small" @click="dialogVisible = false">取 消</el-button>
     </span>
   </el-dialog>
@@ -30,6 +32,7 @@ export default class BaseDialog extends Vue {
   @Prop({ type: String }) title!: string
 
   @Prop({ type: Boolean }) loading!: boolean
+  @Prop({ type: Boolean }) disabled!: boolean
   @Prop({ type: Boolean, default: true }) clear!: boolean
 
   @Prop({ type: [Object, Array] }) form!: Vue

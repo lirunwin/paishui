@@ -29,7 +29,6 @@
                       value-format="yyyy-MM-dd"
                       size="small"
                       :picker-options="pickerOptions0"
-                      @change="changeDate"
                     ></el-date-picker>
                   </el-col>
                   <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
@@ -41,7 +40,6 @@
                       value-format="yyyy-MM-dd"
                       size="small"
                       :picker-options="pickerOptions1"
-                      @change="changeDate"
                     ></el-date-picker>
                   </el-col>
                 </el-row>
@@ -83,7 +81,11 @@
               tooltip-effect="dark"
               stripe
               style="width: 100%"
+<<<<<<< HEAD
               show-summary
+=======
+              @selection-change="handleSelectionChange"
+>>>>>>> 856959ca7b37655dbb877b44e1a902d47de2c06d
             >
               <template slot="empty">
                 <img
@@ -92,7 +94,7 @@
                   alt="暂无数据"
                   srcset=""
                 />
-                <p style="padding: 0; margin: 0; padding-bottom: 20px">暂无数据</p>
+                <p style="padding: 0; margin: 0;padding-bottom: 20px;">暂无数据</p>
               </template>
               <el-table-column header-align="center" align="center" label="管道评估统计表">
                 <el-table-column
@@ -134,9 +136,15 @@ export default {
       tableData: [], // 表格数据
       // 表格参数
       tableContent: [
+<<<<<<< HEAD
         { label: '整改建议', name: 'type' },
         { label: '数量(条)', name: 'num' },
         { label: '长度(米)', name: 'len' }
+=======
+        { label: '整改建议', name: 'wordInfoName' },
+        { label: '数量(条)', name: 'jcnum' },
+        { label: '长度(米)', name: 'jclength' }
+>>>>>>> 856959ca7b37655dbb877b44e1a902d47de2c06d
       ],
       typeArr: [], // 建议类型数组
       nunArr: [], // 管道数量
@@ -166,12 +174,18 @@ export default {
     }
   },
   mounted() {
+<<<<<<< HEAD
     this.$nextTick(() => {
       // this.initData()
     })
+=======
+    this.initData()
+    this.$refs.myMap.showLegend('pipelineEvaluate', true)
+>>>>>>> 856959ca7b37655dbb877b44e1a902d47de2c06d
   },
   destroyed() {
     this.data.that.clearMap()
+    this.$refs.myMap.showLegend('pipelineEvaluate', false)
   },
   beforeCreate() {
     console.log('销毁echatrs')
@@ -234,22 +248,20 @@ export default {
       })
     },
     // 绘制
-    drawFeature() {
+    drawFeature () {
       let type = 'polygon'
       this.$refs.myMap.draw({
         type,
-        callback: (fea) => {
-          this.getDataFromExtent({}, fea).then((res) => {
+        callback: fea => {
+          this.getDataFromExtent({}, fea).then(res => {
             console.log('绘制,过滤后', res)
-            this.getMapData(res)
           })
         }
       })
     },
-    mapMoveEvent(extent) {
-      this.getDataFromExtent({}, extent).then((res) => {
+    mapMoveEvent (extent) {
+      this.getDataFromExtent({}, extent).then(res => {
         console.log('地图变化,过滤后', res)
-        this.getMapData(res)
       })
     },
     async getDataFromExtent(params, extent) {

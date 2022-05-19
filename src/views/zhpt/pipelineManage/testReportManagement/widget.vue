@@ -1081,7 +1081,7 @@ export default {
                 // 缺少 defectLevel 字段
                 if (findimg) {
                   let rotation = getIconRat(lineCoors)
-                  hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], offset:[0, -20], src: findimg.img, scale: 0.6, rotation }) }))
+                  hasStyle && feature.setStyle(new Style({ image: new Icon({ size: [48, 48], anchor: [0.5, 0], src: findimg.img, scale: 0.4, rotation }) }))
                   for (let i in  feaObj) {
                     i !== "geometry" && feature.set(i, feaObj[i])
                   }

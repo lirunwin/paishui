@@ -26,12 +26,11 @@
       :page-size="pagination.size"
       :total="pagination.total"
       layout="total, sizes, prev, pager, next, jumper"
-      @size-change="$emit('sizeChange', $event)"
-      @current-change="$emit('currentChange', $event)"
+      @size-change="($event) => onPageChange($event, 'size')"
+      @current-change="($event) => onPageChange($event, 'current')"
     />
   </div>
 </template>
-
 <script lang="ts">
 import { ElTable } from 'element-ui/types/table'
 import { ElTableColumn } from 'element-ui/types/table-column'
@@ -81,8 +80,9 @@ export default Vue.extend({
     }
   },
   methods: {
-    test(val) {
-      console.log('val: ', val.map((item) => item.id))
+    onPageChange(e: any, type: 'size' | 'current') {
+      this.$emit(`${type}Change`, e)
+      this.$emit('pageChange', e)
     }
   }
 })
