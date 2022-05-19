@@ -14,6 +14,22 @@ export function getOutfall(params) {
       params
     })
 }
+//根据key获取系统码表
+export function getKeyPage(params){
+  return request({
+    url: '/base/code/keyPage',
+    method: 'get',
+    params
+  })
+}
+// 获取所有部门信息
+export function getDepartment(params) {
+  return request({
+    url: '/base/department/listAll',
+    method: 'get',
+    params
+  })
+}
 //排水户分页查询
 export function getDischarger(params) {
   return request({
