@@ -130,7 +130,7 @@ export default {
         //获取排水户类型下拉菜单
         getSort(){
             getSortList().then(res=>{
-                const result = res.data;
+                const result = res;
                 this.householdTypeOptions=result.result.map((item)=>{return{...item}})
             }).catch(err=>console.log(err))
         },
@@ -143,7 +143,7 @@ export default {
                 nameAndAddress:this.keyValue
             }
             getDischarger(data).then(res=>{
-                const result = res.data;
+                const result = res;
                 this.list=result.result.records.map((item)=>{return{...item}})
                 this.total=result.result.total
             }).catch(err=>console.log(err))
@@ -191,7 +191,7 @@ export default {
                 const a = document.createElement('a')
                 a.style.display = 'none'
                 a.href = href // 指定下载链接
-                a.download ='排水户档案.xls' // 指定下载文件名
+                a.download ='排水户查询.xls' // 指定下载文件名
                 a.click()
             }).catch(err=>{
                 console.log(err)

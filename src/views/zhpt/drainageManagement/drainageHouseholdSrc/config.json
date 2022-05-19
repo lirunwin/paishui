@@ -2,11 +2,13 @@
     "column":[
         {
             "prop":"expNo",
-            "label":"排水户编号"
+            "label":"排水户编号",
+            "width":120
         },
         {
             "prop":"sortName",
-            "label":"排水户类别"
+            "label":"排水户类别",
+            "width":120
         },
         {
             "prop":"address",
@@ -14,7 +16,8 @@
         },
         {
             "prop":"sort",
-            "label":"排水户分类"
+            "label":"排水户分类",
+            "width":120
         },
         {
             "prop":"waterDischargeQuantity",
@@ -22,7 +25,8 @@
         },
         {
             "prop":"codeid",
-            "label":"组织机构代码"
+            "label":"组织机构代码",
+            "width":120
         },
         {
             "prop":"representative",
@@ -38,15 +42,18 @@
         },
         {
             "prop":"licenceId",
-            "label":"排水许可证编号"
+            "label":"排水许可证编号",
+            "width":120
         },
         {
             "prop":"business",
-            "label":"主要业务活动"
+            "label":"主要业务活动",
+            "width":120
         },
         {
             "prop":"pollutantName",
-            "label":"主要污染物名称"
+            "label":"主要污染物名称",
+            "width":120
         },
         {
             "prop":"prjName",

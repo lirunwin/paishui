@@ -1,5 +1,6 @@
 //排放口排水户模块接口
-import request from '@/utils/temporaryRequest'
+// import request from '@/utils/temporaryRequest'
+import request from '@/utils/request'
 /**
   * 说明：
   * get和delete传值用params,
