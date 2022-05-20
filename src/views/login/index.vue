@@ -313,6 +313,7 @@ export default class Login extends Vue {
   justify-content: center;
   align-items: center;
   background: url('./images/background.png') no-repeat fixed center/100%;
+  background-size: cover;
   .company-name {
     position: absolute;
     font-size: 30px;
