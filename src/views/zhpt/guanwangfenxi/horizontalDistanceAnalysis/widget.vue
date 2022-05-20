@@ -31,8 +31,12 @@
     <div class="op-box">
       <div class="item-head">分析结果</div>
       <div class="result-total">
-          <el-table :data="layerData" v-loading="queryStatus"
-                    :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+          <el-table :data="layerData" v-loading="queryStatus" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+            <template slot="empty">
+              <img src="@/assets/icon/null.png" alt="">
+              <p class="empty-p">暂无数据</p>
+            </template>
+            <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
             <el-table-column prop="layer" align="center" label="类型"></el-table-column>
             <el-table-column prop="number" align="center" label="数量(个)"></el-table-column>
           </el-table>
@@ -46,11 +50,12 @@
               <img src="@/assets/icon/null.png" alt="">
               <p class="empty-p">暂无数据</p>
             </template>
-            <el-table-column prop="pipeid" align="center" label="分析管线编号"></el-table-column>
-            <el-table-column prop="diameter" align="center" label="管径/mm"></el-table-column>
-            <el-table-column prop="secpipeid" align="center" label="比较管线编号"></el-table-column>
-            <el-table-column prop="sdis" align="center" label="净距标准/m"></el-table-column>
-            <el-table-column prop="dis" align="center" label="净距/m"></el-table-column>
+            <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+            <el-table-column prop="pipeid" width="150" align="center" label="分析管线编号"></el-table-column>
+            <el-table-column prop="diameter" width="100" align="center" label="管径/mm"></el-table-column>
+            <el-table-column prop="secpipeid" width="150" align="center" label="比较管线编号"></el-table-column>
+            <el-table-column prop="sdis" width="100" align="center" label="净距标准/m"></el-table-column>
+            <el-table-column prop="dis" width="100" align="center" label="净距/m"></el-table-column>
           </el-table>
       </div>
     </div>

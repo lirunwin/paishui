@@ -28,12 +28,13 @@
       </div>
       <div v-show="openstate" class="content">
         <el-table :data="layerData" stripe style="width: 100%" height="250">
+          <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
           <template slot="empty">
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>
           </template>
-          <el-table-column prop="name" label="图层" ></el-table-column>
-          <el-table-column prop="value" label="数量" ></el-table-column>          
+          <el-table-column prop="name" label="图层" align="center"></el-table-column>
+          <el-table-column prop="value" label="数量" align="center"></el-table-column>          
           <el-table-column label="操作">
             <template slot-scope="scope">
               <el-link type="primary" @click="showLayer(scope.row)">详情</el-link>

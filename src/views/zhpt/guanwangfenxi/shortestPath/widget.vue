@@ -11,9 +11,10 @@
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>
           </template>
-          <el-table-column prop="oid" label="管线编号" />
-          <el-table-column prop="STARTSID" label="起点编号" />
-          <el-table-column prop="ENDSID" label="终点编号" />
+          <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+          <el-table-column prop="oid" label="管线编号" align="center" />
+          <el-table-column prop="STARTSID" label="起点编号" align="center" />
+          <el-table-column prop="ENDSID" label="终点编号" align="center" />
         </el-table>
       </el-col>
       <!-- <el-row style="padding-top: 8px; clear: both;">
@@ -36,10 +37,11 @@
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>
           </template>
-          <el-table-column prop="name" label="图层" ></el-table-column>
-          <el-table-column prop="num" label="数量/条" ></el-table-column>
-          <el-table-column prop="length" label="总长/m" ></el-table-column>     
-          <el-table-column label="操作">
+          <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+          <el-table-column prop="name" label="图层" align="center"></el-table-column>
+          <el-table-column prop="num" label="数量/条" align="center"></el-table-column>
+          <el-table-column prop="length" label="总长/m" align="center"></el-table-column>     
+          <el-table-column label="操作" align="center">
             <template slot-scope="scope">
                 <el-button type="text" @click="showQueryResultData(scope.row)">详情</el-button>
                 <download-excel class="export-btn" :data="scope.row.data" :fields="scope.row.fields" type="xls" :name="scope.row.name" style="display: inline;">

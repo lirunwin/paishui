@@ -12,45 +12,48 @@
     <tf-legend class="legend_dept" label="我的书签" isopen="true" title="查看所有已保存的地图书签。">      
       <el-row>
         <el-col :span="24">
-          <el-table ref="markTable" :data="list" stripe style="width: 100%;" max-height="calc(100vh - 431px)" row-class-name="selectRowC">
+          <el-table @row-click='jump'
+          ref="markTable" :default-sort="{ prop: 'date', order: 'descending' }" :data="list" stripe style="width: 100%;" min-height='400px' max-height="800px" row-class-name="selectRowC">
             <!-- <el-table-column type="selection" width="55" /> -->
             <template slot="empty">
               <img src="@/assets/icon/null.png" alt="">
               <p class="empty-p">暂无数据</p>
             </template>
-            <el-table-column prop="markName" label="名称" width="120">
+            <el-table-column type="selection" width="30"> </el-table-column>
+            <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+            <el-table-column prop="markName" label="名称" width="100" align="center" sortable='true'>
               <template slot-scope="scope">
                 <el-tooltip class="item" effect="dark" :content="scope.row.markName" placement="top-start">
                   <span>{{ scope.row.markName }}</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="remark" label="书签描述" >
+            <el-table-column prop="remark" label="书签描述" align="center">
               <template slot-scope="scope">
                 <el-tooltip class="item" effect="dark" :content="scope.row.remark" placement="top-start">
                   <span>{{ scope.row.remark }}</span>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column prop="center" label="操作" width="100">
+            <!-- <el-table-column prop="center" label="操作" width="100" align="center">
               <template slot-scope="scope">
                 <el-link type="primary" @click="jump(scope.row)">跳转</el-link>
                 <el-link type="primary" @click="deleteMark(scope.row)">删除</el-link>
               </template>
-            </el-table-column>
+            </el-table-column> -->
           </el-table>
         </el-col>
       </el-row>
       <el-row style="margin-top: 8px">
         <el-col :span="20">
           <el-pagination ref="pagination" small background layout="total, sizes, prev, next" 
-          :page-size.sync='pageSize' :current-page.sync='currentPage' :page-sizes="[5, 10, 50, 100]" :total="total"
+          :page-size.sync='pageSize' :current-page.sync='currentPage' :page-sizes="[10, 20, 30, 50, 100, 1000]" :total="total"
           @current-change="listRefersh" @size-change="listRefersh" />
         </el-col>
       </el-row>
-      <!-- <el-row style="margin-top: 8px" >
+      <el-row style="margin-top: 8px" >
         <el-button size="mini" style="width: 100%;" type="primary" @click="deleteMarks">删除选定书签</el-button>
-      </el-row> -->
+      </el-row>
     </tf-legend>
   </div>
 </template>
@@ -72,7 +75,7 @@ export default {
       total: 0,
       
       currentPage: 1,
-      pageSize: 10
+      pageSize: 30
     }
   },
   mounted() {
@@ -125,6 +128,7 @@ export default {
       })
     },
     deleteMarks() {
+      return
       var selects = this.$refs.markTable.selection
       if(!selects.length) return this.$message.error('未选中任何书签');
       let markNames = selects.map(item =>{ return item.name});

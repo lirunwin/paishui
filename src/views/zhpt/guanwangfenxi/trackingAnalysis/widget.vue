@@ -41,6 +41,7 @@
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>
           </template>
+          <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
           <el-table-column align="center" type="expand" width="1">
             <template slot-scope="props">
               <transition name="el-zoom-in-top">

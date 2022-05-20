@@ -116,6 +116,7 @@
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>
           </template>
+          <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
           <el-table-column prop="name" label="图层" align="center" show-overflow-tooltip></el-table-column>
           <el-table-column prop="num" label="数量" align="center" show-overflow-tooltip></el-table-column>
           <el-table-column label="操作" align="center">

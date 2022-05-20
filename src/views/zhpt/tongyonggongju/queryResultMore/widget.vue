@@ -1,11 +1,12 @@
 <template>
   <div ref="mainDiv" style="width: 100%; height: 100%;">
-    <el-table class="mapTable" style="width:100%;" height="calc(100% - 40px)" @row-dblclick="viewFeature" tooltip-effect="dark" stripe :data="featureData" ref="table">
-      <el-table-column v-for="item in colsData" :key="item.prop" :prop="item.prop" :label="item.label" />
+    <el-table class="mapTable" height="calc(100% - 40px)" @row-dblclick="viewFeature" tooltip-effect="dark" stripe :data="featureData" ref="table">
+      <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+      <el-table-column sortable="true" width='150' v-for="item in colsData" :key="item.prop" :prop="item.prop" :label="item.label" align="center"/>
     </el-table>
     <div style="width:100%;margin-top:8px;">
       <div style="float:left;width:80%">
-        <el-pagination ref="pagination" small background layout="total, sizes, prev, pager, next" :current-page.sync="currentPage" :page-size.sync="pageSize" :page-sizes="[5, 10, 50, 100]" :total="total"
+        <el-pagination ref="pagination" small background layout="total, sizes, prev, pager, next" :current-page.sync="currentPage" :page-size.sync="pageSize" :page-sizes="[10, 20, 30, 50, 100, 1000]" :total="total"
           @current-change="updatePage" @size-change="updatePage"/>
       </div>
     </div>
@@ -28,7 +29,7 @@ export default {
       featureData: [],
       total: 0,
       colsData: [],
-      pageSize: 10,
+      pageSize: 30,
       currentPage: 1
     }
   },
