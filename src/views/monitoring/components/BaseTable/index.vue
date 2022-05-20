@@ -81,7 +81,9 @@ export default Vue.extend({
   },
   methods: {
     onPageChange(e: any, type: 'size' | 'current') {
+      this.$emit(`${type}-change`, e)
       this.$emit(`${type}Change`, e)
+      this.$emit('page-change', e)
       this.$emit('pageChange', e)
     }
   }
@@ -92,7 +94,7 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 40px);
   .table {
     flex: 1 1 auto;
     margin-bottom: 14px;

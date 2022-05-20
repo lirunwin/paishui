@@ -8,7 +8,7 @@
     @open="onOpen"
     :disabled="disabled"
   >
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData" :rules="rules">
       <template v-for="form of formItems">
         <template>
           <BaseTitle :key="`title-${form.name}`">{{ form.name }}</BaseTitle>
@@ -53,7 +53,7 @@
                   <el-input
                     :type="type || 'text'"
                     v-model="formData[name]"
-                    :placeholder="`请输入${label}`"
+                    :placeholder="name === 'no' ? '系统生成' : `请输入${label}`"
                     :disabled="disabled"
                     :rows="rows"
                     clearable
@@ -114,7 +114,7 @@ export default class DeviceForm extends Vue {
       {
         name: '基本信息',
         items: [
-          { label: '设备编号', name: 'no', col: 12, disabled: this.isApp },
+          { label: '设备编号', name: 'no', col: 12, disabled: true },
           { label: '设备名称', name: 'name', col: 12, disabled: this.isApp, required: !this.isApp },
           { label: '设备型号', name: 'type', col: 12, disabled: this.isApp, required: !this.isApp },
           { label: '设备手机号', name: 'devicePhone', col: 12, required: !this.isApp, type: 'tel' },
@@ -150,6 +150,19 @@ export default class DeviceForm extends Vue {
         ]
       }
     ]
+  }
+
+  rules = {
+    name: [{ required: true, message: '请输入设备名称' }],
+    type: [{ required: true, message: '请输入设备型号' }],
+    meid: [{ required: true, message: '请输入设备序列号' }],
+    devicePhone: [
+      { required: true, message: '请输入手机号' },
+      { type: 'string', pattern: /^1\d{10}$/, message: '请输入正确的手机号' }
+    ],
+    note: [{ type: 'string', max: 255, message: '备注不能超过255个字符' }],
+    useDeptId: [{ required: true, message: '请选择使用部门' }],
+    userUserId: [{ required: true, message: '请选择使用人员' }]
   }
 
   onSubmit() {

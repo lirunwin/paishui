@@ -1,6 +1,6 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData" inline>
-    <template v-for="{ label, name, options, ...rest } of queries">
+  <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'medium' }" :model="formData" inline>
+    <template v-for="{ label, name, options, onChange, ...rest } of queries">
       <template v-if="name === 'queryLike'">
         <el-form-item :key="name" :label="`${label} : `" :prop="name">
           <el-input
@@ -10,23 +10,42 @@
             size="small"
             maxlength="50"
             clearable
+            v-on="onChange ? { change: onChange } : {}"
           />
         </el-form-item>
       </template>
       <template v-else>
         <el-form-item :key="name" :label="`${label} : `" :prop="name">
           <template v-if="name === 'status'">
-            <el-checkbox v-model="formData[name]" :true-label="options[0].id" :false-label="options[1].id">
+            <el-checkbox
+              v-model="formData[name]"
+              :true-label="options[0].id"
+              :false-label="options[1].id"
+              v-on="onChange ? { change: onChange } : {}"
+            >
               查看绑定历史
             </el-checkbox>
           </template>
           <template v-else-if="options.length > 2">
-            <el-select v-model="formData[name]" :placeholder="`请选择${label}`" v-bind="rest" size="small" clearable>
+            <el-select
+              v-model="formData[name]"
+              :placeholder="`请选择${label}`"
+              v-bind="rest"
+              size="small"
+              clearable
+              v-on="onChange ? { change: onChange } : {}"
+            >
               <el-option v-for="item of options" :key="item.id" :index="item.id" :value="item.id" :label="item.label" />
             </el-select>
           </template>
           <template v-else>
-            <el-checkbox-group v-model="formData[name]" v-bind="rest" size="small" :max="1">
+            <el-checkbox-group
+              v-model="formData[name]"
+              v-bind="rest"
+              size="small"
+              :max="1"
+              v-on="onChange ? { change: onChange } : {}"
+            >
               <el-checkbox v-for="opt of options" :label="opt.id" :key="opt.id" :value="opt.id">
                 {{ opt.label }}
               </el-checkbox>
@@ -42,10 +61,11 @@
         :loading="loading.query"
         :disabled="loading.query"
         @click="onQuery"
-        style="margin-left:50px"
+        style="margin-left:3em"
         icon="el-icon-search"
-        >查询</el-button
       >
+        查询
+      </el-button>
       <el-button
         type="primary"
         size="small"
@@ -54,9 +74,19 @@
         @click="$emit('add')"
         style="margin-left: 80px"
         icon="el-icon-plus"
-        >新增</el-button
       >
-
+        新增
+      </el-button>
+      <el-button
+        type="primary"
+        size="small"
+        :loading="loading.review"
+        :disabled="loading.review || !ids.length"
+        @click="$emit('review', ids)"
+        icon="el-icon-check"
+      >
+        审核
+      </el-button>
       <el-button
         type="danger"
         size="small"
@@ -64,8 +94,9 @@
         :disabled="loading.del || !ids.length"
         @click="$emit('del', ids)"
         icon="el-icon-delete"
-        >删除</el-button
       >
+        删除
+      </el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -77,16 +108,22 @@ import { mdAppVersion, mdAuditStataus, mdStatus } from './utils'
 
 @Component({ name: 'QueryForm', components: {} })
 export default class QueryForm extends Vue {
-  @Prop({ type: Object, default: () => ({ query: false, add: false, del: false }) })
-  loading!: { query?: boolean; add?: boolean; del?: boolean }
+  @Prop({ type: Object, default: () => ({ query: false, add: false, del: false, review: false }) })
+  loading!: { query?: boolean; add?: boolean; del?: boolean; review?: boolean }
 
   @Prop({ type: Array, default: () => [] }) selected!: { id?: string }[]
 
-  formData: { [x: string]: any } = { status: '1', appVersionNew: ['1'], auditStataus: [] }
+  formData: { [x: string]: any } = { status: '1', appVersionNew: [], auditStataus: [] }
 
   users = []
 
-  get queries(): { name: string; label: string; disabled?: boolean; options?: { id?: string; label?: string }[] }[] {
+  get queries(): {
+    name: string
+    label: string
+    disabled?: boolean
+    options?: { id?: string; label?: string }[]
+    onChange?: (val: string | string[]) => void
+  }[] {
     const format = (options = {}, key) => {
       const temp = Object.keys(options).map((key) => ({ id: key, label: options[key] }))
       // if (temp.length < 3 && key !== 'status') this.formData = { ...this.formData, [key]: [] }
@@ -99,10 +136,20 @@ export default class QueryForm extends Vue {
       {
         name: 'auditStataus',
         label: '注册状态',
-        options: format(mdAuditStataus, 'auditStataus')
+        options: format(mdAuditStataus, 'auditStataus'),
+        onChange: (val) => {
+          console.log(val)
+        }
       },
       { name: 'appVersionNew', label: 'app版本', options: format(mdAppVersion, 'appVersionNew') },
-      { name: 'status', label: '数据', options: format(mdStatus, 'status') }
+      {
+        name: 'status',
+        label: '数据',
+        options: format(mdStatus, 'status'),
+        onChange: (val) => {
+          console.log(val)
+        }
+      }
     ]
   }
 
