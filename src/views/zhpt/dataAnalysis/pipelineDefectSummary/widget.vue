@@ -1,52 +1,86 @@
 <template>
-  <div class="engineering-manage">
+  <div class="engineering-manage" @keyup.enter="searchApi">
     <!-- 管道缺陷汇总 -->
     <div class="table-box">
       <div class="top-tool">
         <div class="serch-engineering">
           <div class="title">起始井号：</div>
-          <el-select v-model="form.name" placeholder="--选择井号--">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="searchValue.queryParams" filterable placeholder="--选择井号--">
+            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
           <div class="title">终止井号：</div>
-          <el-select v-model="form.name" placeholder="--选择井号--">
+          <el-select size="small" v-model="searchValue.queryParams" placeholder="--选择井号--">
             <el-option label="区域一" value="shanghai"></el-option>
             <el-option label="区域二" value="beijing"></el-option>
           </el-select>
           <div class="title">检测日期：</div>
-          <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker> ~
-          <el-date-picker v-model="value1" type="date" placeholder="年-月-日" class="date-css"> </el-date-picker>
-          <div class="title">缺陷等级：</div>
-          <el-select v-model="form.name" placeholder="--选择等级--">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
+          <div class="sampleTime">
+            <el-row style="display: flex; justify-content: center; align-items: center">
+              <el-col :span="11">
+                <el-date-picker
+                  v-model="searchValue.testTime.startDate"
+                  type="date"
+                  placeholder="选择开始日期"
+                  value-format="yyyy-MM-dd"
+                  size="small"
+                  :picker-options="pickerOptions0"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+              <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
+              <el-col :span="12">
+                <el-date-picker
+                  v-model="searchValue.testTime.finishDate"
+                  type="date"
+                  placeholder="选择结束日期"
+                  value-format="yyyy-MM-dd"
+                  size="small"
+                  :picker-options="pickerOptions1"
+                  @change="changeDate"
+                ></el-date-picker>
+              </el-col>
+            </el-row>
+          </div>
           <div class="title">整改建议：</div>
-          <el-select v-model="form.name" placeholder="--选择建议--">
+          <el-select size="small" v-model="searchValue.queryParams" placeholder="--选择建议--">
             <el-option label="区域一" value="shanghai"></el-option>
             <el-option label="区域二" value="beijing"></el-option>
           </el-select>
-
-          <el-button class="serch-btn" style="margin-left: 26px" type="primary"> 查询 </el-button>
-          <el-button class="serch-btn" type="primary"> 导出 </el-button>
+          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
+          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">导出</el-button>
         </div>
-        <div class="right-btn"></div>
+        <div class="right-btn">
+          <!-- <el-button
+            size="small"
+            :disabled="multipleSelection.length != 1"
+            icon="el-icon-edit"
+            type="primary"
+            @click="updataInfo"
+            >修改</el-button
+          > -->
+        </div>
       </div>
-      <!-- 表格 -->
-     <el-table
+
+      <el-table
         ref="multipleTable"
-        :data="tableData"
         height="100%"
+        :data="tableData"
         tooltip-effect="dark"
         stripe
         style="width: 100%"
-        @selection-change="handleSelectionChange"
+        show-summary
+        :default-sort="{ prop: 'date', order: 'descending' }"
       >
         <template slot="empty">
-          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+          <img
+            style="width: 100px; height: 100px; -webkit-user-drag: none"
+            src="@/assets/images/nullData.png"
+            alt="暂无数据"
+            srcset=""
+          />
+          <p>暂无数据</p>
         </template>
-        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
+        <el-table-column fixed="left" align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -55,11 +89,13 @@
           show-overflow-tooltip
           v-for="v in tableContent"
           :key="v.name"
+          :width="v.width"
+          :sortable="v.sortable"
         >
         </el-table-column>
       </el-table>
-      <!-- 分页 -->
-       <div>
+
+      <div>
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -72,54 +108,99 @@
         </el-pagination>
       </div>
     </div>
-    
   </div>
 </template>
 
 <script>
+import { queryPageAssessment } from '@/api/pipelineManage'
+
+// 引入公共ip地址
+import { baseAddress } from '@/utils/request.ts'
+
 export default {
+  components: {},
   data() {
     return {
-       // 表格参数
-      tableContent: [
-        { label: '检测日期', name: 'prjNo' },
-        { label: '起始井号', name: 'prjName' },
-        { label: '终止井号', name: 'sgunit' },
-        { label: '管径(mm)', name: 'proIntroduction' },
-        { label: '管段长度', name: 'createTime' },
-        { label: '检测长度', name: 'prjNo' },
-        { label: '缺陷名称', name: 'prjName' },
-        { label: '缺陷等级', name: 'sgunit' },
-        { label: '整改建议', name: 'proIntroduction' },
-        { label: '结构性缺陷', name: 'createTime' },
-        { label: '功能性缺陷', name: 'proIntroduction' },
-      ],
-      pagination: { current: 1, size: 30 }, // 分页参数信息
-      paginationTotal: 0, // 总页数
-      zero: '',
-      tableData: [
+      options: [
         {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄',
-          length: 151
+          value: '选项1',
+          label: '黄金糕'
+        },
+        {
+          value: '选项2',
+          label: '双皮奶'
         }
       ],
-      form: {
-        name: '',
-        number: '',
-        constructionUnit: '',
-        designUnit: '',
-        workUnit: '',
-        testUnit: '',
-        probeUnit: '',
-        supervisorUnit: '',
-        projectIntroduction: ''
+      searchValue: {
+        testTime: {
+          startDate: '',
+          finishDate: ''
+        },
+        startPoint: '',
+        endPoint: '',
+        structClass: ''
       },
-      
+      // 表格参数
+      tableContent: [
+        { width: '120', sortable: true, label: '检测日期', name: 'jcDate' },
+        { width: '110', sortable: false, label: '起始井号', name: 'startPoint' },
+        { width: '110', sortable: false, label: '终止井号', name: 'endPoint' },
+        { width: '130', sortable: true, label: '起点埋深(m)', name: 'startDepth' },
+        { width: '130', sortable: true, label: '终点埋深(m)', name: 'endDepth' },
+        { width: '110', sortable: false, label: '管段类型', name: 'pipeType' },
+        { width: '110', sortable: false, label: '管段材质', name: 'material' },
+        { width: '110', sortable: true, label: '管段直径', name: 'diameter' },
+        { width: '110', sortable: true, label: '管段长度', name: 'pipeLength' },
+        { width: '110', sortable: true, label: '检测长度', name: 'jclength' },
+        { width: '', sortable: false, label: '整改建议', name: 'proIntroduction' },
+        { width: '110', sortable: false, label: '检测方向', name: 'detectDir' },
+        { width: '110', sortable: false, label: '检测人员', name: 'detectPerson' }
+      ],
+      uploadHeaders: {
+        Authorization: 'bearer ' + sessionStorage.getItem('token')
+      }, // token值
+
+      // ----------
+      pagination: { current: 1, size: 30 }, // 分页参数信息
+      paginationTotal: 0, // 总页数
+      tableData: [],
+      // 日期选择器规则
+      pickerOptions0: '',
+      pickerOptions1: ''
     }
   },
+  computed: {},
+  created() {
+    this.getDate()
+  },
   methods: {
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    changeDate() {
+      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
+      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
+      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
+      this.pickerOptions0 = {
+        disabledDate: (time) => {
+          if (date2 != '') {
+            // return time.getTime() > Date.now() || time.getTime() > date2
+            return time.getTime() > date2
+          } else {
+            return time.getTime() > Date.now()
+          }
+        }
+      }
+      this.pickerOptions1 = {
+        disabledDate: (time) => {
+          // return time.getTime() < date1 || time.getTime() > Date.now()
+          return time.getTime() < date1 - 8.64e7
+        }
+      }
+    },
+    // 搜索
+    searchApi() {
+      this.getDate(this.searchValue)
+    },
+
     // 分页触发的事件
     async handleSizeChange(val) {
       this.pagination.size = val
@@ -131,9 +212,29 @@ export default {
       await this.getDate()
       console.log(`当前页: ${val}`)
     },
-    // 表格选择事件
-    handleSelectionChange(val) {
-      this.multipleSelection = val
+    // 查询数据
+    async getDate(params) {
+      let data = this.pagination
+      if (params) {
+        // data.prjName = params.prjName
+        data.prjNo = params.prjNo
+      }
+      await queryPageAssessment(data).then((res) => {
+        // console.log('接口返回', res)
+        this.tableData = res.result.records
+        this.paginationTotal = res.result.total
+        // this.$message.success("上传成功");
+      })
+    }
+  },
+  updated() {
+    this.$nextTick(() => {
+      this.$refs['multipleTable'].doLayout()
+    })
+  },
+  watch: {
+    'searchValue.testTime.startDate': function (n) {
+      this.searchValue.testTime.finishDate = n
     }
   }
 }
@@ -145,6 +246,8 @@ export default {
   padding: 20px 0;
   box-sizing: border-box;
   position: relative;
+  font-size: 12px;
+
   // 表格样式
   .table-box {
     height: 100%;
@@ -156,88 +259,89 @@ export default {
     .top-tool {
       display: flex;
       justify-content: space-between;
-      flex-direction: row;
-      // flex-wrap: wrap;
-      font-size: 14px;
-      /deep/ .serch-engineering {
-        display: flex;
-        // justify-content: space-around;
-        align-items: center;
-        margin-bottom: 14px;
+      margin-bottom: 20px;
 
-        .serch-input {
-          width: 245px;
+      .serch-engineering {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        /deep/ .el-select {
+          margin-right: 10px;
+          .el-input__inner {
+            width: 120px;
+          }
         }
-        .el-input__inner {
+        .sampleTime {
+          width: 308px !important;
+          .el-input {
+            width: 140px;
+          }
+        }
+        /deep/.el-input__inner {
+          width: 140px;
           height: 34px;
-        }
-        .date-css {
-          width: 135px;
         }
 
         .title {
+          font-size: 14px;
+          color: #606266;
           font-family: Arial;
           white-space: nowrap;
-          margin-left: 5px;
         }
       }
-      .serch-btn {
-        height: 34px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #2d74e7;
-        // margin-left: 14px;
-        padding: 12px;
-        border: none !important;
-      }
 
-      .serch-btn:hover {
-        opacity: 0.8;
-      }
       .right-btn {
-        margin-bottom: 14px;
-        display: inline-block;
-        // display: flex;
+        display: flex;
         // align-items: center;
-        // flex-direction: row;
-        // flex-wrap: wrap;
+        justify-content: space-between;
+        // transform: translateX(20%);
       }
     }
     /deep/ .el-table {
       flex: 1;
       // overflow-y: scroll;
       th.el-table__cell > .cell {
+        color: rgb(50, 59, 65);
         height: 40px;
         line-height: 40px;
-        background-color: #dfeffe;
+        background: rgb(234, 241, 253);
       }
+      .el-table__row--striped > td {
+        background-color: #f3f7fe !important;
+      }
+    }
+  }
+  // 日期选择
+  /deep/ .el-form-item__content {
+    .el-input__inner {
+      width: 100% !important;
     }
   }
 
-  // 卡片样式
-  /deep/ .el-dialog {
-    font-size: 14px;
-    .el-dialog__header {
-      background-color: #2d74e7;
-      .el-dialog__title {
-        color: #dfeffe;
+  .delete-box {
+    /deep/.el-dialog {
+      margin-top: 30vh !important;
+      .el-dialog__header {
+        border-bottom: none;
       }
-      .el-icon-close:before {
-        color: #fff;
-      }
-    }
-    .el-input__inner {
-      height: 34px;
-    }
-    .el-form {
-      padding: 0 35px;
-      box-sizing: border-box;
     }
   }
-  // 选择框
-  /deep/ .el-select {
-    width: 130px;
+}
+
+/deep/ .upload-demo {
+  position: relative;
+  & > .el-upload {
+    // width: 100%;
+  }
+  .add-btn {
+    // cursor: default;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .btns {
+      position: absolute;
+      right: 0;
+    }
   }
 }
 </style>

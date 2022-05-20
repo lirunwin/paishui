@@ -29,6 +29,7 @@
                       value-format="yyyy-MM-dd"
                       size="small"
                       :picker-options="pickerOptions0"
+                      @change="changeDate"
                     ></el-date-picker>
                   </el-col>
                   <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
@@ -40,25 +41,37 @@
                       value-format="yyyy-MM-dd"
                       size="small"
                       :picker-options="pickerOptions1"
+                      @change="changeDate"
                     ></el-date-picker>
                   </el-col>
                 </el-row>
               </div>
             </div>
             <div class="serch-engineering">
-              <div class="title">整改建议：</div>
-              <el-select v-model="form.name" placeholder="--整改建议--">
-                <el-option label="立即处理" value="shanghai"></el-option>
-                <el-option label="尽量处理" value="beijing"></el-option>
+              <div class="title">起始井号：</div>
+              <el-select v-model="form.name" placeholder="--选择井号--">
+                <el-option label="区域一" value="shanghai"></el-option>
+                <el-option label="区域二" value="beijing"></el-option>
+              </el-select>
+              <div class="title">终止井号：</div>
+              <el-select v-model="form.name" placeholder="--选择井号--">
+                <el-option label="区域一" value="shanghai"></el-option>
+                <el-option label="区域二" value="beijing"></el-option>
               </el-select>
             </div>
-            <div class="operation-box">
-              <div class="serch-engineering">
-                <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制 </el-button>
-                <el-button class="serch-btn" type="primary"> 清除 </el-button>
-                <el-button class="serch-btn" type="primary"> 查询 </el-button>
-                <el-button class="serch-btn" type="primary"> 导出 </el-button>
-              </div>
+            <div class="serch-engineering">
+              <div class="title">缺陷等级：</div>
+              <el-select v-model="form.name" placeholder="选择缺陷等级">
+                <el-option label="区域一" value="shanghai"></el-option>
+                <el-option label="区域二" value="beijing"></el-option>
+              </el-select>
+            </div>
+            <div class="serch-engineering">
+              <el-button class="serch-btn" type="primary"> 范围 </el-button>
+              <el-button class="serch-btn" type="primary"> 清除 </el-button>
+              <el-button class="serch-btn" type="primary"> 查询 </el-button>
+              <el-button class="serch-btn" type="primary"> 导出 </el-button>
+              <div class="right-btn"></div>
             </div>
           </div>
           <div class="itmetitle">
@@ -69,14 +82,44 @@
             <div style="padding-left: 12px">
               <el-radio v-model="radio" label="1">饼状图</el-radio>
               <el-radio v-model="radio" label="2">柱状图</el-radio>
-              <el-checkbox v-model="pipNum">管道数量</el-checkbox>
-              <el-checkbox v-model="pipLen">管道长度</el-checkbox>
+              <el-checkbox label="缺陷类型"></el-checkbox>
+              <el-checkbox label="类型名称"></el-checkbox>
+              <el-checkbox label="缺陷等级"></el-checkbox>
             </div>
-            <h2 style="text-align: center">管道评估统计图</h2>
-            <div id="mainB" style="height: 250px"></div>
+            <h2 style="text-align: center">管道区域缺陷统计图</h2>
+            <div id="mainC" style="height: 250px"></div>
             <!-- 表格 -->
-            <div class="detailsTitle">管道缺陷数量统计表</div>
-            <summary-form :tabelData="returnTabel"></summary-form>
+            <el-table
+              ref="multipleTable"
+              :data="tableData"
+              tooltip-effect="dark"
+              height="250"
+              stripe
+              style="width: 100%"
+              @selection-change="handleSelectionChange"
+            >
+              <template slot="empty">
+                <img
+                  style="width: 100px; height: 100px; -webkit-user-drag: none"
+                  src="@/assets/images/nullData.png"
+                  alt="暂无数据"
+                  srcset=""
+                />
+                <p style="padding: 0; margin: 0;padding-bottom: 20px;">暂无数据</p>
+              </template>
+              <el-table-column header-align="center" align="center" label="区域管道缺陷评价统计表">
+                <el-table-column
+                  :prop="v.name"
+                  header-align="center"
+                  align="center"
+                  :label="v.label"
+                  show-overflow-tooltip
+                  v-for="v in tableContent"
+                  :key="v.name"
+                >
+                </el-table-column>
+              </el-table-column>
+            </el-table>
           </div>
         </div>
       </div>
@@ -93,25 +136,22 @@ require('echarts/lib/chart/pie')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 
-// 引入发布的组件
-import summaryForm from '@/views/zhpt/pipelineManage/components/summaryForm.vue'
 import simpleMap from '@/components/SimpleMap'
 import { getDefectDataBySE } from '@/api/sysmap/drain'
 
 export default {
   props: ['data'],
-  components: { simpleMap, summaryForm },
+  components: { simpleMap },
   data() {
     return {
-      pipNum: true,
-      pipLen: false,
-      pipNumShow: 1,
-      pipLenShow: 0,
       tableData: [], // 表格数据
-      typeArr: [], // 建议类型数组
-      numArr: [], // 管道数量
-      lengthArr: [], // 管道长度
-      radio: '2', // 单选框的值
+      // 表格参数
+      tableContent: [
+        { label: '整改建议', name: 'wordInfoName' },
+        { label: '数量(条)', name: 'jcnum' },
+        { label: '长度(米)', name: 'jclength' }
+      ],
+      radio: '1', // 单选框的值
       zero: '',
       form: {
         name: '',
@@ -136,99 +176,40 @@ export default {
     }
   },
   mounted() {
-    this.$nextTick(() => {
-      // this.initData()
-    })
-    console.log('this.setOptionShowNum', this.setOptionShowNum)
-    console.log('this.setOptionShowLen', this.setOptionShowLen)
+    this.initData()
+    this.$refs.myMap.showLegend('testReport', true)
   },
   destroyed() {
     this.data.that.clearMap()
-    this.$refs.myMap.showLegend('pipelineEvaluate', false)
+    this.$refs.myMap.showLegend('testReport', false)
   },
   beforeCreate() {
     console.log('销毁echatrs')
-    // document.getElementById('mainB').removeAttribute('_echarts_instance_')
+    // document.getElementById('mainC').removeAttribute('_echarts_instance_')
   },
   methods: {
-    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
-      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
-      }
-    },
-    // 处理地图给的数据
-    getMapData(res) {
-      let arr = res
-      arr.forEach((v, i) => {
-        v.type = arrK[i]
-        v.len = v.len.toFixed(2)
-      })
-      // console.log('res', arrV)
-      this.tableData = arrV
-      // // 建议类型数组
-      // this.typeArr = this.tableData.map((v) => {
-      //   return v.type
-      // })
-      // // 管道长度统计
-      // this.lengthArr = this.tableData.map((v) => {
-      //   return {
-      //     value: v.len,
-      //     name: v.type
-      //   }
-      // })
-      // // 管道数量统计
-      // this.numArr = this.tableData.map((v) => {
-      //   return {
-      //     value: v.num,
-      //     name: v.type
-      //   }
-      // })
-      this.$nextTick(() => {
-        this.initData()
-      })
-    },
     // 绘制
-    drawFeature() {
+    drawFeature () {
       let type = 'polygon'
       this.$refs.myMap.draw({
         type,
-        callback: (fea) => {
-          this.getDataFromExtent({}, fea).then((res) => {
+        callback: fea => {
+          this.getDataFromExtent({}, fea).then(res => {
             console.log('绘制,过滤后', res)
-            this.getMapData(res)
           })
         }
       })
     },
-    mapMoveEvent(extent) {
-      this.getDataFromExtent({}, extent).then((res) => {
-        console.log('地图变化,过滤后', res)
-        this.getMapData(res)
+    mapMoveEvent (extent) {
+      this.getDataFromExtent({}, extent).then(res => {
+        // console.log('地图变化,过滤后', res)
       })
     },
-    
     async getDataFromExtent(params, extent) {
       let data = await this.getPipeData(params)
       if (data.code === 1) {
         // 地图范围过滤数据
-        return this.$refs.myMap.getDataInMap(data.result, extent)
+        return this.$refs.myMap.getDefectDataInMap(data.result, extent)
       } else this.$message.error('请求数据出错')
     },
     // 根据条件获取缺陷数据
@@ -249,53 +230,103 @@ export default {
     //初始化数据(饼状图)
     initData() {
       // 基于准备好的dom，初始化echarts实例
-      let myChart = echarts.init(document.getElementById('mainB'))
+      let myChart = echarts.init(document.getElementById('mainC'))
       // 绘制图表
       if (this.radio == '1') {
         myChart.setOption(
           {
             tooltip: {
               trigger: 'item',
-              formatter: function (a) {
-                console.log('标题参数', a)
-                return `（${a['data']['name']}）数量:${a['data']['value']}   `
-              }
+              formatter: '{a} <br/>{b}: {c} ({d}%)'
             },
             legend: {
-              right: 'right',
-              top: 'center',
-              data: this.typeArr
+              data: [
+                'Direct',
+                'Marketing',
+                'Search Engine',
+                'Email',
+                'Union Ads',
+                'Video Ads',
+                'Baidu',
+                'Google',
+                'Bing',
+                'Others'
+              ]
             },
             series: [
               {
-                emptyCircleStyle: {
-                  opacity: this.pipNumShow
-                },
-                name: '管道数量统计',
+                name: 'Access From',
                 type: 'pie',
                 selectedMode: 'single',
-                radius: [0, '50%'],
+                radius: [0, '30%'],
                 label: {
-                  show: false,
                   position: 'inner',
-                  fontSize: 10
+                  fontSize: 14
                 },
                 labelLine: {
                   show: false
                 },
-                data: this.numArr
+                data: [{ value: 1548 }, { value: 775 }, { value: 679 }]
               },
               {
-                emptyCircleStyle: {
-                  opacity: this.pipLenShow
-                },
-                name: '管道长度统计',
+                name: 'Access From',
                 type: 'pie',
-                radius: ['60%', '80%'],
+                radius: ['40%', '55%'],
+                // labelLine: {
+                //   length: 30
+                // },
+                // label: {
+                //   formatter: '  {b|{b}：}{c}  {per|{d}%}  ',
+                //   backgroundColor: '#F6F8FC',
+                //   borderColor: '#8C8D8E',
+                //   borderWidth: 1,
+                //   borderRadius: 4,
+                //   rich: {
+                //     b: {
+                //       color: '#4C5058',
+                //       fontSize: 14,
+                //       fontWeight: 'bold',
+                //       lineHeight: 33
+                //     },
+                //     per: {
+                //       color: '#fff',
+                //       backgroundColor: '#4C5058',
+                //       padding: [3, 4],
+                //       borderRadius: 4
+                //     }
+                //   }
+                // },
+                data: [{ value: 1048 }, { value: 335 }, { value: 310 }, { value: 251 }, { value: 234 }, { value: 147 }]
+              },
+              {
+                name: 'Access From',
+                type: 'pie',
+                radius: ['60%', '70%'],
                 labelLine: {
                   length: 30
                 },
-                data: this.lengthArr
+                label: {
+                  formatter: '  {c}  {per|{d}%}  ',
+                  backgroundColor: '#F6F8FC',
+                  borderColor: '#8C8D8E',
+                  borderWidth: 1,
+                  borderRadius: 4,
+                  rich: {
+                    b: {
+                      color: '#4C5058',
+                      fontSize: 14,
+                      fontWeight: 'bold',
+                      lineHeight: 33
+                    },
+                    per: {
+                      color: '#fff',
+                      backgroundColor: '#4C5058',
+                      padding: [3, 4],
+                      borderRadius: 4
+                    }
+                  }
+                },
+                data: [{ value: 1048 }, { value: 335 }]
               }
             ]
           },
@@ -307,27 +338,21 @@ export default {
             legend: {},
             xAxis: {
               type: 'category',
-              data: this.typeArr
+              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
             },
             yAxis: {
               type: 'value'
             },
             series: [
               {
-                emptyCircleStyle: {
-                  opacity: this.pipNumShow
-                },
-                name: '管道数量统计',
+                name: '2011',
                 type: 'bar',
-                data: this.numArr
+                data: [1803, 2389, 2934, 1470, 1374, 6330]
               },
               {
-                emptyCircleStyle: {
-                  opacity: this.pipLenShow
-                },
-                name: '管道长度统计',
+                name: '2012',
                 type: 'bar',
-                data: this.lengthArr
+                data: [1325, 2338, 3000, 1254, 3141, 6807]
               }
             ]
           },
@@ -337,12 +362,6 @@ export default {
     }
   },
   computed: {
-    // setOptionShowNum() {
-    //   return this.pipNum ? 1 : 0
-    // },
-    // setOptionShowLen() {
-    //   return this.pipLen ? 1 : 0
-    // },
     mapExtent() {
       return this.$store.state.gis.mapExtent
     }
@@ -352,20 +371,6 @@ export default {
       if (old != newValue) {
         this.initData()
       }
-    },
-    pipNum: function (newValue, old) {
-      newValue ? (this.pipNumShow = 1) : (this.pipNumShow = 0)
-      console.log('pipNumShow', this.pipNumShow)
-      this.initData()
-    },
-    pipLen: function (newValue, old) {
-      newValue ? (this.pipLenShow = 1) : (this.pipLenShow = 0)
-      console.log('pipLenShow', this.pipLenShow)
-      this.initData()
-    },
-
-    'searchValue.testTime.startDate': function (n) {
-      this.searchValue.testTime.finishDate = n
     }
   }
 }
@@ -404,7 +409,7 @@ export default {
 
     .left {
       flex: 4;
-      overflow-y: scroll;
+       overflow-y: scroll;
       .table-box {
         width: 96%;
         height: 100%;

@@ -48,8 +48,8 @@
             <div class="serch-engineering">
               <div class="title">整改建议：</div>
               <el-select v-model="form.name" placeholder="--整改建议--">
-                <el-option label="区域一" value="shanghai"></el-option>
-                <el-option label="区域二" value="beijing"></el-option>
+                <el-option label="立即处理" value="shanghai"></el-option>
+                <el-option label="尽量处理" value="beijing"></el-option>
               </el-select>
             </div>
             <div class="operation-box">
@@ -69,8 +69,8 @@
             <div style="padding-left: 12px">
               <el-radio v-model="radio" label="1">饼状图</el-radio>
               <el-radio v-model="radio" label="2">柱状图</el-radio>
-              <el-checkbox label="管道数量"></el-checkbox>
-              <el-checkbox label="管道长度"></el-checkbox>
+              <el-checkbox v-model="pipNum">管道数量</el-checkbox>
+              <el-checkbox v-model="pipLen">管道长度</el-checkbox>
             </div>
             <h2 style="text-align: center">管道评估统计图</h2>
             <div id="mainB" style="height: 250px"></div>
@@ -81,11 +81,7 @@
               tooltip-effect="dark"
               stripe
               style="width: 100%"
-<<<<<<< HEAD
               show-summary
-=======
-              @selection-change="handleSelectionChange"
->>>>>>> 856959ca7b37655dbb877b44e1a902d47de2c06d
             >
               <template slot="empty">
                 <img
@@ -94,7 +90,7 @@
                   alt="暂无数据"
                   srcset=""
                 />
-                <p style="padding: 0; margin: 0;padding-bottom: 20px;">暂无数据</p>
+                <p style="padding: 0; margin: 0; padding-bottom: 20px">暂无数据</p>
               </template>
               <el-table-column header-align="center" align="center" label="管道评估统计表">
                 <el-table-column
@@ -133,6 +129,10 @@ export default {
   components: { simpleMap },
   data() {
     return {
+      pipNum: true,
+      pipLen: false,
+      pipNumShow: 1,
+      pipLenShow: 0,
       tableData: [], // 表格数据
       // 表格参数
       tableContent: [
@@ -141,7 +141,7 @@ export default {
         { label: '长度(米)', name: 'len' }
       ],
       typeArr: [], // 建议类型数组
-      nunArr: [], // 管道数量
+      numArr: [], // 管道数量
       lengthArr: [], // 管道长度
       radio: '2', // 单选框的值
       zero: '',
@@ -171,6 +171,8 @@ export default {
     this.$nextTick(() => {
       // this.initData()
     })
+    console.log('this.setOptionShowNum', this.setOptionShowNum)
+    console.log('this.setOptionShowLen', this.setOptionShowLen)
   },
   destroyed() {
     this.data.that.clearMap()
@@ -226,7 +228,7 @@ export default {
         }
       })
       // 管道数量统计
-      this.nunArr = this.tableData.map((v) => {
+      this.numArr = this.tableData.map((v) => {
         return {
           value: v.num,
           name: v.type
@@ -237,20 +239,22 @@ export default {
       })
     },
     // 绘制
-    drawFeature () {
+    drawFeature() {
       let type = 'polygon'
       this.$refs.myMap.draw({
         type,
-        callback: fea => {
-          this.getDataFromExtent({}, fea).then(res => {
+        callback: (fea) => {
+          this.getDataFromExtent({}, fea).then((res) => {
             console.log('绘制,过滤后', res)
+            this.getMapData(res)
           })
         }
       })
     },
-    mapMoveEvent (extent) {
-      this.getDataFromExtent({}, extent).then(res => {
+    mapMoveEvent(extent) {
+      this.getDataFromExtent({}, extent).then((res) => {
         console.log('地图变化,过滤后', res)
+        this.getMapData(res)
       })
     },
     async getDataFromExtent(params, extent) {
@@ -285,7 +289,10 @@ export default {
           {
             tooltip: {
               trigger: 'item',
-              formatter: '{a} <br/>{b}: {c} ({d}%)'
+              formatter: function (a) {
+                console.log('标题参数', a)
+                return `（${a['data']['name']}）数量:${a['data']['value']}   `
+              }
             },
             legend: {
               right: 'right',
@@ -294,6 +301,9 @@ export default {
             },
             series: [
               {
+                emptyCircleStyle: {
+                  opacity: this.pipNumShow
+                },
                 name: '管道数量统计',
                 type: 'pie',
                 selectedMode: 'single',
@@ -306,9 +316,12 @@ export default {
                 labelLine: {
                   show: false
                 },
-                data: this.nunArr
+                data: this.numArr
               },
               {
+                emptyCircleStyle: {
+                  opacity: this.pipLenShow
+                },
                 name: '管道长度统计',
                 type: 'pie',
                 radius: ['60%', '80%'],
@@ -327,21 +340,27 @@ export default {
             legend: {},
             xAxis: {
               type: 'category',
-              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+              data: this.typeArr
             },
             yAxis: {
               type: 'value'
             },
             series: [
               {
-                name: '2011',
+                emptyCircleStyle: {
+                  opacity: this.pipNumShow
+                },
+                name: '管道数量统计',
                 type: 'bar',
-                data: [1803, 2389, 2934, 1470, 1374, 6330]
+                data: this.numArr
               },
               {
-                name: '2012',
+                emptyCircleStyle: {
+                  opacity: this.pipLenShow
+                },
+                name: '管道长度统计',
                 type: 'bar',
-                data: [1325, 2338, 3000, 1254, 3141, 6807]
+                data: this.lengthArr
               }
             ]
           },
@@ -351,6 +370,12 @@ export default {
     }
   },
   computed: {
+    // setOptionShowNum() {
+    //   return this.pipNum ? 1 : 0
+    // },
+    // setOptionShowLen() {
+    //   return this.pipLen ? 1 : 0
+    // },
     mapExtent() {
       return this.$store.state.gis.mapExtent
     }
@@ -361,6 +386,17 @@ export default {
         this.initData()
       }
     },
+    pipNum: function (newValue, old) {
+      newValue ? (this.pipNumShow = 1) : (this.pipNumShow = 0)
+      console.log('pipNumShow', this.pipNumShow)
+      this.initData()
+    },
+    pipLen: function (newValue, old) {
+      newValue ? (this.pipLenShow = 1) : (this.pipLenShow = 0)
+      console.log('pipLenShow', this.pipLenShow)
+      this.initData()
+    },
+
     'searchValue.testTime.startDate': function (n) {
       this.searchValue.testTime.finishDate = n
     }
