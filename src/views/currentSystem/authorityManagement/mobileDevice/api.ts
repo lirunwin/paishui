@@ -40,7 +40,6 @@ export interface IMobileDevice extends IPagination {
   /** 使用人员id */
   userUserId?: string
 }
-
 export interface IMobileDeviceQuery extends IPagination {
   /** app 历史当前状态 0 历史 1 当前 多个以,分割 */
   auditQuery?: string
@@ -83,17 +82,14 @@ interface IMobileDeviceRes extends IPagination {
 }
 
 const uris = {
-  review: '/gps/mobiledevice',
   device: '/gps/mobiledevice',
   deleteDeviceByIds: '/gps/mobiledevice/deleteByIds',
   page: '/gps/mobiledevice/page',
   departments: '/base/department/list',
   users: '/base/user/getDeptUserList',
-  registers: '/gps/mobiledevice/register'
+  registers: '/gps/mobiledevice/register',
+  review: 'gps/mobiledevice/deviceAudit'
 }
-
-export const getReviews = (params: { auditStatus?: string; ids?: string }) =>
-  request({ url: uris.review, method: 'get', params })
 
 export const getMobileDevice = (id: string): IRes<IMobileDevice> =>
   request({ url: `${uris.device}/${id}`, method: 'get' })
@@ -134,8 +130,8 @@ export const putMobileDevice = (data: {
   userUserId: string | number
 }): IRes => request({ url: uris.device, method: 'put', data })
 
-export const deleteMobileDeviceByIds = (data: { ids: string }): IRes =>
-  request({ url: uris.deleteDeviceByIds, method: 'delete', data })
+export const deleteMobileDeviceByIds = (ids: string): IRes =>
+  request({ url: uris.deleteDeviceByIds, method: 'delete', params: { ids } })
 
 export const getDevices = (params?: IMobileDeviceQuery): IRes<IMobileDeviceRes> =>
   request({ url: uris.page, method: 'get', params })
@@ -153,3 +149,6 @@ export const getUsers = (deptId: string) =>
     params: { deptId }
   })
 export const getRegisters = (): IRes => request({ url: uris.registers, method: 'get' })
+
+export const reviewMobileDeviceByIds = (params: { ids: string; auditStatus?: string }): IRes =>
+  request({ url: uris.review, method: 'get', params: { auditStatus: '1', ...params } })

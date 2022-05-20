@@ -8,7 +8,7 @@
       <template v-for="{ prop, type, _slot, ...col } of columns">
         <template v-if="_slot">
           <el-table-column :key="prop || type" v-bind="{ align: 'center', prop, type, ...col }">
-            <template slot-scope="slotScope" v-if="_slot">
+            <template v-slot="slotScope" v-if="_slot">
               <slot
                 :name="`${prop}-${slotScope.$index}`"
                 v-bind="{ ...slotScope, col: { prop, type, _slot, ...col } }"
@@ -42,10 +42,14 @@ interface IPagination {
   total?: string | number
 }
 
+type ICol = Partial<ElTableColumn> & {
+  _slot: boolean
+}
+
 export default Vue.extend({
   inheritAttrs: false,
   props: {
-    columns: { type: Array as PropType<Partial<ElTableColumn>[]> },
+    columns: { type: Array as PropType<ICol[]> },
     pagination: { type: Object as PropType<IPagination> }
   },
   data() {
@@ -81,7 +85,9 @@ export default Vue.extend({
   },
   methods: {
     onPageChange(e: any, type: 'size' | 'current') {
+      this.$emit(`${type}-change`, e)
       this.$emit(`${type}Change`, e)
+      this.$emit('page-change', e)
       this.$emit('pageChange', e)
     }
   }
@@ -92,7 +98,7 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 40px);
   .table {
     flex: 1 1 auto;
     margin-bottom: 14px;

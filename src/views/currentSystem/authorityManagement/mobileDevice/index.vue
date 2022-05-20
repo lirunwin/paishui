@@ -1,7 +1,14 @@
 <template>
   <div class="page-container">
     <div class="actions">
-      <QueryForm :selected="selected" @query="onQuery" @add="onAdd" @del="onDel" :loading="loading" />
+      <QueryForm
+        :selected="selected"
+        @query="onQuery"
+        @add="onAdd"
+        @del="onDel"
+        @review="onReview"
+        :loading="loading"
+      />
     </div>
     <div class="table-container">
       <BaseTable
@@ -34,7 +41,15 @@ import { Vue, Component, Watch } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import QueryForm from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
-import { getDevices, IMobileDeviceQuery, IPagination, postMobileDevice, putMobileDevice } from './api'
+import {
+  deleteMobileDeviceByIds,
+  getDevices,
+  IMobileDeviceQuery,
+  IPagination,
+  postMobileDevice,
+  putMobileDevice,
+  reviewMobileDeviceByIds
+} from './api'
 import { mobileDeviceCols } from './utils'
 
 @Component({ name: 'MobileDevice', components: { BaseTable, QueryForm, DeviceForm } })
@@ -51,13 +66,15 @@ export default class MobileDevice extends Vue {
 
   loading = {
     query: false,
-    addOrUpdate: false
+    addOrUpdate: false,
+    del: false,
+    review: false
   }
   pagination: IPagination = {}
   query: IMobileDeviceQuery = {}
 
   async onQuery(query: IMobileDeviceQuery = {}) {
-    this.query = { ...this.query, ...query, current: 1 }
+    this.query = { current: 1, size: 30, ...this.query, ...query }
   }
 
   onPageChange(pagination) {
@@ -70,9 +87,9 @@ export default class MobileDevice extends Vue {
     this.loading.query = true
     try {
       const {
-        result: { records, total }
+        result: { records, total, size }
       } = await getDevices(query)
-      this.pagination = { ...this.pagination, total }
+      this.pagination = { ...this.pagination, size, total }
 
       this.devices = records
     } catch (error) {
@@ -86,12 +103,50 @@ export default class MobileDevice extends Vue {
     this.current = {}
   }
 
-  onDel(ids) {
-    console.log(ids)
+  async onDel(ids) {
+    try {
+      await this.$confirm('是否确认删除设备？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      this.loading.del = true
+      try {
+        const { result } = await deleteMobileDeviceByIds((ids || []).join())
+        if (result) {
+          this.$message({ type: 'success', message: '删除成功!' })
+          this.onQuery()
+        } else this.$message({ type: 'error', message: '删除失败!' })
+      } catch (error) {
+        console.log(error)
+      }
+      this.loading.del = false
+    } catch (error) {
+      this.$message({ type: 'info', message: '已取消删除' })
+    }
   }
 
-  onExport(ids) {
-    console.log(ids)
+  async onReview(ids) {
+    try {
+      await this.$confirm('是否确认注册选中设备？', '提示', {
+        confirmButtonText: '注册审核',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      this.loading.review = true
+      try {
+        const { result } = await reviewMobileDeviceByIds({ ids: (ids || []).join() })
+        if (result) {
+          this.$message({ type: 'success', message: '审核成功!' })
+          this.onQuery()
+        } else this.$message({ type: 'error', message: '审核失败!' })
+      } catch (error) {
+        console.log(error)
+      }
+      this.loading.review = false
+    } catch (error) {
+      this.$message({ type: 'info', message: '已取消审核' })
+    }
   }
 
   async onSubmit(data: any = {}) {
@@ -102,16 +157,7 @@ export default class MobileDevice extends Vue {
       this.visible = false
       this.onQuery()
     }
-    // try {
-    //   const { result } = await (data.id ? putMobileDevice(data) : postMobileDevice(data))
-    //   if (result) {
-    //     this.$message.success(`${data.id ? '修改' : '新增'}移动设备成功`)
-    //     this.visible = false
-    //     this.onQuery()
-    //   }
-    // } catch (error) {
-    //   console.log(error)
-    // }
+
     this.loading.addOrUpdate = false
   }
 
