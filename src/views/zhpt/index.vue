@@ -84,32 +84,35 @@
             <!-- <OverviewMap :map-view="view" /> -->
             <!-- 弹出框 -->
             <popupWindow v-if="view" ref="popupWindow" :map="view"></popupWindow>
-            <!-- 左上角工具栏 -->
-            <leftTopTool
-              :toolList="leftTopTool.children"
-              :map="view"
-              v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
-            ></leftTopTool>
+
+
+          </div>
             <!-- 左下角工具栏 -->
             <leftBottomTool
               :toolList="leftBottomTool.children"
               :map="view"
               v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
             ></leftBottomTool>
-            <!-- 右上角工具栏 -->
-            <rightTopTool
-              :toolList="rightTopTool.children"
-              :map="view"
-              :rootPage="this"
-              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
-            ></rightTopTool>
+          
             <!-- 右下角工具栏 -->
             <rightBottomTool
               :toolList="rightBottomTool.children"
               :map="view"
               v-if="rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
             ></rightBottomTool>
-          </div>
+          <!-- 右上角工具栏 -->
+            <rightTopTool
+              :toolList="rightTopTool.children"
+              :map="view"
+              :rootPage="this"
+              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
+            ></rightTopTool>
+            <!-- 左上角工具栏 -->
+            <leftTopTool
+              :toolList="leftTopTool.children"
+              :map="view"
+              v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
+            ></leftTopTool>
           <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
             <span id="mapView_close" ref="legend_close" title="收缩" @click="legendClick">▼</span>
@@ -166,7 +169,9 @@
               @handelClose="handelClose"
             />
           </el-aside> -->
-          <el-aside :style="{ width: side_width, height: '100%' }">
+          
+        </el-main>
+        <el-aside :style="{ width: side_width, height: '100%' }">
             <side-panels
               :panels="Panels"
               :data="panels"
@@ -174,8 +179,7 @@
               :panel-visible.sync="sidepanel_visible"
               @handelClose="handelClose"
             />
-          </el-aside>
-        </el-main>
+        </el-aside>
       </el-container>
       <el-footer :style="{ height: footer_height, width: '100%', padding: '0px' }">
         <half-panels

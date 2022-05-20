@@ -82,9 +82,10 @@
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>
           </template>
-            <el-table-column type="selection" width="55" />
-            <el-table-column prop="mapName" label="图层" /> 
-            <el-table-column prop="size" label="操作" >
+            <el-table-column type="selection" width="30"> </el-table-column>
+            <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+            <el-table-column prop="mapName" label="图层"  align="center"/> 
+            <el-table-column prop="size" label="操作"  align="center">
               <template slot-scope="scope">
                 <el-link type="primary" @click="jump(scope.row, scope.$index)">跳转</el-link>
                 <el-link type="primary" @click="deleteThemLayer(scope.row)">删除</el-link>
@@ -94,7 +95,7 @@
           <el-row style="margin-top: 8px">
             <el-col :span="20">
               <el-pagination ref="pagination" small background layout="total, sizes, prev, next" 
-              :page-size.sync='pageSize' :current-page.sync='currentPage' :page-sizes="[5, 10, 50, 100]" :total="total"
+              :page-size.sync='pageSize' :current-page.sync='currentPage' :page-sizes="[10, 20, 30, 50, 100, 1000]" :total="total"
               @current-change="updateThemLayerTable" @size-change="updateThemLayerTable" />
             </el-col>
           </el-row>
@@ -156,7 +157,7 @@ export default {
       themLayer: null, // 专题图层
       limitFeature: null, // 绘制图形
 
-      pageSize: 10,
+      pageSize: 30,
       currentPage: 1,
       total: 0
     }

@@ -12,9 +12,10 @@
           <img src="@/assets/icon/null.png" alt="">
           <p class="empty-p">暂无数据</p>
         </template>
-        <el-table-column prop="name" label="图层名称" />
-        <el-table-column prop="value" label="数量" />
-        <el-table-column label="操作">
+        <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+        <el-table-column prop="name" label="图层名称" align="center"/>
+        <el-table-column prop="value" label="数量" align="center"/>
+        <el-table-column label="操作" align="center">
           <template slot-scope="scope">
             <el-link type="primary" @click="showValue_new(scope.row)">查看</el-link>
           </template>

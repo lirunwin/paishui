@@ -45,7 +45,8 @@
               <img src="@/assets/icon/null.png" alt="">
               <p class="empty-p">暂无数据</p>
             </template>
-            <el-table-column prop="layer" align="center" label="图层"></el-table-column>
+            <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+            <el-table-column prop="layer" align="center" label="图层" ></el-table-column>
             <el-table-column prop="number" align="center" label="数量(个)"></el-table-column>
             <el-table-column align="center" label="操作">
               <template slot-scope="scope">

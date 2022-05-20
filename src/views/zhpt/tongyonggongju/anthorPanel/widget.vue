@@ -124,6 +124,7 @@ import TileLayer from 'ol/layer/Tile'
 import * as control from 'ol/control'
 import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
+import { defaults as controls } from 'ol/control'
 
 export default {
   name: 'AnthorPanel',
@@ -157,7 +158,7 @@ export default {
     this.antP.nextElementSibling.style.display = 'block'
     this.antP.style.display = 'block'
 
-    var mapView = (this.mapView = this.data.mapView)
+    var mapView = this.mapView = this.data.mapView
     this.mapDiv = mapView.getTargetElement()
     this.mapDiv.style.width = 'calc(50% - 2px)'
     this.mapDiv.style.float = 'left'
@@ -180,7 +181,11 @@ export default {
       let zoom = this.mapView.getView().getZoom()
       let map = new Olmap({
         target: mapContainer,
-        view: new View({ center, zoom, projection: 'EPSG:4326' })
+        view: new View({ center, zoom, projection: 'EPSG:4326' }),
+        controls: controls({
+          zoom: false,
+          attribution: false
+        }),
       })
       this.currMap = map
       this.addLayers(layerResource)

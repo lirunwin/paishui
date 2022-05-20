@@ -487,7 +487,7 @@ export default {
 
 //斑马线颜色
 .el-table--striped .el-table__body tr.el-table__row--striped.el-table__row--striped.el-table__row--striped td {
-  background-color:  #f0f9eb;
+  background-color:  rgba(45,116,231, 0.05);
 }
 //行高亮样式点击当前行样式背景高亮
 .el-table__body /deep/  tr.current-row >td{
@@ -496,7 +496,7 @@ export default {
 }
 //实现hover前行样式背景高亮
 .el-table--enable-row-hover .el-table__body tr:hover>td {
-  background-color: #fdf3ea !important;
+  background-color:  rgba(45,116,231, 0.1);
   color: #f19944;
 }
 // 去除自定义表格header和body不对其方式

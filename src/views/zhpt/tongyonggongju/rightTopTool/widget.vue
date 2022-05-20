@@ -2,7 +2,7 @@
   <div class='rightTopTool' v-if='groupList&&groupList.length>0' @mouseleave="hideList">
     <template v-for='(item,index) in groupList'>
       <div class='groupDiv' :key="'rightTopTool_'+index">
-        <div class='grouptitle' @mouseover="showList(item)">
+        <div class='grouptitle' @mouseover="showList(item)" :class="!item.childList.length ? 'pointer': ''" @click="openFunction2(item)">
           <div class='imgDiv'>
             <!-- 目前没有图片后续，可以读取图片地址，通过地址进行动态加载，地址写入下面的src中 -->
             <i :class="item.icon"></i>
@@ -57,21 +57,19 @@ export default {
   },
   methods: {
     getGroupList(){
-      
-      console.log("1111",this.toolList)
       let temp=[];
       //确定父子关系
       this.toolList.forEach(item=>{
-        if(item.parentPathid){
-          if(temp[item.parentPathid]){
+        if (item.parentPathid){
+          if (temp[item.parentPathid]){
             temp[item.parentPathid].push(item)
-          }else{
+          } else {
             temp[item.parentPathid]=[item];
           }
-        }else{
-          if(temp[item.name]){
+        } else {
+          if (temp[item.name]) {
             item.childList=temp[item.name];
-          }else{
+          } else {
             temp[item.name]=[];
             item.childList=temp[item.name]
           }
@@ -117,6 +115,28 @@ export default {
         this.currentList.label=temp;
       }
     },
+    openFunction2 (val) {
+      if (val.childList.length > 0) return
+      console.log('点击工具栏', val)
+      if(!val.widgetid){
+        let componentList=this.getComponents("rightTopTool");
+        let tempComponent=componentList.find(e=>{return e.name==val.name});
+        let index =this.componentList.findIndex(e=>{return e.name==val.name});
+        if (index!=-1) {
+          this.componentList.splice(index,1);
+        }
+        this.$nextTick(e=>{
+          this.componentList.push(tempComponent);
+        })
+      }else{
+        this.$store.dispatch("map/changeMethod",{
+          pathId: val.id || val.pathId,
+          widgetid: val.widgetid,
+          label: val.label,
+          param: val.param || {}
+        });
+      }
+    },
 
     /**
      * 打开对应的功能
@@ -127,7 +147,7 @@ export default {
         let componentList=this.getComponents("rightTopTool");
         let tempComponent=componentList.find(e=>{return e.name==val.name});
         let index =this.componentList.findIndex(e=>{return e.name==val.name});
-        if(index!=-1){
+        if (index!=-1) {
           this.componentList.splice(index,1);
         }
         this.$nextTick(e=>{
@@ -135,9 +155,9 @@ export default {
         })
       }else{
         this.$store.dispatch("map/changeMethod",{
-          com: val.id || val.pathId,
-          box: val.widgetid,
-          title: val.label,
+          pathId: val.id || val.pathId,
+          widgetid: val.widgetid,
+          label: val.label,
           param: val.param || {}
         });
       }
@@ -166,6 +186,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.pointer {
+  cursor: pointer;
+}
 .rightTopTool{
   position: absolute;
   right: 10px;
@@ -180,6 +203,7 @@ export default {
     position: relative;
     float: right;
     font-size: 14px;
+    margin: 0 10px;
     height: 100%;
   }
   .grouptitle{
@@ -198,7 +222,7 @@ export default {
       position: relative;
       float: left;
       top:10px;
-      padding-left: 2px;
+      padding-left: 5px;
     }
     .spanDiv:hover{
       color: rgb(102, 177, 255);
