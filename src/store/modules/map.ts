@@ -1,4 +1,3 @@
-
 function delOne(arr, str) {
   let index = 0
   for (let i = 0; i < arr.length; i++) {
@@ -11,7 +10,7 @@ function delOne(arr, str) {
 }
 
 function some(arr, str) {
-  const result = arr.some(item => {
+  const result = arr.some((item) => {
     if (item.com === str) {
       return true
     }
@@ -19,9 +18,9 @@ function some(arr, str) {
   return result
 }
 
-const getDefaultState = ():dStore.map.state => {
+const getDefaultState = (): dStore.map.state => {
   return {
-    panels:[],
+    panels: [],
     fullPanels: [],
     halfPanels: [],
     floatPanels: [],
@@ -35,31 +34,33 @@ const getDefaultState = ():dStore.map.state => {
 const state = getDefaultState()
 
 const mutations = {
-  SET_FUN: (state:dStore.map.state, data) => {
+  SET_FUN: (state: dStore.map.state, data) => {
     state.P_editableTabsValue = data.com
     // if (!some(state.panels, data.com)) {
     //   state.panels.unshift(data)
     // }
-    let panel = state.panels.findIndex(item => item.com === data.com);
-    let changePanel = null;
-    if(panel !== -1) { // 有这个元素 调整位置到第一个
-      changePanel = state.panels[panel];
-      state.panels.splice(panel, 1);
-      state.panels.unshift(changePanel);
-      panel = null;
-      changePanel = null;
-    } else { //没有这个元素 直接放到第一个
+    let panel = state.panels.findIndex((item) => item.com === data.com)
+    let changePanel = null
+    if (panel !== -1) {
+      // 有这个元素 调整位置到第一个
+      changePanel = state.panels[panel]
+      state.panels.splice(panel, 1)
+      state.panels.unshift(changePanel)
+      panel = null
+      changePanel = null
+    } else {
+      //没有这个元素 直接放到第一个
       state.panels.unshift(data)
     }
   },
-  SET_FULLPALL: (state:dStore.map.state, data) => {
+  SET_FULLPALL: (state: dStore.map.state, data) => {
     // console.log('22322', some(state.fullPanels, data.com), data)
     state.fullP_editableTabsValue = data.com
     if (!some(state.fullPanels, data.com)) {
       state.fullPanels.push(data)
     }
   },
-  SET_BOX: (state:dStore.map.state, data) => {
+  SET_BOX: (state: dStore.map.state, data) => {
     state.halfP_editableTabsValue = data.com
     if (!some(state.halfPanels, data.com)) {
       state.halfPanels.push(data)
@@ -67,7 +68,7 @@ const mutations = {
       state.halfPanels = state.halfPanels.slice()
     }
   },
-  SET_FLOAT: (state:dStore.map.state, data) => {
+  SET_FLOAT: (state: dStore.map.state, data) => {
     state.floatP_editableTabsValue = data.com
     if (!some(state.floatPanels, data.com)) {
       state.floatPanels.push(data)
@@ -79,50 +80,58 @@ const mutations = {
   //     state.floatPanels.push(data)
   //   }
   // },
-  DEL_FUN: (state:dStore.map.state, data) => {
+  DEL_FUN: (state: dStore.map.state, data) => {
     state.panels = delOne(state.panels, data)
-    if (state.panels.length > 0) { state.P_editableTabsValue = state.panels[0].com }
+    if (state.panels.length > 0) {
+      state.P_editableTabsValue = state.panels[0].com
+    }
   },
-  DEL_FULLPALL: (state:dStore.map.state, data) => {
+  DEL_FULLPALL: (state: dStore.map.state, data) => {
     // state.fullPanels.splice(data, 1)
     // console.log('333', delOne(state.fullPanels, data))
     state.fullPanels = delOne(state.fullPanels, data)
-    if (state.fullPanels.length > 0) { state.fullP_editableTabsValue = state.fullPanels[state.fullPanels.length - 1].com }
+    if (state.fullPanels.length > 0) {
+      state.fullP_editableTabsValue = state.fullPanels[state.fullPanels.length - 1].com
+    }
   },
-  DEL_BOX: (state:dStore.map.state, data) => {
+  DEL_BOX: (state: dStore.map.state, data) => {
     state.halfPanels = delOne(state.halfPanels, data.pathId)
-    if (state.halfPanels.length > 0) { state.halfP_editableTabsValue = state.halfPanels[state.halfPanels.length - 1].com }
+    if (state.halfPanels.length > 0) {
+      state.halfP_editableTabsValue = state.halfPanels[state.halfPanels.length - 1].com
+    }
   },
-  DEL_FLOAT: (state:dStore.map.state, data) => {
+  DEL_FLOAT: (state: dStore.map.state, data) => {
     state.floatPanels = delOne(state.floatPanels, data)
-    if (state.floatPanels.length > 0) { state.floatP_editableTabsValue = state.floatPanels[state.floatPanels.length - 1].com }
+    if (state.floatPanels.length > 0) {
+      state.floatP_editableTabsValue = state.floatPanels[state.floatPanels.length - 1].com
+    }
   },
-  DEL_ALLFULLPALL: (state:dStore.map.state) => {
+  DEL_ALLFULLPALL: (state: dStore.map.state) => {
     state.fullPanels = []
   },
-  DEL_ALLFUN: (state:dStore.map.state) => {
+  DEL_ALLFUN: (state: dStore.map.state) => {
     state.panels = []
   },
-  DEL_ALLBOX: (state:dStore.map.state) => {
+  DEL_ALLBOX: (state: dStore.map.state) => {
     state.halfPanels = []
   },
-  DEL_ALLFLOAT: (state:dStore.map.state) => {
+  DEL_ALLFLOAT: (state: dStore.map.state) => {
     state.floatPanels = []
   },
-  CHANGE_TAB: (state:dStore.map.state, payload) => {
-    let delIndex = state.panels.findIndex(index => index.com === payload);
-    let changePos = state.panels[delIndex];
-    if(delIndex >= 2) {
-      state.panels.splice(delIndex, 1);
-      state.panels.unshift(changePos);
-      delIndex = null;
-      changePos = null;
+  CHANGE_TAB: (state: dStore.map.state, payload) => {
+    let delIndex = state.panels.findIndex((index) => index.com === payload)
+    let changePos = state.panels[delIndex]
+    if (delIndex >= 2) {
+      state.panels.splice(delIndex, 1)
+      state.panels.unshift(changePos)
+      delIndex = null
+      changePos = null
     }
-    state.P_editableTabsValue = payload;
+    state.P_editableTabsValue = payload
   },
-  RESET_ALL: (state:dStore.map.state, payload) => {
+  RESET_ALL: (state: dStore.map.state, payload) => {
     const newState = getDefaultState()
-    Object.keys(state).forEach(key => {
+    Object.keys(state).forEach((key) => {
       state[key] = newState[key]
     })
   }
@@ -132,11 +141,10 @@ const actions = {
   // 切换tab
   changeTab({ commit }, val) {
     commit('CHANGE_TAB', val)
-    console.log("被切换的tab",val)
+    console.log('被切换的tab', val)
   },
   // 添加
   changeMethod({ commit }, value) {
-    // console.log('222', value)
     const data = {
       com: value.id || value.pathId,
       box: value.widgetid,
@@ -218,4 +226,3 @@ export default {
   mutations,
   actions
 }
-

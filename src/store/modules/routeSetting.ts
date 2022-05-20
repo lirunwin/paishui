@@ -79,6 +79,7 @@ const mutations = {
   },
   CHANGESYS: (state, data) => {
     state.routes = state.dynamicRoutes[data] && state.dynamicRoutes[data]
+
     sessionStorage.setItem('last-route', JSON.stringify(state.routes))
   },
   SET_NAVMENUS: (state, menus) => {
@@ -160,8 +161,23 @@ const actions = {
     commit('LOGIN_OUT_DEL')
   },
 
-  changeSys({ commit }, data) {
+  changeSys({ commit, dispatch, state }, data) {
     commit('CHANGESYS', data)
+    setTimeout(() => {
+      const getPath = () => {
+        let path
+        for (let route of state.routes) {
+          path = (route.children || []).find((item) => !!item.widgetid)
+          if (path) break
+        }
+        return path
+      }
+      const path = getPath()
+      if (path) dispatch('map/changeMethod', path, { root: true })
+    }, 100)
+
+    //  state.dynamicRoutes[data]
+    // this.$store.dispatch('map/changeMethod', info)
   },
   // tagsView变化 改变左侧sidebar菜单
   routesChangeByTagsView(context, data) {
