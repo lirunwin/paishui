@@ -139,12 +139,13 @@ export default {
     this.$nextTick(() => {
       // this.initData()
     })
+    this.$refs.myMap.showLegend('testReport', true)
     console.log('this.setOptionShowNum', this.setOptionShowNum)
     console.log('this.setOptionShowLen', this.setOptionShowLen)
   },
   destroyed() {
+    this.$refs.myMap.showLegend('testReport', false)
     this.data.that.clearMap()
-    this.$refs.myMap.showLegend('pipelineEvaluate', false)
   },
   beforeCreate() {
     console.log('销毁echatrs')
@@ -228,8 +229,8 @@ export default {
       let data = await this.getPipeData(params)
       if (data.code === 1) {
         // 地图范围过滤数据
-        return this.$refs.myMap.getDataInMap(data.result, extent)
-      } else this.$message.error('请求数据出错')
+        return this.$refs.myMap.getDefectDataInMap(data.result, extent)
+      } else this.$message.error('请求数据出错') 
     },
     // 根据条件获取缺陷数据
     getPipeData(filter = {}) {
