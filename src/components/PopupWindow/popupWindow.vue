@@ -28,7 +28,8 @@
           <span>更新日期：<i v-text="infoObject.properties.UPDATETIME"></i></span>
         </li>
         <li>
-          <span style="width:100%">权属单位：<i v-text="infoObject.properties.BELONG"></i></span>
+          <span style="width:50%">权属单位：<i v-text="infoObject.properties.BELONG"></i></span>
+          <span v-show="hasDetail"><el-link @click="showDetail">详细信息...</el-link></span>
         </li>
       </ul>
     </div>
@@ -77,7 +78,8 @@ export default {
       flg: false,
       infoObject: {},
       afterClosePopup: null,
-      popup: null
+      popup: null,
+      hasDetail: false
     }
   },
   mounted() {
@@ -94,9 +96,23 @@ export default {
   },
   methods: {
     /**
+     * 打开详情
+     * */
+    showDetail () {
+      let info = {
+        label: '详细信息',
+        widgetid: 'FullPanel',
+        pathId: 'detailInfo',
+        param: { info: this.infoObject }
+      }
+      this.$store.dispatch('map/changeMethod', info)
+    },
+    /**
      * 打开弹窗 
      * */
-    showPopup(position, infoObject, afterClosePopup) {
+    showPopup(position, infoObject, afterClosePopup, hasDetail= false) {
+      this.hasDetail = hasDetail
+      this.afterClosePopup && this.afterClosePopup()
       this.afterClosePopup = afterClosePopup
       this.infoObject = infoObject
       this.flg = true
@@ -108,6 +124,7 @@ export default {
     closePopup() {
       this.popup && this.popup.setPosition(undefined);
       this.afterClosePopup && this.afterClosePopup()
+      this.afterClosePopup = null
     }
   }
 }
