@@ -15,18 +15,74 @@ export default {
   props: ['paramData'],
   components: {},
   data() {
-    return {}
+    return {
+      echartsData: [],
+      allArr: [
+        {
+          name: '1级',
+          Lname:'一级',
+          value: 0
+        },
+        {
+          name: '2级',
+          Lname:'二级',
+          value: 0
+        },
+        {
+          name: '3级',
+          Lname:'三级',
+          value: 0
+        },
+        {
+          name: '4级',
+          Lname:'四级',
+          value: 0
+        }
+      ]
+    }
   },
-  watch: {},
+  watch: {
+    echartsData(n) {
+      this.echartsData = n
+      console.log('缺陷等级统计图新的echartsData', this.echartsData)
+      this.initData()
+    }
+  },
   computed: {},
   created() {},
   mounted() {
     this.initData()
   },
   methods: {
+    // 处理缺陷数据
+    setDefectData() {
+      if (this.echartsData.length != 0) {
+        this.echartsData.forEach((ev) => {
+          this.allArr.forEach((av) => {
+            console.log('ev', ev.defectLevel)
+            console.log('av', av.Lname)
+            if (ev.defectLevel == av.Lname) {
+              av.value = ev.defectNum
+            }
+          })
+          // if (v.defectLevel == '一级') {
+          //   this.allArr[0].value += v.defectNum
+          // } else if (v.defectLevel == '二级') {
+          //   this.allArr[1].value += v.defectNum
+          // } else if (v.defectLevel == '三级') {
+          //   this.allArr[2].value += v.defectNum
+          // } else if (v.defectLevel == '四级') {
+          //   this.allArr[3].value += v.defectNum
+          // }
+        })
+      }
+      console.log('this.allArr', this.allArr)
+    },
     //初始化数据(饼状图)
     initData() {
-      console.log('渲染管道检测情况统计图')
+      this.echartsData = this.paramData
+      this.setDefectData()
+      console.log('缺陷等级统计图', this.paramData)
       let chartDom = document.getElementById('echartsThree')
       let myChart = echarts.init(chartDom)
       let option
@@ -41,7 +97,7 @@ export default {
         },
         series: [
           {
-            name: 'Access From',
+            name: ' 缺陷数量 ',
             type: 'pie',
             radius: ['20%', '65%'],
             labelLine: {
@@ -50,11 +106,7 @@ export default {
             label: {
               formatter: '{d}% '
             },
-            data: [
-              { value: 1048, name: 'Search Engine' },
-              { value: 735, name: 'Direct' },
-              { value: 484, name: 'Union Ads' },
-            ],
+            data: this.allArr,
             emphasis: {
               itemStyle: {
                 shadowBlur: 10,

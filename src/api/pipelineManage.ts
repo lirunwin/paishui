@@ -117,7 +117,7 @@ export function batchRelease(data) {
 //单个发布 (加备注)
 export function oneRelease(data) {
     return request({
-        url: psjc + '/wordInfo' ,
+        url: psjc + '/wordInfo',
         method: 'put',
         data
     })
@@ -383,5 +383,26 @@ export function queryPagePipecheck(params) {
         url: psjc + '/pipecheck/page',
         method: 'get',
         params
+    })
+}
+
+// 管道数据分析
+// 管道缺陷分类统计
+//参数： {jcStartDate:检测开始日期,jcEndDate:检测结束日期,startPoint：起始井号", "endPoint：终止井号,defectType:缺陷类型，defectName：缺陷名称}
+export function getPipeDefectsTypeCount(data) {
+    return request({
+        url: psjc + '/pipeState/getPipeDefectsTypeCount',
+        method: 'post',
+        data
+    })
+}
+
+// 管道缺陷评估统计
+// { jcStartDate: 检测开始日期, jcEndDate: 检测结束日期, startPoint：起始井号, endPoint：终止井号, defectType: 缺陷类型，defectName：缺陷名称}
+export function getPipeDefectsTypeCountMap(data) {
+    return request({
+        url: psjc + '/pipeState/getPipeDefectsTypeCountMap ',
+        method: 'post',
+        data
     })
 }

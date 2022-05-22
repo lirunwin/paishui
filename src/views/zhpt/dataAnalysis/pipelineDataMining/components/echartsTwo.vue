@@ -15,18 +15,86 @@ export default {
   props: ['paramData'],
   components: {},
   data() {
-    return {}
+    return {
+      echartsData: {},
+      funArr: [
+        {
+          name: '1级',
+          value: 0
+        },
+        {
+          name: '2级',
+          value: 0
+        },
+        {
+          name: '3级',
+          value: 0
+        },
+        {
+          name: '4级',
+          value: 0
+        }
+      ],
+      staArr: [
+        {
+          name: '1级',
+          value: 0
+        },
+        {
+          name: '2级',
+          value: 0
+        },
+        {
+          name: '3级',
+          value: 0
+        },
+        {
+          name: '4级',
+          value: 0
+        }
+      ]
+    }
   },
-  watch: {},
+  
   computed: {},
   created() {},
   mounted() {
     this.initData()
   },
   methods: {
+    setData() {
+      this.echartsData.funcArr.forEach((v) => {
+        if (v.defectLevel == '一级') {
+          this.funArr[0].value += v.defectNum
+        } else if (v.defectLevel == '二级') {
+          this.funArr[1].value += v.defectNum
+        } else if (v.defectLevel == '三级') {
+          this.funArr[2].value += v.defectNum
+        } else if (v.defectLevel == '四级') {
+          this.funArr[3].value += v.defectNum
+        }
+        console.log("funcArr里面的等级",v);
+      })
+      this.echartsData.structArr.forEach((v) => {
+        if (v.defectLevel == '一级') {
+          this.staArr[0].value += v.defectNum
+        } else if (v.defectLevel == '二级') {
+          this.staArr[1].value += v.defectNum
+        } else if (v.defectLevel == '三级') {
+          this.staArr[2].value += v.defectNum
+        } else if (v.defectLevel == '四级') {
+          this.staArr[3].value += v.defectNum
+        }
+      })
+      // console.log('funArr', this.funArr)
+      // console.log('staArr', this.staArr)
+      console.log('缺陷类型统计图echartsData', this.paramData)
+    },
     //初始化数据(饼状图)
     initData() {
-      console.log('渲染管道检测情况统计图')
+      this.echartsData = this.paramData
+      this.setData()
+      console.log('缺陷类型统计图', this.echartsData)
       let chartDom = document.getElementById('echartsTwo')
       let myChart = echarts.init(chartDom)
       let option
@@ -35,10 +103,10 @@ export default {
         show: true
       }
       option = {
-    //     grid: {
-    //   left: '-54px',
-    //   containLabel: true
-    // },
+        //     grid: {
+        //   left: '-54px',
+        //   containLabel: true
+        // },
         tooltip: {
           trigger: 'axis',
           axisPointer: {
@@ -47,7 +115,7 @@ export default {
         },
         legend: {
           bottom: 'bottom',
-          data: ['1级', '2级', '3级']
+          data: ['1级', '2级', '3级', '4级']
         },
         grid: {
           left: 40
@@ -79,7 +147,7 @@ export default {
           {
             name: '1级',
             type: 'bar',
-            data: [165, 170, 30],
+            data: [this.funArr[0].value, this.staArr[0].value],
             label: seriesLabel,
             markPoint: {
               symbolSize: 1,
@@ -97,24 +165,30 @@ export default {
                     fontSize: 22
                   }
                 }
-              },
-              data: [
-                { type: 'max', name: 'max days: ' },
-                { type: 'min', name: 'min days: ' }
-              ]
+              }
+              // data: [
+              //   { type: 'max', name: 'max days: ' },
+              //   { type: 'min', name: 'min days: ' }
+              // ]
             }
           },
           {
             name: '2级',
             type: 'bar',
             label: seriesLabel,
-            data: [150, 105, 110]
+            data: [this.funArr[1].value, this.staArr[2].value]
           },
           {
             name: '3级',
             type: 'bar',
             label: seriesLabel,
-            data: [220, 82, 63]
+            data: [this.funArr[2].value, this.staArr[2].value]
+          },
+          {
+            name: '4级',
+            type: 'bar',
+            label: seriesLabel,
+            data: [this.funArr[3].value, this.staArr[3].value]
           }
         ]
       }
@@ -122,7 +196,18 @@ export default {
       option && myChart.setOption(option)
       console.log('option', option)
     }
-  }
+  },
+  watch: {
+    echartsData: {
+      handler(nv, ov) {
+        this.echartsData = nv 
+        console.log('缺陷类型统计图新的echartsData', this.echartsData)
+        this.initData()
+      },
+      deep: true,
+      immediate: true
+    }
+  },
 }
 </script>
 

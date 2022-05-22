@@ -26,7 +26,7 @@ export default {
   methods: {
     //初始化数据(饼状图)
     initData() {
-      console.log('渲染管道检测情况统计图')
+      // console.log('渲染管道检测情况统计图')
       let chartDom = document.getElementById('echartsFive')
       let myChart = echarts.init(chartDom)
       let option

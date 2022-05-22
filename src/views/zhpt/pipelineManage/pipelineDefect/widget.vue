@@ -65,18 +65,9 @@
           <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
-          <el-popconfirm
-            confirm-button-text="确定"
-            cancel-button-text="取消"
-            icon="el-icon-info"
-            icon-color="##FFDF84"
-            title="确定要导出吗?"
-            @confirm="$message('该功能暂未开放', scope.row.prjName)"
-          >
-            <el-button slot="reference" type="primary" size="small" :disabled="multipleSelection.length != 1"
-              >导出<i class="el-icon-download el-icon--right"></i
-            ></el-button>
-          </el-popconfirm>
+            <el-button size="small" type="primary" @click.stop="exportConfirm()"
+            >导出<i class="el-icon-download el-icon--right"></i
+          ></el-button>
           <!-- <el-button  type="primary" @click="openDialogEnclosure" :disabled="multipleSelection.length != 1"
             >导出<i class="el-icon-download el-icon--right"></i
           ></el-button> -->
@@ -110,12 +101,7 @@
           :sortable="v.sortable"
         >
         </el-table-column>
-        <el-table-column
-          header-align="center"
-          label="管道内部状况描述"
-          align="center"
-          show-overflow-tooltip
-        >
+        <el-table-column header-align="center" label="管道内部状况描述" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
             <div style="text-align: center">{{ scope.row.structEstimate }}}</div>
           </template>
@@ -147,10 +133,10 @@
 
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div id='popupCard' class="histroyPipeData" v-show="currentInfoCard">
+      <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
         <div class="detailsCrad" style="top: 10%; left: 20%; right: 62%" v-if="currentInfoCard">
           <el-card class="box-card" style="width: 300px">
-            <div class="table-content">
+            <div class="table-content" style="padding: 15px">
               <div
                 style="
                   display: flex;
@@ -166,7 +152,7 @@
                 <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails">详情</a>
               </div>
               <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
-              <div class="content-info">
+              <div class="content-info" style="font-size: 12px;">
                 <div class="left">
                   <div style="padding: 3px 0">检测日期&emsp; {{ DetailsForm.sampleTime }}</div>
                   <div style="display: flex; padding: 3px 0">
@@ -255,6 +241,9 @@ import {
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
 
+import { geteSessionStorage } from '@/utils/auth'
+
+
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
@@ -274,7 +263,9 @@ import defectImg0 from '@/assets/images/traingle0.png'
 // 引入管道检测组件
 import deleteDialog from '../components/checkDetails.vue'
 import { mapUtil } from '../../common/mapUtil/common'
-import { Overlay } from 'ol';
+import { Overlay } from 'ol'
+
+import axios from "axios";
 
 export default {
   props: ['param', 'data'],
@@ -283,6 +274,8 @@ export default {
   },
   data() {
     return {
+      //导出url
+      expXls: '/psjc/discharger/export',
       currentId: null,
       id: null,
       activeName: 'picnum', // 照片视频tab标签
@@ -444,6 +437,47 @@ export default {
     }
   },
   methods: {
+    //导出前确认
+    exportConfirm() {
+      if (this.paginationTotal <= 1000) {
+        this.exportOperation()
+        return
+      }
+      this.$confirm('仅支持导出前1000条数据，是否确认导出？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.exportOperation()
+        })
+        .catch(() => {})
+    },
+    // 导出方式
+    exportOperation() {
+      axios.defaults.baseURL = '/api'
+      axios({
+        headers: {
+          'Content-Type': 'application/json;charset=UTF-8',
+          Authorization: 'bearer ' + geteSessionStorage('token')
+        },
+        method: 'get',
+        url: this.expXls,
+        responseType: 'blob'
+      })
+        .then((res) => {
+          var blob = res.data
+          const href = URL.createObjectURL(blob) // 创建新的URL表示指定的blob对象
+          const a = document.createElement('a')
+          a.style.display = 'none'
+          a.href = href // 指定下载链接
+          a.download = '管道缺陷档案.xls' // 指定下载文件名
+          a.click()
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    },
     // 关闭弹框
     getBool(bool) {
       this.dialogFormVisible = bool
@@ -517,11 +551,15 @@ export default {
         if (res.code === 1) {
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result]
-            let pipeData = reportInfo.map(item => item.pipeStates).flat()
+            let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
             this.vectorLayer.getSource().clear()
             this.lightLayer.getSource().clear()
-            if (strucDefectFeatures.length !== 0 || funcDefectFeatures.length !== 0 || pipeDefectFeatures.length !== 0) {
+            if (
+              strucDefectFeatures.length !== 0 ||
+              funcDefectFeatures.length !== 0 ||
+              pipeDefectFeatures.length !== 0
+            ) {
               this.vectorLayer.getSource().addFeatures(pipeDefectFeatures)
             }
             this.hadLoad = true
@@ -534,92 +572,104 @@ export default {
      * @param featureArr 数组
      * */
     getFeatures(featureArr) {
-      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
-        featureArr.forEach((feaObj) => {
-          let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
-          if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
-            let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
-            let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
-            startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
-            endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
-            let lineCoors = [startPoint, endPoint]
-            let feature = new Feature({ geometry: new LineString(lineCoors) })
+      let style = null,
+        features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      featureArr.forEach((feaObj) => {
+        let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
+        if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
+          let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
+          let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+          startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
+          endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
+          let lineCoors = [startPoint, endPoint]
+          let feature = new Feature({ geometry: new LineString(lineCoors) })
 
-            // 健康等级颜色
-            let colors = [
-              { level: 'Ⅰ', color: 'green' },
-              { level: 'Ⅱ', color: 'blue' },
-              { level: 'Ⅲ', color: 'pink' },
-              { level: 'Ⅳ', color: 'red' },
-              { level: '/', color: '#070358' }
-            ]
-            let findFuncColor = colors.find(colorObj => feaObj['funcClass'] && feaObj['funcClass'].includes(colorObj.level))
-            let findStrucColor = colors.find(colorObj => feaObj['structClass'] && feaObj['structClass'].includes(colorObj.level))
+          // 健康等级颜色
+          let colors = [
+            { level: 'Ⅰ', color: 'green' },
+            { level: 'Ⅱ', color: 'blue' },
+            { level: 'Ⅲ', color: 'pink' },
+            { level: 'Ⅳ', color: 'red' },
+            { level: '/', color: '#070358' }
+          ]
+          let findFuncColor = colors.find(
+            (colorObj) => feaObj['funcClass'] && feaObj['funcClass'].includes(colorObj.level)
+          )
+          let findStrucColor = colors.find(
+            (colorObj) => feaObj['structClass'] && feaObj['structClass'].includes(colorObj.level)
+          )
 
-            // 功能性缺陷
-            if (findFuncColor) {
-              let fFea = feature.clone()
-              fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
-              for (let i in  feaObj) {
-                i !== "geometry" && fFea.set(i, feaObj[i])
-              }
-              features.funcDefectFeatures.push(fFea)
+          // 功能性缺陷
+          if (findFuncColor) {
+            let fFea = feature.clone()
+            fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
+            for (let i in feaObj) {
+              i !== 'geometry' && fFea.set(i, feaObj[i])
             }
-            // 结构性缺陷
-            if (findStrucColor) {
-              let sFea = feature.clone()
-              sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
-              for (let i in  feaObj) {
-                i !== "geometry" && sFea.set(i, feaObj[i])
-              }
-              features.strucDefectFeatures.push(sFea)
-            }
-            // 管道缺陷等级数据
-            feaObj.pipeDefects.forEach((feaObj, index) => {
-              if (feaObj.geometry) {
-                let coors = JSON.parse(feaObj.geometry)
-                let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
-                let feature = new Feature({ geometry: new Point(point) })
-                let imgs = [
-                  { level: '一级', img: defectImg1, index: 0 },
-                  { level: '二级', img: defectImg2, index: 1 },
-                  { level: '三级', img: defectImg3, index: 2 },
-                  { level: '四级', img: defectImg4, index: 3 },
-                  { level: '/', img: defectImg0, index: 4 }
-                ]
-                let findimg = null
-
-                if (feaObj.defectLevel) {
-                  findimg = imgs.find(colorObj => feaObj['defectLevel'].includes(colorObj.level))
-                }
-                // 缺少 defectLevel 字段
-                if (findimg) {
-                  let rotation = getIconRat(lineCoors)
-                  feature.setStyle(new Style({ image: new Icon({ size: [48, 48], anchor: [0.5, 0], src: findimg.img, scale: 0.4, rotation }) }))
-                  for (let i in  feaObj) {
-                    i !== "geometry" && feature.set(i, feaObj[i])
-                  }
-                  features.pipeDefectFeatures.push(feature)
-                }
-              }
-            })
-          } else {
-            // console.log('没有geometry')
+            features.funcDefectFeatures.push(fFea)
           }
-        })
+          // 结构性缺陷
+          if (findStrucColor) {
+            let sFea = feature.clone()
+            sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
+            for (let i in feaObj) {
+              i !== 'geometry' && sFea.set(i, feaObj[i])
+            }
+            features.strucDefectFeatures.push(sFea)
+          }
+          // 管道缺陷等级数据
+          feaObj.pipeDefects.forEach((feaObj, index) => {
+            if (feaObj.geometry) {
+              let coors = JSON.parse(feaObj.geometry)
+              let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
+              let feature = new Feature({ geometry: new Point(point) })
+              let imgs = [
+                { level: '一级', img: defectImg1, index: 0 },
+                { level: '二级', img: defectImg2, index: 1 },
+                { level: '三级', img: defectImg3, index: 2 },
+                { level: '四级', img: defectImg4, index: 3 },
+                { level: '/', img: defectImg0, index: 4 }
+              ]
+              let findimg = null
+
+              if (feaObj.defectLevel) {
+                findimg = imgs.find((colorObj) => feaObj['defectLevel'].includes(colorObj.level))
+              }
+              // 缺少 defectLevel 字段
+              if (findimg) {
+                let rotation = getIconRat(lineCoors)
+                feature.setStyle(
+                  new Style({
+                    image: new Icon({ size: [48, 48], anchor: [0.5, 0], src: findimg.img, scale: 0.4, rotation })
+                  })
+                )
+                for (let i in feaObj) {
+                  i !== 'geometry' && feature.set(i, feaObj[i])
+                }
+                features.pipeDefectFeatures.push(feature)
+              }
+            }
+          })
+        } else {
+          // console.log('没有geometry')
+        }
+      })
       return features
 
-      function getIconRat ([startPoint, endPoint]) {
+      function getIconRat([startPoint, endPoint]) {
         let rotation = 0
         // 因为要垂直管线显示，所以图片旋转 90°
         let imgRt = Math.PI / 2
 
         // 计算旋转弧度
-        if (endPoint[0] === startPoint[0]) { // 竖直
+        if (endPoint[0] === startPoint[0]) {
+          // 竖直
           rotation = endPoint[1] > startPoint[1] ? -imgRt : Math.PI - imgRt
-        } else if (endPoint[1] === startPoint[1]) { // 水平
-          rotation = endPoint[1] > startPoint[1] ? Math.PI / 2 - imgRt : Math.PI * 3 / 2 - imgRt
-        } else { // 其他角度
+        } else if (endPoint[1] === startPoint[1]) {
+          // 水平
+          rotation = endPoint[1] > startPoint[1] ? Math.PI / 2 - imgRt : (Math.PI * 3) / 2 - imgRt
+        } else {
+          // 其他角度
           rotation = Math.atan((endPoint[0] - startPoint[0]) / (endPoint[1] - startPoint[1])) - imgRt
         }
         return rotation
@@ -656,17 +706,17 @@ export default {
       // this.currentForm = res.result
       this.currentInfoCard = true
 
-      //      
+      //
       if (position) {
         this.popup = new Overlay({
-          element: document.getElementById("popupCard"),
+          element: document.getElementById('popupCard'),
           //当前窗口可见
           autoPan: true,
           positioning: 'bottom-center',
           stopEvent: true,
           offset: [18, -25],
           autoPanAnimation: { duration: 250 }
-        });
+        })
         this.map.addOverlay(this.popup)
         this.popup.setPosition(position)
       }
@@ -948,7 +998,7 @@ export default {
               font-family: 'Microsoft YaHei UI', sans-serif;
               flex: 1;
             }
-            /deep/ .right {
+            .right {
               flex: 1;
               .container {
                 height: 100%;

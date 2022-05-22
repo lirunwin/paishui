@@ -23,23 +23,25 @@
                 <el-row style="display: flex; justify-content: center; align-items: center">
                   <el-col :span="11">
                     <el-date-picker
-                      v-model="searchValue.testTime.startDate"
+                      v-model="searchValue.startDate"
                       type="date"
                       placeholder="选择开始日期"
                       value-format="yyyy-MM-dd"
                       size="small"
                       :picker-options="pickerOptions0"
+                      @change="changeDate"
                     ></el-date-picker>
                   </el-col>
                   <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
                   <el-col :span="12">
                     <el-date-picker
-                      v-model="searchValue.testTime.finishDate"
+                      v-model="searchValue.finishDate"
                       type="date"
                       placeholder="选择结束日期"
                       value-format="yyyy-MM-dd"
                       size="small"
                       :picker-options="pickerOptions1"
+                      @change="changeDate"
                     ></el-date-picker>
                   </el-col>
                 </el-row>
@@ -47,16 +49,21 @@
             </div>
             <div class="serch-engineering">
               <div class="title">整改建议：</div>
-              <el-select v-model="form.name" placeholder="--整改建议--">
-                <el-option label="立即处理" value="shanghai"></el-option>
-                <el-option label="尽量处理" value="beijing"></el-option>
+              <el-select size="small" v-model="searchValue.fixSuggest" placeholder="选择建议">
+                <el-option
+                  v-for="item in fixSuggestList"
+                  :key="item.codeValue"
+                  :label="item.codeValue"
+                  :value="item.codeValue"
+                >
+                </el-option>
               </el-select>
             </div>
             <div class="operation-box">
               <div class="serch-engineering">
                 <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制 </el-button>
                 <el-button class="serch-btn" type="primary"> 清除 </el-button>
-                <el-button class="serch-btn" type="primary"> 查询 </el-button>
+                <el-button class="serch-btn" type="primary" @click="getPipeData"> 查询 </el-button>
                 <el-button class="serch-btn" type="primary"> 导出 </el-button>
               </div>
             </div>
@@ -73,7 +80,7 @@
               <el-checkbox v-model="pipLen">管道长度</el-checkbox>
             </div>
             <h2 style="text-align: center">管道评估统计图</h2>
-            <div id="mainB" style="height: 250px"></div>
+            <div id="mainPESS" style="height: 250px"></div>
             <!-- 表格 -->
             <el-table
               ref="multipleTable"
@@ -123,12 +130,14 @@ require('echarts/lib/component/title')
 
 import simpleMap from '@/components/SimpleMap'
 import { getDefectDataBySE } from '@/api/sysmap/drain'
+import { queryDictionariesId } from '@/api/pipelineManage'
 
 export default {
   props: ['data'],
   components: { simpleMap },
   data() {
     return {
+      fixSuggestList: [],
       pipNum: true,
       pipLen: false,
       pipNumShow: 1,
@@ -157,10 +166,10 @@ export default {
         projectIntroduction: ''
       },
       searchValue: {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        } // 检测日期
+        startDate: '',
+        finishDate: '',
+        fixSuggest: ''
+        // 检测日期
       }, // 搜索关键字的值
       // 日期选择器规则
       pickerOptions0: '',
@@ -180,14 +189,25 @@ export default {
   },
   beforeCreate() {
     console.log('销毁echatrs')
-    // document.getElementById('mainB').removeAttribute('_echarts_instance_')
+    // document.getElementById('mainPESS').removeAttribute('_echarts_instance_')
+  },
+  created() {
+    this.getParamsId()
   },
   methods: {
+    // 获取字典
+    async getParamsId() {
+      // 获取字典
+      // check_suggest
+      let checkSuggest = await queryDictionariesId({ keys: 'check_suggest' })
+      this.fixSuggestList = checkSuggest.result.check_suggest
+      console.log('checkSuggest', checkSuggest.result.check_suggest)
+    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
-      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
+      let date1 = new Date(this.searchValue.startDate).getTime()
+      let date2 = new Date(this.searchValue.finishDate).getTime()
       this.pickerOptions0 = {
         disabledDate: (time) => {
           if (date2 != '') {
@@ -271,9 +291,9 @@ export default {
         endPoint: '',
         funcClass: '',
         structClass: '',
-        jcStartDate: '',
-        jcEndDate: '',
-        checkSuggest: '修复计划',
+        jcStartDate: this.searchValue.startDate,
+        jcEndDate: this.searchValue.finishDate,
+        checkSuggest: this.searchValue.fixSuggest,
         ...filter
       }
       return getDefectDataBySE(params)
@@ -282,18 +302,11 @@ export default {
     //初始化数据(饼状图)
     initData() {
       // 基于准备好的dom，初始化echarts实例
-      let myChart = echarts.init(document.getElementById('mainB'))
+      let myChart = echarts.init(document.getElementById('mainPESS'))
       // 绘制图表
       if (this.radio == '1') {
         myChart.setOption(
           {
-            tooltip: {
-              trigger: 'item',
-              formatter: function (a) {
-                console.log('标题参数', a)
-                return `（${a['data']['name']}）数量:${a['data']['value']}   `
-              }
-            },
             legend: {
               right: 'right',
               top: 'center',
@@ -337,6 +350,13 @@ export default {
       } else if (this.radio == '2') {
         myChart.setOption(
           {
+            tooltip: {
+              trigger: 'item',
+              formatter: function (a) {
+                console.log('标题参数', a)
+                return `（${a['data']['name']}）数量:${a['data']['value']}   `
+              }
+            },
             legend: {},
             xAxis: {
               type: 'category',
@@ -397,8 +417,8 @@ export default {
       this.initData()
     },
 
-    'searchValue.testTime.startDate': function (n) {
-      this.searchValue.testTime.finishDate = n
+    'searchValue.startDate': function (n) {
+      this.searchValue.finishDate = n
     }
   }
 }
