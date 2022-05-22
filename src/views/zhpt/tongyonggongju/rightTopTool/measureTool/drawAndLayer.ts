@@ -67,7 +67,8 @@ class DrawInMap{
    * 初始值
    */
   initValue(map){
-    this.destory();
+    // 当前业务不清除
+    // this.destory();
     this.map=map;
   }
 
@@ -76,6 +77,10 @@ class DrawInMap{
    */
   measure(option) {
     this.option=option;
+    !this.vectorSource && this.createSource()
+    !this.layer && this.createLayer();
+    this.pointClickEvent && unByKey(this.pointClickEvent)
+    this.pointermoveEvent && unByKey(this.pointermoveEvent)
     this.checkLayerExist();
   }
 
@@ -89,8 +94,7 @@ class DrawInMap{
     this.pointermoveEvent = this.map.on("pointermove", evt => {
       overlay.setPosition(evt.coordinate);
     })
-    this.createSource();
-    this.createLayer();
+    
     if(this.option==optionAction.coordinate){
       this.pointClickEvent=this.map.on("click",evt=>{
         this.creatMark(null, evt.coordinate[0].toFixed(3)+","+evt.coordinate[1].toFixed(3), 'coordinateInfo').setPosition(evt.coordinate);
@@ -132,6 +136,8 @@ class DrawInMap{
    * 创建绘制工具
    * */ 
   creatDraw(){
+    let tipOverlay = []
+    this.draw && this.map.removeInteraction(this.draw)
     this.draw = new Draw({
       source: this.vectorSource,
       name:this.drawUniqueCode,
@@ -141,8 +147,11 @@ class DrawInMap{
       // 绘制时点击处理事件
       condition: (evt) => {
         // 测距时添加点标注
-        if (this.measureResult != "0" && !this.map.getOverlayById(this.measureResult) && this.option == optionAction.distance)
-          this.creatMark(null, this.measureResult, this.measureResult).setPosition(evt.coordinate)
+        if (this.measureResult != "0" && !this.map.getOverlayById(this.measureResult) && this.option == optionAction.distance) {
+          let overlay = this.creatMark(null, this.measureResult, this.measureResult)
+          overlay.setPosition(evt.coordinate)
+          tipOverlay.push(overlay)
+        }
         return true
       }
     } as any);
@@ -156,7 +165,9 @@ class DrawInMap{
         let proj = this.map.getView().getProjection()
         //******距离测量开始时*****//
         if (this.option ==optionAction.distance) {
-          this.creatMark(null, "起点", "start").setPosition(this.map.getCoordinateFromPixel(e.target.downPx_))
+          let overlay = this.creatMark(null, "起点", "start")
+          overlay.setPosition(this.map.getCoordinateFromPixel(e.target.downPx_))
+          tipOverlay.push(overlay)
           this.tipDiv.innerHTML = "总长：0 m</br>单击确定地点，双击结束";
           this.geometryListener = this.sketchFeature.getGeometry().on('change', (evt) => {
             this.measureResult = this.distenceFormat(getLength(evt.target, { "projection": proj, "radius": 6378137 }))
@@ -195,27 +206,43 @@ class DrawInMap{
         closeBtn.innerHTML = "×";
         closeBtn.title = "清除测量"
         closeBtn['style'] = "width: 18px;height:18px;line-height: 12px;text-align: center;border-radius: 5px;display: inline-block;padding: 0px;color: rgb(255, 68, 0);border: 2px solid rgb(255, 68, 0);background-color: rgb(255, 255, 255);font-weight: 600;position: absolute;top: -25px;right: -2px;cursor: pointer;";
-        closeBtn.addEventListener('click', () => {
-          this.destory()
-        })
         //******距离测量结束时*****//
         if (this.option ==optionAction.distance) {
-          this.creatMark(closeBtn, null, "close1").setPosition(e.feature.getGeometry().getLastCoordinate());
-          this.creatMark(null, "总长：" + this.measureResult + "", "length").setPosition(e.feature.getGeometry().getLastCoordinate())
+          let overlay1 = this.creatMark(closeBtn, null, "close1")
+          overlay1.setPosition(e.feature.getGeometry().getLastCoordinate());
+          let overlay2 = this.creatMark(null, "总长：" + this.measureResult + "", "length")
+          overlay2.setPosition(e.feature.getGeometry().getLastCoordinate())
           this.map.removeOverlay(this.map.getOverlayById(this.measureResult))
+          tipOverlay.push(overlay1)
+          tipOverlay.push(overlay2)
         }
         //******面积测量结束时*****//
         else if (this.option ==optionAction.area) {
-          this.creatMark(closeBtn, null, "close2").setPosition(e.feature.getGeometry().getInteriorPoint().getCoordinates());
-          this.creatMark(null, "总面积：" + this.measureResult + "", "area").setPosition(e.feature.getGeometry().getInteriorPoint().getCoordinates())
+          let overlay1 = this.creatMark(closeBtn, null, "close2")
+          overlay1.setPosition(e.feature.getGeometry().getInteriorPoint().getCoordinates());
+          let overlay2 = this.creatMark(null, "总面积：" + this.measureResult + "", "area")
+          overlay2.setPosition(e.feature.getGeometry().getInteriorPoint().getCoordinates())
+          tipOverlay.push(overlay1)
+          tipOverlay.push(overlay2)
         }
         //******角度测量结束时*****//
         else if (this.option ==optionAction.angle) {
-          this.creatMark(closeBtn, null, "close3").setPosition(e.feature.getGeometry().getCoordinates()[1]);
-          this.creatMark(null, "角度：" + parseFloat(this.measureResult).toFixed(2) + "", "angle").setPosition(e.feature.getGeometry().getCoordinates()[1])
+          let overlay1 = this.creatMark(closeBtn, null, "close3")
+          overlay1.setPosition(e.feature.getGeometry().getCoordinates()[1]);
+          let overlay2 = this.creatMark(null, "角度：" + parseFloat(this.measureResult).toFixed(2) + "", "angle")
+          overlay2.setPosition(e.feature.getGeometry().getCoordinates()[1])
+          tipOverlay.push(overlay1)
+          tipOverlay.push(overlay2)
         }
         // 停止测量
         this.stopMeasure();
+        closeBtn.addEventListener('click', () => {
+          // this.destory()
+          this.layer && this.layer.getSource().removeFeature(e.feature)
+          tipOverlay.forEach(overlay => {
+            this.map.removeOverlay(overlay)
+          })
+        })
       })
   }
 

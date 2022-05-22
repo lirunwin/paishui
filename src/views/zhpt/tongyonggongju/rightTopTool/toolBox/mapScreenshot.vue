@@ -21,7 +21,7 @@ export default {
       console.log('打印')
       const mapViewHtml = $('.ol-viewport');
       // 存在多个 viewport , 分屏功能bug  
-      let viewImg = mapViewHtml[mapViewHtml.length - 1]
+      let viewImg = mapViewHtml[mapViewHtml.length - 2]
       html2Canvas(viewImg, {
         backgroundColor: null, // 画出来的图片有白色的边框,不要可设置背景为透明色（null）
         useCORS: true, // 支持图片跨域

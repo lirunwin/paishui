@@ -86,6 +86,17 @@ Vue.directive('selectLoadMore', {
   }
 })
 
+Vue.directive('scrollMore', {
+  bind(el, binding) {
+    // 获取element-ui定义好的scroll盒子
+    el.addEventListener('scroll', function() {
+      if (this.scrollHeight - this.scrollTop < this.clientHeight + 1) {
+        binding.value()
+      }
+    })
+  }
+})
+
 /**
  * mock数据
  */

@@ -257,6 +257,7 @@ export default {
     background: rgba(255, 254, 254, 1);
     border-radius: 2px;
     li.groupListLi{
+      cursor: pointer;
       padding: 5px;
       background: rgba(236, 245, 255, 0);
       width: 100%;
