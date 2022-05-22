@@ -74,7 +74,8 @@ export default class iQuery {
     }
 
     // 属性查询
-    sqlQuery(sqlStr) {
+    sqlQuery(sqlStr, maxFeatures?) {
+        maxFeatures = maxFeatures || this.maxFeatures
         // console.log("sql过滤条件", sqlStr)
         let queryPromises = this.dataSetInfo.map(info => {
             let layerName = info.label

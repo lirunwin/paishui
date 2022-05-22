@@ -85,7 +85,7 @@ export const fieldDoc_old = {
 export const fieldDoc = {
     PRJ_NO: '项目编号',
     PRJ_NAME: '项目名称',
-    LNO: '排水管道唯一编号',
+    LNO: '管道唯一编号',
     GRADE: '管道级别', 
     S_POINT: '起点管线点号',
     S_DEEP: '起点管线埋深',

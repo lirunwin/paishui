@@ -52,16 +52,17 @@
     </tf-legend>
     <tf-legend class="legend_dept" label="查询结果" isopen="true" title="显示查询统计结果。">
       <el-table :data="finalData" stripe style="width: 100%">
+        <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
         <template slot="empty">
           <img src="@/assets/icon/null.png" alt="">
           <p class="empty-p">暂无数据</p>
         </template>
-        <el-table-column prop="name" label="图层" width="80px"/>
-        <el-table-column prop="value" label="数量(个)"/>
-        <el-table-column prop="length" label="长度(m)">
+        <el-table-column prop="name" label="图层" width="80px"  align="center"/>
+        <el-table-column prop="value" label="数量(个)"  align="center"/>
+        <el-table-column prop="length" label="长度(m)"  align="center">
           <template slot-scope="props">{{ props.row.length ? props.row.length.toFixed(2) : '-' }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="50px">
+        <el-table-column label="操作" width="50px"  align="center">
           <template slot-scope="scope">
             <el-link type="primary" @click="rowC(scope.row)">详情</el-link>
           </template>

@@ -25,7 +25,7 @@ export const appconfig = {
   // 地图初始视角中心
   // 'initCenter': { 'x': 104.44483, 'y': 30.85523 },
   // 临时使用
-  'initCenter': [104.695219,31.537356],
+  'initCenter': [101.724022,26.580702],
   // 地图初始视角级别
   'initZoom': 15,
   // token

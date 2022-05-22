@@ -1265,3 +1265,10 @@
   content: "\e774"
 }
 
+.iconlayerlist::before {
+  content: "\e698";
+}
+.iconfontlegend::before {
+  content: '\e774';
+}
+

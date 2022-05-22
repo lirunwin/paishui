@@ -84,32 +84,35 @@
             <!-- <OverviewMap :map-view="view" /> -->
             <!-- 弹出框 -->
             <popupWindow v-if="view" ref="popupWindow" :map="view"></popupWindow>
-            <!-- 左上角工具栏 -->
-            <leftTopTool
-              :toolList="leftTopTool.children"
-              :map="view"
-              v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
-            ></leftTopTool>
+
+
+          </div>
             <!-- 左下角工具栏 -->
             <leftBottomTool
               :toolList="leftBottomTool.children"
               :map="view"
               v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
             ></leftBottomTool>
-            <!-- 右上角工具栏 -->
-            <rightTopTool
-              :toolList="rightTopTool.children"
-              :map="view"
-              :rootPage="this"
-              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
-            ></rightTopTool>
+          
             <!-- 右下角工具栏 -->
             <rightBottomTool
               :toolList="rightBottomTool.children"
               :map="view"
               v-if="rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
             ></rightBottomTool>
-          </div>
+          <!-- 右上角工具栏 -->
+            <rightTopTool
+              :toolList="rightTopTool.children"
+              :map="view"
+              :rootPage="this"
+              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
+            ></rightTopTool>
+            <!-- 左上角工具栏 -->
+            <leftTopTool
+              :toolList="leftTopTool.children"
+              :map="view"
+              v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
+            ></leftTopTool>
           <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
             <span id="mapView_close" ref="legend_close" title="收缩" @click="legendClick">▼</span>
@@ -133,10 +136,7 @@
           </div>
           </transition>
           <div></div>
-          <!-- 鼠标位置 -->
-          <!-- <MouseLocation :map-view="view" /> -->
-          <!-- 快捷查询 -->
-          <!-- <SimpleQueryTool :map-view="view" /> -->
+
           <float-panels :panels="FloatPanels" :data="panels" />
           <div id="map-index-floatPanels" ref="floatPanels" />
           <!-- width: side_width,
@@ -166,7 +166,9 @@
               @handelClose="handelClose"
             />
           </el-aside> -->
-          <el-aside :style="{ width: side_width, height: '100%' }">
+          
+        </el-main>
+        <el-aside :style="{ width: side_width, height: '100%' }">
             <side-panels
               :panels="Panels"
               :data="panels"
@@ -174,8 +176,7 @@
               :panel-visible.sync="sidepanel_visible"
               @handelClose="handelClose"
             />
-          </el-aside>
-        </el-main>
+        </el-aside>
       </el-container>
       <el-footer :style="{ height: footer_height, width: '100%', padding: '0px' }">
         <half-panels
@@ -215,9 +216,6 @@ import { appconfig } from 'staticPub/config'
 import { loadCss } from '@/utils/loadResources'
 import request from '@/utils/request'
 import tfDialog from './common/Dialog.vue'
-import OverviewMap from './tongyonggongju/overviewMap/widget.vue'
-import Scalebar from './tongyonggongju/scaleBar/widget.vue'
-import MouseLocation from './tongyonggongju/mouseLocation/widget.vue'
 import WidgetGroup from './tongyonggongju/widgetGroup/widget.vue'
 import MeasureTool from './tongyonggongju/measureTool/widget.vue'
 import QueryTool from './tongyonggongju/queryTool/widget.vue'
@@ -247,6 +245,10 @@ import * as olExtent from 'ol/extent'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import * as olProj from 'ol/proj'
 import { defaults as controls } from 'ol/control'
+import * as turf from '@turf/turf'
+import iQuery from './common/mapUtil/query'
+import { unByKey } from 'ol/Observable'
+import GeoJSON from 'ol/format/GeoJSON';
 
 @Component({
   components: {
@@ -255,9 +257,6 @@ import { defaults as controls } from 'ol/control'
     FloatPanels,
     SidePanels,
     tfDialog,
-    Scalebar,
-    OverviewMap,
-    MouseLocation,
     WidgetGroup,
     MeasureTool,
     QueryTool,
@@ -435,11 +434,50 @@ export default class BaseMap extends Vue {
         this.$store.state.gis.mapExtent = extent
       }, time)
     })
+    // 点击查询管段详情
+    this.view.on('click', evt => {
+      this.spaceQuery(evt.coordinate)
+    })
     this.vectorLayer = new VectorLayer({
       source: new VectorSource(),
       style: comSymbol.getAllStyle(3, 'f00', 5, '#00ffff', 'rgba(255, 255, 255, 0.6)')
     })
     this.view.addLayer(this.vectorLayer)
+  }
+
+  async spaceQuery (position) {
+    const bufferDis = 3e-3
+    let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
+    let dataServerConfig = appconfig.gisResource.iserver_resource.dataService
+    let queryData = await new iQuery().spaceQuery(queryFeature)
+    let showData = []
+    for (let data of queryData as any) {
+      let features = data.result.features.features
+      if (features.length !== 0) {
+        showData.push(features)
+      }
+    }
+    if(showData.length !== 0) {
+      let feature = showData[0][0]
+      this.openPopup(position, feature)
+    }
+  }
+  openPopup (position, feature) {
+    let com = this.$refs.popupWindow as any
+    com.showPopup(position, feature, afterClosePopup, true)
+    let vectorLayer = new VectorLayer({
+      source: new VectorSource(),
+      style: comSymbol.getAllStyle(3, "#f00", 5, "#0ff", "rgba(255, 255, 255, 0.6)")
+    })
+    let ifeature = new GeoJSON().readFeature(feature)
+    if (ifeature) {
+      vectorLayer.getSource().addFeature(ifeature)
+      this.view.addLayer(vectorLayer)
+    }
+    // 重置事件
+    function afterClosePopup () {
+      vectorLayer.getSource().removeFeature(ifeature)
+    }
   }
 
   addLayers(layers) {
