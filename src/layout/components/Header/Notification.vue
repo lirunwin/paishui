@@ -121,7 +121,7 @@ const columns = [
   components: { MoreInfos }
 })
 export default class Notification extends Vue {
-  columns
+  columns = columns
   notifications = []
   filter = {
     flag: '0',

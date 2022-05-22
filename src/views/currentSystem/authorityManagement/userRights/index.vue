@@ -934,7 +934,7 @@ export default class UserRights extends Vue {
   }
   onSubmit() {
     let data = {
-      userLevel: '1', // 默认只展示为0的用户
+      // userLevel: '1', // 默认只展示为0的用户
       realName: this.realName,
       username: this.username,
       departmentId: this.departmentId,
@@ -1130,7 +1130,7 @@ export default class UserRights extends Vue {
       templateServiceType: 'userService'
     }
     const data = {
-      userLevel: '1', // 默认只展示为0的用户
+      // userLevel: '1', // 默认只展示为0的用户
       realName: this.realName,
       username: this.username,
       departmentId: this.departmentId,
@@ -1220,9 +1220,9 @@ export default class UserRights extends Vue {
    */
   getCopyDeptUserList() {
     const data = {
-      userLevel: 1,
+      // userLevel: 1,
       current: 1,
-      size: 10000000
+      size: 30
     }
     this.copyUsers = []
     getUserList(data).then((res) => {

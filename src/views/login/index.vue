@@ -221,7 +221,7 @@ export default class Login extends Vue {
                   return
                 }
                 // 是首次登录 打开弹窗 修改密码
-                if (res.result.firstlog === '1' || !res.result.loginTime) {
+                if (res.result.firstlog === '1' || res.result.firstlog === null || !res.result.loginTime) {
                   this.userId = id
                   this.passwordDialog = true
                   // 清除掉用户id 防止用户没有修改密码刷新进入页面
