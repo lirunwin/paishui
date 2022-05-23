@@ -24,7 +24,7 @@
                         <div class="title">排放口类别：</div>
                     </el-col>
                     <el-col :span="16">
-                        <el-select v-model="portType" placeholder="" size="mini">
+                        <el-select v-model="portType" placeholder="" size="mini" clearable>
                             <el-option
                             v-for="item in portTypeOptions"
                             :key="item.value"
@@ -41,7 +41,7 @@
                         <div class="title">权属单位：</div>
                     </el-col>
                     <el-col :span="16">
-                        <el-select v-model="ownershipUnits" placeholder="" size="mini">
+                        <el-select v-model="ownershipUnits" placeholder="" size="mini" clearable>
                             <el-option
                             v-for="item in ownershipUnitsOptions"
                             :key="item.value"
