@@ -208,7 +208,7 @@ import 'ol/ol.css'
 import Map from 'ol/Map'
 import View from 'ol/View'
 import TileLayer from 'ol/layer/Tile'
-import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
+import { Logo, TileSuperMapRest, SuperMap, LayerInfoService } from '@supermap/iclient-ol'
 import axios from 'axios'
 import Comps from '@/layout/components/loadComps'
 import { HalfPanels, FullPanels, FloatPanels, SidePanels } from '@/layout/components/index'
@@ -337,12 +337,29 @@ export default class BaseMap extends Vue {
   get activeHeaderItem () {
     return this.$store.state.gis.activeHeaderItem
   }
+  @Watch('Panels')
+  PanelsChange(n, o) {
+    if (n.length === 0) {
+      this.$nextTick(() => {
+        this.view.updateSize()
+      })
+    }
+  }
+  @Watch('HalfPanels')
+  HalfPanelsChange(n, o) {
+    if (n.length === 0) {
+      this.$nextTick(() => {
+        this.view.updateSize()
+      })
+    }
+  }
   @Watch('FullPanels')
   FullPanelsChange() {
     this.show = true
   }
   @Watch('loading')
   loadingChange(value) {
+    console.log('跳转', value)
     if (value == false) {
       var str = this.$store.state.jumpText
       if (!str) return
@@ -357,6 +374,7 @@ export default class BaseMap extends Vue {
   @Watch('jumpText')
   jumpTextChange(n, o) {
     if (!n) return
+    console.log('跳转', n)
     n = n.split(',')
     this.$store.dispatch('map/changeMethod', {
       pathId: n[0],
@@ -420,6 +438,7 @@ export default class BaseMap extends Vue {
     })
     this.panels.mapView = this.view = this.$store.state.gis.map = map
     this.addLayers(layerResource)
+    this.$store.state.gis.hasLoadIds = false
 
     this.loading = false
     this.$nextTick(this.controlToolDisplay)
@@ -436,6 +455,7 @@ export default class BaseMap extends Vue {
     })
     // 点击查询管段详情
     this.view.on('click', evt => {
+      if (this.activeHeaderItem !== 'map') return
       this.spaceQuery(evt.coordinate)
     })
     this.vectorLayer = new VectorLayer({
@@ -479,12 +499,12 @@ export default class BaseMap extends Vue {
       vectorLayer.getSource().removeFeature(ifeature)
     }
   }
-
-  addLayers(layers) {
-    layers.forEach((layerConfig) => { 
-      let { name, type, url, parentname, id, visible = true } = layerConfig
-      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-      this.view.addLayer(layer)
+  // 加载图层
+  addLayers(layersSource) {
+    new TF_Layer().createLayers(layersSource).then(layers => {
+      layers.forEach(layer => {
+        layer && this.view.addLayer(layer)
+      })
     })
   }
 

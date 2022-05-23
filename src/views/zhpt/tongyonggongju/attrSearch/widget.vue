@@ -69,82 +69,7 @@ export default {
     }
   },
   computed: { sidePanelOn() { return this.$store.state.map.P_editableTabsValue } },
-  mounted: function() {
-    var legendDiv = this.$refs.legend
-    legendDiv.parentElement.parentElement.style.height = 'calc(100% - 55px)'
-    this.businessMap = appconfig.gisResource.business_map.config[0].url
-    this.featureData = []
-    var mapView = this.mapView = this.$attrs.data.mapView
-    var Graphic = mapView.TF_graphic
-    this.gra = new Graphic({
-      geometry: { type: 'polygon', rings: [[[0, 0]]], spatialReference: mapView.spatialReference },
-      symbol: { type: 'simple-fill', color: [0, 0, 0, 0.1], outline: { color: [45, 116, 231, 1], width: '2px' }}
-    })
-    this.showGeo = new Graphic({
-      geometry: { type: 'point', x: 0, y: 0, spatialReference: mapView.spatialReference },
-      symbol: { type: 'simple-marker', color: [255, 255, 255], size: 8, outline: { color: [51, 133, 255], width: 2 }}
-    })
-    mapView.graphics.addMany([this.gra, this.showGeo])
-    this.rectIdIndex = {}
-    this.rectIds = []
-    this.onClick()
-
-    // 获取图层名
-    var idsdata = []
-    for (let i=0,il=mapView.map.basemap.baseLayers.items,ii=il.length,sublayerids = [];i<ii; i++) {
-      if(il[i].url && il[i].url == this.businessMap) {
-        for(let j=0,jl=il[i].allSublayers.items,jj=jl.length;j<jj;j++){
-          var layer = jl[j]
-          if(!layer.sublayers && layer.title != '图幅框') sublayerids.push(layer.id)
-        }
-        idsdata = sublayerids.sort((a, b) => a - b)
-        break 
-      }
-    }
-    if (idsdata.length == 0) return this.$message.error('图层无数据！')      
-    var url = appconfig.gisResource.layer_name.config[0].url
-    $.ajax({
-      url: url,
-      type: "POST",
-      data: {
-        usertoken: appconfig.usertoken,
-        layerids: JSON.stringify(idsdata),
-        f: "pjson"
-      },
-      dataType: "json",
-      success: (data) => {
-        if (data.code == 10000) {
-          var layersIndex = {}
-          for (let i=0,il=data.result.rows,ii=il.length;i<ii; i++) {
-            var layer = il[i]
-            layersIndex[layer.layerid] = { name: layer.layername, value: layer.layerdbname }
-          }
-          this.layernameIndex = layersIndex
-        }
-      }
-    })
-    $.ajax({
-      url: this.businessMap + "/?f=pjson",
-      type: 'GET',
-      success: (data) => {
-        data = JSON.parse(data).layers
-        if(!data) return this.$message.error('图层字段获取失败')
-        var tId = [] 
-        var tIdIndex = {}
-        for(let i=0,ii=data.length;i<ii;i++){
-          var layer = data[i]
-          if([0, 16, 17].indexOf(layer.id) < 0){
-            tId.push({ id: layer.id, label: layer.name })
-            tIdIndex[layer.name] = layer.id
-          }
-        }
-        this.layersAtt = tId
-        this.layersAttIndex = tIdIndex
-      },
-      error: (error) => this.$message.error(error)
-    })
-    this.listRefersh()
-  },
+  mounted: function() {},
   watch:{
     layerName() {
       var id = this.layersAttIndex[this.layerName]
@@ -399,12 +324,6 @@ export default {
     }
   },
   destroyed: function() {
-    var mapView = this.mapView
-    mapView.graphics.removeMany([this.gra, this.showGeo])
-    mapView.container.style.cursor = ''
-    var draw = mapView.TF_draw
-    if (draw.activeAction) draw.reset()
-    if (this.click) this.click.remove()
   }
 }
 </script>
