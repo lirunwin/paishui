@@ -23,23 +23,25 @@
                 <el-row style="display: flex; justify-content: center; align-items: center">
                   <el-col :span="11">
                     <el-date-picker
-                      v-model="searchValue.testTime.startDate"
+                      v-model="searchValue.startDate"
                       type="date"
                       placeholder="选择开始日期"
                       value-format="yyyy-MM-dd"
                       size="small"
                       :picker-options="pickerOptions0"
+                      @change="changeDate"
                     ></el-date-picker>
                   </el-col>
                   <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
                   <el-col :span="12">
                     <el-date-picker
-                      v-model="searchValue.testTime.finishDate"
+                      v-model="searchValue.finishDate"
                       type="date"
                       placeholder="选择结束日期"
                       value-format="yyyy-MM-dd"
                       size="small"
                       :picker-options="pickerOptions1"
+                      @change="changeDate"
                     ></el-date-picker>
                   </el-col>
                 </el-row>
@@ -47,9 +49,14 @@
             </div>
             <div class="serch-engineering">
               <div class="title">整改建议：</div>
-              <el-select v-model="form.name" placeholder="--整改建议--">
-                <el-option label="立即处理" value="shanghai"></el-option>
-                <el-option label="尽量处理" value="beijing"></el-option>
+              <el-select size="small" v-model="searchValue.fixSuggest" placeholder="选择建议">
+                <el-option
+                  v-for="item in fixSuggestList"
+                  :key="item.codeValue"
+                  :label="item.codeValue"
+                  :value="item.codeValue"
+                >
+                </el-option>
               </el-select>
             </div>
             <div class="operation-box">
@@ -73,7 +80,7 @@
               <el-checkbox v-model="pipLen">管道长度</el-checkbox>
             </div>
             <h2 style="text-align: center">管道评估统计图</h2>
-            <div id="mainB" style="height: 250px"></div>
+            <div id="mainPDAS" style="height: 250px"></div>
             <!-- 表格 -->
             <div class="detailsTitle">管道缺陷数量统计表</div>
             <summary-form :tabelData="returnTabel"></summary-form>
@@ -93,6 +100,8 @@ require('echarts/lib/chart/pie')
 require('echarts/lib/component/tooltip')
 require('echarts/lib/component/title')
 
+import { queryDictionariesId } from '@/api/pipelineManage'
+
 // 引入发布的组件
 import summaryForm from '@/views/zhpt/pipelineManage/components/summaryForm.vue'
 import simpleMap from '@/components/SimpleMap'
@@ -103,6 +112,7 @@ export default {
   components: { simpleMap, summaryForm },
   data() {
     return {
+      fixSuggestList: [],
       pipNum: true,
       pipLen: false,
       pipNumShow: 1,
@@ -112,7 +122,6 @@ export default {
       numArr: [], // 管道数量
       lengthArr: [], // 管道长度
       radio: '2', // 单选框的值
-      zero: '',
       form: {
         name: '',
         number: '',
@@ -125,16 +134,38 @@ export default {
         projectIntroduction: ''
       },
       searchValue: {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        } // 检测日期
+        startDate: '',
+        finishDate: '',
+        fixSuggest: ''
+        // 检测日期
       }, // 搜索关键字的值
       // 日期选择器规则
       pickerOptions0: '',
-      pickerOptions1: ''
+      pickerOptions1: '',
+      defectQuantityStatisticsA: [
+        { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(BX)变形', type: 'BX', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CK)错口', type: 'CK', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CR)异物穿入', type: 'CR', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(FS)腐蚀', type: 'FS', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(PL)破裂', type: 'PL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(QF)起伏', type: 'QF', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(SL)渗透', type: 'SL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(TJ)脱节', type: 'TJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(TL)接口材料脱落', type: 'TL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
+      ], // 管道缺陷数量统计表
+      defectQuantityStatisticsB: [
+        { title: '(CJ)沉积', type: 'CJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CQ)残墙、坝根', type: 'CQ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(FZ)浮渣', type: 'FZ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(JG)结垢', type: 'JG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(SG)树根', type: 'SG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(ZW)障碍物', type: 'ZW', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
+      ],
+      defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 } // 合计
     }
   },
+
   mounted() {
     this.$nextTick(() => {
       // this.initData()
@@ -149,14 +180,25 @@ export default {
   },
   beforeCreate() {
     console.log('销毁echatrs')
-    // document.getElementById('mainB').removeAttribute('_echarts_instance_')
+    // document.getElementById('mainPDAS').removeAttribute('_echarts_instance_')
+  },
+  created() {
+    this.getParamsId()
   },
   methods: {
+    // 获取字典
+    async getParamsId() {
+      // 获取字典
+      // check_suggest
+      let checkSuggest = await queryDictionariesId({ keys: 'check_suggest' })
+      this.fixSuggestList = checkSuggest.result.check_suggest
+      console.log('checkSuggest', checkSuggest.result.check_suggest)
+    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
-      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
+      let date1 = new Date(this.searchValue.startDate).getTime()
+      let date2 = new Date(this.searchValue.finishDate).getTime()
       this.pickerOptions0 = {
         disabledDate: (time) => {
           if (date2 != '') {
@@ -176,46 +218,80 @@ export default {
     },
     // 处理地图给的数据
     getMapData(res) {
-      let arr = res
-      arr.forEach((v, i) => {
-        v.type = arrK[i]
-        v.len = v.len.toFixed(2)
-      })
-      // console.log('res', arrV)
-      this.tableData = arrV
-      // // 建议类型数组
-      // this.typeArr = this.tableData.map((v) => {
-      //   return v.type
-      // })
-      // // 管道长度统计
-      // this.lengthArr = this.tableData.map((v) => {
-      //   return {
-      //     value: v.len,
-      //     name: v.type
-      //   }
-      // })
-      // // 管道数量统计
-      // this.numArr = this.tableData.map((v) => {
-      //   return {
-      //     value: v.num,
-      //     name: v.type
-      //   }
-      // })
+      let arr = res.defectData
+      console.log('arr', arr)
+      // 按缺陷名称给数据分类
+      // 缺陷数量统计
+      if (arr) {
+        arr.forEach((resValue) => {
+          this.defectQuantityStatisticsA.forEach((sumValue) => {
+            // console.log("类型是否相等",typeof resValue.defectCode,sumValue.type);
+            if (resValue.defectCode == sumValue.type) {
+              if (resValue.defectLevel == '一级') {
+                sumValue.oneValue = resValue.defectNum * 1
+                return
+              } else if (resValue.defectLevel == '二级') {
+                sumValue.twoValue = resValue.defectNum * 1
+                return
+              } else if (resValue.defectLevel == '三级') {
+                sumValue.threeValue = resValue.defectNum * 1
+                return
+              } else if (resValue.defectLevel == '四级') {
+                sumValue.fourValue = resValue.defectNum * 1
+                return
+              }
+              console.log('defectQuantityStatisticsA', this.defectQuantityStatisticsA)
+            }
+          })
+
+          this.defectQuantityStatisticsB.forEach((sumValue) => {
+            if (resValue.defectCode == sumValue.type) {
+              if (resValue.defectLevel == '一级') {
+                sumValue.oneValue = resValue.defectNum
+                return
+              } else if (resValue.defectLevel == '二级') {
+                sumValue.twoValue = resValue.defectNum
+                return
+              } else if (resValue.defectLevel == '三级') {
+                sumValue.threeValue = resValue.defectNum
+                return
+              } else if (resValue.defectLevel == '四级') {
+                sumValue.fourValue = resValue.defectNum
+                return
+              }
+            }
+          })
+        })
+
+        this.defectQuantityStatisticsA.forEach((v) => {
+          v.value = v.oneValue + v.twoValue + v.threeValue + v.fourValue
+          this.defectSumObj.oneSum += v.oneValue
+          this.defectSumObj.twoSum += v.twoValue
+          this.defectSumObj.threeSum += v.threeValue
+          this.defectSumObj.fourSum += v.fourValue
+          this.defectSumObj.total += v.value
+        })
+        this.defectQuantityStatisticsB.forEach((v) => {
+          v.value = v.oneValue + v.twoValue + v.threeValue + v.fourValue
+          this.defectSumObj.oneSum += v.oneValue
+          this.defectSumObj.twoSum += v.twoValue
+          this.defectSumObj.threeSum += v.threeValue
+          this.defectSumObj.fourSum += v.fourValue
+          this.defectSumObj.total += v.value
+        })
+      }
+      // console.log('returnTabel', this.returnTabel)
       this.$nextTick(() => {
         this.initData()
       })
     },
     // 绘制
     drawFeature() {
-      let type = 'polygon'
-      this.$refs.myMap.draw({
-        type,
-        callback: (fea) => {
-          this.getDataFromExtent({}, fea).then((res) => {
-            console.log('绘制,过滤后', res)
-            this.getMapData(res)
-          })
-        }
+      this.$refs.myMap.draw((fea) => {
+        this.getDataFromExtent({}, fea).then((res) => {
+          console.log('绘制,过滤后', res)
+          this.getMapData(res)
+        })
       })
     },
     mapMoveEvent(extent) {
@@ -224,13 +300,12 @@ export default {
         this.getMapData(res)
       })
     },
-    
     async getDataFromExtent(params, extent) {
       let data = await this.getPipeData(params)
       if (data.code === 1) {
         // 地图范围过滤数据
         return this.$refs.myMap.getDefectDataInMap(data.result, extent)
-      } else this.$message.error('请求数据出错') 
+      } else this.$message.error('请求数据出错')
     },
     // 根据条件获取缺陷数据
     getPipeData(filter = {}) {
@@ -246,11 +321,10 @@ export default {
       }
       return getDefectDataBySE(params)
     },
-
     //初始化数据(饼状图)
     initData() {
       // 基于准备好的dom，初始化echarts实例
-      let myChart = echarts.init(document.getElementById('mainB'))
+      let myChart = echarts.init(document.getElementById('mainPDAS'))
       // 绘制图表
       if (this.radio == '1') {
         myChart.setOption(
@@ -338,6 +412,14 @@ export default {
     }
   },
   computed: {
+    returnTabel() {
+      let obj = {
+        defectQuantityStatisticsA: this.defectQuantityStatisticsA,
+        defectQuantityStatisticsB: this.defectQuantityStatisticsB,
+        defectSumObj: this.defectSumObj
+      }
+      return obj
+    },
     // setOptionShowNum() {
     //   return this.pipNum ? 1 : 0
     // },
@@ -349,6 +431,19 @@ export default {
     }
   },
   watch: {
+    mapExtent: {
+      handler(nv, ov) {
+        console.log('视图改变')
+        if (this.data.mapView.getView().getZoom() > 16) {
+          this.data.that.queryForExtent(nv)
+        } else {
+          // 在地图界别较小时，移除管网
+          this.data.that.clearMap()
+        }
+      },
+      deep: true,
+      immediate: true
+    },
     radio: function (newValue, old) {
       if (old != newValue) {
         this.initData()
@@ -365,8 +460,8 @@ export default {
       this.initData()
     },
 
-    'searchValue.testTime.startDate': function (n) {
-      this.searchValue.testTime.finishDate = n
+    'searchValue.startDate': function (n) {
+      this.searchValue.finishDate = n
     }
   }
 }
@@ -473,6 +568,16 @@ export default {
           // overflow-y: scroll;
           padding: 10px;
           box-sizing: border-box;
+          .detailsTitle {
+            color: #666;
+            font-size: 16px;
+            font-weight: bold;
+            height: 38px;
+            text-align: center;
+            line-height: 38px;
+            border: 2px solid #666;
+            background: #f3f7fe;
+          }
           /deep/ .el-table {
             flex: 1;
             // overflow-y: scroll;

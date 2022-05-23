@@ -386,7 +386,6 @@ export default class Header extends Vue {
   handleSys(event) {
     if (event === 'sysSetting') event = this.$store.state.routeSetting.menus.find((item) => item.name === 'sysSetting')
     this.defaultActiveIndex = event.name
-    console.log('导航栏变化')
     if (event.path !== undefined && event.path !== '') this.$router.push({ path: event.path })
     else if (['map', ...gisNames].indexOf(event.name) > -1) this.$router.push('/map')
 

@@ -230,14 +230,14 @@
                       DetailsForm.wordInfoName
                     }}</el-link> -->
                     <!-- 附件列表 -->
-                    <div style="max-height: 120px; overflow-y: scroll">
+                    <div v-if="fileListData.length" style="max-height: 120px; overflow-y: scroll">
                       <div v-for="(item, i) in fileListData" :key="i" class="text-space">
                         <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{
                           item.wordInfoName + 'docx'
                         }}</el-link>
                       </div>
-                      <p v-if="!fileListData.length" style="text-align: center">暂无报告</p>
                     </div>
+                      <p v-if="!fileListData.length" style="text-align: center">暂无报告</p>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -638,7 +638,7 @@ export default {
       }
     }
     .content {
-      /deep/ .content-info {
+      .content-info {
         overflow-y: scroll;
         height: 600px;
         padding: 10px 30px;
@@ -664,7 +664,7 @@ export default {
             border: 1px solid #dedede;
           }
         }
-        /deep/ .el-form {
+         .el-form {
           .el-link--inner {
             max-width: 416px;
             /* 1.先强制一行内显示文本 */

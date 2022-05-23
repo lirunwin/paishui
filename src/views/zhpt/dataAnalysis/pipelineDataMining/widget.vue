@@ -24,21 +24,21 @@
         <div class="echarts-list">
           <div class="threeTop">
             <div class="threeTop-item">
-              <echarts-one :paramData="'1'"></echarts-one>
+              <echarts-one v-if="redayY" :paramData="defectLevel"></echarts-one>
             </div>
             <div class="threeTop-item">
-              <echarts-two :paramData="'1'"></echarts-two>
+              <echarts-two v-if="redayY" :paramData="defectTypeObj"></echarts-two>
             </div>
             <div class="threeTop-item">
-              <echarts-three :paramData="'1'"></echarts-three>
+              <echarts-three v-if="redayY" :paramData="defectLevel"></echarts-three>
             </div>
           </div>
           <div class="threeBottom">
             <div class="threeBottom-one">
-              <echarts-four :paramData="'1'"></echarts-four>
+              <echarts-four v-if="redayY" :paramData="defectLevel"></echarts-four>
             </div>
             <div class="threeBottom-two">
-              <echarts-five :paramData="'1'"></echarts-five>
+              <echarts-five v-if="redayY" :paramData="defectLevel"></echarts-five>
             </div>
           </div>
         </div>
@@ -61,7 +61,13 @@ export default {
   components: { simpleMap, echartsOne, echartsTwo, echartsThree, echartsFour, echartsFive },
   data() {
     return {
-      linkage: false // 是否联动
+      redayY: false, // 数据是否已加载完毕
+      linkage: true, // 是否联动
+      defectTypeObj: {
+        funcArr: [],
+        structArr: []
+      }, // 缺陷类型统计图
+      defectLevel: [] // 其它统计图
     }
   },
   mounted() {
@@ -76,16 +82,54 @@ export default {
     // document.getElementById('mainB').removeAttribute('_echarts_instance_')
   },
   methods: {
+    // 处理地图数据
+    getData(res) {
+      let pipArr = res.pipeData // 管道列表
+      let defectArr = res.defectData // 缺陷列表
+
+      // 缺陷等级统计图
+      // 缺陷数量统计图
+      // 处理方式统计图
+      this.defectLevel = defectArr
+      this.redayY = true
+      console.log('this.defectLevel', this.defectLevel)
+
+      // 管道检测情况统计图
+
+      // 缺陷类型统计图
+      defectArr.forEach((v) => {
+        console.log('结构性缺陷循环', v.defectType)
+        // 结构性 列表
+        if (v.defectType == '结构性缺陷') {
+          this.defectTypeObj.funcArr.push(v)
+        }
+        // 功能性性 列表
+        if (v.defectType == '功能性缺陷') {
+          this.defectTypeObj.structArr.push(v)
+          console.log('功能性缺陷', v)
+        }
+      })
+
+      console.log('this.defectTypeObj', this.defectTypeObj)
+    },
     // 绘制
     drawFeature() {
       this.$refs.myMap.draw((fea) => {
         this.getDataFromExtent({}, fea).then((res) => {
+          // 联动时数据变化
+          if (this.linkage) {
+            this.getData(res)
+          }
           console.log('绘制,过滤后', res)
         })
       })
     },
     mapMoveEvent(extent) {
       this.getDataFromExtent({}, extent).then((res) => {
+        // 联动时数据变化
+        if (this.linkage) {
+          this.getData(res)
+        }
         console.log('地图变化,过滤后', res)
       })
     },

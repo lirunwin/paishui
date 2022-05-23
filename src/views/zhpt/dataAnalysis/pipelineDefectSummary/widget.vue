@@ -5,20 +5,29 @@
       <div class="top-tool">
         <div class="serch-engineering">
           <div class="title">起始井号：</div>
-          <el-select v-model="searchValue.queryParams" filterable placeholder="--选择井号--">
-            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-          </el-select>
+          <el-input
+            size="small"
+            placeholder="请输入起始井号"
+            v-model="searchValue.startPoint"
+            clearable
+            style="margin-right: 10px"
+          >
+          </el-input>
           <div class="title">终止井号：</div>
-          <el-select size="small" v-model="searchValue.queryParams" placeholder="--选择井号--">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
-          </el-select>
+          <el-input
+            size="small"
+            placeholder="请输入终止井号"
+            v-model="searchValue.endPoint"
+            clearable
+            style="margin-right: 10px"
+          >
+          </el-input>
           <div class="title">检测日期：</div>
           <div class="sampleTime">
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
                 <el-date-picker
-                  v-model="searchValue.testTime.startDate"
+                  v-model="searchValue.startDate"
                   type="date"
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
@@ -30,7 +39,7 @@
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
-                  v-model="searchValue.testTime.finishDate"
+                  v-model="searchValue.finishDate"
                   type="date"
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
@@ -42,23 +51,19 @@
             </el-row>
           </div>
           <div class="title">整改建议：</div>
-          <el-select size="small" v-model="searchValue.queryParams" placeholder="--选择建议--">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select size="small" v-model="searchValue.fixSuggest" placeholder="选择建议">
+            <el-option
+              v-for="item in fixSuggestList"
+              :key="item.codeValue"
+              :label="item.codeValue"
+              :value="item.codeValue"
+            >
+            </el-option>
           </el-select>
           <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
           <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">导出</el-button>
         </div>
-        <div class="right-btn">
-          <!-- <el-button
-            size="small"
-            :disabled="multipleSelection.length != 1"
-            icon="el-icon-edit"
-            type="primary"
-            @click="updataInfo"
-            >修改</el-button
-          > -->
-        </div>
+        <div class="right-btn"></div>
       </div>
 
       <el-table
@@ -112,7 +117,7 @@
 </template>
 
 <script>
-import { queryPageAssessment } from '@/api/pipelineManage'
+import { queryPageDefectInfo,queryDictionariesId } from '@/api/pipelineManage'
 
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
@@ -121,45 +126,31 @@ export default {
   components: {},
   data() {
     return {
-      options: [
-        {
-          value: '选项1',
-          label: '黄金糕'
-        },
-        {
-          value: '选项2',
-          label: '双皮奶'
-        }
-      ],
+      fixSuggestList:[],
       searchValue: {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        },
+        startDate: '',
+        finishDate: '',
         startPoint: '',
         endPoint: '',
-        structClass: ''
+        fixSuggest: ''
       },
       // 表格参数
       tableContent: [
         { width: '120', sortable: true, label: '检测日期', name: 'jcDate' },
         { width: '110', sortable: false, label: '起始井号', name: 'startPoint' },
         { width: '110', sortable: false, label: '终止井号', name: 'endPoint' },
-        { width: '130', sortable: true, label: '起点埋深(m)', name: 'startDepth' },
-        { width: '130', sortable: true, label: '终点埋深(m)', name: 'endDepth' },
-        { width: '110', sortable: false, label: '管段类型', name: 'pipeType' },
-        { width: '110', sortable: false, label: '管段材质', name: 'material' },
-        { width: '110', sortable: true, label: '管段直径', name: 'diameter' },
+        { width: '110', sortable: true, label: '管径(mm)', name: 'diameter' },
         { width: '110', sortable: true, label: '管段长度', name: 'pipeLength' },
         { width: '110', sortable: true, label: '检测长度', name: 'jclength' },
-        { width: '', sortable: false, label: '整改建议', name: 'proIntroduction' },
-        { width: '110', sortable: false, label: '检测方向', name: 'detectDir' },
-        { width: '110', sortable: false, label: '检测人员', name: 'detectPerson' }
+        { width: '130', sortable: false, label: '缺陷名称', name: 'defectName' },
+        { width: '130', sortable: true, label: '缺陷等级', name: 'defectLevel' },
+        { width: '', sortable: false, label: '整改建议', name: 'checkSuggest' },
+        { width: '160', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
+        { width: '160', sortable: false, label: '功能性缺陷评价', name: 'funcEstimate' }
       ],
       uploadHeaders: {
         Authorization: 'bearer ' + sessionStorage.getItem('token')
       }, // token值
-
       // ----------
       pagination: { current: 1, size: 30 }, // 分页参数信息
       paginationTotal: 0, // 总页数
@@ -172,13 +163,22 @@ export default {
   computed: {},
   created() {
     this.getDate()
+    this.getParamsId()
   },
   methods: {
+    // 获取字典
+    async getParamsId() {
+      // 获取字典
+      // check_suggest
+      let checkSuggest = await queryDictionariesId({ keys: 'check_suggest' })
+      this.fixSuggestList = checkSuggest.result.check_suggest
+      console.log('checkSuggest', checkSuggest.result.check_suggest)
+    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
-      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
+      let date1 = new Date(this.searchValue.startDate).getTime()
+      let date2 = new Date(this.searchValue.finishDate).getTime()
       this.pickerOptions0 = {
         disabledDate: (time) => {
           if (date2 != '') {
@@ -214,12 +214,19 @@ export default {
     },
     // 查询数据
     async getDate(params) {
-      let data = this.pagination
-      if (params) {
-        // data.prjName = params.prjName
-        data.prjNo = params.prjNo
+      let data = {
+        current: this.pagination.current,
+        size: this.pagination.size
       }
-      await queryPageAssessment(data).then((res) => {
+
+      if (params) {
+        data.startPoint = this.searchValue.startPoint
+        data.endPoint = this.searchValue.endPoint
+        data.jcStartDate = this.searchValue.startDate
+        data.jcEndDate = this.searchValue.finishDate
+        data.fixSuggest = this.searchValue.fixSuggest
+      }
+      await queryPageDefectInfo(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
         this.paginationTotal = res.result.total
@@ -233,8 +240,8 @@ export default {
     })
   },
   watch: {
-    'searchValue.testTime.startDate': function (n) {
-      this.searchValue.testTime.finishDate = n
+    'searchValue.startDate': function (n) {
+      this.searchValue.finishDate = n
     }
   }
 }
@@ -273,6 +280,7 @@ export default {
         }
         .sampleTime {
           width: 308px !important;
+          margin-right: 10px;
           .el-input {
             width: 140px;
           }

@@ -26,7 +26,7 @@ export default {
   methods: {
     //初始化数据(饼状图)
     initData() {
-      console.log('渲染管道检测情况统计图')
+      // console.log('渲染管道检测情况统计图')
       let chartDom = document.getElementById('echartsOne')
       let myChart = echarts.init(chartDom)
       let option
@@ -41,12 +41,12 @@ export default {
         },
         series: [
           {
-            name: 'Access From',
+            name: '检测情况',
             type: 'pie',
             radius: '50%',
             data: [
-              { value: 1048, name: 'Search Engine' },
-              { value: 735, name: 'Direct' }
+              { value: 18, name: '未检测' },
+              { value: 20, name: '已检测' }
             ],
             emphasis: {
               itemStyle: {

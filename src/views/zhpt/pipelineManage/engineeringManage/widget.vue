@@ -214,12 +214,12 @@
               </div>
             </el-upload>
             <!-- 附件列表 -->
-            <div v-show="isDetails" style="max-height: 120px; overflow-y: scroll">
+            <div v-show="isDetails" v-if="fileListData.length" style="max-height: 120px; overflow-y: scroll">
               <div v-for="(item, i) in fileListData" :key="i" class="text-space">
                 <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{ item.originalName }}</el-link>
               </div>
-              <p v-if="!fileListData.length" style="text-align: center">暂无附件</p>
             </div>
+            <p v-if="!fileListData.length" style="text-align: center">暂无附件</p>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -303,7 +303,7 @@ export default {
           { maxLength: '50', label: '监理单位', name: 'ctunit' }
         ],
         [
-          { maxLength: '255', label: '施工单位', name: 'sgunit' },
+          { maxLength: '50', label: '施工单位', name: 'sgunit' },
           { maxLength: '30', label: '施工负责人', name: 'constructionCharge' }
         ],
         [
@@ -432,22 +432,21 @@ export default {
         this.rules[v] = [{ required: true, message: '不能为空', trigger: 'blur' }]
       })
       // 只能输入整数
-      // let rulesArrNumber = ['plnumber', 'jpoints', 'epoints', 'hpoints']
-      // rulesArrNumber.forEach((v) => {
-      //   this.rules[v] = [
-      //     { required: true, message: '不能为空', trigger: 'blur' },
-      //     {
-      //       pattern: /^[0-9]+$/,
-      //       message: '只能输入整数',
-      //       trigger: 'blur'
-      //     }
-      //   ]
-      // })
+      let rulesArrNumber = ['plnumber', 'jpoints', 'epoints', 'hpoints']
+      rulesArrNumber.forEach((v) => {
+        this.rules[v] = [
+          {
+            pattern: /^[0-9]+$/,
+            message: '只能输入整数',
+            trigger: 'blur'
+          }
+        ]
+      })
       // 没有验证
-      // let wu = ['jsunit', 'sjunit', 'sgunit', 'proIntroduction']
-      // wu.forEach((v) => {
-      //   this.rules[v] = []
-      // })
+      let wu = ['jsunit', 'sjunit', 'sgunit', 'proIntroduction']
+      wu.forEach((v) => {
+        this.rules[v] = []
+      })
     },
     // 获取字典id
     async getParamsId() {
