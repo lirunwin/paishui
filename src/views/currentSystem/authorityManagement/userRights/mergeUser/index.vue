@@ -18,9 +18,19 @@
           <el-input v-model="ruleForm.email" size="small" placeholder="请输入邮箱" />
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="部门" prop="departmentId">
-          <el-select v-model="ruleForm.departmentId" size="small" placeholder="请选择部门">
+          <!-- <el-select v-model="ruleForm.departmentId" size="small" placeholder="请选择部门">
             <el-option v-for="item in company" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
+          </el-select> -->
+          <el-cascader
+            popper-class="cascader"
+            v-model="ruleForm.departmentId"
+            :options="company"
+            :props="{ expandTrigger: 'hover', label: 'name', value: 'id', checkStrictly: true }"
+            size="small"
+            style="width:100%"
+            filterable
+            clearable
+          />
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="角色复制">
           <el-select
@@ -106,7 +116,7 @@ export default class MergeUser extends Vue {
     realName: '',
     phone: '',
     email: '',
-    departmentId: '',
+    departmentId: [],
     roles: [],
     job: '',
     note: '',
@@ -198,18 +208,21 @@ export default class MergeUser extends Vue {
     // data.append('file', this.ruleForm.file)// 图片
     // 传其他参数
     for (const key in this.ruleForm) {
-      // if(this.ruleForm[key]) {
-      if (key === 'password') {
+      if (key === 'departmentId') {
+        data.append(key, Array.isArray(this.ruleForm[key]) ? [...this.ruleForm[key]].pop() : this.ruleForm[key])
+      } else if (key === 'password') {
         data.append(key, sha1Hex(this.ruleForm[key]))
       } else if (key === 'roles') {
         data.append(key, this.ruleForm[key].toString())
-      } else if (key === 'phone' || key === 'email' || key === 'job' || key === 'note') {
-        let tempVal = this.ruleForm[key] + ''
-        if (this.strIsNull(tempVal)) {
-          tempVal = 'null'
-        }
-        data.append(key, tempVal)
-      } else {
+      }
+      // else if (key === 'phone' || key === 'email' || key === 'job' || key === 'note') {
+      //   let tempVal = this.ruleForm[key] + ''
+      //   if (this.strIsNull(tempVal)) {
+      //     tempVal = 'null'
+      //   }
+      //   data.append(key, tempVal)
+      // }
+      else {
         data.append(key, this.ruleForm[key])
       }
       // }
@@ -291,7 +304,7 @@ export default class MergeUser extends Vue {
     const data = {}
     for (const key in par) {
       if (key === 'departmentId') {
-        data[key] = role[key] + ''
+        data[key] = typeof role[key] === 'string' ? [role[key]] : Array.isArray(role[key]) ? role[key] : role[key]
       } else if (key === 'roles') {
         data[key] = role.roleIdList && role.roleIdList != null && role.roleIdList.split(',')
       } else {
