@@ -166,7 +166,10 @@
                     <!-- 内容 -->
                     <div style="margin-top: 20px; height: 200px">
                       <div class="info-box">
-                        <div class="info-text">
+                        <div
+                          class="info-text"
+                          style="width: 48%; display: flex; justify-content: center; align-items: center"
+                        >
                           <el-form label-position="right" label-width="70px" :model="currentForm" size="mini">
                             <el-form-item label="工程名称">
                               <el-input v-model="tableForm.prjName" disabled></el-input>
@@ -195,7 +198,7 @@
                         </div>
                         <div class="info-video">
                           <el-tabs v-model="activeName">
-                            <el-tab-pane label="照片" name="first">
+                            <el-tab-pane :label="'照片（'+urlArr.length+'）'" name="first">
                               <div class="image-list">
                                 <el-image
                                   style="width: 100%; height: 80%; margin-top: 6px; -webkit-user-drag: none"
@@ -511,12 +514,18 @@ export default {
         if (res.code === 1) {
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result]
-            let pipeData = reportInfo.map(item => item.pipeStates).flat()
+            let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
             this.vectorLayer.getSource().clear()
             this.lightLayer.getSource().clear()
-            if (strucDefectFeatures.length !== 0 || funcDefectFeatures.length !== 0 || pipeDefectFeatures.length !== 0) {
-              this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+            if (
+              strucDefectFeatures.length !== 0 ||
+              funcDefectFeatures.length !== 0 ||
+              pipeDefectFeatures.length !== 0
+            ) {
+              this.vectorLayer
+                .getSource()
+                .addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
             }
           }
         } else this.$message.error('管线缺陷数据请求失败')
@@ -527,92 +536,104 @@ export default {
      * @param featureArr 数组
      * */
     getFeatures(featureArr) {
-      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
-        featureArr.forEach((feaObj) => {
-          let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
-          if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
-            let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
-            let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
-            startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
-            endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
-            let lineCoors = [startPoint, endPoint]
-            let feature = new Feature({ geometry: new LineString(lineCoors) })
+      let style = null,
+        features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      featureArr.forEach((feaObj) => {
+        let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
+        if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
+          let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
+          let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+          startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
+          endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
+          let lineCoors = [startPoint, endPoint]
+          let feature = new Feature({ geometry: new LineString(lineCoors) })
 
-            // 健康等级颜色
-            let colors = [
-              { level: 'Ⅰ', color: 'green' },
-              { level: 'Ⅱ', color: 'blue' },
-              { level: 'Ⅲ', color: 'pink' },
-              { level: 'Ⅳ', color: 'red' },
-              { level: '/', color: '#070358' }
-            ]
-            let findFuncColor = colors.find(colorObj => feaObj['funcClass'] && feaObj['funcClass'].includes(colorObj.level))
-            let findStrucColor = colors.find(colorObj => feaObj['structClass'] && feaObj['structClass'].includes(colorObj.level))
+          // 健康等级颜色
+          let colors = [
+            { level: 'Ⅰ', color: 'green' },
+            { level: 'Ⅱ', color: 'blue' },
+            { level: 'Ⅲ', color: 'pink' },
+            { level: 'Ⅳ', color: 'red' },
+            { level: '/', color: '#070358' }
+          ]
+          let findFuncColor = colors.find(
+            (colorObj) => feaObj['funcClass'] && feaObj['funcClass'].includes(colorObj.level)
+          )
+          let findStrucColor = colors.find(
+            (colorObj) => feaObj['structClass'] && feaObj['structClass'].includes(colorObj.level)
+          )
 
-            // 功能性缺陷
-            if (findFuncColor) {
-              let fFea = feature.clone()
-              fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
-              for (let i in  feaObj) {
-                i !== "geometry" && fFea.set(i, feaObj[i])
-              }
-              features.funcDefectFeatures.push(fFea)
+          // 功能性缺陷
+          if (findFuncColor) {
+            let fFea = feature.clone()
+            fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
+            for (let i in feaObj) {
+              i !== 'geometry' && fFea.set(i, feaObj[i])
             }
-            // 结构性缺陷
-            if (findStrucColor) {
-              let sFea = feature.clone()
-              sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
-              for (let i in  feaObj) {
-                i !== "geometry" && sFea.set(i, feaObj[i])
-              }
-              features.strucDefectFeatures.push(sFea)
-            }
-            // 管道缺陷等级数据
-            feaObj.pipeDefects.forEach((feaObj, index) => {
-              if (feaObj.geometry) {
-                let coors = JSON.parse(feaObj.geometry)
-                let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
-                let feature = new Feature({ geometry: new Point(point) })
-                let imgs = [
-                  { level: '一级', img: defectImg1, index: 0 },
-                  { level: '二级', img: defectImg2, index: 1 },
-                  { level: '三级', img: defectImg3, index: 2 },
-                  { level: '四级', img: defectImg4, index: 3 },
-                  { level: '/', img: defectImg0, index: 4 }
-                ]
-                let findimg = null
-
-                if (feaObj.defectLevel) {
-                  findimg = imgs.find(colorObj => feaObj['defectLevel'].includes(colorObj.level))
-                }
-                // 缺少 defectLevel 字段
-                if (findimg) {
-                  let rotation = getIconRat(lineCoors)
-                  feature.setStyle(new Style({ image: new Icon({ size: [48, 48], anchor: [0.5, 0], src: findimg.img, scale: 0.4, rotation }) }))
-                  for (let i in  feaObj) {
-                    i !== "geometry" && feature.set(i, feaObj[i])
-                  }
-                  features.pipeDefectFeatures.push(feature)
-                }
-              }
-            })
-          } else {
-            // console.log('没有geometry')
+            features.funcDefectFeatures.push(fFea)
           }
-        })
+          // 结构性缺陷
+          if (findStrucColor) {
+            let sFea = feature.clone()
+            sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
+            for (let i in feaObj) {
+              i !== 'geometry' && sFea.set(i, feaObj[i])
+            }
+            features.strucDefectFeatures.push(sFea)
+          }
+          // 管道缺陷等级数据
+          feaObj.pipeDefects.forEach((feaObj, index) => {
+            if (feaObj.geometry) {
+              let coors = JSON.parse(feaObj.geometry)
+              let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
+              let feature = new Feature({ geometry: new Point(point) })
+              let imgs = [
+                { level: '一级', img: defectImg1, index: 0 },
+                { level: '二级', img: defectImg2, index: 1 },
+                { level: '三级', img: defectImg3, index: 2 },
+                { level: '四级', img: defectImg4, index: 3 },
+                { level: '/', img: defectImg0, index: 4 }
+              ]
+              let findimg = null
+
+              if (feaObj.defectLevel) {
+                findimg = imgs.find((colorObj) => feaObj['defectLevel'].includes(colorObj.level))
+              }
+              // 缺少 defectLevel 字段
+              if (findimg) {
+                let rotation = getIconRat(lineCoors)
+                feature.setStyle(
+                  new Style({
+                    image: new Icon({ size: [48, 48], anchor: [0.5, 0], src: findimg.img, scale: 0.4, rotation })
+                  })
+                )
+                for (let i in feaObj) {
+                  i !== 'geometry' && feature.set(i, feaObj[i])
+                }
+                features.pipeDefectFeatures.push(feature)
+              }
+            }
+          })
+        } else {
+          // console.log('没有geometry')
+        }
+      })
       return features
 
-      function getIconRat ([startPoint, endPoint]) {
+      function getIconRat([startPoint, endPoint]) {
         let rotation = 0
         // 因为要垂直管线显示，所以图片旋转 90°
         let imgRt = Math.PI / 2
 
         // 计算旋转弧度
-        if (endPoint[0] === startPoint[0]) { // 竖直
+        if (endPoint[0] === startPoint[0]) {
+          // 竖直
           rotation = endPoint[1] > startPoint[1] ? -imgRt : Math.PI - imgRt
-        } else if (endPoint[1] === startPoint[1]) { // 水平
-          rotation = endPoint[1] > startPoint[1] ? Math.PI / 2 - imgRt : Math.PI * 3 / 2 - imgRt
-        } else { // 其他角度
+        } else if (endPoint[1] === startPoint[1]) {
+          // 水平
+          rotation = endPoint[1] > startPoint[1] ? Math.PI / 2 - imgRt : (Math.PI * 3) / 2 - imgRt
+        } else {
+          // 其他角度
           rotation = Math.atan((endPoint[0] - startPoint[0]) / (endPoint[1] - startPoint[1])) - imgRt
         }
         return rotation
@@ -631,9 +652,7 @@ export default {
         this.map.getView().setZoom(20)
       }
     },
-    openPromptBox(row) {
-      
-    },
+    openPromptBox(row) {},
     // 上一页
     lastPage() {
       if (this.currentIndex <= 0) {
@@ -876,7 +895,7 @@ export default {
           height: 600px;
           // padding: 22px;
           // box-sizing: border-box;
-          /deep/ .box1 {
+          .box1 {
             overflow-y: scroll;
             // max-height: 545px;
             height: 100%;
@@ -908,7 +927,10 @@ export default {
                   display: flex;
                   justify-content: center;
                   align-items: center;
-                  /deep/ .el-form {
+                  .el-form {
+                    .el-form-item {
+                      margin-bottom: 10px;
+                    }
                     .el-link--inner {
                       max-width: 140px;
                       /* 1.先强制一行内显示文本 */
@@ -927,7 +949,7 @@ export default {
                     display: flex;
                     flex-direction: column;
                   }
-                  /deep/.el-tabs {
+                  .el-tabs {
                     .el-tabs__nav-wrap {
                       width: 100% !important;
                     }

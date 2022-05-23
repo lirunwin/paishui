@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 /**
-  * 说明：
-  * get和delete传值用params,
-  * post和put传值用data
-  */
+ * 说明：
+ * get和delete传值用params,
+ * post和put传值用data
+ */
 
 // 下载文件
 export function getFiles(params) {
@@ -187,6 +187,14 @@ export function getCompany(params) {
 export function getCompanyAll() {
   return request({
     url: '/base/department/listAll',
+    method: 'get'
+  })
+}
+
+// 获取所有单位信息
+export function getAllDepartments() {
+  return request({
+    url: '/base/department/list',
     method: 'get'
   })
 }
@@ -543,7 +551,7 @@ export function getGroupUserMap(params) {
 }
 // 获取当前用户所关联的所有组和所有人员(启用的人员)
 export function getGroupUserMap2(params) {
-  params.enableFlag='1'
+  params.enableFlag = '1'
   return request({
     url: '/gps/groupuser/getGroupUserMap',
     // url: '/gps/inspectgroup/page',
@@ -587,7 +595,6 @@ export function getDeptUserList(params) {
     params
   })
 }
-
 
 // 模块管理接口
 // 子系统管理
@@ -733,11 +740,9 @@ export function getDictionaryList(params) {
   })
 }
 
-
-
 /**
  * 获取字典类型
-*/
+ */
 export function getKeyPage(params) {
   return request({
     url: '/base/code/keyPage',
@@ -745,7 +750,6 @@ export function getKeyPage(params) {
     params
   })
 }
-
 
 // 新增字典
 export function addDictionary(data) {
@@ -776,7 +780,7 @@ export function deleteDictionary(data) {
 
 /**
  * 通过Key获取字典value
-*/
+ */
 export function getDicValueByKeys(params) {
   return request({
     url: '/base/code/getByKeys',
@@ -787,7 +791,7 @@ export function getDicValueByKeys(params) {
 
 /**
  * 获取深度覆土规范
-*/
+ */
 export function getDeepSpe(params) {
   return request({
     url: '/base/minvolumems/list',
@@ -796,10 +800,9 @@ export function getDeepSpe(params) {
   })
 }
 
-
 /**
  * 更新深度覆土规范
-*/
+ */
 export function updataDeepSpe(data) {
   return request({
     url: '/base/minvolumems',
@@ -810,7 +813,7 @@ export function updataDeepSpe(data) {
 
 /**
  * 获取深度覆土规范
-*/
+ */
 export function getVertSpe(params) {
   return request({
     url: '/base/minvolumecz/list',
@@ -819,10 +822,9 @@ export function getVertSpe(params) {
   })
 }
 
-
 /**
  * 更新深度覆土规范
-*/
+ */
 export function updataVertSpe(data) {
   return request({
     url: '/base/minvolumecz',
@@ -833,7 +835,7 @@ export function updataVertSpe(data) {
 
 /**
  * 获取最小净距
-*/
+ */
 export function getSpe(params) {
   return request({
     url: '/base/minvolumesp/list',
@@ -842,10 +844,9 @@ export function getSpe(params) {
   })
 }
 
-
 /**
  * 更新最小净距
-*/
+ */
 export function updataSpe(data) {
   return request({
     url: '/base/minvolumesp',

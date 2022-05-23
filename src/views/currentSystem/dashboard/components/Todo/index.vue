@@ -230,68 +230,36 @@ export default {
 
     // 获取首页饼图
     getTodoPie() {
-      var that = this
-      taskPie().then((res) => {
-        if (res.code !== -1) {
-          that.todoPie = res.result
-          that.drawPie(that.todoPie)
-        } else {
-          that.$message.error(res.message)
-        }
-      })
-
-      // return new Promise((resolve, reject) => {
-      //   taskPie().then(res => {
-      //     if(res.code !== -1) {
-      //       that.todoPie = res.result
-      //       resolve(that.todoPie)
-      //     } else {
-      //       reject(new Error(res.message || '请求失败,请重新尝试'))
-      //     }
-      //   })
+      // var that = this
+      // taskPie().then((res) => {
+      //   if (res.code !== -1) {
+      //     that.todoPie = res.result
+      //     that.drawPie(that.todoPie)
+      //   } else {
+      //     that.$message.error(res.message)
+      //   }
       // })
     },
 
     // 获取待办数据
     getTodoData() {
-      var that = this
-      taskList(that.filter).then((res) => {
-        if (res.code !== -1) {
-          that.todoData = []
-          console.log('测试：' + JSON.stringify(res.result))
-          if (!that.arrayIsNull(res.result)) {
-            res.result.forEach((item, index) => (item.order = index + 1))
-            that.todoData = res.result
-
-            if (that.todoData.length > 0) {
-              that.activeName = that.todoData[0].typeCode
-              that.activeType = that.todoData[0].typeCode
-              that.getTodoDataPage()
-            }
-          }
-        } else {
-          that.$message.error('错误：' + res.message)
-        }
-      })
-
-      // return new Promise((resolve, reject) => {
-      //   const formdata = new FormData()
-      //   Object.keys(that.filter).forEach((key) => {
-      //     formdata.append(key, that.filter[key])
-      //   })
-      //   taskList(formdata).then(res => {
-      //     if(res.code !== -1) {
-      //       if(!that.arrayIsNull(res.result)){
-      //         res.result.forEach((item,index) => item.order = index + 1)
-      //         that.todoData = res.result;
-      //         resolve(that.todoData);
-      //       }else{
-      //          resolve(null)
+      // var that = this
+      // taskList(that.filter).then((res) => {
+      //   if (res.code !== -1) {
+      //     that.todoData = []
+      //     console.log('测试：' + JSON.stringify(res.result))
+      //     if (!that.arrayIsNull(res.result)) {
+      //       res.result.forEach((item, index) => (item.order = index + 1))
+      //       that.todoData = res.result
+      //       if (that.todoData.length > 0) {
+      //         that.activeName = that.todoData[0].typeCode
+      //         that.activeType = that.todoData[0].typeCode
+      //         that.getTodoDataPage()
       //       }
-      //     } else {
-      //       reject(new Error(res.message || '请求失败,请重新尝试'))
       //     }
-      //   })
+      //   } else {
+      //     that.$message.error('错误：' + res.message)
+      //   }
       // })
     },
 

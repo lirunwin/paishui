@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@supermap/iclient-ol": "^10.2.1",
+    "animate.css": "^4.1.1",
     "axios": "0.18.1",
     "babel-loader": "^8.2.4",
     "core-js": "^2.6.11",

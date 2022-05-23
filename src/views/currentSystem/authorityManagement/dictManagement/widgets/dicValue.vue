@@ -17,11 +17,9 @@
         style="width: 100%;font-size: 14px;border: 0px solid;"
       >
         <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->
-        <el-table-column label="序号" width="80" align="center">
-          <template slot-scope="scope">
-            <span>{{ scope.$index + 1 }}</span>
-          </template>
-        </el-table-column>
+        <el-table-column label="序号" width="80" align="center" type="index" />
+        <el-table-column prop="sort" label="排序" width="80" align="center" />
+
         <el-table-column prop="notes" label="字典名称" show-overflow-tooltip align="center"></el-table-column>
         <el-table-column prop="codeValue" label="字典编码" show-overflow-tooltip align="center"></el-table-column>
         <el-table-column label="操作" align="center" width="140">

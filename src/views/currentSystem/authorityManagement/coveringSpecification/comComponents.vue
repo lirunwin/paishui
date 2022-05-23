@@ -5,48 +5,55 @@
         <tr>
           <th colspan="2" :rowspan="hasRowHeadr ? '2' : '1'">{{ tableTitle }}</th>
           <template v-for="(item, index) in header">
-            <th
-              :key="'td_' + index"
-              :colspan="item.childList.length > 1 ? item.childList.length : '1'"
-              :rowspan="hasRowHeadr && item.childList && item.childList.length > 1 ? 1 : 2"
-            >
-              {{ item.name }}
-            </th>
+            <template>
+              <th
+                :key="'td_' + index"
+                :colspan="item.childList.length > 1 ? item.childList.length : '1'"
+                :rowspan="hasRowHeadr && item.childList && item.childList.length > 1 ? 1 : 2"
+              >
+                {{ item.name }}
+              </th>
+            </template>
           </template>
         </tr>
         <tr v-if="headerTwo.length > 0">
           <template v-for="(item, index) in headerTwo">
-            <th :key="'td2_' + index">{{ item.name }}</th>
+            <template>
+              <th :key="'td2_' + index">{{ item.name }}</th>
+            </template>
           </template>
         </tr>
       </thead>
       <tbody>
         <template v-for="(item, index) in body">
           <template v-for="(item2, index2) in item.childList">
-            <tr :key="'bodytr_' + index + '_' + index2">
-              <td v-if="index2 == 0" :rowspan="item.childList.length">{{ item.name }}</td>
-              <td>{{ item2.roadName }}</td>
-              <template v-for="(item3, index3) in rowCood">
-                <td
-                  :class="'editTd_' + index + '_' + index2 + '_' + index3"
-                  @dblclick="startEdit(coodData[item3.type + item2.roadType], $event)"
-                  :key="'editTd_' + index + '_' + index2 + '_' + index3"
-                >
-                  <template v-if="editOption && coodData[item3.type + item2.roadType].editAction">
-                    <el-input
-                      type="number"
-                      step="0.01"
-                      style="width:100px;text-align:center"
-                      @blur="getSaveInfo(coodData[item3.type + item2.roadType])"
-                      v-model.number="coodData[item3.type + item2.roadType]['vol']"
-                    />
+            <template>
+              <tr :key="'bodytr_' + index + '_' + index2">
+                <td v-if="index2 == 0" :rowspan="item.childList.length">{{ item.name }}</td>
+                <td>{{ item2.roadName }}</td>
+                <template v-for="(item3, index3) in rowCood">
+                  <template>
+                    <td
+                      :class="'editTd_' + index + '_' + index2 + '_' + index3"
+                      @dblclick="startEdit(coodData[item3.type + item2.roadType], $event)"
+                      :key="'editTd_' + index + '_' + index2 + '_' + index3"
+                    >
+                      <template v-if="editOption && coodData[item3.type + item2.roadType].editAction">
+                        <el-input
+                          style="width:100px;text-align:center"
+                          @blur="getSaveInfo(coodData[item3.type + item2.roadType], `${item3.type + item2.roadType}`)"
+                          v-model="coodData[item3.type + item2.roadType]['vol']"
+                          @input="onChange($event, `${item3.type + item2.roadType}`)"
+                        />
+                      </template>
+                      <template v-else>
+                        {{ coodData[item3.type + item2.roadType]['vol'] }}
+                      </template>
+                    </td>
                   </template>
-                  <template v-else>
-                    {{ coodData[item3.type + item2.roadType]['vol'] }}
-                  </template>
-                </td>
-              </template>
-            </tr>
+                </template>
+              </tr>
+            </template>
           </template>
         </template>
       </tbody>
@@ -227,35 +234,70 @@ export default {
     /**
      * 保存数据
      */
-    getSaveInfo(data) {
-      if (data.vol <= 0) {
-        this.$message({
-          showClose: true,
-          message: '配置值不能小于等于0',
-          type: 'warning'
-        })
-        // this.$message.warning('配置值不能小于等于0');
-        this.getData()
-        this.$nextTick((e) => {
-          this.editOption = false
-        })
-        return
-      }
-      if (this.editOption) {
-        this.updataList({
-          id: data.id,
-          vol: data.vol
-        }).then((res) => {
-          if (this.$comMethod.verificationResult(res)) {
-            this.$message.success('更新成功')
-            this.getData()
-          } else {
-            this.$message.warning(res.message || '更新失败')
-          }
+    getSaveInfo(data, key) {
+      this.onChange(data.vol, key)
+      setTimeout(() => {
+        let vol = String(data.vol || '')
+        const endsWithStar = vol.endsWith('*')
+        vol = vol.replace(/\*$/, '')
+        vol = String(Math.round(Number(vol) * 1000) / 1000)
+
+        if (vol <= 0) {
+          this.$message({
+            showClose: true,
+            message: '配置值不能小于等于0',
+            type: 'warning'
+          })
+          // this.$message.warning('配置值不能小于等于0');
+          this.getData()
           this.$nextTick((e) => {
             this.editOption = false
           })
-        })
+          return
+        }
+        if (this.editOption) {
+          if (endsWithStar) vol += '*'
+          data.vol = vol
+          this.updataList({
+            id: data.id,
+            vol: data.vol
+          }).then((res) => {
+            if (this.$comMethod.verificationResult(res)) {
+              this.$message.success('更新成功')
+              this.getData()
+            } else {
+              this.$message.warning(res.message || '更新失败')
+            }
+            this.$nextTick((e) => {
+              this.editOption = false
+            })
+          })
+        }
+      }, 0)
+    },
+    onChange(val, key) {
+      let vol = val || ''
+      const endsWithStar = String(vol).endsWith('*') //123*
+      const endsWithDot = String(vol).endsWith('.') // 123.
+      const endsWithZero = /\.\d*0$/.test(String(vol)) //123.10
+      const endsWithDotZero = /\.0$/.test(String(vol)) //123.0
+      vol = String(val || '').replace(/[^0-9\.]/g, '')
+      let count = 0
+      vol = vol.replace(/\./g, (match) => (++count === 1 ? match : ''))
+      count = 0
+
+      vol = String(Number(vol.replace(/\*$|\.$/, '')))
+
+      if (vol) {
+        if (endsWithDot) vol += '.'
+        if (endsWithZero) vol += endsWithDotZero ? '.0' : '0'
+        if (endsWithStar) vol += '*'
+      }
+      console.log(vol)
+
+      this.coodData = {
+        ...this.coodData,
+        [key]: { ...this.coodData[key], vol }
       }
     }
   }

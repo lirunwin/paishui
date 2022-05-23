@@ -15,100 +15,109 @@ export default {
   props: ['paramData'],
   components: {},
   data() {
-    return {}
+    return {
+      echartsData: [],
+      defectArr: []
+    }
   },
-  watch: {},
+  watch: {
+    echartsData(nv, ov) {
+      this.echartsData = nv
+      // console.log('新的echartsData', this.echartsData)
+      this.initData()
+    }
+  },
   computed: {},
   created() {},
   mounted() {
     this.initData()
   },
   methods: {
+    // 处理缺陷数据
+    setDefectData() {
+      let arr = []
+      this.echartsData.forEach((ev) => {
+        if (arr.length == 0) {
+          arr.push({
+            name: ev.defectName,
+            value: ev.defectNum
+          })
+        } else {
+          arr.forEach((av) => {
+            if (av.name == ev.defectName) {
+              av.value += ev.defectNum
+            } else {
+              arr.push({
+                name: ev.defectName,
+                value: ev.defectNum
+              })
+            }
+          })
+        }
+      })
+      this.defectArr = arr
+      this.titleArr = arr.map((v) => {
+        return v.name
+      })
+    },
     //初始化数据(饼状图)
     initData() {
-      console.log('渲染管道检测情况统计图')
+      // console.log('缺陷数量统计图 110',this.paramData)
+      this.echartsData = this.paramData
       let chartDom = document.getElementById('echartsFour')
       let myChart = echarts.init(chartDom)
       let option
 
-      // prettier-ignore
-      let dataAxis = ['点', '击', '柱', '子','缩','放'];
-      // prettier-ignore
-      let data = [220, 182, 191, 234,110,250];
-      let yMax = 500
-      let dataShadow = []
-      for (let i = 0; i < data.length; i++) {
-        dataShadow.push(yMax)
-      }
       option = {
-        xAxis: {
-          data: dataAxis,
-          axisLabel: {
-            inside: true,
-            color: '#fff'
-          },
-          axisTick: {
-            show: false
-          },
-          axisLine: {
-            show: true
-          },
-          z: 10
-        },
-        yAxis: {
-          name: '单位 : 个',
-          axisLine: {
-            show: false
-          },
-          axisTick: {
-            show: false
-          },
-          axisLabel: {
-            color: '#999'
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
           }
         },
-        dataZoom: [
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: [
           {
-            type: 'inside'
+            type: 'category',
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            axisTick: {
+              alignWithLabel: true
+            },
+            axisLine: {
+              show: true
+            }
+          }
+        ],
+        yAxis: [
+          {
+            name: '单位 : 个',
+            type: 'value',
+            axisLine: {
+              left: 100,
+              show: true
+            },
+
+            nameTextStyle: {
+              padding: [0, 0, 0, 50]
+            }
           }
         ],
         series: [
           {
+            name: '缺陷类型',
             type: 'bar',
-            showBackground: true,
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 2, [
-                { offset: 0, color: '#83bff6' },
-                { offset: 0.5, color: '#188df0' },
-                { offset: 1, color: '#188df0' }
-              ])
-            },
-            emphasis: {
-              itemStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  { offset: 0, color: '#2378f7' },
-                  { offset: 0.7, color: '#2378f7' },
-                  { offset: 1, color: '#83bff6' }
-                ])
-              }
-            },
-            data: data
+            barWidth: '60%',
+            data: [10, 52, 200, 334, 390, 330, 220]
           }
         ]
       }
-      // Enable data zoom when user click bar.
-      const zoomSize = 6
-      myChart.on('click', function (params) {
-        console.log(dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)])
-        myChart.dispatchAction({
-          type: 'dataZoom',
-          startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
-          endValue: dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
-        })
-      })
 
       option && myChart.setOption(option)
-      console.log('option', option)
     }
   }
 }

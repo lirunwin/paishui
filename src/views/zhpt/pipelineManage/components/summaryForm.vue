@@ -18,7 +18,7 @@
           <th>缺陷个数</th>
         </tr>
       </thead>
-      <tr v-for="(v, i) in tabelData.defectQuantityStatisticsA" :key="v.title">
+      <tr class="highlight" v-for="(v, i) in tabelData.defectQuantityStatisticsA" :key="v.title">
         <td rowspan="10" v-if="i < 1">结构性缺陷</td>
         <td>{{ v.title }}</td>
         <td>{{ v.oneValue }}</td>
@@ -27,7 +27,7 @@
         <td>{{ v.fourValue }}</td>
         <td>{{ v.value }}</td>
       </tr>
-      <tr v-for="(v, i) in tabelData.defectQuantityStatisticsB" :key="i">
+      <tr class="highlight" v-for="(v, i) in tabelData.defectQuantityStatisticsB" :key="i">
         <td rowspan="6" v-if="i < 1">功能性缺陷</td>
         <td>{{ v.title }}</td>
         <td>{{ v.oneValue }}</td>
@@ -46,10 +46,10 @@
 
 <script>
 export default {
-    props:["tabelData"],
-    created(){
-      console.log("汇总组件");
-    }
+  props: ['tabelData'],
+  created() {
+    console.log('汇总组件', this.tabelData)
+  }
 }
 </script>
 
@@ -61,6 +61,7 @@ export default {
   text-align: center;
   th {
     color: #666;
+    font-size: 14px;
     background: #f3f7fe;
   }
   tr {
@@ -68,6 +69,14 @@ export default {
   }
   .defectSum {
     height: 45px;
+    background-color: #f3f7fe;
+  }
+  .highlight{
+    font-size: 12px;
+  }
+  .highlight:hover {
+    opacity: 0.8;
+    color: #E6A23C;
     background-color: #f3f7fe;
   }
 }

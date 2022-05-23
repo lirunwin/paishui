@@ -31,20 +31,10 @@ declare module 'axios' {
 // 创建axios实例
 // export const IP = 'http://192.168.2.231:1111'
 // export const IP = 'http://192.168.2.238:8080'
-export const IP = 'http://192.168.2.235:1118'
-// export const IP = 'http://117.174.10.73:1114'
-// export const IP = 'http://192.168.2.203:1111'
-
 // export const IP = 'http://192.168.2.235:1118'
-// export const IP = 'http://localhost:1111'
-// export const IP = 'http://192.168.2.78:1111'
-// export const IP = 'http://192.168.2.78:1111'
 // export const IP = 'http://117.174.10.73:1114'
-// export const IP = 'http://192.168.2.145:1111'
-// export const IP = 'http://127.0.0.1:1111'
-//export const NewIp = 'http://58.17.241.6:1212'
-// export const NewIp = 'http://192.168.15.5:8095'
-// export const IP = 'http://192.168.100.204:1111'
+export const IP = 'http://117.174.10.73:1116'
+// export const IP = 'http://192.168.2.203:1111'
 
 // 暴露IP地址
 export const baseAddress = IP

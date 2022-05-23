@@ -7,44 +7,10 @@
     <el-row type="flex" style="margin-bottom: 20px">
       <el-col :span="10">
         <el-button type="primary" size="small" @click="handleClick('add')">新增</el-button>
-        <!-- <el-button type="primary" size="small" :disabled="unitTreeSelect.length !== 1" @click="handleClick('edit')"
-          >修改</el-button
-        > -->
-        <!-- <el-button
-          type="primary"
-          size="small"
-          :disabled="unitTreeSelect < 1"
-          @click="handleClick('delete')"
-          >删除</el-button
-        > -->
-        <!-- <el-button type="primary" size="small" @click="handleClick('import')">批量导入</el-button> -->
-        <!-- <el-upload action="fakeaction" style="margin: 0 10px; display: inline-block" :http-request="batchImport" :show-file-list="false" accept=".xls, .xlsx">
-          <el-button size="small" type="primary">批量导入</el-button>
-        </el-upload> -->
       </el-col>
     </el-row>
-    <!-- <table-item
-      :table-data="list"
-      :column="column"
-      pagination
-      :pagesize="pagination.size"
-      :currentpage="pagination.current"
-      :tableheight="'calc(100% - 52px)'"
-      border
-      multiple
-      :total="total"
-      :isdelete="true"
-      :isSelect="false"
-      stripe
-      @handleCurrentChange="handleCurrentChange"
-      @handleSizeChange="handleSizeChange"
-      @handleSelectionChange="handleSelectionChange"
-      @delete="handelDelete"
-      @rowDblclick="handleDbclick"
-
-    /> -->
     <el-table
-      :data="list"
+      :data="deptmentTree"
       style="width: 100%;margin-bottom: 20px;"
       :height="'calc(100% - 72px)'"
       row-key="id"
@@ -64,7 +30,7 @@
       <el-table-column prop="shortName" align="center" sortable label="简称" show-overflow-tooltip />
       <el-table-column prop="code" align="center" sortable label="部门编码" show-overflow-tooltip />
       <el-table-column label="操作" align="center" width="100">
-        <template slot-scope="scope">
+        <template v-slot="scope">
           <el-button type="text" size="small" @click="handelDelete(scope.row)">删除</el-button>
         </template>
       </el-table-column>
@@ -78,9 +44,19 @@
         :rules="departmentRules"
       >
         <el-form-item label="上级单位：" style="margin: 20px 0">
-          <el-select v-model="department.parentId" clearable size="small" placeholder="请选择上级部门">
+          <el-cascader
+            popper-class="cascader"
+            v-model="department.parentId"
+            :options="deptmentTree"
+            :props="{ expandTrigger: 'hover', label: 'name', value: 'id', checkStrictly: true }"
+            size="small"
+            style="width:100%"
+            filterable
+            clearable
+          />
+          <!-- <el-select v-model="department.parentId" clearable size="small" placeholder="请选择上级部门">
             <el-option v-for="item in departmentList" :key="item.id" :label="item.name" :value="item.id"> </el-option>
-          </el-select>
+          </el-select> -->
         </el-form-item>
         <el-form-item label="单位/部门简称：" style="margin: 20px 0">
           <el-input v-model="department.shortName" size="small" placeholder="请输入单位/部门简称" />
@@ -102,7 +78,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import { addSection, deleteSection, editSection, departmentBatchImport, getCompany } from '@/api/base'
+import { addSection, deleteSection, editSection, departmentBatchImport, getAllDepartments } from '@/api/base'
 import TableItem from '@/components/Table/index.vue'
 import { ElForm } from 'element-ui/types/form'
 const column = [
@@ -223,9 +199,17 @@ export default class Section extends Vue {
       })
     }
   }
+
+  get deptInfo() {
+    const { parentId } = this.department
+    return {
+      ...this.department,
+      parentId: Array.isArray(parentId) ? [...parentId].pop() : parentId
+    }
+  }
   // 新增部门/单位
   addNewUnit() {
-    addSection(this.department).then((res) => {
+    addSection(this.deptInfo).then((res) => {
       if (res.code === 1) {
         this.dialog = false
         this.$message({ type: 'success', message: '添加成功!' })
@@ -268,7 +252,7 @@ export default class Section extends Vue {
   }
   // 编辑部门/单位
   editUnit() {
-    editSection(this.department).then((res) => {
+    editSection(this.deptInfo).then((res) => {
       if (res.code === 1) {
         this.dialog = false
         this.$message({ type: 'success', message: '修改成功!' })
@@ -276,92 +260,25 @@ export default class Section extends Vue {
       }
     })
   }
-  // // 获取单位
-  // getUnit() {
-  //   this.unitTreeSelect = [];
-  //   getCompany(this.pagination).then((res) => {
-  //     res.result.records.forEach((item, index) => {
-  //       item.order = index + 1;
-  //     });
-  //     this.list = res.result.records;
-  //     this.total = res.result.total;
-  //   });
-  // }
 
   // 获取所有单位
   getAllUnit() {
     this.unitTreeSelect = []
-    getCompany({
-      current: 1,
-      size: 1000
-    }).then((res) => {
-      res.result.records.forEach((item, index) => {
-        item.order = index + 1
-      })
-      this.departmentList = res.result.records
-      this.transTree(this.departmentList)
+    getAllDepartments().then((res) => {
+      this.departmentList = res.result || []
     })
   }
 
-  // 转换为树形结构
-  transTree(list) {
-    let tempData = []
-    let deleteField = []
-    if (list && list.length > 0) {
-      list.forEach((item) => {
-        let unCode = 'parentId' + item.parentId
-        let currentCode = 'parentId' + item.id
-        item.unCode = unCode
-        item.currentCode = currentCode
-        deleteField.push(item.unCode)
-        // if(tempData[item.name]){
-        //   item.children=tempData[item.name].children;
-        // }else{
-        //   item.children=[];
-        // }
-        // tempData[item.name]=item;
-        // tempData.push(item);
-        if (tempData[item.currentCode]) {
-          item.children = tempData[item.currentCode].children
-        } else {
-          item.children = []
-        }
-        tempData[item.currentCode] = item
-        //是否存在上级
-        if (item.parentId) {
-          //判断临时数据中是否已存在它的上级
-          if (tempData[item.unCode]) {
-            //已存在上级
-            tempData[item.unCode].children.push(item)
-          } else {
-            //不存在上级,直接进行赋值
-            tempData[item.unCode] = { children: [item] }
-          }
-        } else {
-          tempData.push(item)
-        }
-      })
+  get deptmentTree() {
+    const getChildren = (parent) => {
+      const { id: parentId } = parent
+      const children = this.departmentList.filter((item) => item.parentId === parentId)
+      if (!!children.length) parent.children = children.map(getChildren)
+      return parent
     }
-    if (tempData.length > 0) {
-      for (let name of deleteField) {
-        delete tempData[name]
-      }
-    }
-    this.list = tempData
-    // debugger
+    return this.departmentList.filter((item) => !item.parentId).map(getChildren)
   }
 
-  // // 页码变化
-  // handleCurrentChange(page) {
-  //   this.pagination.current = page;
-  //   this.getUnit();
-  // }
-  // // 条数变化
-  // handleSizeChange(size) {
-  //   this.pagination.size = size;
-  //   this.getUnit();
-  // }
-  // 获取选择项
   handleSelectionChange(selections) {
     this.unitTreeSelect = selections
   }
@@ -396,8 +313,23 @@ export default class Section extends Vue {
 }
 </script>
 
-<style lang="scss" scoped>
-/deep/ .el-checkbox .is-disabled {
-  display: none;
+<style lang="scss">
+.cascader {
+  /deep/ .el-cascader-panel {
+    .el-radio {
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .el-radio__input {
+      visibility: hidden;
+    }
+    .el-cascader-node__postfix {
+      top: 10px;
+    }
+  }
 }
 </style>

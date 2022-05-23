@@ -8,8 +8,8 @@
           <input-item
             can-clear
             type="text"
-            placeholder="请输入用户名"
-            title="用户名："
+            placeholder="请输入用户姓名"
+            title="用户姓名："
             nominate="realName"
             custom-style="display: inline-block"
             :value="realName"
@@ -151,7 +151,7 @@
           v-if="dialogVisible"
           ref="ruleForm"
           :data="editData"
-          :company="departments"
+          :company="deptmentTree"
           :options-role="role.optionsRole"
           @remind="remind"
         />
@@ -167,7 +167,7 @@
         <input-item
           type="text"
           placeholder
-          title="用户名"
+          title="用户姓名"
           custom-style="display: inline-block; width: 80%; line-height: 32px; margin-bottom: 15px"
           :value="role.roleName"
           :max-length="50"
@@ -221,7 +221,7 @@
           <span>登录名：</span><span>{{ multipleSelection[0].username }}</span>
         </div>
         <div>
-          <span>用户名：</span><span>{{ multipleSelection[0].realName }}</span>
+          <span>用户姓名：</span><span>{{ multipleSelection[0].realName }}</span>
         </div>
         <div>
           <span>联系电话：</span><span>{{ multipleSelection[0].phone }}</span>
@@ -288,7 +288,9 @@
           <el-form-item label="角色：" prop="roles" style="margin-bottom: 20px">
             <el-select v-model="auditInfo.roles" style="width: 300px" multiple>
               <template v-for="item in role.optionsRole">
-                <el-option :key="item.id" :value="item.id" :label="item.name" />
+                <template>
+                  <el-option :key="item.id" :value="item.id" :label="item.name" />
+                </template>
               </template>
             </el-select>
           </el-form-item>
@@ -335,7 +337,7 @@
                 <span class="title">登录名：</span><span>{{ detailInfo.username }}</span>
               </el-row>
               <el-row>
-                <span class="title">用户名：</span><span>{{ detailInfo.realName }}</span>
+                <span class="title">用户姓名：</span><span>{{ detailInfo.realName }}</span>
               </el-row>
               <el-row>
                 <span class="title">联系电话：</span><span>{{ detailInfo.phone }}</span>
@@ -411,7 +413,7 @@ import {
   deleteUser,
   roleBind,
   setUserUnlock,
-  getCompany,
+  getAllDepartments,
   getRoleList,
   editUser,
   batchUser,
@@ -426,7 +428,7 @@ import {
 import { getToken, setSessionStorage } from '@/utils/auth'
 import { imageByName } from '@/api/ftp'
 import { ElForm } from 'element-ui/types/form'
-@Component({
+@Component<UserRights>({
   name: 'UserRights',
   components: {
     TableItem,
@@ -452,6 +454,7 @@ import { ElForm } from 'element-ui/types/form'
   }
 })
 export default class UserRights extends Vue {
+  formatteAuditStatus?: any
   list = []
   total = 0
   column = [
@@ -462,7 +465,7 @@ export default class UserRights extends Vue {
       sortable: true
     },
     {
-      label: '用户名',
+      label: '用户姓名',
       width: 120,
       prop: 'realName',
       sortable: true
@@ -532,7 +535,7 @@ export default class UserRights extends Vue {
       }
     },
     {
-      label: '审核意见',
+      label: '审核状态',
       width: 110,
       prop: 'auditstatus',
       sortable: true,
@@ -541,6 +544,12 @@ export default class UserRights extends Vue {
         if (cellValue === '1') return '未审核'
         if (cellValue === '2') return '同意'
       }
+    },
+    {
+      label: '审核人',
+      width: 160,
+      prop: 'auditorname',
+      sortable: true
     },
     {
       label: '创建时间',
@@ -570,7 +579,7 @@ export default class UserRights extends Vue {
     user: '',
     region: ''
   }
-  realName = '' // 用户名
+  realName = '' // 用户姓名
   username = '' // 登录名
   departmentId = '' // 部门
   enableFlag = '' // 启用状态
@@ -584,6 +593,10 @@ export default class UserRights extends Vue {
     {
       id: '0',
       name: '不同意'
+    },
+    {
+      id: '1',
+      name: '未审核'
     },
     {
       id: '2',
@@ -845,12 +858,19 @@ export default class UserRights extends Vue {
 
   // 获取单位信息
   getCompanyInfo() {
-    getCompany({ size: 10000 }).then((res) => {
-      res.result.records.forEach((item) => {
-        item.id = item.id + ''
-      })
-      this.departments = res.result.records
+    getAllDepartments().then((res) => {
+      this.departments = res.result || []
     })
+  }
+
+  get deptmentTree() {
+    const getChildren = (parent) => {
+      const { id: parentId } = parent
+      const children = this.departments.filter((item) => item.parentId === parentId)
+      if (!!children.length) parent.children = children.map(getChildren)
+      return parent
+    }
+    return this.departments.filter((item) => !item.parentId).map(getChildren)
   }
 
   // 获取角色信息
@@ -934,7 +954,7 @@ export default class UserRights extends Vue {
   }
   onSubmit() {
     let data = {
-      userLevel: '1', // 默认只展示为0的用户
+      // userLevel: '1', // 默认只展示为0的用户
       realName: this.realName,
       username: this.username,
       departmentId: this.departmentId,
@@ -1063,7 +1083,7 @@ export default class UserRights extends Vue {
         }
         // 用户编号
         userIdAry.push(userinfo.id)
-        // 用户名称
+        // 用户姓名称
         userNameAry.push(userinfo.realName)
       })
 
@@ -1130,7 +1150,7 @@ export default class UserRights extends Vue {
       templateServiceType: 'userService'
     }
     const data = {
-      userLevel: '1', // 默认只展示为0的用户
+      // userLevel: '1', // 默认只展示为0的用户
       realName: this.realName,
       username: this.username,
       departmentId: this.departmentId,
@@ -1220,9 +1240,9 @@ export default class UserRights extends Vue {
    */
   getCopyDeptUserList() {
     const data = {
-      userLevel: 1,
+      // userLevel: 1,
       current: 1,
-      size: 10000000
+      size: 30
     }
     this.copyUsers = []
     getUserList(data).then((res) => {
