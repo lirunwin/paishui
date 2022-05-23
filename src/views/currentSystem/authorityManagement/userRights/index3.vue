@@ -8,8 +8,8 @@
           <input-item
             can-clear
             type="text"
-            placeholder="请输入用户名"
-            title="用户名："
+            placeholder="请输入用户姓名"
+            title="用户姓名："
             nominate="realName"
             custom-style="display: inline-block"
             :value="realName"
@@ -183,7 +183,7 @@
       </span>
     </el-dialog> -->
     <!-- <el-dialog v-dialogDrag title="启用设置" :visible.sync="enable.enableSetting" width="500px">
-      <input-item type="text" placeholder title="用户名：" custom-style="display: inline-block; width: 80%; line-height: 32px;" :value="enable.enableName" :max-length="50" :disabled="true" :required="false" />
+      <input-item type="text" placeholder title="用户姓名：" custom-style="display: inline-block; width: 80%; line-height: 32px;" :value="enable.enableName" :max-length="50" :disabled="true" :required="false" />
       <select-item placeholder="请选择" title="是否启用：" nominate="enableFlag" custom-style="display: inline-block; margin-top: 20px;width: 80%;line-height: 32px;" :value="enableFlag" :disabled="false" :required="false" :filterable="true" :options="enable.optionsEnable" @changeSelectValue="changeSelectValue" />
       <span slot="footer" class="dialog-footer">
         <el-button @click="enable.enableSetting = false">取 消</el-button>
@@ -195,7 +195,7 @@
         <input-item
           type="text"
           placeholder
-          title="用户名"
+          title="用户姓名"
           custom-style="display: inline-block; width: 80%; line-height: 32px; margin-bottom: 15px"
           :value="role.roleName"
           :max-length="50"
@@ -261,7 +261,7 @@
           <span>登录名：</span><span>{{ multipleSelection[0].username }}</span>
         </div>
         <div>
-          <span>用户名：</span><span>{{ multipleSelection[0].realName }}</span>
+          <span>用户姓名：</span><span>{{ multipleSelection[0].realName }}</span>
         </div>
         <div>
           <span>联系电话：</span><span>{{ multipleSelection[0].phone }}</span>
@@ -350,7 +350,7 @@
                 <span class="title">登录名：</span><span>{{ detailInfo.username }}</span>
               </el-row>
               <el-row>
-                <span class="title">用户名：</span><span>{{ detailInfo.realName }}</span>
+                <span class="title">用户姓名：</span><span>{{ detailInfo.realName }}</span>
               </el-row>
               <el-row>
                 <span class="title">联系电话：</span><span>{{ detailInfo.phone }}</span>
@@ -486,7 +486,7 @@ export default class UserRights extends Vue {
       sortable: true
     },
     {
-      label: '用户名',
+      label: '用户姓名',
       width: 120,
       prop: 'realName',
       sortable: true
@@ -582,7 +582,7 @@ export default class UserRights extends Vue {
     user: '',
     region: ''
   }
-  realName = '' // 用户名
+  realName = '' // 用户姓名
   username = '' // 登录名
   departmentId = '' // 部门
   enableFlag = '' // 启用状态
@@ -1128,7 +1128,7 @@ export default class UserRights extends Vue {
         }
         // 用户编号
         userIdAry.push(userinfo.id)
-        // 用户名称
+        // 用户姓名称
         userNameAry.push(userinfo.realName)
       })
 

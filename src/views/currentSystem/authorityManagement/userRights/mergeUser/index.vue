@@ -8,7 +8,7 @@
         <!-- <el-form-item label="密码" prop="password">
             <el-input v-model="ruleForm.password" size="small" type="password" placeholder="请输入密码" />
           </el-form-item> -->
-        <el-form-item style="margin-bottom: 18px" label="用户名" prop="realName">
+        <el-form-item style="margin-bottom: 18px" label="用户姓名" prop="realName">
           <el-input v-model="ruleForm.realName" size="small" placeholder="请输入客户名" />
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="联系电话" prop="phone">
@@ -131,7 +131,7 @@ export default class MergeUser extends Vue {
       { required: true, message: '请输入密码', trigger: 'blur' },
       { min: 6, max: 12, message: '长度在 6 到 12 个字符', trigger: 'blur' }
     ],
-    realName: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+    realName: [{ required: true, message: '请输入用户姓名', trigger: 'blur' }],
     phone: [{ pattern: regPhone(), message: '请输入正确联系手机号', trigger: 'blur' }],
     email: [{ pattern: regEmail(), message: '请输入正确邮箱', trigger: 'blur' }],
     departmentId: [{ required: true, message: '请选择部门', trigger: 'change' }],

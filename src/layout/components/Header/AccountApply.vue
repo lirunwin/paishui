@@ -9,7 +9,7 @@
   >
     <el-tabs v-model="activeTab">
       <el-tab-pane label="历史申请记录" name="history">
-        <label for="queryCondition">用户名：</label>
+        <label for="queryCondition">用户姓名：</label>
         <el-input
           id="queryCondition"
           v-model="applyRealName"
@@ -53,16 +53,18 @@
               :width="item.width"
               :formatter="item.formatter"
             />
-            <el-table-column v-else :key="item.prop" :prop="item.prop" :label="item.label">
-              <template slot-scope="curr">
-                <span
-                  v-if="!item.prop"
-                  style="cursor: pointer; color: #2d74e7"
-                  @click="toggleAccountApplyDetailTab(curr.row)"
-                  >详情</span
-                >
-              </template>
-            </el-table-column>
+            <template v-else>
+              <el-table-column :key="item.prop" :prop="item.prop" :label="item.label">
+                <template v-slot="curr">
+                  <span
+                    v-if="!item.prop"
+                    style="cursor: pointer; color: #2d74e7"
+                    @click="toggleAccountApplyDetailTab(curr.row)"
+                    >详情</span
+                  >
+                </template>
+              </el-table-column>
+            </template>
           </template>
         </el-table>
         <el-pagination
@@ -94,7 +96,7 @@
               <el-form-item label="密码：" prop="password">
                 <el-input v-model="accountApply.password" type="password" />
               </el-form-item>
-              <el-form-item label="用户名：" prop="realName">
+              <el-form-item label="用户姓名：" prop="realName">
                 <el-input v-model="accountApply.realName" />
               </el-form-item>
               <el-form-item label="联系电话：" prop="phone">
@@ -104,7 +106,7 @@
                 <el-input v-model="accountApply.email" />
               </el-form-item>
               <el-form-item label="部门：" prop="departmentId">
-                <el-select
+                <!-- <el-select
                   v-model="accountApply.departmentId"
                   placeholder="请选择"
                   @change="
@@ -114,23 +116,27 @@
                   "
                 >
                   <el-option v-for="item in departmentIdOptions" :key="item.id" :label="item.name" :value="item.id" />
-                </el-select>
+
+                </el-select> -->
+                <el-cascader
+                  popper-class="cascader"
+                  v-model="accountApply.departmentId"
+                  :options="deptmentTree"
+                  :props="{ expandTrigger: 'hover', label: 'name', value: 'id', checkStrictly: true }"
+                  size="small"
+                  style="width:100%"
+                  filterable
+                  clearable
+                />
               </el-form-item>
               <el-form-item label="审核人：" prop="recipient">
                 <el-select
                   v-model="accountApply.recipient"
                   filterable
                   placeholder="请选择"
-                  :disabled="!accountApply.departmentId"
+                  :disabled="!accountApply.departmentId || !accountApply.departmentId.length"
                 >
-                  <el-option
-                    v-for="item in (recipients || []).filter(({ departmentId }) => {
-                      return accountApply.departmentId === departmentId
-                    })"
-                    :key="item.id"
-                    :label="item.name"
-                    :value="item.id"
-                  />
+                  <el-option v-for="item in reviewers" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
               <el-form-item label="工作岗位：" prop="applyJob">
@@ -199,7 +205,7 @@
                   <span class="title">登录名：</span><span>{{ detailInfo.username }}</span>
                 </el-row>
                 <el-row>
-                  <span class="title">用户名：</span><span>{{ detailInfo.realName }}</span>
+                  <span class="title">用户姓名：</span><span>{{ detailInfo.realName }}</span>
                 </el-row>
                 <el-row>
                   <span class="title">联系电话：</span><span>{{ detailInfo.phone }}</span>
@@ -267,7 +273,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import { accountApplyHistory, accountApplyFill, getCompanyAll, getAllAuditors } from '@/api/base'
+import { accountApplyHistory, accountApplyFill, getCompanyAll, getAllAuditors, getAllDepartments } from '@/api/base'
 import { imageByName } from '@/api/ftp'
 import { regPhone, regEmail, regPassword, regUserName, regRealName } from '@/utils/reg'
 
@@ -278,7 +284,7 @@ const sha1Hex = require('sha1-hex')
 const columns = [
   { prop: 'order', label: '序号', width: '80' },
   { prop: 'username', label: '登录名' },
-  { prop: 'realName', label: '用户名' },
+  { prop: 'realName', label: '用户姓名' },
   { prop: 'createTime', label: '申请时间' },
   { prop: 'applyername', label: '申请人' },
   {
@@ -317,7 +323,7 @@ export default class AccountApply extends Vue {
     realName: '',
     phone: '',
     email: '',
-    departmentId: '',
+    departmentId: [],
     recipient: '', // 审核人
     note: '',
     job: '',
@@ -343,7 +349,7 @@ export default class AccountApply extends Vue {
       }
     ],
     realName: [
-      { required: true, message: '请输入用户名', trigger: 'blur' },
+      { required: true, message: '请输入用户姓名', trigger: 'blur' },
       {
         pattern: regRealName(),
         message: '2-6位中文字符，不可包含非法字符！',
@@ -391,6 +397,13 @@ export default class AccountApply extends Vue {
       this.activeTab = 'history'
     }
   }
+
+  get reviewers() {
+    const { departmentId } = this.accountApply
+    return (this.recipients || []).filter(({ departmentId: id }) => {
+      return id === Array.isArray(departmentId) ? [...departmentId].pop() : departmentId
+    })
+  }
   mounted() {
     this.columns = columns
     this.historyList()
@@ -421,8 +434,11 @@ export default class AccountApply extends Vue {
     // })
 
     // })
+    const { departmentId } = this.accountApply
+
     this.detailInfo = {
       ...this.detailInfo,
+      departmentId: Array.isArray(departmentId) ? departmentId.pop() : departmentId,
       esignature: imageByName(this.detailInfo.esignature),
       avatar: imageByName(this.detailInfo.avatar)
     }
@@ -511,10 +527,21 @@ export default class AccountApply extends Vue {
   }
   // 获取部门
   getdepartmentId() {
-    getCompanyAll().then((res) => {
-      this.departmentIdOptions = res.result
+    getAllDepartments().then((res) => {
+      this.departmentIdOptions = res.result || []
     })
   }
+
+  get deptmentTree() {
+    const getChildren = (parent) => {
+      const { id: parentId } = parent
+      const children = this.departmentIdOptions.filter((item) => item.parentId === parentId)
+      if (!!children.length) parent.children = children.map(getChildren)
+      return parent
+    }
+    return this.departmentIdOptions.filter((item) => !item.parentId).map(getChildren)
+  }
+
   // 获取审核人
   getAuditors() {
     getAllAuditors(null).then((res) => {

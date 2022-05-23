@@ -204,7 +204,7 @@ export default class Section extends Vue {
     const { parentId } = this.department
     return {
       ...this.department,
-      parentId: Array.isArray(parentId) ? parentId.pop() : parentId
+      parentId: Array.isArray(parentId) ? [...parentId].pop() : parentId
     }
   }
   // 新增部门/单位
@@ -265,7 +265,6 @@ export default class Section extends Vue {
   getAllUnit() {
     this.unitTreeSelect = []
     getAllDepartments().then((res) => {
-      console.log(res)
       this.departmentList = res.result || []
     })
   }
