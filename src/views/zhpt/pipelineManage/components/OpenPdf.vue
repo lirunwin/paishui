@@ -2,7 +2,7 @@
   <div class="pdf">
     <div v-loading="loading" style="margin-top: 50%; text-align: center"></div>
     <div style="margin-top: 50%;text-align: center;" v-if="isNull">暂无报告地址</div>
-    <pdf v-for="i in numPages" :key="i" :src="laoclUrl" :page="i"></pdf>
+    <pdf  v-for="i in numPages" :key="i" :src="laoclUrl" :page="i"></pdf>
   </div>
 </template>
 

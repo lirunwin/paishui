@@ -15,17 +15,54 @@ export default {
   props: ['paramData'],
   components: {},
   data() {
-    return {}
+    return {
+      echartsData: [],
+      echatrsArr: []
+    }
   },
-  watch: {},
+  watch: {
+    paramData: {
+      handler(nv, ov) {
+        this.echartsData = nv
+        console.log('缺陷等级统计图新的echartsData', this.paramData)
+        this.initData()
+      },
+      deep: true,
+      immediate: true
+    }
+  },
   computed: {},
   created() {},
   mounted() {
     this.initData()
   },
   methods: {
+    // 处理缺陷数据
+    setDefectData() {
+      let arr = this.echartsData.map((v) => {
+        return {
+          name: v.checkSuggest,
+          value: v.defectNum
+        }
+      })
+
+      arr = arr.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      this.echatrsArr = arr
+      console.log('渲染管道检测情况统计图arr', arr)
+    },
+
     //初始化数据(饼状图)
     initData() {
+      this.setDefectData()
       // console.log('渲染管道检测情况统计图')
       let chartDom = document.getElementById('echartsFive')
       let myChart = echarts.init(chartDom)
@@ -36,19 +73,18 @@ export default {
           trigger: 'item'
         },
         legend: {
-          orient: 'vertical',
+          // orient: 'vertical',
           bottom: 'bottom'
         },
         series: [
           {
-            name: 'Access From',
+            name: '处理方式',
             type: 'pie',
             radius: '50%',
-            data: [
-              { value: 580, name: 'Email' },
-              { value: 484, name: 'Union Ads' },
-              { value: 300, name: 'Video Ads' }
-            ],
+            data: this.echatrsArr,
+            label: {
+              formatter: ' {b}\n {d}% ',
+            },
             emphasis: {
               itemStyle: {
                 shadowBlur: 10,
@@ -61,7 +97,7 @@ export default {
       }
 
       option && myChart.setOption(option)
-      console.log('option', option)
+      // console.log('option', option)
     }
   }
 }
@@ -72,7 +108,7 @@ export default {
 .main {
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  // overflow: hidden;
   display: flex;
   flex-direction: column;
   .content {

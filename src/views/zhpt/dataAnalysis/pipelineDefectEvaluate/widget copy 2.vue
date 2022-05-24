@@ -60,7 +60,7 @@
           <el-select size="small" clearable v-model="searchValue.defectName" placeholder="选择类型名称">
             <el-option v-for="item in echartsData" :key="item.name" :label="item.name" :value="item.name"> </el-option>
           </el-select>
-          <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 查询 </el-button>
+          <el-button class="serch-btn" style="margin-left: 26px" type="primary"> 查询 </el-button>
           <el-button class="serch-btn" type="primary"> 导出 </el-button>
         </div>
         <div class="right-btn"></div>
@@ -189,29 +189,7 @@ export default {
       this.searchValue.finishDate = n
     },
     pageData: function (newValue, old) {
-      this.allArr = [
-        {
-          name: '1级',
-          Lname: '一级',
-          value: 0
-        },
-        {
-          name: '2级',
-          Lname: '二级',
-          value: 0
-        },
-        {
-          name: '3级',
-          Lname: '三级',
-          value: 0
-        },
-        {
-          name: '4级',
-          Lname: '四级',
-          value: 0
-        }
-      ]
-
+      this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }
       this.contentEchatrs = newValue.map((v) => {
         return {
           name: v.defectType,
@@ -229,19 +207,53 @@ export default {
         return obj
       }, [])
 
-      this.contentEchatrs.forEach((v) => {
-        if (v.name == null) {
-          v.name = '正常'
+      newValue.forEach((pv) => {
+        if (pv.defectType == '结构性缺陷' && pv.defectType != null) {
+          this.defectQuantityStatisticsA.push({
+            // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
+            name: pv.defectName,
+            type: pv.defectCode,
+            value: pv.defectNum,
+            title: `（${pv.defectCode}）${pv.defectName}`
+          })
         }
-      })
 
-      newValue.forEach((v) => {
-        this.allArr.forEach((av) => {
-          if (v.defectLevel == av.Lname) {
-            av.value += v.defectNum
+        if (pv.defectType == '功能性缺陷' && pv.defectType != null) {
+          this.defectQuantityStatisticsB.push({
+            // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
+            name: pv.defectName,
+            type: pv.defectCode,
+            value: pv.defectNum,
+            title: `（${pv.defectCode}）${pv.defectName}`
+          })
+        }
+         this.contentEchatrs.forEach((v) => {
+          if (v.name == null) {
+            v.name = '正常'
           }
         })
       })
+      this.defectQuantityStatisticsA = this.defectQuantityStatisticsA.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      this.defectQuantityStatisticsB = this.defectQuantityStatisticsB.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      
 
       let echartsDataArr = newValue.map((v) => {
         return {
@@ -271,10 +283,6 @@ export default {
     }
   },
   methods: {
-    // 搜索
-    searchApi() {
-      this.getData(this.searchValue)
-    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
@@ -297,19 +305,10 @@ export default {
         }
       }
     },
-    async getData(params) {
+    async getData() {
       // {jcStartDate:检测开始日期,jcEndDate:检测结束日期,startPoint：起始井号", "endPoint：终止井号,defectType:缺陷类型，defectName：缺陷名称}
-      let data = {}
-
-      if (params) {
-        data.startDate = params.startDate
-        data.finishDate = params.finishDate
-        data.startPoint = params.startPoint
-        data.endPoint = params.endPoint
-        data.defectType = params.defectType
-        data.defectName = params.defectName
-      }
-      let res = await getPipeDefectsTypeCountMap(data)
+      let params = {}
+      let res = await getPipeDefectsTypeCountMap(params)
       console.log('管道缺陷评价统计', res)
       this.pageData = res.result
       if (this.pageData) {

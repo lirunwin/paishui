@@ -19,9 +19,10 @@ export function addMapMark (data) {
 }
 
 // 删除地图书签 { id }
-export function deleteMapMark (id) {
+export function deleteMapMark (params) {
     return request({
-        url: `/psgw/titleLabel/${id}`,
+        url: `/psgw/titleLabel/removeByIds`,
         method: "delete",
+        params
     })
 }

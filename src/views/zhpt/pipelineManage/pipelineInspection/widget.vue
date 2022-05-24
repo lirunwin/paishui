@@ -44,16 +44,7 @@
               </el-col>
             </el-row>
           </div>
-          <div class="release-radio">
-            <div class="title">检测状态：</div>
-            <!-- <el-radio v-model="searchParams.jcStatus" label="0">未检测</el-radio>
-            <el-radio v-model="searchParams.jcStatus" label="1">已检测</el-radio> -->
-            <el-checkbox-group v-model="searchParams.jcStatus">
-              <!-- <el-checkbox label="">全部</el-checkbox> -->
-              <el-checkbox label="0">未检测</el-checkbox>
-              <el-checkbox label="1">已检测</el-checkbox>
-            </el-checkbox-group>
-          </div>
+        
           <div class="title">结构性缺陷等级：</div>
           <el-select v-model="searchParams.funcClass" placeholder="">
             <el-option v-for="(item, i) in gradeArr" :key="i + gradeArr.length" :label="item" :value="item"></el-option>
@@ -840,6 +831,10 @@ export default {
       }
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
+      }
+      .hover-row{
+        color: #E6A23C;
+        background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
     }
   }

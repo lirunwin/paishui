@@ -107,12 +107,16 @@ export default class iDraw {
         this.map && this.map.removeInteraction(this.drawer)
         this.drawer = null
     }
-    // 清除绘制图形
+    // 绘制图形
     clear () {
         this.vectorSource && this.vectorSource.clear()
         this.map && this.map.removeLayer(this.vectorLayer)
         this.overlay && this.overlay.setPosition(null)
         this.vectorSource = this.vectorLayer = this.overlay = null
+    }
+    //
+    clearFea () {
+        this.vectorSource && this.vectorSource.clear()
     }
     // crosshair, auto
     setCursor (cursorStyle = "auto") {

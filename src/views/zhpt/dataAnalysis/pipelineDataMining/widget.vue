@@ -21,18 +21,16 @@
         </div>
         <el-divider></el-divider>
         <!-- 视图列表 -->
-        <div class="echarts-list">
-          <div class="threeTop">
-            <div class="threeTop-item">
-              <echarts-one v-if="redayY" :paramData="defectLevel"></echarts-one>
-            </div>
-            <div class="threeTop-item">
+        <div class="echarts-list" v-loading="loading">
+          <div class="threeBottom">
+            <div class="threeBottom-one">
               <echarts-two v-if="redayY" :paramData="defectTypeObj"></echarts-two>
             </div>
-            <div class="threeTop-item">
+            <div class="threeBottom-two">
               <echarts-three v-if="redayY" :paramData="defectLevel"></echarts-three>
             </div>
           </div>
+
           <div class="threeBottom">
             <div class="threeBottom-one">
               <echarts-four v-if="redayY" :paramData="defectLevel"></echarts-four>
@@ -50,7 +48,7 @@
 <script>
 import simpleMap from '@/components/SimpleMap'
 import { getDefectDataBySE } from '@/api/sysmap/drain'
-import echartsOne from './components/echartsOne.vue'
+// import echartsOne from './components/echartsOne.vue'
 import echartsTwo from './components/echartsTwo.vue'
 import echartsThree from './components/echartsThree.vue'
 import echartsFour from './components/echartsFour.vue'
@@ -58,9 +56,10 @@ import echartsFive from './components/echartsFive.vue'
 
 export default {
   props: ['data'],
-  components: { simpleMap, echartsOne, echartsTwo, echartsThree, echartsFour, echartsFive },
+  components: { simpleMap, echartsTwo, echartsThree, echartsFour, echartsFive },
   data() {
     return {
+      loading: true, // 加载效果
       redayY: false, // 数据是否已加载完毕
       linkage: true, // 是否联动
       defectTypeObj: {
@@ -92,13 +91,13 @@ export default {
       // 处理方式统计图
       this.defectLevel = defectArr
       this.redayY = true
-      console.log('this.defectLevel', this.defectLevel)
+      // console.log('this.defectLevel', this.defectLevel)
 
       // 管道检测情况统计图
 
       // 缺陷类型统计图
       defectArr.forEach((v) => {
-        console.log('结构性缺陷循环', v.defectType)
+        // console.log('结构性缺陷循环', v.defectType)
         // 结构性 列表
         if (v.defectType == '结构性缺陷') {
           this.defectTypeObj.funcArr.push(v)
@@ -106,11 +105,11 @@ export default {
         // 功能性性 列表
         if (v.defectType == '功能性缺陷') {
           this.defectTypeObj.structArr.push(v)
-          console.log('功能性缺陷', v)
+          // console.log('功能性缺陷', v)
         }
       })
-
-      console.log('this.defectTypeObj', this.defectTypeObj)
+      this.loading = false
+      // console.log('this.defectTypeObj', this.defectTypeObj)
     },
     // 绘制
     drawFeature() {
@@ -219,7 +218,7 @@ export default {
         }
         .threeBottom {
           width: 100%;
-          height: 333px;
+          height: 310px;
           display: flex;
           justify-content: space-between;
           align-items: center;

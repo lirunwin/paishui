@@ -819,6 +819,10 @@ export default {
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
       }
+      .hover-row{
+        color: #E6A23C;
+        background-color: rgba($color: #2d74e7, $alpha: 0.1);
+      }
     }
   }
   .hd-input {

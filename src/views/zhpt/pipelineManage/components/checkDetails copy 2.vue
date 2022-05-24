@@ -1,5 +1,5 @@
 <template>
-  <div class="detailsCrad">
+  <div class="detailsCradS">
     <el-card class="box-card">
       <div slot="header" class="clearfix">
         <span style="font-size: 16px">管道检测详情</span>
@@ -57,7 +57,27 @@
                 </el-col>
               </el-row>
               <div class="detailsTitle">管段剖面图</div>
-              <div ref="profile_echatrs" style="width: 500px; display: flex; height: 200px"></div>
+              <div class="profile-box">
+                <div ref="profile_echatrs" class="profile-echarts"></div>
+                <div class="profile-info">
+                  <div class="info-item">
+                    <div class="profile-text">管径</div>
+                    <span>{{ DetailsForm.diameter || 0 }}mm</span>
+                  </div>
+                  <div class="info-item">
+                    <div class="profile-text">管道长度</div>
+                    <span>{{ DetailsForm.pipeLength || 0 }}m</span>
+                  </div>
+                  <div class="info-item">
+                    <div class="profile-text">检测方向</div>
+                    <span>{{ DetailsForm.detectDir }}</span>
+                  </div>
+                  <div class="info-item">
+                    <div class="profile-text">检测长度</div>
+                    <span>{{ DetailsForm.jclength || 0 }}m</span>
+                  </div>
+                </div>
+              </div>
             </el-form>
           </div>
           <!-- 功能性缺陷 -->
@@ -166,8 +186,8 @@
                 />
                 <p style="color: #999999; font-size: 14px">暂无数据</p>
               </div>
-              
-              <div v-if="funcDefectArr" v-for="v in funcDefectArr" style="margin-top: 20px; height: 200px">
+
+              <div v-if="funcDefectArr" v-for="v in funcDefectArr" style="margin-top: 20px; height: 240px">
                 <div class="info-title">（{{ v.defectCode }}）{{ v.defectName }} 距离：{{ v.distanceStartPoint }}m</div>
                 <div class="info-box">
                   <div class="info-text">
@@ -183,7 +203,6 @@
                     >
                     </el-image>
                   </div>
-                  
                 </div>
               </div>
             </el-form>
@@ -211,14 +230,14 @@
                       DetailsForm.wordInfoName
                     }}</el-link> -->
                     <!-- 附件列表 -->
-                    <div style="max-height: 120px; overflow-y: scroll">
+                    <div v-if="fileListData.length" style="max-height: 120px; overflow-y: scroll">
                       <div v-for="(item, i) in fileListData" :key="i" class="text-space">
                         <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{
                           item.wordInfoName + 'docx'
                         }}</el-link>
                       </div>
-                      <p v-if="!fileListData.length" style="text-align: center">暂无报告</p>
                     </div>
+                    <p v-if="!fileListData.length" style="text-align: center">暂无报告</p>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -245,6 +264,9 @@ export default {
   props: ['checkParam'],
   data() {
     return {
+      nullArr: [],
+      seriesXArr: [],
+      echartsArr: [],
       funcDefectArr: [],
       structDefectArr: [],
       defectQuantityStatisticsA: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'], // 结构性缺陷
@@ -337,16 +359,42 @@ export default {
     },
     // 详情
     async openDetails() {
-      // console.log('管道检测开始', this.checkParam)
+      console.log('管道检测开始', this.checkParam)
       if (this.checkParam) {
         // console.log('走了有id的方法')
         let res = await assessmentDetails(this.checkParam)
-        if(!res.result){
-          this.$message.error('管道详情数据为空~!');
+        if (!res.result) {
+          this.$message.error('管道详情数据为空~!')
           this.closeDialog()
           return false
         }
         this.DetailsForm = res.result
+        let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, { value: '终点' + this.DetailsForm.endPoint }]
+        let seriesXArr = [this.DetailsForm.startDepth + '', this.DetailsForm.endDepth + '']
+        // let seriesXArr = []
+        for (let i = 0; i < this.DetailsForm.pipeDefects.length - 1; i++) {
+          nullArr.splice(1, 0, '')
+          seriesXArr.splice(
+            1,
+            0,
+            (((this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2) * (i + 1)).toFixed(4)
+          )
+        }
+
+        // 折线图计算
+        let ecArr = res.result.pipeDefects.map((v, i) => {
+          // seriesXArr.push(v.distanceStartPoint)
+          return {
+            type: v.defectCode,
+            name: v.defectName,
+            value: seriesXArr[i],
+            distance: v.distanceStartPoint
+          }
+        })
+
+        this.nullArr = nullArr
+        this.seriesXArr = seriesXArr
+        this.echartsArr = ecArr
         // 缺陷信息分类
         this.DetailsForm.pipeDefects.forEach((v) => {
           this.funcDefectArr = []
@@ -414,14 +462,14 @@ export default {
       // let chartDom = document.getElementById('profile_echatrs')
       // let myChart = echarts.init(chartDom)
       let myChart = echarts.getInstanceByDom(this.$refs.profile_echatrs)
-      if(myChart == null) {
+      if (myChart == null) {
         myChart = echarts.init(this.$refs.profile_echatrs)
       }
       let option
       option = {
         xAxis: {
           type: 'category',
-          data: [{ value: '起点' + this.DetailsForm.startPoint }, '', { value: '终点' + this.DetailsForm.endPoint }],
+          data: this.nullArr,
           axisTick: {
             show: false
           }
@@ -430,7 +478,10 @@ export default {
           type: 'value',
           name: '埋深：m',
           axisLine: {
-            show: true //隐藏y轴
+            show: true, //隐藏y轴
+            axisLine: {
+              bottom: 'bottom'
+            }
           },
           axisLabel: {
             show: false //隐藏刻度值
@@ -445,34 +496,28 @@ export default {
         },
         series: [
           {
-            data: [
-              this.DetailsForm.startDepth,
-              (this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2,
-              this.DetailsForm.endDepth
-            ],
+            data: this.seriesXArr,
             type: 'line',
             color: '#CFCCCC',
             markLine: {
               symbol: ['none', 'none'],
               label: {
                 show: true,
+                padding: [0, 0, -60, 0],
                 formatter: function (a) {
                   console.log('标题参数', a)
                   return ` 埋深 ${a['name']}m `
                 }
               },
               data: [
-                { xAxis: 0, name: this.DetailsForm.startDepth },
-                { xAxis: 2, name: this.DetailsForm.endDepth }
+                { xAxis: 0, name: this.DetailsForm.startDepth + '' },
+                { xAxis: this.DetailsForm.pipeDefects.length * 1, name: this.DetailsForm.endDepth + '' }
               ]
             }
           },
 
           {
-            data: [
-              { value: this.DetailsForm.startDepth, name: '沉积', type: 'CJ' },
-              { value: (this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2, name: '变形', type: 'BX' }
-            ],
+            data: this.echartsArr,
             type: 'line',
             symbol: 'triangle',
             symbolSize: 10,
@@ -483,7 +528,7 @@ export default {
                   // formatter: '（CJ）{b}[0]，{c}m   ',
                   formatter: function (a) {
                     console.log('标题参数', a)
-                    return `（${a['data']['type']}）${a['name']},${a['value']}m  `
+                    return `（${a['data']['type']}）${a['data']['name']},${a['data']['distance']}m   `
                   },
                   backgroundColor: '#fff',
                   borderColor: '#8C8D8E',
@@ -496,10 +541,12 @@ export default {
                     color: '#000'
                   }
                 },
-                textColor: 'red',
-                borderWidth: 6,
-                borderColor: '#E91111',
-                color: '#2D74E7'
+                textColor: '#8C8D8E',
+                // textColor: 'red',
+                borderWidth: 6
+                // borderColor: '#E91111',
+                // color: '#2D74E7'
+                // color: '#8C8D8E'
               },
               emphasis: {
                 label: {
@@ -526,12 +573,16 @@ export default {
 
 <style lang="scss" scoped>
 // 详情卡片的样式
-.detailsCrad {
+.detailsCradS {
   position: fixed;
-  top: 100px;
-  right: 80px;
-  margin-top: 20px;
-  z-index: 10;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba($color: #333333, $alpha: 0.7);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
   .clearfix:before,
   .clearfix:after {
     display: table;
@@ -542,8 +593,38 @@ export default {
   }
 
   /deep/ .box-card {
-    width: 550px;
+    // width: 50vw;
+    width: 1000px;
     max-height: 80vh;
+    margin-top: 4%;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 12px 0px;
+    border: none;
+    .box1 {
+      .profile-box {
+        display: flex;
+        align-items: center;
+        .profile-echarts {
+          // width: 80%;
+          flex: 1;
+          height: 200px;
+        }
+        .profile-info {
+          padding-top: 48px;
+          height: 200px;
+          width: 200px;
+          .info-item {
+            display: flex;
+            margin-top: 10px;
+            align-items: center;
+            .profile-text {
+              width: 50px;
+              text-align: right;
+              margin-right: 10px;
+            }
+          }
+        }
+      }
+    }
     .el-card__header {
       height: 48px;
       color: #fff;
@@ -557,10 +638,11 @@ export default {
       }
     }
     .content {
-      /deep/ .content-info {
+      .content-info {
         overflow-y: scroll;
         height: 600px;
-        padding: 10px 20px;
+        padding: 10px 30px;
+
         .info-title {
           font-size: 14px;
           font-weight: bold;
@@ -582,7 +664,7 @@ export default {
             border: 1px solid #dedede;
           }
         }
-        /deep/ .el-form {
+        .el-form {
           .el-link--inner {
             max-width: 416px;
             /* 1.先强制一行内显示文本 */

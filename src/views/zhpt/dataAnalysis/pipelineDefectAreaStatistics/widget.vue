@@ -49,7 +49,7 @@
             </div>
             <div class="serch-engineering">
               <div class="title">整改建议：</div>
-              <el-select size="small" v-model="searchValue.fixSuggest" placeholder="选择建议">
+              <el-select size="small" clearable v-model="searchValue.fixSuggest" placeholder="选择建议">
                 <el-option
                   v-for="item in fixSuggestList"
                   :key="item.codeValue"
@@ -72,15 +72,16 @@
             <div class="iconSymbol"></div>
             <div class="titleName">统计结果</div>
           </div>
-          <div class="content">
+          <div class="content" v-loading="loading">
             <div style="padding-left: 12px">
               <el-radio v-model="radio" label="1">饼状图</el-radio>
               <el-radio v-model="radio" label="2">柱状图</el-radio>
-              <el-checkbox v-model="pipNum">管道数量</el-checkbox>
-              <el-checkbox v-model="pipLen">管道长度</el-checkbox>
+              <el-checkbox v-model="checkDefectType">缺陷类型</el-checkbox>
+              <el-checkbox v-model="checkDefectName">类型名称</el-checkbox>
+              <el-checkbox v-model="checkDefectLevel">缺陷等级</el-checkbox>
             </div>
             <h2 style="text-align: center">管道评估统计图</h2>
-            <div id="mainPDAS" style="height: 250px"></div>
+            <div id="mainPDAS" style="height: 330px"></div>
             <!-- 表格 -->
             <div class="detailsTitle">管道缺陷数量统计表</div>
             <summary-form :tabelData="returnTabel"></summary-form>
@@ -112,27 +113,17 @@ export default {
   components: { simpleMap, summaryForm },
   data() {
     return {
+      loading: true, // 加载
       fixSuggestList: [],
-      pipNum: true,
-      pipLen: false,
-      pipNumShow: 1,
-      pipLenShow: 0,
+      checkDefectType: true,
+      checkDefectName: true,
+      checkDefectLevel: true,
+
       tableData: [], // 表格数据
       typeArr: [], // 建议类型数组
       numArr: [], // 管道数量
       lengthArr: [], // 管道长度
       radio: '2', // 单选框的值
-      form: {
-        name: '',
-        number: '',
-        constructionUnit: '',
-        designUnit: '',
-        workUnit: '',
-        testUnit: '',
-        probeUnit: '',
-        supervisorUnit: '',
-        projectIntroduction: ''
-      },
       searchValue: {
         startDate: '',
         finishDate: '',
@@ -162,8 +153,42 @@ export default {
         { title: '(SG)树根', type: 'SG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(ZW)障碍物', type: 'ZW', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
       ],
-      defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 } // 合计
+      defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }, // 合计
+      pageData: [],
+      contentEchatrs: [],
+      allArr: [
+        {
+          name: '1级',
+          Lname: '一级',
+          value: 0
+        },
+        {
+          name: '2级',
+          Lname: '二级',
+          value: 0
+        },
+        {
+          name: '3级',
+          Lname: '三级',
+          value: 0
+        },
+        {
+          name: '4级',
+          Lname: '四级',
+          value: 0
+        }
+      ],
+      echartsTitle: [],
+      echartsData: [],
+
+      // 筛选条件
+      filter: {
+        jcStartDate: '',
+        jcEndDate: '',
+        checkSuggest: '',
+      }
     }
+    
   },
 
   mounted() {
@@ -176,7 +201,7 @@ export default {
   },
   destroyed() {
     this.$refs.myMap.showLegend('testReport', false)
-    this.data.that.clearMap()
+    this.data.that.clearMap() 
   },
   beforeCreate() {
     console.log('销毁echatrs')
@@ -219,6 +244,7 @@ export default {
     // 处理地图给的数据
     getMapData(res) {
       let arr = res.defectData
+      this.pageData = arr
       console.log('arr', arr)
       // 按缺陷名称给数据分类
       // 缺陷数量统计
@@ -282,33 +308,42 @@ export default {
       }
       // console.log('returnTabel', this.returnTabel)
       this.$nextTick(() => {
+        this.loading = false
         this.initData()
       })
     },
     // 绘制
     drawFeature() {
-      this.$refs.myMap.draw((fea) => {
-        this.getDataFromExtent({}, fea).then((res) => {
-          console.log('绘制,过滤后', res)
-          this.getMapData(res)
-        })
+      this.$refs.myMap.draw({
+        callback: fea => {
+          this.getDataFromExtent(fea).then((res) => {
+            console.log('这是绘制的数据', res)
+            this.getMapData(res)
+          })
+        }
       })
     },
+    // 地图移动
     mapMoveEvent(extent) {
-      this.getDataFromExtent({}, extent).then((res) => {
-        console.log('地图变化,过滤后', res)
-        this.getMapData(res)
+      this.getDataFromExtent(extent).then((res) => {
+        console.log('这是地图移动的数据', res)
       })
     },
-    async getDataFromExtent(params, extent) {
-      let data = await this.getPipeData(params)
+    // 查询
+    search () {
+      this.getDataFromExtent().then((res) => {
+          console.log('这是查询的数据', res)
+      })
+    },
+    async getDataFromExtent(extent) {
+      let data = await this.getPipeData()
       if (data.code === 1) {
         // 地图范围过滤数据
         return this.$refs.myMap.getDefectDataInMap(data.result, extent)
       } else this.$message.error('请求数据出错')
     },
     // 根据条件获取缺陷数据
-    getPipeData(filter = {}) {
+    getPipeData() {
       let params = {
         startPoint: '',
         endPoint: '',
@@ -316,8 +351,8 @@ export default {
         structClass: '',
         jcStartDate: '',
         jcEndDate: '',
-        checkSuggest: '修复计划',
-        ...filter
+        checkSuggest: '',
+        ...this.filter
       }
       return getDefectDataBySE(params)
     },
@@ -326,59 +361,30 @@ export default {
       // 基于准备好的dom，初始化echarts实例
       let myChart = echarts.init(document.getElementById('mainPDAS'))
       // 绘制图表
+
       if (this.radio == '1') {
         myChart.setOption(
           {
             tooltip: {
               trigger: 'item',
-              formatter: function (a) {
-                console.log('标题参数', a)
-                return `（${a['data']['name']}）数量:${a['data']['value']}   `
-              }
+              formatter: '{b}: {c}个 ({d}%)'
             },
             legend: {
-              right: 'right',
-              top: 'center',
-              data: this.typeArr
+              orient: 'vertical',
+              top: '20',
+              right: '20',
+              data: this.echartsTitle
             },
-            series: [
-              {
-                emptyCircleStyle: {
-                  opacity: this.pipNumShow
-                },
-                name: '管道数量统计',
-                type: 'pie',
-                selectedMode: 'single',
-                radius: [0, '50%'],
-                label: {
-                  show: false,
-                  position: 'inner',
-                  fontSize: 10
-                },
-                labelLine: {
-                  show: false
-                },
-                data: this.numArr
-              },
-              {
-                emptyCircleStyle: {
-                  opacity: this.pipLenShow
-                },
-                name: '管道长度统计',
-                type: 'pie',
-                radius: ['60%', '80%'],
-                labelLine: {
-                  length: 30
-                },
-                data: this.lengthArr
-              }
-            ]
+            series: this.loadEchatrsPie
           },
           true
         )
       } else if (this.radio == '2') {
         myChart.setOption(
           {
+            tooltip: {
+              trigger: 'item'
+            },
             legend: {},
             xAxis: {
               type: 'category',
@@ -387,31 +393,161 @@ export default {
             yAxis: {
               type: 'value'
             },
-            series: [
-              {
-                emptyCircleStyle: {
-                  opacity: this.pipNumShow
-                },
-                name: '管道数量统计',
-                type: 'bar',
-                data: this.numArr
-              },
-              {
-                emptyCircleStyle: {
-                  opacity: this.pipLenShow
-                },
-                name: '管道长度统计',
-                type: 'bar',
-                data: this.lengthArr
-              }
-            ]
+            series: this.loadEchatrsBar
           },
           true
         )
       }
+    },
+    // 动态设置echatrs大小
+    setEchatrsMain(main, radius) {
+      main.radius = radius
+      return main
     }
   },
   computed: {
+    // 动态加载echatrs(饼图)
+    loadEchatrsPie() {
+      let seriesType = {
+        name: '缺陷类型统计',
+        type: 'pie',
+        selectedMode: 'single',
+        radius: [0, '25%'],
+        label: {
+          position: 'inner',
+          fontSize: 12
+        },
+        labelLine: {
+          show: false
+        },
+        data: this.contentEchatrs
+      }
+      let seriesName = {
+        type: 'pie',
+        radius: ['30%', '45%'],
+        label: {
+          position: 'inner',
+          fontSize: 12
+        },
+        data: this.allArr
+      }
+
+      let seriesLevel = {
+        type: 'pie',
+        radius: ['55%', '65%'],
+        label: {
+          formatter: '  {b|{b}：}{c}  {per|{d}%}  ',
+          backgroundColor: '#F6F8FC',
+          borderColor: '#8C8D8E',
+          borderWidth: 1,
+          borderRadius: 4,
+          rich: {
+            b: {
+              color: '#4C5058',
+              fontSize: 14,
+              fontWeight: 'bold',
+              lineHeight: 33
+            },
+            per: {
+              color: '#fff',
+              backgroundColor: '#4C5058',
+              padding: [4, 4],
+              borderRadius: 4
+            }
+          }
+        },
+        data: this.echartsData
+      }
+
+      let arr = [this.checkDefectType, this.checkDefectName, this.checkDefectLevel]
+      if (arr.every((v) => v == true) || arr.every((v) => v == false)) {
+        return [seriesType, seriesName, seriesLevel]
+      }
+      // 判断条件
+      let condition1 = !this.checkDefectType && this.checkDefectName && this.checkDefectLevel
+      let condition2 = this.checkDefectType && !this.checkDefectName && this.checkDefectLevel
+      let condition3 = this.checkDefectType && this.checkDefectName && !this.checkDefectLevel
+      let condition4 = !this.checkDefectType && !this.checkDefectName && this.checkDefectLevel
+      let condition5 = this.checkDefectType && !this.checkDefectName && !this.checkDefectLevel
+
+      if (condition1) {
+        return [this.setEchatrsMain(seriesName, [0, '45%']), seriesLevel]
+      } else if (condition2) {
+        return [this.setEchatrsMain(seriesType, [0, '45%']), seriesLevel]
+      } else if (condition3) {
+        return [seriesType, this.setEchatrsMain(seriesName, ['30%', '65%'])]
+      } else if (condition4) {
+        return [this.setEchatrsMain(seriesLevel, [0, '65%'])]
+      } else if (condition5) {
+        return [this.setEchatrsMain(seriesType, [0, '65%'])]
+      } else {
+        return [seriesType, seriesName, seriesLevel]
+      }
+    },
+    // 动态加载echatrs(柱状图)
+    loadEchatrsBar() {
+      let seriesType = {
+        name: '缺陷类型统计',
+        type: 'bar',
+        data: this.contentEchatrs,
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            console.log('标题参数', a)
+            return `（${a['data']['name']}）类型:${a['data']['value']}   `
+          }
+        }
+      }
+      let seriesName = {
+        name: '缺陷数量统计',
+        type: 'bar',
+        data: this.allArr,
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            console.log('标题参数', a)
+            return `（${a['data']['name']}）数量:${a['data']['value']}   `
+          }
+        }
+      }
+      let seriesLevel = {
+        name: '缺陷等级统计',
+        type: 'bar',
+        data: this.echartsData,
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            console.log('标题参数', a)
+            return `（${a['data']['name']}）等级:${a['data']['value']}   `
+          }
+        }
+      }
+
+      let arr = [this.checkDefectType, this.checkDefectName, this.checkDefectLevel]
+      if (arr.every((v) => v == true) || arr.every((v) => v == false)) {
+        return [seriesType, seriesName, seriesLevel]
+      }
+      // 判断条件
+      let condition1 = !this.checkDefectType && this.checkDefectName && this.checkDefectLevel
+      let condition2 = this.checkDefectType && !this.checkDefectName && this.checkDefectLevel
+      let condition3 = this.checkDefectType && this.checkDefectName && !this.checkDefectLevel
+      let condition4 = !this.checkDefectType && !this.checkDefectName && this.checkDefectLevel
+      let condition5 = this.checkDefectType && !this.checkDefectName && !this.checkDefectLevel
+
+      if (condition1) {
+        return [seriesName, seriesLevel]
+      } else if (condition2) {
+        return [seriesType, seriesLevel]
+      } else if (condition3) {
+        return [seriesType, seriesName]
+      } else if (condition4) {
+        return [seriesLevel]
+      } else if (condition5) {
+        return [seriesType]
+      } else {
+        return [seriesType, seriesName, seriesLevel]
+      }
+    },
     returnTabel() {
       let obj = {
         defectQuantityStatisticsA: this.defectQuantityStatisticsA,
@@ -420,12 +556,7 @@ export default {
       }
       return obj
     },
-    // setOptionShowNum() {
-    //   return this.pipNum ? 1 : 0
-    // },
-    // setOptionShowLen() {
-    //   return this.pipLen ? 1 : 0
-    // },
+
     mapExtent() {
       return this.$store.state.gis.mapExtent
     }
@@ -449,14 +580,72 @@ export default {
         this.initData()
       }
     },
-    pipNum: function (newValue, old) {
-      newValue ? (this.pipNumShow = 1) : (this.pipNumShow = 0)
-      console.log('pipNumShow', this.pipNumShow)
+    checkDefectType: function (newValue, old) {
       this.initData()
     },
-    pipLen: function (newValue, old) {
-      newValue ? (this.pipLenShow = 1) : (this.pipLenShow = 0)
-      console.log('pipLenShow', this.pipLenShow)
+    checkDefectName: function (newValue, old) {
+      this.initData()
+    },
+    checkDefectLevel: function (newValue, old) {
+      this.initData()
+    },
+    pageData: function (newValue, old) {
+      this.contentEchatrs = [
+        {
+          name: '结构性缺陷',
+          value: 0
+        },
+        {
+          name: '功能性缺陷',
+          value: 0
+        },
+        {
+          name: '正常',
+          value: 0
+        }
+      ]
+
+      this.defectQuantityStatisticsA.forEach((v) => {
+        this.contentEchatrs[0].value += v.value
+      })
+      this.defectQuantityStatisticsB.forEach((v) => {
+        this.contentEchatrs[1].value += v.value
+      })
+      newValue.forEach((v) => {
+        if (v.defectCode == 'ZC') {
+          this.contentEchatrs[2].value += v.defectNum
+        }
+        this.allArr.forEach((av) => {
+          if (v.defectLevel == av.Lname) {
+            av.value += v.defectNum
+          }
+        })
+      })
+
+      let echartsDataArr = newValue.map((v) => {
+        return {
+          value: v.defectNum,
+          defectCode: v.defectCode,
+          name: v.defectName
+        }
+      })
+
+      echartsDataArr = echartsDataArr.reduce((obj, item) => {
+        let find = obj.find((i) => i.defectCode === item.defectCode)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      console.log('echartsDataArr', echartsDataArr)
+      this.echartsTitle = echartsDataArr.map((titleV) => {
+        return titleV.name
+      })
+      this.echartsData = echartsDataArr
+      console.log(' this.echartsData ', this.echartsData)
       this.initData()
     },
 

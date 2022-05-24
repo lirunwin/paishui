@@ -51,16 +51,7 @@
               </el-col>
             </el-row>
           </div>
-          <div class="title">整改建议：</div>
-          <el-select size="small" v-model="searchValue.fixSuggest" placeholder="选择建议">
-            <el-option
-              v-for="item in fixSuggestList"
-              :key="item.codeValue"
-              :label="item.codeValue"
-              :value="item.codeValue"
-            >
-            </el-option>
-          </el-select>
+          
 
           <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
           <el-button size="small" icon="el-icon-search" type="primary" @click="">导出</el-button>
@@ -119,7 +110,7 @@
 </template>
 
 <script>
-import { queryPageAssessment, queryDictionariesId } from '@/api/pipelineManage'
+import { queryPageAssessment } from '@/api/pipelineManage'
 
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
@@ -128,13 +119,11 @@ export default {
   components: {},
   data() {
     return {
-      fixSuggestList: [],
       searchValue: {
         startDate: '',
         finishDate: '',
         startPoint: '',
         endPoint: '',
-        fixSuggest: ''
       },
       // 表格参数
       tableContent: [
@@ -144,11 +133,10 @@ export default {
         { width: '130', sortable: true, label: '起点埋深(m)', name: 'startDepth' },
         { width: '130', sortable: true, label: '终点埋深(m)', name: 'endDepth' },
         { width: '110', sortable: false, label: '管段类型', name: 'pipeType' },
-        { width: '110', sortable: false, label: '管段材质', name: 'material' },
+        { width: '', sortable: false, label: '管段材质', name: 'material' },
         { width: '110', sortable: true, label: '管段直径', name: 'diameter' },
         { width: '110', sortable: true, label: '管段长度', name: 'pipeLength' },
         { width: '110', sortable: true, label: '检测长度', name: 'jclength' },
-        { width: '', sortable: false, label: '整改建议', name: 'checkSuggest' },
         { width: '110', sortable: false, label: '检测方向', name: 'detectDir' },
         { width: '110', sortable: false, label: '检测人员', name: 'detectPerson' }
       ],
@@ -168,17 +156,9 @@ export default {
   computed: {},
   created() {
     this.getDate()
-    this.getParamsId()
   },
   methods: {
-    // 获取字典
-    async getParamsId() {
-      // 获取字典
-      // check_suggest
-      let checkSuggest = await queryDictionariesId({ keys: 'check_suggest' })
-      this.fixSuggestList = checkSuggest.result.check_suggest
-      console.log('checkSuggest', checkSuggest.result.check_suggest)
-    },
+    
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
@@ -229,7 +209,6 @@ export default {
         data.endPoint = this.searchValue.endPoint
         data.jcStartDate = this.searchValue.startDate
         data.jcEndDate = this.searchValue.finishDate
-        data.fixSuggest = this.searchValue.fixSuggest
       }
       await queryPageAssessment(data).then((res) => {
         // console.log('接口返回', res)
@@ -321,6 +300,10 @@ export default {
       }
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
+      }
+      .hover-row{
+        color: #E6A23C;
+        background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
     }
   }

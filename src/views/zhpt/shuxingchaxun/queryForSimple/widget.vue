@@ -31,15 +31,36 @@
           <i v-if="analysisDisable" class="el-icon-loading"/>查询</el-button>
       </el-row>
     </tf-legend>
+    <tf-legend class="legend_dept" label="查询结果" isopen="true" title="显示查询统计结果。">
+      <el-table :data="finalData" stripe style="width: 100%">
+        <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+        <template slot="empty">
+          <img src="@/assets/icon/null.png" alt="">
+          <p class="empty-p">暂无数据</p>
+        </template>
+        <el-table-column prop="name" label="图层" width="80px" align="center"/>
+        <el-table-column prop="value" label="数量(个)" align="center"/>
+        <el-table-column prop="length" label="编号(m)" align="center">
+          <template slot-scope="props">{{ props.row.length ? props.row.length.toFixed(2) : '-' }}</template>
+        </el-table-column>
+        <!-- <el-table-column label="操作" width="50px" align="center">
+          <template slot-scope="scope">
+            <el-link type="primary" @click="rowC(scope.row)">详情</el-link>
+          </template>
+        </el-table-column> -->
+      </el-table>
+    </tf-legend>
   </div>
 </template>
 
 <script>
 import { attConfig } from '@/views/zhpt/tongyonggongju/queryResult3/attributeConfig'
-import { esriConfig, appconfig } from 'staticPub/config'
+import { appconfig } from 'staticPub/config'
 import tfLegend from '@/views/zhpt/common/Legend'
+import { mapUtil } from '../../common/mapUtil/common'
+
 export default {
-  name: 'queryForSinple',
+  name: 'queryForSimple',
   components: { tfLegend },
   props: { param: Object },
   data() {
@@ -55,7 +76,7 @@ export default {
       textHolder: '',
       radioHolder: '',
       dateDistancs: ['', ''],
-      selectType: -1,
+      selectType: 'radio',
       layersAtt: [],
       attLists: [],
       panel: {
@@ -64,83 +85,43 @@ export default {
         label: '查询结果',
         param: {}
       },
-      analysisDisable: false
+      analysisDisable: false,
+
+      finalData: []
     }
   },
   watch: {
-    layerName() {
-      var that = this
-      if(!this.layerName) return
-      var config = attConfig.hide
-      $.ajax({
-        url: appconfig.gisResource.business_map.config[0].url + "/" + this.layerName + "/?f=pjson",
-        type: 'GET',
-        success: function(data) {
-          data = JSON.parse(data).fields
-          var fields = [] 
-          that.attListIndex = {}
-          for(let i=0,ii=data.length;i<ii;i++){
-            var fix = data[i]
-            if(config.indexOf(fix.name) > -1) continue
-            var type = fix.type.substring(13)
-            var inPut = {
-              name: fix.name,
-              label: fix.alias,
-              type: {"OID": "text", "String": "text", "Double": "radio", "Integer": "radio", "Date": "date"}[type]
-            }
-            if(fix.domain) {
-              inPut.type = "cheaked"
-              inPut.typeList = fix.domain.codedValues.map((e) => e.code)
-            }
-            fields.push(inPut)
-            that.attListIndex[fix.name] = inPut
-          }
-          that.attLists = fields
-          that.attList = ''
-        },
-        error: (error) => this.$message.error(error)
+    layerName(n, o) {
+      if (!n) return
+      mapUtil.getFilds(n).then(res => {
+        if (res) {
+          this.attLists = res.map(item => {
+            return { name: item.filed , label: item.name }
+          })
+        } else this.$message.error('获取字段数据失败')
       })
     },
-    attList(e) {
-      if(!e) {
-        this.queText = this.queRadioText = ''
-        this.checkList = []
-        this.selectType = -1
-        this.checkListAtt = []
-        return
-      }
-      e = this.attListIndex[e]
-      this.queText = this.queRadioText = ''
-      this.checkList = []
-      this.selectType = e.type
-      if(e.type) this.checkListAtt = e.typeList
-    }
+    attList(n, o) {
+      console.log(n)
+    }  
   },
-  mounted() {    
-    // var that = this
-    // var layerIndex = this.layersIndex = {}
-    // this.mapView = this.$attrs.data.mapView
-    // $.ajax({
-    //   url: appconfig.gisResource.business_map.config[0].url + "/?f=pjson",
-    //   type: 'GET',
-    //   success: function(data) {
-    //     data = JSON.parse(data).layers
-    //     var tId = [] 
-    //     for(let i=0,ii=data.length;i<ii;i++){
-    //       var layer = data[i]
-    //       // if([0, 16, 17].indexOf(layer.id) < 0){
-    //       //   tId.push({ value: layer.id, label: layer.name })
-    //       //   layerIndex[layer.id] = layer.name
-    //       // }
-    //       tId.push({ value: layer.id, label: layer.name })
-    //       layerIndex[layer.id] = layer.name
-    //     }
-    //     that.layersAtt = tId
-    //   },
-    //   error: (error) => this.$message.error(error)
-    // })
+  mounted() {
+    this.init()
   },
+  destroyed () {
+    this.clearAll()
+  },
+
   methods: {
+    init () {
+      // 加载图层
+      let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
+      let info = sources.map(source => source.sublayers.map(sublayer => {
+        return { value: sublayer.name, label: sublayer.title }
+      }))
+      this.layersAtt = info[0]
+    },
+    clearAll () {},
     queryResult() {
       var layerName = this.layerName
       var attList = this.attList
@@ -169,36 +150,6 @@ export default {
           break
       }
       this.analysisDisable = true
-      $.ajax({
-        url: appconfig.gisResource.business_map.config[0].url + "/" + layerName + "/query",
-        type: 'POST',
-        data: {
-          where: queryText,
-          outFields: 'OBJECTID',
-          f: 'pjson'
-        },
-        success: (data) => {
-          data = JSON.parse(data)
-          this.analysisDisable = false
-          if(data.error) return this.$message(data.error.message)
-          if(data.features.length < 1) return this.$message("无查询结果")
-          var oids = data.features.map((e) => e.attributes.OBJECTID)
-          this.$message('查询结果：' + data.features.length + ' 项')          
-          this.panel.param = {
-            oids: oids,
-            layer: layerName,
-            showId: 'queryForSinple'
-          }
-
-          var mapview = this.mapView
-          if(mapview.TF_resultFeatures) {
-            mapview.TF_resultFeatures.load(oids, layerName, 'queryForSinple')
-          } else {
-            this.$store.dispatch('map/changeMethod', this.panel)
-          }
-        },
-        error: (error) => this.$message.error(error)
-      })
     }
   },
   destroyed() {
