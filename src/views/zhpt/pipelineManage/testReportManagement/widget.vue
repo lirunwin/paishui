@@ -496,8 +496,8 @@
     </div>
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div class="detailsCrad" style="top: 10%; left: 20%; right: 55%" v-if="currentInfoCard">
-        <el-card class="box-card">
+      <div id="popupCard" class="detailsCrad" style="top: 10%; left: 20%; right: 55%" v-show="currentInfoCard">
+        <el-card class="box-card" v-if="currentInfoCard">
           <div class="table-content">
             <div
               style="
@@ -545,9 +545,9 @@
       </div>
     </transition>
 
-    <!-- 表格当前列信息弹出框 -->
+    <!-- 管道评估结果 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCard" class="detailsCrad" v-show="currentInfoCard">
+      <div id="popupCardEV" class="detailsCrad" v-show="currentInfoCard">
         <el-card class="box-card" v-if="currentInfoCard">
           <div class="table-content">
             <div
@@ -560,41 +560,41 @@
               "
             >
               <span style="font-weight: bold; user-select: none"
-                >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
-                <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
+                >{{ getCurrentFormEV.expNo || '' + getCurrentFormEV.pipeType || '' }}
+                <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPageEV"></i>
                 {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
-                <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+                <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPageEV"></i>
               </span>
               <a
                 style="font-size: 12px; color: #2d74e7; text-decoration: underline"
-                @click="openDetails(getCurrentForm)"
+                @click="openDetails(getCurrentFormEV)"
                 >详情</a
               >
             </div>
             <div style="margin-top: 10px">
-              管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}
+              管径：{{ getCurrentFormEV.diameter }}mm 材质：{{ getCurrentFormEV.material }}
             </div>
             <div class="content-info" style="justify-content: space-between; display: flex">
               <div class="left" style="width: 230px">
-                <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
+                <div class="detailsTitle">检测日期 {{ getCurrentFormEV.sampleTime }}</div>
                 <!-- <p style="padding-left: 10px">无文档</p> -->
                 <div class="text-space" style="margin: 10px 0">
                   <el-link
                     style="font-size: 12px; margin-left: 10px"
-                    v-if="getCurrentForm.wordFilePath"
+                    v-if="getCurrentFormEV.wordFilePath"
                     type="primary"
                     @click.stop="downloadDocx"
-                    >{{ getCurrentForm.wordInfoName + 'docx' }}</el-link
+                    >{{ getCurrentFormEV.wordInfoName + 'docx' }}</el-link
                   >
                 </div>
-                <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
-                <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
-                <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
-                <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
+                <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentFormEV.structClass }}</div>
+                <p style="padding-left: 10px">评价:{{ getCurrentFormEV.structEstimate }}</p>
+                <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentFormEV.funcClass }}</div>
+                <p style="padding-left: 10px">评价: {{ getCurrentFormEV.funcEstimate }}</p>
               </div>
               <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                 <el-tabs v-model="activeName">
-                  <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
+                  <el-tab-pane :label="`照片(${getCurrentFormEV.pipeDefects.length || 0})`" name="picnum">
                     <div class="container">
                       <el-image
                         style="width: 100%; height: 90%; -webkit-user-drag: none"
@@ -604,20 +604,22 @@
                       </el-image>
                       <div style="text-align: center">
                         <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
-                        {{ getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
-                          getCurrentForm.pipeDefects.length || 0
+                        {{ getCurrentFormEV.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
+                          getCurrentFormEV.pipeDefects.length || 0
                         }}
                         <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
                       </div>
                     </div>
                   </el-tab-pane>
                   <el-tab-pane :label="`视频`" name="viedoNum">
-                    <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
+                    <div style="width: 100%; height: 100%" v-if="getCurrentFormEV.videoPath">
                       <video controls="controls" width="100%" height="83%">
                         <source :src="getVideoUrl" type="video/mp4" />
                       </video>
                     </div>
-                    <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">暂无视频</div>
+                    <div v-show="!getCurrentFormEV.videoPath" style="text-align: center; margin-top: 20px">
+                      暂无视频
+                    </div>
                   </el-tab-pane>
                 </el-tabs>
               </div>
@@ -626,7 +628,6 @@
         </el-card>
       </div>
     </transition>
-  
   </div>
 </template>
 
@@ -645,7 +646,8 @@ import {
   queryDefectFormDetails,
   queryPipeStateDetails,
   queryPipeState,
-  assessmentDefect
+  assessmentDefect,
+  histroyPipeData
 } from '@/api/pipelineManage'
 
 // 引入预览pdf插件
@@ -684,7 +686,7 @@ import defectImg0 from '@/assets/images/traingle0.png'
 
 import Icon from 'ol/style/Icon'
 import { unByKey } from 'ol/Observable'
-
+import { Overlay } from 'ol'
 import * as echarts from 'echarts'
 
 export default {
@@ -710,6 +712,9 @@ export default {
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
       currentIndex: 0, // 当前页数
+      // 评估
+      currentFormEV: [], // 缩略提示框
+      currentIndexEV: 0, // 当前页数
       currentInfoCard: false, // 弹出框
       deleteDialogVisible: false, // 删除提示框显影
       withdrawDialogVisible: false, // 撤回提示框显影
@@ -860,6 +865,11 @@ export default {
       let obj = { ...this.currentForm[this.currentIndex] }
       return obj ? Object.assign(obj, this.isPromptBox) : {}
     },
+    // 评估缩略框数据
+    getCurrentFormEV() {
+      let obj = { ...this.currentFormEV[this.currentIndexEV] }
+      return obj || {}
+    },
     returnTabel() {
       let obj = {
         defectQuantityStatisticsA: this.defectQuantityStatisticsA,
@@ -979,14 +989,52 @@ export default {
       }
       this.currentIndex++
     },
+    // 评估
+    // 上一页
+    lastPageEV() {
+      if (this.currentIndexEV <= 0) {
+        this.currentIndexEV = 0
+        return
+      }
+      this.currentIndexEV--
+    },
+    // 下一页
+    nextPageEV() {
+      if (this.currentIndexEV + 1 >= this.currentFormEV.length) {
+        this.currentIndexEV = this.currentFormEV.length - 1
+        return
+      }
+      this.currentIndexEV++
+    },
     // 打开缩略提示框
-    async openPromptBox(row, column, cell, event) {
+    // type: 1: 缺陷，2：管线
+    async openPromptBox(row, position, type) {
       console.log('打开缩略提示框', row)
       this.isPromptBox = { ...row }
       let res = await assessmentDefect(row.id)
-      this.currentIndex = 0
       this.currentForm = res.result
+      this.currentIndex = 0
       this.currentInfoCard = true
+
+      // 管段评估(查询管段部分)
+      let resEV = await histroyPipeData({ expNo: row.expNo })
+      this.currentIndexEV = 0
+      this.currentFormEV = resEV.result
+
+      if (position) {
+        let popupId = type === 1 ? 'popupCard' : 'popupCard'
+        this.popup = new Overlay({
+          element: document.getElementById(popupId),
+          //当前窗口可见
+          autoPan: true,
+          positioning: 'bottom-center',
+          stopEvent: true,
+          offset: [18, -25],
+          autoPanAnimation: { duration: 250 }
+        })
+        this.map.addOverlay(this.popup)
+        this.popup.setPosition(position)
+      }
       // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },
     // 双击打开详情或发布
@@ -1006,10 +1054,13 @@ export default {
         this.lightLayer.getSource().clear()
         if (features.length !== 0) {
           let feature = features.find((fea) => fea.getGeometry() instanceof Point) || features[0]
+
+          let type = feature.getGeometry() instanceof Point ? 1 : 1
           let id = feature.get('id')
           let geometry = feature.getGeometry().clone()
+          let position = new mapUtil().getCenterFromFeatures(feature)
           this.lightLayer.getSource().addFeature(new Feature({ geometry }))
-          this.openPromptBox({ id })
+          this.openPromptBox(feature.values_, position, type)
         } else {
           this.currentInfoCard = false
         }
@@ -1114,7 +1165,8 @@ export default {
      * @param hasStyle 是否设置样式
      * */
     getFeatures(featureArr, hasStyle) {
-      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      let style = null,
+        features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
       if (featureArr.length === 0) {
         return features
       }
@@ -2158,6 +2210,19 @@ $fontSize: 14px !important;
         }
       }
     }
+  }
+}
+#popupCard {
+  &::after {
+    content: '';
+    display: block;
+    width: 45px;
+    height: 27px;
+    background: url('../components/testImg/corner.png');
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    transform: translate(-50%, 0);
   }
 }
 </style>

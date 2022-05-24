@@ -123,87 +123,87 @@ export const appconfig = {
             'sublayers': [
               {
                 title: "城市受纳水体（河道）",
-                name: "TF_PSPS_RIVER_B@tofly",
+                name: "TF_PSPS_RIVER_B",
                 visible: true,
               },
               {
                 title: "排水渠道",
-                name: "TF_PSPS_CONDUIT_B@tofly",
+                name: "TF_PSPS_CONDUIT_B",
                 visible: true
               },
               {
                 title: "排水管道",
-                name: "TF_PSPS_PIPE_B@tofly",
+                name: "TF_PSPS_PIPE_B",
                 visible: true
               },
               {
                 title: "特征点",
-                name: "TF_PSPS_POINT_B@tofly",
+                name: "TF_PSPS_POINT_B",
                 visible: true
               },
               {
                 title: "检查井",
-                name: "TF_PSPS_MANHOLE_B@tofly",
+                name: "TF_PSPS_MANHOLE_B",
                 visible: true
               },
               {
                 title: "雨水口",
-                name: "TF_PSPS_COMB_B@tofly",
+                name: "TF_PSPS_COMB_B",
                 visible: true
               },
               {
                 title: "排放口",
-                name: "TF_PSPS_OUTFALL_B@tofly",
+                name: "TF_PSPS_OUTFALL_B",
                 visible: true
               },
               {
                 title: "溢流堰",
-                name: "TF_PSPS_WEIR_B@tofly",
+                name: "TF_PSPS_WEIR_B",
                 visible: true
               },
               {
                 title: "闸门",
-                name: "TF_PSPS_GATE_B@tofly",
+                name: "TF_PSPS_GATE_B",
                 visible: true
               },
               {
                 title: "阀门",
-                name: "TF_PSPS_VALVE_B@tofly",
+                name: "TF_PSPS_VALVE_B",
                 visible: true
               },
               {
                 title: "排水泵站",
-                name: "TF_PSPS_PUMPSTATION_B@tofly",
+                name: "TF_PSPS_PUMPSTATION_B",
                 visible: true
               },
               {
                 title: "调蓄设施",
-                name: "TF_PSPS_RETENTION_B@tofly",
+                name: "TF_PSPS_RETENTION_B",
                 visible: true
               },
               {
                 title: "污水处理设施",
-                name: "TF_PSPS_WWTP_B@tofly",
+                name: "TF_PSPS_WWTP_B",
                 visible: true
               },
               {
                 title: "污泥处理处置设施",
-                name: "TF_PSPS_STP_B@tofly",
+                name: "TF_PSPS_STP_B",
                 visible: true
               },
               {
                 title: "排水户",
-                name: "TF_PSPS_DISCHARGER_B@tofly",
+                name: "TF_PSPS_DISCHARGER_B",
                 visible: true
               },
               {
                 title: "水浸点数据表",
-                name: "TF_PSPS_FLOOD_B@tofly",
+                name: "TF_PSPS_FLOOD_B",
                 visible: true
               },
               {
                 title: "城市河道桩号点",
-                name: "TF_PSPS_RIVERNODE@tofly",
+                name: "TF_PSPS_RIVERNODE",
                 visible: true
               },
             

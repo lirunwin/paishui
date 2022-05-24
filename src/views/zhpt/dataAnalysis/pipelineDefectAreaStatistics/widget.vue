@@ -179,8 +179,16 @@ export default {
         }
       ],
       echartsTitle: [],
-      echartsData: []
+      echartsData: [],
+
+      // 筛选条件
+      filter: {
+        jcStartDate: '',
+        jcEndDate: '',
+        checkSuggest: '',
+      }
     }
+    
   },
 
   mounted() {
@@ -193,7 +201,7 @@ export default {
   },
   destroyed() {
     this.$refs.myMap.showLegend('testReport', false)
-    this.data.that.clearMap()
+    this.data.that.clearMap() 
   },
   beforeCreate() {
     console.log('销毁echatrs')
@@ -306,28 +314,36 @@ export default {
     },
     // 绘制
     drawFeature() {
-      this.$refs.myMap.draw((fea) => {
-        this.getDataFromExtent({}, fea).then((res) => {
-          console.log('绘制,过滤后,管道缺陷区域统计', res)
-          this.getMapData(res)
-        })
+      this.$refs.myMap.draw({
+        callback: fea => {
+          this.getDataFromExtent(fea).then((res) => {
+            console.log('这是绘制的数据', res)
+            this.getMapData(res)
+          })
+        }
       })
     },
+    // 地图移动
     mapMoveEvent(extent) {
-      this.getDataFromExtent({}, extent).then((res) => {
-        console.log('地图变化,过滤后', res)
-        this.getMapData(res)
+      this.getDataFromExtent(extent).then((res) => {
+        console.log('这是地图移动的数据', res)
       })
     },
-    async getDataFromExtent(params, extent) {
-      let data = await this.getPipeData(params)
+    // 查询
+    search () {
+      this.getDataFromExtent().then((res) => {
+          console.log('这是查询的数据', res)
+      })
+    },
+    async getDataFromExtent(extent) {
+      let data = await this.getPipeData()
       if (data.code === 1) {
         // 地图范围过滤数据
         return this.$refs.myMap.getDefectDataInMap(data.result, extent)
       } else this.$message.error('请求数据出错')
     },
     // 根据条件获取缺陷数据
-    getPipeData(filter = {}) {
+    getPipeData() {
       let params = {
         startPoint: '',
         endPoint: '',
@@ -335,8 +351,8 @@ export default {
         structClass: '',
         jcStartDate: '',
         jcEndDate: '',
-        checkSuggest: '修复计划',
-        ...filter
+        checkSuggest: '',
+        ...this.filter
       }
       return getDefectDataBySE(params)
     },

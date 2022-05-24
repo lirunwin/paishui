@@ -187,8 +187,9 @@ export default {
       return features
     },
     draw({ type = 'polygon', callback }) {
+      console.log('绘制')
       let drawer = new iDraw(this.map, type, {
-        endDrawCallBack: (feature) => {
+        endDrawCallBack: feature => {
           drawer.remove()
           callback && callback(feature)
         }

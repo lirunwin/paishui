@@ -174,13 +174,21 @@ export default {
       }, // 搜索关键字的值
       // 日期选择器规则
       pickerOptions0: '',
-      pickerOptions1: ''
+      pickerOptions1: '',
+
+      // 筛选条件
+      filter: {
+        jcStartDate: '',
+        jcEndDate: '',
+        checkSuggest: '',
+      }
     }
   },
   mounted() {
     this.$nextTick(() => {
       // this.initData()
     })
+    this.$refs.myMap.showLegend('pipelineEvaluate', true)
     console.log('this.setOptionShowNum', this.setOptionShowNum)
     console.log('this.setOptionShowLen', this.setOptionShowLen)
   },
@@ -262,41 +270,43 @@ export default {
     },
     // 绘制
     drawFeature() {
-      let type = 'polygon'
       this.$refs.myMap.draw({
-        type,
-        callback: (fea) => {
-          this.getDataFromExtent({}, fea).then((res) => {
-            console.log('绘制,过滤后', res)
-            this.getMapData(res)
+        callback: fea => {
+          this.getDataFromExtent(fea).then((res) => {
+            console.log('这是绘制的数据', res)
           })
         }
       })
     },
     mapMoveEvent(extent) {
-      this.getDataFromExtent({}, extent).then((res) => {
-        console.log('地图变化,过滤后', res)
-        this.getMapData(res)
+      this.getDataFromExtent(extent).then((res) => {
+        console.log('这是地图移动的数据', res)
       })
     },
-    async getDataFromExtent(params, extent) {
-      let data = await this.getPipeData(params)
+    // 查询
+    search () {
+      this.getDataFromExtent().then((res) => {
+          console.log('这是查询的数据', res)
+      })
+    },
+    async getDataFromExtent(extent) {
+      let data = await this.getPipeData()
       if (data.code === 1) {
         // 地图范围过滤数据
         return this.$refs.myMap.getDataInMap(data.result, extent)
       } else this.$message.error('请求数据出错')
     },
     // 根据条件获取缺陷数据
-    getPipeData(filter = {}) {
+    getPipeData() {
       let params = {
         startPoint: '',
         endPoint: '',
         funcClass: '',
         structClass: '',
-        jcStartDate: this.searchValue.startDate,
-        jcEndDate: this.searchValue.finishDate,
-        checkSuggest: this.searchValue.fixSuggest,
-        ...filter
+        jcStartDate: '',
+        jcEndDate: '',
+        checkSuggest: '',
+        ...this.filter
       }
       return getDefectDataBySE(params)
     },
