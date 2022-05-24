@@ -951,6 +951,7 @@ export default {
      * 小地图完成加载后
      * */
     afterMapLoad() {
+      console.log('小地图加载')
       this.getPipeDefectData(2, this.id)
     },
     /**
@@ -988,6 +989,8 @@ export default {
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData, !light)
 
             console.log('获取数据')
+            let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+            map.getView().setCenter(center)
             if (light) {
               this.lightLayer.getSource().clear()
               this.lightLayer.getSource().addFeatures([...funcDefectFeatures, ...strucDefectFeatures])
@@ -997,6 +1000,7 @@ export default {
             } else {
               this.lightLayer.getSource().clear()
               layer.getSource().clear()
+              map.getView().setZoom(12)
               if (
                 strucDefectFeatures.length !== 0 ||
                 funcDefectFeatures.length !== 0 ||
@@ -1006,8 +1010,6 @@ export default {
               }
             }
             if (id) {
-              let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
-              map.getView().setCenter(center)
               map.getView().setZoom(18)
             }
           }

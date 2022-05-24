@@ -20,6 +20,8 @@ export class TF_Layer {
     createLayer({ properties = {}, type, visible = true, url }) {
         let layer = null
         switch (type) {
+            case "smlayer": layer = this.SM_Layer_old(url)
+                break
             case "tdtlayer": layer = this.TDT_Layer(url)
                 break
             case "vector": layer = this.VT_Layer()

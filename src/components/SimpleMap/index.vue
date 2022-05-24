@@ -81,7 +81,7 @@ export default {
   methods: {
     initMap() {
       let { initCenter, initZoom } = appconfig
-      let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
+      let layersSource = appconfig.gisResource['iserver_resource'].layerService.layers
       let map = new olMap({
         target: this.$refs.mainMap,
         controls: controls({
@@ -101,14 +101,14 @@ export default {
       })
       this.map = map
 
-      layerResource.forEach((layerConfig) => {
-        let { name, type, url, parentname, id, visible = true } = layerConfig
-        let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-        this.map.addLayer(layer)
+      new TF_Layer().createLayers(layersSource).then(layers => {
+        layers.forEach(layer => {
+          layer && this.map.addLayer(layer)
+        })
+        this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+        this.map.addLayer(this.vectorLayer)
+        this.$emit('afterMapLoad')
       })
-      this.$emit('afterMapLoad')
-      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
-      this.map.addLayer(this.vectorLayer)
 
       let moveEvent = this.map.on('moveend', (args) => {
         let [xmin, ymin, xmax, ymax] = new mapUtil(this.map).getCurrentViewExtent()
