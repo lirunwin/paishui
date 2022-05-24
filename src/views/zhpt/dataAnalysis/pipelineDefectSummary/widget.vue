@@ -144,9 +144,9 @@ export default {
         { width: '110', sortable: true, label: '检测长度', name: 'jclength' },
         { width: '130', sortable: false, label: '缺陷名称', name: 'defectName' },
         { width: '130', sortable: true, label: '缺陷等级', name: 'defectLevel' },
-        { width: '', sortable: false, label: '整改建议', name: 'checkSuggest' },
-        { width: '160', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
-        { width: '160', sortable: false, label: '功能性缺陷评价', name: 'funcEstimate' }
+        { width: '120', sortable: false, label: '整改建议', name: 'checkSuggest' },
+        { width: '', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
+        { width: '', sortable: false, label: '功能性缺陷评价', name: 'funcEstimate' }
       ],
       uploadHeaders: {
         Authorization: 'bearer ' + sessionStorage.getItem('token')
@@ -316,6 +316,10 @@ export default {
       }
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
+      }
+      .hover-row{
+        color: #E6A23C;
+        background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
     }
   }

@@ -24,6 +24,7 @@ export default {
     this.initData()
   },
   methods: {
+    
     //初始化数据(饼状图)
     initData() {
       // console.log('渲染管道检测情况统计图')

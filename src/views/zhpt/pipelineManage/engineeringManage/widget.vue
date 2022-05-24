@@ -147,7 +147,7 @@
                   v-model="form.startDate"
                   type="date"
                   placeholder="选择开始日期"
-                  value-format="yyyy-MM-dd HH:mm:ss"
+                  value-format="yyyy-MM-dd"
                   size="small"
                   :picker-options="pickerOptions0"
                   @change="changeDate"
@@ -160,7 +160,7 @@
                   v-model="form.finishDate"
                   type="date"
                   placeholder="选择结束日期"
-                  value-format="yyyy-MM-dd HH:mm:ss"
+                  value-format="yyyy-MM-dd"
                   size="small"
                   :picker-options="pickerOptions1"
                   @change="changeDate"
@@ -703,7 +703,9 @@ export default {
   },
   watch: {
     'form.startDate': function (n) {
-      this.form.finishDate = n
+      if(!this.isDetails && !this.isEdit){
+        this.form.finishDate = n
+      }
     }
   }
 }
@@ -765,6 +767,10 @@ export default {
       }
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
+      }
+      .hover-row{
+        color: #E6A23C;
+        background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
     }
   }
