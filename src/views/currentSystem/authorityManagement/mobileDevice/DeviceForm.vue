@@ -32,12 +32,27 @@
               :key="name"
             >
               <el-form-item :label="label" :prop="name" :required="required">
-                <template v-if="type === 'select'">
+                <template v-if="type === 'cascader'">
+                  <el-cascader
+                    popper-class="cascader"
+                    v-model="formData[name]"
+                    :placeholder="`请选择${label}`"
+                    :options="options"
+                    :props="{ expandTrigger: 'hover', label: 'name', value: 'id', checkStrictly: true }"
+                    size="small"
+                    style="width:100%"
+                    filterable
+                    clearable
+                    @change="onChange"
+                  />
+                </template>
+                <template v-else-if="type === 'select'">
                   <el-select
                     v-model="formData[name]"
                     :placeholder="`请选择${label}`"
                     v-bind="rest"
                     clearable
+                    size="small"
                     @change="onChange"
                   >
                     <el-option
@@ -56,6 +71,7 @@
                     :placeholder="name === 'no' ? '系统生成' : `请输入${label}`"
                     :disabled="disabled"
                     :rows="rows"
+                    size="small"
                     clearable
                     v-bind="rest"
                   />
@@ -92,7 +108,7 @@ export default class DeviceForm extends Vue {
 
   dialogVisible = false
   dialogImageUrl = ''
-  formData: { [x: string]: string } = {}
+  formData: { [x: string]: any } = { useDeptId: [] }
   departments = []
   users = []
   get formItems(): {
@@ -129,8 +145,8 @@ export default class DeviceForm extends Vue {
             label: '使用部门',
             name: 'useDeptId',
             col: 12,
-            type: 'select',
-            options: this.departments,
+            type: 'cascader',
+            options: this.deptmentTree,
             required: true,
             onChange: () => {
               this.$set(this.formData, 'userUserId', '')
@@ -169,7 +185,8 @@ export default class DeviceForm extends Vue {
     const form = this.$refs['form'] as any
     form.validate((valid) => {
       if (valid) {
-        this.$emit('submit', this.formData)
+        const { useDeptId } = this.formData
+        this.$emit('submit', { ...this.formData, useDeptId: useDeptId[useDeptId.length - 1] })
       }
     })
   }
@@ -179,6 +196,16 @@ export default class DeviceForm extends Vue {
     this.formData = { ...this.formData, worknumber, phone }
   }
 
+  get deptmentTree() {
+    const getChildren = (parent) => {
+      const { id: parentId } = parent
+      const children = this.departments.filter((item) => item.parentId === parentId)
+      if (!!children.length) parent.children = children.map(getChildren)
+      return parent
+    }
+    return this.departments.filter((item) => !item.parentId).map(getChildren)
+  }
+
   async onOpen() {
     const { result = [] } = (await getDepartments()) || {}
     this.departments = result
@@ -186,15 +213,22 @@ export default class DeviceForm extends Vue {
 
   @Watch('data', { immediate: true })
   setDefaultData(val) {
-    this.formData = { ...(val || {}) }
+    const temp = val || {}
+    this.formData = { ...temp, useDeptId: [temp.useDeptId] }
   }
 
-  @Watch('formData.useDeptId')
+  get useDeptId() {
+    const { useDeptId = [] } = this.formData
+    return useDeptId[useDeptId.length - 1]
+  }
+
+  @Watch('useDeptId')
   async getUsersByDepartmentId(val) {
+    console.log(val)
     this.users = []
     if (val) {
       const { result = [] } = (await getUsers(val)) || {}
-      this.users = result.map(({ id, realName: name, username, ...rest }) => ({
+      this.users = (result || []).map(({ id, realName: name, username, ...rest }) => ({
         id,
         name: `${name} | ${username}`,
         ...rest

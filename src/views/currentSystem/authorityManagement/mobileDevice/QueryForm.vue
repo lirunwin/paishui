@@ -103,7 +103,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
-import { getRegisters } from './api'
+import { getMobileDeviceUsers } from './api'
 import { mdAppVersion, mdAuditStataus, mdStatus } from './utils'
 
 @Component({ name: 'QueryForm', components: {} })
@@ -165,14 +165,14 @@ export default class QueryForm extends Vue {
     this.$emit('query', temp)
   }
 
-  async getRegisters() {
-    const { result = [] } = (await getRegisters()) || {}
-    this.users = result.map(({ id, realName: label }) => ({ id, label }))
+  async getMobileDeviceUsers() {
+    const { result = [] } = (await getMobileDeviceUsers()) || {}
+    this.users = result.map(({ id, realName, username }) => ({ id, label: `${realName} | ${username}` }))
   }
 
   mounted() {
     this.onQuery()
-    this.getRegisters()
+    this.getMobileDeviceUsers()
   }
 }
 </script>
