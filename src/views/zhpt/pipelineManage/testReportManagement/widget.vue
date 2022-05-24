@@ -913,7 +913,6 @@ export default {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         this.lightLayer.getSource().clear()
         if (features.length !== 0) {
-          console.log('选择的管线', features)
           let feature = features.find((fea) => fea.getGeometry() instanceof Point) || features[0]
           let id = feature.get('id')
           let geometry = feature.getGeometry().clone()
@@ -984,7 +983,7 @@ export default {
       dataApi(id).then((res) => {
         if (res.code === 1) {
           if (res.result) {
-            let reportInfo = res.result[0] ? res.result : [res.result]
+            let reportInfo = Array.isArray(res.result) ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData, !light)
 
@@ -1021,8 +1020,10 @@ export default {
      * @param hasStyle 是否设置样式
      * */
     getFeatures(featureArr, hasStyle) {
-      let style = null,
-        features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      if (featureArr.length === 0) {
+        return features
+      }
       featureArr.forEach((feaObj) => {
         let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
         if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {

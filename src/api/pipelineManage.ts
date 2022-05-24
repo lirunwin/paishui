@@ -52,14 +52,14 @@ export function assessmentDetails(params) {
     })
 }
 // 通过id查询管段缺陷信息(缩略提示框)
-export function assessmentDefect(params) {
+export function assessmentDefect(id) {
     return request({
-        url: psjc + '/pipeState/getDefectById/' + params,
-        method: 'get',
+        url: `/psjc/pipeDefect/${id}`,
+        method: "get"
     })
 }
 
-// 附件分页查询接口
+// 附件分页查询接口+
 export function queryPageEnclosure(params) {
     return request({
         url: psjc + '/sysUploadFile/page',
