@@ -12,24 +12,21 @@
     </div>
     <el-row :gutter="15">
       <el-col :span="10">
-        <div class="table-container">
-          <BaseTable
-            :columns="settingStandardCols"
-            :data="standards"
-            @row-dblclick="onStandardRowDblClick"
-            @selection-change="onStandardSelectionChange"
-          />
-        </div>
+        <BaseTable
+          :columns="settingStandardCols"
+          :data="standards"
+          @row-dblclick="onStandardRowDblClick"
+          @selection-change="onStandardSelectionChange"
+        />
       </el-col>
       <el-col :span="14">
-        <div class="table-container">
-          <BaseTable
-            :columns="settingStandardParamCols"
-            :data="params"
-            @row-dblclick="onParamRowDblClick"
-            @selection-change="onParamSelectionChange"
-          /></div
-      ></el-col>
+        <BaseTable
+          :columns="settingStandardParamCols"
+          :data="params"
+          @row-dblclick="onParamRowDblClick"
+          @selection-change="onParamSelectionChange"
+        />
+      </el-col>
     </el-row>
     <StandardForm
       :visible.sync="visible.standard"

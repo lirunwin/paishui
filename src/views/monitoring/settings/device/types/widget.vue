@@ -12,23 +12,21 @@
     </div>
     <el-row :gutter="15">
       <el-col :span="12">
-        <div class="table-container">
-          <BaseTable
-            :columns="settingDeviceTypeCols"
-            :data="types"
-            @row-dblclick="onTypeRowDblClick"
-            @selection-change="onTypeSelectionChange"
-          /></div
-      ></el-col>
+        <BaseTable
+          :columns="settingDeviceTypeCols"
+          :data="types"
+          @row-dblclick="onTypeRowDblClick"
+          @selection-change="onTypeSelectionChange"
+        />
+      </el-col>
       <el-col :span="12">
-        <div class="table-container">
-          <BaseTable
-            :columns="settingDeviceTypeParamCols"
-            :data="params"
-            @row-dblclick="onParamRowDblClick"
-            @selection-change="onParamSelectionChange"
-          /></div
-      ></el-col>
+        <BaseTable
+          :columns="settingDeviceTypeParamCols"
+          :data="params"
+          @row-dblclick="onParamRowDblClick"
+          @selection-change="onParamSelectionChange"
+        />
+      </el-col>
     </el-row>
     <TypeForm
       :visible.sync="visible.type"
@@ -74,11 +72,9 @@ export default class DeviceTypes extends Vue {
 
   selected = { type: [], param: [] }
 
-  types = [
-    { id: '1', name: '测试', code: '1231', time: 'ss' },
-    { id: '2', name: '测试1', code: '1232', time: 'ss' },
-    { id: '3', name: '测试2', code: '1233', time: 'ss' }
-  ]
+  types = Array(20)
+    .fill({})
+    .map((_, index) => ({ id: String(index), name: '测试', code: '1231', time: 'ss' }))
   params = [
     { id: '1', name: '测试', code: '1231', time: 'ss' },
     { id: '2', name: '测试1', code: '1232', time: 'ss' },
@@ -120,9 +116,8 @@ export default class DeviceTypes extends Vue {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px;
+  padding-bottom: 22px;
   margin-bottom: 15px;
-  background: #fff;
 }
 
 .table-container {
