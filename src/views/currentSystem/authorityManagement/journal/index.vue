@@ -482,10 +482,10 @@ export default class Journal extends Vue {
       // console.log('部门编码：' + deptId)
 
       let data = {
-        userLevel: 1,
+        // userLevel: 1,
         departmentId: deptId,
-        current: 1,
-        size: 10000000
+        current: 1
+        // size: 10000000
       }
       getUserList(data).then((res) => {
         this.userList = res.result.records

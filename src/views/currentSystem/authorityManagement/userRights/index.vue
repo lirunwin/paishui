@@ -151,7 +151,7 @@
           v-if="dialogVisible"
           ref="ruleForm"
           :data="editData"
-          :company="departments"
+          :company="deptmentTree"
           :options-role="role.optionsRole"
           @remind="remind"
         />
@@ -288,7 +288,9 @@
           <el-form-item label="角色：" prop="roles" style="margin-bottom: 20px">
             <el-select v-model="auditInfo.roles" style="width: 300px" multiple>
               <template v-for="item in role.optionsRole">
-                <el-option :key="item.id" :value="item.id" :label="item.name" />
+                <template>
+                  <el-option :key="item.id" :value="item.id" :label="item.name" />
+                </template>
               </template>
             </el-select>
           </el-form-item>
@@ -411,7 +413,7 @@ import {
   deleteUser,
   roleBind,
   setUserUnlock,
-  getCompany,
+  getAllDepartments,
   getRoleList,
   editUser,
   batchUser,
@@ -426,7 +428,7 @@ import {
 import { getToken, setSessionStorage } from '@/utils/auth'
 import { imageByName } from '@/api/ftp'
 import { ElForm } from 'element-ui/types/form'
-@Component({
+@Component<UserRights>({
   name: 'UserRights',
   components: {
     TableItem,
@@ -452,6 +454,7 @@ import { ElForm } from 'element-ui/types/form'
   }
 })
 export default class UserRights extends Vue {
+  formatteAuditStatus?: any
   list = []
   total = 0
   column = [
@@ -532,7 +535,7 @@ export default class UserRights extends Vue {
       }
     },
     {
-      label: '审核意见',
+      label: '审核状态',
       width: 110,
       prop: 'auditstatus',
       sortable: true,
@@ -541,6 +544,12 @@ export default class UserRights extends Vue {
         if (cellValue === '1') return '未审核'
         if (cellValue === '2') return '同意'
       }
+    },
+    {
+      label: '审核人',
+      width: 160,
+      prop: 'auditorname',
+      sortable: true
     },
     {
       label: '创建时间',
@@ -584,6 +593,10 @@ export default class UserRights extends Vue {
     {
       id: '0',
       name: '不同意'
+    },
+    {
+      id: '1',
+      name: '未审核'
     },
     {
       id: '2',
@@ -845,12 +858,19 @@ export default class UserRights extends Vue {
 
   // 获取单位信息
   getCompanyInfo() {
-    getCompany({ size: 10000 }).then((res) => {
-      res.result.records.forEach((item) => {
-        item.id = item.id + ''
-      })
-      this.departments = res.result.records
+    getAllDepartments().then((res) => {
+      this.departments = res.result || []
     })
+  }
+
+  get deptmentTree() {
+    const getChildren = (parent) => {
+      const { id: parentId } = parent
+      const children = this.departments.filter((item) => item.parentId === parentId)
+      if (!!children.length) parent.children = children.map(getChildren)
+      return parent
+    }
+    return this.departments.filter((item) => !item.parentId).map(getChildren)
   }
 
   // 获取角色信息

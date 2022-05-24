@@ -74,8 +74,6 @@
                   <span>{{ scope.$index + 1 }}</span>
                 </template>
               </el-table-column>
-              <el-table-column prop="sort" label="排序" width="80" align="center" />
-
               <el-table-column prop="codeKey" label="字典编码" show-overflow-tooltip align="center" />
               <el-table-column prop="codeRemark" label="字典名称" show-overflow-tooltip align="center" />
               <!-- <el-table-column prop="createUser" label="创建人" show-overflow-tooltip align="center"></el-table-column>

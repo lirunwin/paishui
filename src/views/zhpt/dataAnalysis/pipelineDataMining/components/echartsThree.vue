@@ -20,42 +20,37 @@ export default {
       allArr: [
         {
           name: '1级',
-          Lname:'一级',
+          Lname: '一级',
           value: 0
         },
         {
           name: '2级',
-          Lname:'二级',
+          Lname: '二级',
           value: 0
         },
         {
           name: '3级',
-          Lname:'三级',
+          Lname: '三级',
           value: 0
         },
         {
           name: '4级',
-          Lname:'四级',
+          Lname: '四级',
           value: 0
         }
       ]
     }
   },
   watch: {
-     paramData: {
+    paramData: {
       handler(nv, ov) {
-        this.echartsData = nv 
+        this.echartsData = nv
         console.log('缺陷等级统计图新的echartsData', this.paramData)
         this.setDefectData()
       },
       deep: true,
       immediate: true
     }
-    // paramData(n) {
-    //   this.echartsData = n
-    //   console.log('缺陷等级统计图新的echartsData', this.echartsData)
-    //   this.initData()
-    // }
   },
   computed: {},
   created() {},
@@ -65,14 +60,14 @@ export default {
   methods: {
     // 处理缺陷数据
     setDefectData() {
-      console.log('走了setDefectData');
+      console.log('走了setDefectData')
       if (this.echartsData.length != 0) {
         this.echartsData.forEach((ev) => {
           this.allArr.forEach((av) => {
             // console.log('ev', ev.defectLevel)
             // console.log('av', av.Lname)
             if (ev.defectLevel == av.Lname) {
-              av.value = ev.defectNum
+              av.value += ev.defectNum
             }
           })
           // if (v.defectLevel == '一级') {
@@ -91,14 +86,14 @@ export default {
       // console.log('this.allArr', this.allArr)
     },
     //初始化数据(饼状图)
-     initData() {
+    initData() {
+      console.log(' this.allArr', this.allArr)
       // this.echartsData = this.paramData
       // this.setDefectData()
       // console.log('缺陷等级统计图', this.paramData)
       let chartDom = document.getElementById('echartsThree')
       let myChart = echarts.init(chartDom)
       let option
-
       option = {
         tooltip: {
           trigger: 'item'
@@ -129,7 +124,7 @@ export default {
           }
         ]
       }
-
+      // console.log('重新加载Echatrs')
       option && myChart.setOption(option)
       // console.log('option', option)
     }

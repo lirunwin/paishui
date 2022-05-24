@@ -163,6 +163,7 @@ const actions = {
 
   changeSys({ commit, dispatch, state }, data) {
     commit('CHANGESYS', data)
+    if (data === 'map') return
     setTimeout(() => {
       const getPath = () => {
         let path

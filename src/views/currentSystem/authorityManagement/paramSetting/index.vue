@@ -2,75 +2,80 @@
   <div class="param-container">
     <el-tabs v-model="activeName" @tab-click="getSavedParams">
       <template v-for="item in tabList">
-        <el-tab-pane :key="item.name" :label="item.label" :name="item.name">
-          <el-form
-            label-position="right"
-            label-width="200px"
-            class="custom-form"
-            :ref="item.name"
-            :model="activeName === 'paramSetting' ? appFormModel : webFormModel"
-            inline-message
-          >
-            <template v-if="activeName === 'paramSetting'">
-              <template v-for="appForm in appForms">
-                <el-form-item
-                  :key="appForm.prop"
-                  :label="`${appForm.label}：`"
-                  class="custom-form-item"
-                  :rules="appForm.rules"
-                  :prop="appForm.prop"
-                >
-                  <el-input
-                    v-if="appForm.type === 'input'"
-                    step="0.001"
-                    maxlength="20"
-                    v-model.number="appFormModel[appForm.prop]"
-                  ></el-input>
-                  <el-select
-                    v-if="appForm.type === 'select'"
-                    v-model="appFormModel[appForm.prop]"
-                    style="display: inline-block"
-                  >
-                    <template v-for="option in appForm.appSelects">
-                      <el-option :key="option.id" :value="option.id" :label="option.name"></el-option>
-                    </template>
-                  </el-select>
-                  <el-tooltip class="item" effect="dark" :content="appForm.title || ''" placement="right">
-                    <i class="el-icon-info" style="font-size: 16px;color: gray;" />
-                  </el-tooltip>
-                </el-form-item>
+        <template>
+          <el-tab-pane :key="item.name" :label="item.label" :name="item.name">
+            <el-form
+              label-position="right"
+              label-width="200px"
+              class="custom-form"
+              :ref="item.name"
+              :model="activeName === 'paramSetting' ? appFormModel : webFormModel"
+              inline-message
+            >
+              <template v-if="activeName === 'paramSetting'">
+                <template v-for="appForm in appForms">
+                  <template>
+                    <el-form-item
+                      :key="appForm.prop"
+                      :label="`${appForm.label}：`"
+                      class="custom-form-item"
+                      :rules="appForm.rules"
+                      :prop="appForm.prop"
+                    >
+                      <el-input
+                        v-if="appForm.type === 'input'"
+                        step="0.001"
+                        maxlength="20"
+                        v-model="appFormModel[appForm.prop]"
+                      />
+                      <el-select
+                        v-if="appForm.type === 'select'"
+                        v-model="appFormModel[appForm.prop]"
+                        style="display: inline-block"
+                      >
+                        <template v-for="option in appForm.appSelects">
+                          <template>
+                            <el-option :key="option.id" :value="option.id" :label="option.name"></el-option>
+                          </template>
+                        </template>
+                      </el-select>
+                      <el-tooltip class="item" effect="dark" :content="appForm.title || ''" placement="right">
+                        <i class="el-icon-info" style="font-size: 16px;color: gray;" />
+                      </el-tooltip>
+                    </el-form-item>
+                  </template>
+                </template>
               </template>
-            </template>
-            <template v-else>
-              <template v-for="webForm in webForms">
-                <el-form-item
-                  :key="webForm.prop"
-                  :label="`${webForm.label}：`"
-                  class="custom-form-item"
-                  :rules="webForm.rules"
-                  :prop="webForm.prop"
-                >
-                  <el-input
-                    v-if="webForm.type === 'input'"
-                    step="0.001"
-                    maxlength="20"
-                    v-model.number="webFormModel[webForm.prop]"
-                  ></el-input>
-                  <el-color-picker
-                    v-if="webForm.type === 'color'"
-                    v-model="webFormModel[webForm.prop]"
-                  ></el-color-picker>
-                  <el-tooltip class="item" effect="dark" :content="webForm.title || ''" placement="right">
-                    <i class="el-icon-info" style="font-size: 16px;color: gray;" />
-                  </el-tooltip>
-                </el-form-item>
+              <template v-else>
+                <template v-for="webForm in webForms">
+                  <template>
+                    <el-form-item
+                      :key="webForm.prop"
+                      :label="`${webForm.label}：`"
+                      class="custom-form-item"
+                      :rules="webForm.rules"
+                      :prop="webForm.prop"
+                    >
+                      <el-input
+                        v-if="webForm.type === 'input'"
+                        step="0.001"
+                        maxlength="20"
+                        v-model.number="webFormModel[webForm.prop]"
+                      />
+                      <el-color-picker v-if="webForm.type === 'color'" v-model="webFormModel[webForm.prop]" />
+                      <el-tooltip class="item" effect="dark" :content="webForm.title || ''" placement="right">
+                        <i class="el-icon-info" style="font-size: 16px;color: gray;" />
+                      </el-tooltip>
+                    </el-form-item>
+                  </template>
+                </template>
               </template>
-            </template>
-            <el-form-item>
-              <el-button type="primary" @click="handleSave">保存</el-button>
-            </el-form-item>
-          </el-form>
-        </el-tab-pane>
+              <el-form-item>
+                <el-button type="primary" @click="handleSave">保存</el-button>
+              </el-form-item>
+            </el-form>
+          </el-tab-pane>
+        </template>
       </template>
     </el-tabs>
   </div>
@@ -111,7 +116,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '人巡最快速度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber }
+        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber, trigger: 'blur' }
       ],
       title: '人员人巡模式下巡查过程中最快的速度，当大于此速度时，系统判断此人员未到位'
     },
@@ -121,7 +126,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '人巡最大到位容差不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '容差必须为大于0的数字值', transform: toNumber }
+        { type: 'number', min: 0, message: '容差必须为大于0的数字值', transform: toNumber, trigger: 'blur' }
       ],
       title: '人员人巡模式下巡查过程中，巡查地物在此距离范围内，系统认为人员已巡查到位'
     },
@@ -131,7 +136,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '车巡最快速度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber }
+        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber, trigger: 'blur' }
       ],
       title: '人员巡查任务切换到车巡模式时，人员巡查最快的速度，当大于此速度，系统判断此人员未到位'
     },
@@ -141,7 +146,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '车巡最大到位容差不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '容差必须为大于0的数字值', transform: toNumber }
+        { type: 'number', min: 0, message: '容差必须为大于0的数字值', transform: toNumber, trigger: 'blur' }
       ],
       title: '人员巡查任务切换到车巡模式时，巡查地物在此距离范围内，系统认为人员已巡查到位'
     },
@@ -151,7 +156,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '上传频率不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '频率必须为大于0的数字值', transform: toNumber }
+        { type: 'number', min: 0, message: '频率必须为大于0的数字值', transform: toNumber, trigger: 'blur' }
       ],
       title: 'app端登录签到上班后，手机位置坐标上传频率'
     },
@@ -161,7 +166,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '轨迹最大速度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber }
+        { type: 'number', min: 0, message: '速度必须为大于0的数字值', transform: toNumber, trigger: 'blur' }
       ],
       title: '人员登录签到上班后，上传时的位置坐标时，当速度大于此速度，此位置不参与人员轨迹绘制'
     },
@@ -202,7 +207,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '轨迹点细度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '轨迹点细度必须为大于0的数字值', transform: toNumber }
+        { type: 'number', min: 0, message: '轨迹点细度必须为大于0的数字值', transform: toNumber, trigger: 'blur' }
       ],
       title: '轨迹上点的大小'
     },
@@ -212,7 +217,7 @@ export default class ParamSetting extends Vue {
       type: 'input',
       rules: [
         { required: true, message: '轨迹线细度不能为空！', trigger: 'blur' },
-        { type: 'number', min: 0, message: '轨迹线细度必须为大于0的数字值', transform: toNumber }
+        { type: 'number', min: 0, message: '轨迹线细度必须为大于0的数字值', transform: toNumber, trigger: 'blur' }
       ],
       title: '轨迹线的粗细'
     }
@@ -249,7 +254,7 @@ export default class ParamSetting extends Vue {
 
   // 点击保存按钮
   handleSave() {
-    var data = {
+    let data = {
       // peopleSpeed: this.appFormModel.peopleSpeed,
       // peopleMaxalw: this.appFormModel.peopleMaxalw,
       // carSpeed: this.appFormModel.carSpeed,
@@ -267,13 +272,33 @@ export default class ParamSetting extends Vue {
       ...this.webFormModel,
       id: this.id
     }
-    console.log(this.activeName, this.$refs[this.activeName])
+
+    Object.keys(data).forEach((key) => {
+      const val = data[key]
+      if (
+        [
+          'peopleSpeed',
+          'peopleMaxalw',
+          'carSpeed',
+          'carMaxalw',
+          'uploadRate',
+          'routeMaxspeed',
+          'routePt',
+          'routeLine'
+        ].includes(key)
+      )
+        data[key] = Math.floor(val * 1000) / 1000
+    })
+
+    // console.log(this.activeName, this.$refs[this.activeName])
     const form: any = this.$refs[this.activeName]
     ;(Array.isArray(form) ? form[0] : form).validate((valid) => {
       if (valid) {
         saveParams(data).then((res) => {
-          if (res.code == 1) this.$message.success('保存成功')
-          else this.$message.error('保存失败')
+          if (res.code == 1) {
+            this.$message.success('保存成功')
+            this.getSavedParams()
+          } else this.$message.error('保存失败')
         })
       }
     })

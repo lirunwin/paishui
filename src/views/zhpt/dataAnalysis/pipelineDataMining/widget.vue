@@ -21,7 +21,7 @@
         </div>
         <el-divider></el-divider>
         <!-- 视图列表 -->
-        <div class="echarts-list">
+        <div class="echarts-list" v-loading="loading">
           <div class="threeBottom">
             <div class="threeBottom-one">
               <echarts-two v-if="redayY" :paramData="defectTypeObj"></echarts-two>
@@ -59,6 +59,7 @@ export default {
   components: { simpleMap, echartsTwo, echartsThree, echartsFour, echartsFive },
   data() {
     return {
+      loading: true, // 加载效果
       redayY: false, // 数据是否已加载完毕
       linkage: true, // 是否联动
       defectTypeObj: {
@@ -107,7 +108,7 @@ export default {
           // console.log('功能性缺陷', v)
         }
       })
-
+      this.loading = false
       // console.log('this.defectTypeObj', this.defectTypeObj)
     },
     // 绘制

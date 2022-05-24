@@ -127,6 +127,7 @@
                   style="width:100%"
                   filterable
                   clearable
+                  @change="onDeptChange"
                 />
               </el-form-item>
               <el-form-item label="审核人：" prop="recipient">
@@ -317,6 +318,7 @@ const columns = [
 })
 export default class AccountApply extends Vue {
   @Prop({ default: false }) showApply: boolean
+  formatteAuditStatus: any
   accountApply = {
     username: '',
     password: '',
@@ -397,12 +399,15 @@ export default class AccountApply extends Vue {
       this.activeTab = 'history'
     }
   }
-
+  departmentId = ''
   get reviewers() {
-    const { departmentId } = this.accountApply
     return (this.recipients || []).filter(({ departmentId: id }) => {
-      return id === Array.isArray(departmentId) ? [...departmentId].pop() : departmentId
+      return id === this.departmentId
     })
+  }
+  onDeptChange(val = []) {
+    this.accountApply.recipient = ''
+    this.departmentId = val[val.length - 1] || ''
   }
   mounted() {
     this.columns = columns
@@ -438,7 +443,7 @@ export default class AccountApply extends Vue {
 
     this.detailInfo = {
       ...this.detailInfo,
-      departmentId: Array.isArray(departmentId) ? departmentId.pop() : departmentId,
+      departmentId: Array.isArray(departmentId) ? [...departmentId].pop() : departmentId,
       esignature: imageByName(this.detailInfo.esignature),
       avatar: imageByName(this.detailInfo.avatar)
     }
@@ -473,7 +478,14 @@ export default class AccountApply extends Vue {
       if (valid) {
         const data = new FormData()
         for (const key in this.accountApply) {
-          data.append(key, key === 'password' ? sha1Hex(this.accountApply[key]) : this.accountApply[key])
+          if (key === 'departmentId') {
+            data.append(
+              key,
+              Array.isArray(this.accountApply[key]) ? [...this.accountApply[key]].pop() : this.accountApply[key]
+            )
+          } else {
+            data.append(key, key === 'password' ? sha1Hex(this.accountApply[key]) : this.accountApply[key])
+          }
         }
         accountApplyFill(data).then((res) => {
           // 用户存在的时候， 后台返回的数据多包了一层，造成永远都是code = 1, 报错的时候是res.result.code === -1

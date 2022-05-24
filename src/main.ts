@@ -23,6 +23,7 @@ import '@/assets/iconfont/iconfont.js'
 import '@/assets/iconfont/iconfont.css'
 
 import Moment from 'vue-moment'
+// import "animate.css"//animate动画组件库
 
 // import htmlToPdf from './utils/htmlToPdf'
 // Vue.use(htmlToPdf)

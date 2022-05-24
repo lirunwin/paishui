@@ -87,7 +87,7 @@ const uris = {
   page: '/gps/mobiledevice/page',
   departments: '/base/department/list',
   users: '/base/user/getDeptUserList',
-  registers: '/gps/mobiledevice/register',
+  mobileDeviceUseUsers: '/gps/mobiledevice/mobileDeviceUseUser',
   review: 'gps/mobiledevice/deviceAudit'
 }
 
@@ -148,7 +148,7 @@ export const getUsers = (deptId: string) =>
     method: 'get',
     params: { deptId }
   })
-export const getRegisters = (): IRes => request({ url: uris.registers, method: 'get' })
+export const getMobileDeviceUsers = (): IRes => request({ url: uris.mobileDeviceUseUsers, method: 'get' })
 
 export const reviewMobileDeviceByIds = (params: { ids: string; auditStatus?: string }): IRes =>
   request({ url: uris.review, method: 'get', params: { auditStatus: '1', ...params } })

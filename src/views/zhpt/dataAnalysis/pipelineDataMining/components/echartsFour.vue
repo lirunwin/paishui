@@ -17,95 +17,18 @@ export default {
   data() {
     return {
       echartsData: [],
-      defectArr: [
-        {
-          type: 'AJ',
-          name: '支管暗接',
-          value: 0
-        },
-        {
-          type: 'BX',
-          name: '变形',
-          value: 0
-        },
-        {
-          type: 'CK',
-          name: '错口',
-          value: 0
-        },
-        {
-          type: 'CR',
-          name: '异物穿入',
-          value: 0
-        },
-        {
-          type: 'FS',
-          name: '腐蚀',
-          value: 0
-        },
-        {
-          type: 'PL',
-          name: '破裂',
-          value: 0
-        },
-        {
-          type: 'QF',
-          name: '起伏',
-          value: 0
-        },
-        {
-          type: 'SL',
-          name: '渗透',
-          value: 0
-        },
-        {
-          type: 'TJ',
-          name: '脱节',
-          value: 0
-        },
-        {
-          type: 'TL',
-          name: '接口材料脱落',
-          value: 0
-        },
-        {
-          type: 'CJ',
-          name: '沉积',
-          value: 0
-        },
-        {
-          type: 'CQ',
-          name: '残墙、坝根',
-          value: 0
-        },
-        {
-          type: 'FZ',
-          name: '浮渣',
-          value: 0
-        },
-        {
-          type: 'JG',
-          name: '结垢',
-          value: 0
-        },
-        {
-          type: 'SG',
-          name: '树根',
-          value: 0
-        },
-        {
-          type: 'ZW',
-          name: '障碍物',
-          value: 0
-        }
-      ]
+      defectArr: []
     }
   },
   watch: {
-    echartsData(nv, ov) {
-      this.echartsData = nv
-      console.log('缺陷数量统计图新的echartsData', this.echartsData)
-      this.initData()
+    paramData: {
+      handler(nv, ov) {
+        this.echartsData = nv
+        console.log('缺陷等级统计图新的echartsData', this.paramData)
+        this.initData()
+      },
+      deep: true,
+      immediate: true
     }
   },
   computed: {},
@@ -116,24 +39,37 @@ export default {
   methods: {
     // 处理缺陷数据
     setDefectData() {
-      console.log('this.echartsData',this.echartsData);
-      this.echartsData.forEach((ev) => {
-          // console.log("ev",ev);
-        this.defectArr.forEach((dv) => {
-          // console.log("dv",dv);
-          if (dv.type == ev.defectCode) {
-            dv.value += ev.defectNum
-          }
-        })
+      // console.log('this.echartsData', this.echartsData)
+
+      let echartsDataArr = this.echartsData.map((v) => {
+        return {
+          type: v.defectCode,
+          name: v.defectName,
+          value: v.defectNum
+        }
       })
-      this.titleArr = this.defectArr.map((v) => {
+      console.log('echartsDataArr1', echartsDataArr)
+
+      echartsDataArr = echartsDataArr.reduce((obj, item) => {
+        let find = obj.find((i) => i.type === item.type)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      console.log('echartsDataArr2', echartsDataArr)
+      this.defectArr = echartsDataArr
+      this.titleArr = echartsDataArr.map((v) => {
         return v.name
       })
     },
     //初始化数据(饼状图)
     async initData() {
       // console.log('缺陷数量统计图 110',this.paramData)
-      this.echartsData = this.paramData
+      // this.echartsData = this.paramData
       await this.setDefectData()
       let chartDom = document.getElementById('echartsFour')
       let myChart = echarts.init(chartDom)

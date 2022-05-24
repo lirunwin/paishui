@@ -45,9 +45,7 @@ const map = {
   fullScreen: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/fullScreen.vue'), //全屏
   mapScreenshot: () => import('@/views/zhpt/tongyonggongju/rightTopTool/toolBox/mapScreenshot.vue'), //截图
 
-  otherTools: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/widget.vue'), //其他工具
   mapLegend: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/mapLegend.vue'), // 图例
-  attrSearch: () => import('@/views/zhpt/tongyonggongju/rightTopTool/otherTools/attrSearch.vue'), // 属性查询
 
   //右侧底部工具栏
   rightBottomTool: () => import('@/views/zhpt/tongyonggongju/rightBottomTool/widget.vue'), // 右侧底部工具栏

@@ -51,7 +51,7 @@
             </el-row>
           </div>
           <div class="title">整改建议：</div>
-          <el-select size="small" v-model="searchValue.fixSuggest" placeholder="选择建议">
+          <el-select size="small" clearable v-model="searchValue.fixSuggest" placeholder="选择建议">
             <el-option
               v-for="item in fixSuggestList"
               :key="item.codeValue"
