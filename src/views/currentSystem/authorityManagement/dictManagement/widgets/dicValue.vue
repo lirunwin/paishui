@@ -17,6 +17,10 @@
         style="width: 100%;font-size: 14px;border: 0px solid;"
       >
         <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->
+        <template slot="empty">
+          <img src="@/assets/icon/null.png" alt="" />
+          <p class="empty-p">暂无数据</p>
+        </template>
         <el-table-column label="序号" width="80" align="center" type="index" />
         <el-table-column prop="sort" label="排序" width="80" align="center" />
 
