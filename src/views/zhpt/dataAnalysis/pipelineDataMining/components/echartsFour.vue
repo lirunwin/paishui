@@ -21,10 +21,14 @@ export default {
     }
   },
   watch: {
-    echartsData(nv, ov) {
-      this.echartsData = nv
-      // console.log('新的echartsData', this.echartsData)
-      this.initData()
+    paramData: {
+      handler(nv, ov) {
+        this.echartsData = nv
+        console.log('缺陷等级统计图新的echartsData', this.paramData)
+        this.initData()
+      },
+      deep: true,
+      immediate: true
     }
   },
   computed: {},
@@ -35,35 +39,38 @@ export default {
   methods: {
     // 处理缺陷数据
     setDefectData() {
-      let arr = []
-      this.echartsData.forEach((ev) => {
-        if (arr.length == 0) {
-          arr.push({
-            name: ev.defectName,
-            value: ev.defectNum
-          })
-        } else {
-          arr.forEach((av) => {
-            if (av.name == ev.defectName) {
-              av.value += ev.defectNum
-            } else {
-              arr.push({
-                name: ev.defectName,
-                value: ev.defectNum
-              })
-            }
-          })
+      // console.log('this.echartsData', this.echartsData)
+
+      let echartsDataArr = this.echartsData.map((v) => {
+        return {
+          type: v.defectCode,
+          name: v.defectName,
+          value: v.defectNum
         }
       })
-      this.defectArr = arr
-      this.titleArr = arr.map((v) => {
+      console.log('echartsDataArr1', echartsDataArr)
+
+      echartsDataArr = echartsDataArr.reduce((obj, item) => {
+        let find = obj.find((i) => i.type === item.type)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      console.log('echartsDataArr2', echartsDataArr)
+      this.defectArr = echartsDataArr
+      this.titleArr = echartsDataArr.map((v) => {
         return v.name
       })
     },
     //初始化数据(饼状图)
-    initData() {
+    async initData() {
       // console.log('缺陷数量统计图 110',this.paramData)
-      this.echartsData = this.paramData
+      // this.echartsData = this.paramData
+      await this.setDefectData()
       let chartDom = document.getElementById('echartsFour')
       let myChart = echarts.init(chartDom)
       let option
@@ -84,7 +91,7 @@ export default {
         xAxis: [
           {
             type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            data: this.titleArr,
             axisTick: {
               alignWithLabel: true
             },
@@ -112,7 +119,7 @@ export default {
             name: '缺陷类型',
             type: 'bar',
             barWidth: '60%',
-            data: [10, 52, 200, 334, 390, 330, 220]
+            data: this.defectArr
           }
         ]
       }

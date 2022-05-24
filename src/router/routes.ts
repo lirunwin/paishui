@@ -36,9 +36,18 @@ export function packageRouter(routerlist) {
     } else result = ''
     return `iconfont ${result}`
   }
-  const router:any[] = []
-  routerlist.forEach(e => {
-    if(e.statusFlag=="1"){
+  const router: any[] = []
+  routerlist.forEach((e) => {
+    if (e.statusFlag == '1') {
+      const meta = () => {
+        let temp = {}
+        try {
+          temp = JSON.parse(e.meta || '{}')
+        } catch (error) {
+          console.log(e.meta, error)
+        }
+        return temp
+      }
       let e_new = {
         path: e.path || '',
         name: e.name,
@@ -48,8 +57,8 @@ export function packageRouter(routerlist) {
         icon: extractIcon(e.icon),
         widgetid: e.widgetid || '',
         component: _import(e.component),
-        meta: e.meta && e.meta !== null && JSON.parse(e.meta),
-        parentPathid:e.parentPathid||''
+        meta: meta(),
+        parentPathid: e.parentPathid || ''
       }
       if (e.childrens && e.childrens.length > 0) {
         e_new = Object.assign({}, e_new, {

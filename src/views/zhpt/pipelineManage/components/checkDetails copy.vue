@@ -237,7 +237,7 @@
                         }}</el-link>
                       </div>
                     </div>
-                    <p v-if="!fileListData.length" style="text-align: center">暂无报告</p>
+                      <p v-if="!fileListData.length" style="text-align: center">暂无报告</p>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -503,7 +503,7 @@ export default {
               symbol: ['none', 'none'],
               label: {
                 show: true,
-                padding: [0, 0, -60, 0],
+                padding:[0,0,-60,0],
                 formatter: function (a) {
                   console.log('标题参数', a)
                   return ` 埋深 ${a['name']}m `
@@ -664,7 +664,7 @@ export default {
             border: 1px solid #dedede;
           }
         }
-        .el-form {
+         .el-form {
           .el-link--inner {
             max-width: 416px;
             /* 1.先强制一行内显示文本 */

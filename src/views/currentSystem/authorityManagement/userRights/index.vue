@@ -355,11 +355,11 @@
             <el-col :span="12" class="base-info">
               <el-row>
                 <span class="title">个性签名图片：</span>
-                <img v-if="detailInfo.esignature !== null" :src="detailInfo.esignature" />
+                <img v-if="detailInfo.esignature !== null" :src="imageByName(detailInfo.esignature)" />
               </el-row>
               <el-row>
                 <span class="title">用户头像：</span>
-                <img v-if="detailInfo.avatar !== null" :src="detailInfo.avatar" />
+                <img v-if="detailInfo.avatar !== null" :src="imageByName(detailInfo.avatar)" />
               </el-row>
               <el-row> <span class="title">工作职责：</span><span v-html="detailInfo.note" /> </el-row>
             </el-col>
@@ -457,6 +457,7 @@ export default class UserRights extends Vue {
   formatteAuditStatus?: any
   list = []
   total = 0
+  imageByName = imageByName
   column = [
     {
       label: '登录名',

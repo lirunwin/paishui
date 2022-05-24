@@ -51,13 +51,13 @@
           >
           </el-input>
           <div class="title">缺陷类型：</div>
-          <el-select size="small" v-model="searchValue.defectType" placeholder="选择缺陷类型">
+          <el-select size="small" clearable v-model="searchValue.defectType" placeholder="选择缺陷类型">
             <el-option v-for="item in contentEchatrs" :key="item.name" :label="item.name" :value="item.name">
             </el-option>
           </el-select>
 
           <div class="title">类型名称：</div>
-          <el-select size="small" v-model="searchValue.defectName" placeholder="选择类型名称">
+          <el-select size="small" clearable v-model="searchValue.defectName" placeholder="选择类型名称">
             <el-option v-for="item in echartsData" :key="item.name" :label="item.name" :value="item.name"> </el-option>
           </el-select>
           <el-button class="serch-btn" style="margin-left: 26px" type="primary"> 查询 </el-button>
@@ -91,7 +91,7 @@ export default {
   components: { summaryForm },
   data() {
     return {
-         // 日期选择器规则
+      // 日期选择器规则
       pickerOptions0: '',
       pickerOptions1: '',
       searchValue: {
@@ -159,25 +159,7 @@ export default {
         }
       ],
       echartsTitle: [],
-      echartsData: [
-        { value: 0, defectCode: 'AJ', name: '支管暗接' },
-        { value: 0, defectCode: 'BX', name: '变形' },
-        { value: 0, defectCode: 'CK', name: '错口' },
-        { value: 0, defectCode: 'CR', name: '异物穿入' },
-        { value: 0, defectCode: 'FS', name: '腐蚀' },
-        { value: 0, defectCode: 'PL', name: '破裂' },
-        { value: 0, defectCode: 'QF', name: '起伏' },
-        { value: 0, defectCode: 'SL', name: '渗透' },
-        { value: 0, defectCode: 'TJ', name: '脱节' },
-        { value: 0, defectCode: 'TL', name: '接口材料脱落' },
-        { value: 0, defectCode: 'CJ', name: '沉积' },
-        { value: 0, defectCode: 'CQ', name: '残墙、坝根' },
-        { value: 0, defectCode: 'FZ', name: '浮渣' },
-        { value: 0, defectCode: 'JG', name: '结垢' },
-        { value: 0, defectCode: 'SG', name: '树根' },
-        { value: 0, defectCode: 'ZW', name: '障碍物' },
-        { value: 0, defectCode: 'ZC', name: '正常' }
-      ]
+      echartsData: []
     }
   },
   async created() {
@@ -203,7 +185,7 @@ export default {
     }
   },
   watch: {
-      'searchValue.startDate': function (n) {
+    'searchValue.startDate': function (n) {
       this.searchValue.finishDate = n
     },
     pageData: function (newValue, old) {
@@ -237,24 +219,37 @@ export default {
             av.value += v.defectNum
           }
         })
-
-        this.echartsData.forEach((ev) => {
-          if (ev.defectCode == v.defectCode) {
-            console.log('添加数量', ev)
-            ev.value += v.defectNum * 1
-          }
-        })
       })
 
-      this.echartsTitle = this.echartsData.map((titleV) => {
+      let echartsDataArr = newValue.map((v) => {
+        return {
+          value: v.defectNum,
+          defectCode: v.defectCode,
+          name: v.defectName
+        }
+      })
+
+      echartsDataArr = echartsDataArr.reduce((obj, item) => {
+        let find = obj.find((i) => i.defectCode === item.defectCode)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      console.log('echartsDataArr', echartsDataArr)
+      this.echartsTitle = echartsDataArr.map((titleV) => {
         return titleV.name
       })
+      this.echartsData = echartsDataArr
       console.log(' this.echartsData ', this.echartsData)
       this.initData()
     }
   },
   methods: {
-     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
+    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchValue.startDate).getTime()
@@ -280,6 +275,7 @@ export default {
       // {jcStartDate:检测开始日期,jcEndDate:检测结束日期,startPoint：起始井号", "endPoint：终止井号,defectType:缺陷类型，defectName：缺陷名称}
       let params = {}
       let res = await getPipeDefectsTypeCountMap(params)
+      console.log('管道缺陷评价统计', res)
       this.pageData = res.result
       if (this.pageData) {
         this.pageData.forEach((resValue) => {
@@ -365,7 +361,7 @@ export default {
               radius: [0, '25%'],
               label: {
                 position: 'inner',
-                fontSize: 14
+                fontSize: 12
               },
               labelLine: {
                 show: false
@@ -376,25 +372,8 @@ export default {
               type: 'pie',
               radius: ['30%', '45%'],
               label: {
-                formatter: '  {b|{b}：}{c}  {per|{d}%}  ',
-                backgroundColor: '#F6F8FC',
-                borderColor: '#8C8D8E',
-                borderWidth: 1,
-                borderRadius: 4,
-                rich: {
-                  b: {
-                    color: '#4C5058',
-                    fontSize: 14,
-                    fontWeight: 'bold',
-                    lineHeight: 33
-                  },
-                  per: {
-                    color: '#fff',
-                    backgroundColor: '#4C5058',
-                    padding: [4, 4],
-                    borderRadius: 4
-                  }
-                }
+                position: 'inner',
+                fontSize: 12
               },
               data: this.allArr
             },

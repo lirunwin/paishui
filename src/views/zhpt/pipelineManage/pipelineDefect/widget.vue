@@ -65,9 +65,16 @@
           <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
-            <el-button size="small" type="primary" @click.stop="exportConfirm()"
-            >导出<i class="el-icon-download el-icon--right"></i
-          ></el-button>
+          <download-excel
+            :fields="json_fields"
+            :data="multipleSelection"
+            :before-generate="startDownload"
+            :before-finish="finishDownload"
+            name="管道缺陷管理表单.xls"
+            type="xls"
+          >
+            <el-button size="small" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
+          </download-excel>
           <!-- <el-button  type="primary" @click="openDialogEnclosure" :disabled="multipleSelection.length != 1"
             >导出<i class="el-icon-download el-icon--right"></i
           ></el-button> -->
@@ -152,7 +159,7 @@
                 <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails">详情</a>
               </div>
               <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
-              <div class="content-info" style="font-size: 12px;">
+              <div class="content-info" style="font-size: 12px">
                 <div class="left">
                   <div style="padding: 3px 0">检测日期&emsp; {{ DetailsForm.sampleTime }}</div>
                   <div style="display: flex; padding: 3px 0">
@@ -243,7 +250,6 @@ import { baseAddress } from '@/utils/request.ts'
 
 import { geteSessionStorage } from '@/utils/auth'
 
-
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
@@ -259,23 +265,39 @@ import defectImg2 from '@/assets/images/traingle2.png'
 import defectImg3 from '@/assets/images/traingle3.png'
 import defectImg4 from '@/assets/images/traingle4.png'
 import defectImg0 from '@/assets/images/traingle0.png'
+import JsonExcel from 'vue-json-excel'
 
 // 引入管道检测组件
 import deleteDialog from '../components/checkDetails.vue'
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 import { Overlay } from 'ol'
 
-import axios from "axios";
+import axios from 'axios'
 
 export default {
   props: ['param', 'data'],
   components: {
-    deleteDialog
+    deleteDialog,
+    'download-excel': JsonExcel
   },
   data() {
     return {
-      //导出url
-      expXls: '/psjc/discharger/export',
+      json_fields: {
+        管段编号: 'expNo',
+        管段类型: 'pipeType',
+        '管径(mm)': 'diameter',
+        材质: 'material',
+        检测方向: 'detectDir',
+        '距离(m)': 'checkLength',
+        分值: 'defectNum',
+        等级: 'defectLevel',
+        检测视频: 'videoFileName',
+        工程名称: 'prjName',
+        工程地点: 'checkAddress',
+        检测日期: 'sampleTime',
+        管道内部状况描述: 'structEstimate',
+        缺陷名称代码: 'defectCode'
+      },
       currentId: null,
       id: null,
       activeName: 'picnum', // 照片视频tab标签
@@ -438,45 +460,22 @@ export default {
   },
   methods: {
     //导出前确认
-    exportConfirm() {
-      if (this.paginationTotal <= 1000) {
-        this.exportOperation()
-        return
+    //导出表格
+    startDownload() {
+      let self = this
+      if (self.multipleSelection.length == 0) {
+        self.$message({
+          message: '警告，请勾选数据',
+          type: 'warning'
+        })
       }
-      this.$confirm('仅支持导出前1000条数据，是否确认导出？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          this.exportOperation()
-        })
-        .catch(() => {})
     },
-    // 导出方式
-    exportOperation() {
-      axios.defaults.baseURL = '/api'
-      axios({
-        headers: {
-          'Content-Type': 'application/json;charset=UTF-8',
-          Authorization: 'bearer ' + geteSessionStorage('token')
-        },
-        method: 'get',
-        url: this.expXls,
-        responseType: 'blob'
+    finishDownload() {
+      let self = this
+      self.$message({
+        message: '恭喜，数据导出成功',
+        type: 'success'
       })
-        .then((res) => {
-          var blob = res.data
-          const href = URL.createObjectURL(blob) // 创建新的URL表示指定的blob对象
-          const a = document.createElement('a')
-          a.style.display = 'none'
-          a.href = href // 指定下载链接
-          a.download = '管道缺陷档案.xls' // 指定下载文件名
-          a.click()
-        })
-        .catch((err) => {
-          console.log(err)
-        })
     },
     // 关闭弹框
     getBool(bool) {
@@ -895,6 +894,10 @@ export default {
       }
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
+      }
+      .hover-row {
+        color: #e6a23c;
+        background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
     }
   }

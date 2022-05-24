@@ -3,19 +3,25 @@
     <el-row type="flex" justify="space-around">
       <el-col :span="12">
         <el-form-item style="margin-bottom: 18px" label="登录名" prop="username">
-          <el-input v-model="ruleForm.username" size="small" placeholder="请输入登录名" :disabled="difference" />
+          <el-input
+            v-model="ruleForm.username"
+            size="small"
+            placeholder="请输入登录名"
+            :disabled="difference"
+            clearable
+          />
         </el-form-item>
         <!-- <el-form-item label="密码" prop="password">
             <el-input v-model="ruleForm.password" size="small" type="password" placeholder="请输入密码" />
           </el-form-item> -->
         <el-form-item style="margin-bottom: 18px" label="用户姓名" prop="realName">
-          <el-input v-model="ruleForm.realName" size="small" placeholder="请输入客户名" />
+          <el-input v-model="ruleForm.realName" size="small" placeholder="请输入客户名" clearable />
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="联系电话" prop="phone">
-          <el-input v-model="ruleForm.phone" size="small" placeholder="请输入联系电话" />
+          <el-input v-model="ruleForm.phone" size="small" placeholder="请输入联系电话" clearable />
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="邮箱" prop="email">
-          <el-input v-model="ruleForm.email" size="small" placeholder="请输入邮箱" />
+          <el-input v-model="ruleForm.email" size="small" placeholder="请输入邮箱" clearable />
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="部门" prop="departmentId">
           <!-- <el-select v-model="ruleForm.departmentId" size="small" placeholder="请选择部门">
@@ -30,6 +36,7 @@
             style="width:100%"
             filterable
             clearable
+            @change="copyRole = []"
           />
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="角色复制">
@@ -48,15 +55,15 @@
           </el-select>
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="角色绑定" prop="roles">
-          <el-select v-model="ruleForm.roles" multiple size="small" placeholder="请选择用户管理权限">
+          <el-select v-model="ruleForm.roles" multiple size="small" placeholder="请选择用户管理权限" clearable>
             <el-option v-for="item in optionsRole" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="工作岗位" prop="job">
-          <el-input v-model="ruleForm.job" />
+          <el-input v-model="ruleForm.job" clearable />
         </el-form-item>
         <el-form-item style="margin-bottom: 18px" label="工作职责" prop="note">
-          <el-input v-model="ruleForm.note" :rows="3" type="textarea" />
+          <el-input v-model="ruleForm.note" :rows="3" type="textarea" clearable />
         </el-form-item>
       </el-col>
       <el-col :span="12">
@@ -320,10 +327,9 @@ export default class MergeUser extends Vue {
   getCopyDeptUserList() {
     let deptId = this.ruleForm.departmentId
     // console.log('部门编码：' + deptId)
-
     let data = {
       userLevel: 1,
-      departmentId: deptId,
+      departmentId: Array.isArray(deptId) ? [...deptId].pop() : deptId,
       current: 1,
       size: 10000000
     }

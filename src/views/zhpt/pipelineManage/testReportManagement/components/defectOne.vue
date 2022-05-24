@@ -1,8 +1,16 @@
 <template>
   <div class="project-box">
     <!-- 主要工程量表 -->
-    <el-table :data="tableData" border  style="width: 100%; margin-top: 20px" stripe>
-      <el-table-column type="index" label="序号" width="80" align="center" header-align="center" fixed="left"> </el-table-column>
+    <el-table
+      :data="tableData"
+      border
+      show-summary
+      style="width: 100%; margin-top: 20px"
+      stripe
+      :summary-method="getSummaries"
+    >
+      <el-table-column type="index" label="序号" width="80" align="center" header-align="center" fixed="left">
+      </el-table-column>
       <el-table-column
         :prop="v.name"
         header-align="center"
@@ -31,29 +39,59 @@ export default {
         { label: '管径(mm)', name: 'diameter' },
         { label: '管段材质', name: 'material' },
         { label: '管段长度(m)', name: 'pipeLength' },
+        { label: '检测长度(m)', name: 'jclength' },
         { label: '结构性缺陷', name: 'structEstimate' },
         { label: '功能性缺陷', name: 'funcEstimate' }
       ],
-      tableData: [
-      ]
+      tableData: []
     }
   },
   async mounted() {
-    // 
+    //
     let resPrj = await queryDefectFormDetails(this.paramId)
     this.tableData = resPrj.result
     console.log('管道缺陷表单', resPrj)
     console.log('上面传来的id', this.paramId)
   },
   methods: {
- 
+    getSummaries(param) {
+      const { columns, data } = param
+      const sums = []
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '总计'
+          return
+        }
+        if (index === 2) {
+          sums[index] = '/'
+          return
+        }
+        const values = data.map((item) => Number(item[column.property]))
+        if (!values.every((value) => isNaN(value))) {
+          sums[index] = values
+            .reduce((prev, curr) => {
+              const value = Number(curr)
+              if (!isNaN(value)) {
+                return prev + curr
+              } else {
+                return prev
+              }
+            }, 0)
+            .toFixed(2)
+          sums[index] += ''
+        } else {
+          sums[index] = '/'
+        }
+      })
+
+      return sums
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .project-box {
-
   /deep/.el-table {
     // font-weight: bold;
     // border: 2px solid #666;

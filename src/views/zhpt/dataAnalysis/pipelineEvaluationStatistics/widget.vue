@@ -49,7 +49,7 @@
             </div>
             <div class="serch-engineering">
               <div class="title">整改建议：</div>
-              <el-select size="small" v-model="searchValue.fixSuggest" placeholder="选择建议">
+              <el-select size="small" v-model="searchValue.fixSuggest" clearable placeholder="选择建议">
                 <el-option
                   v-for="item in fixSuggestList"
                   :key="item.codeValue"
@@ -61,10 +61,10 @@
             </div>
             <div class="operation-box">
               <div class="serch-engineering">
-                <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制 </el-button>
-                <el-button class="serch-btn" type="primary"> 清除 </el-button>
-                <el-button class="serch-btn" type="primary" @click="getPipeData"> 查询 </el-button>
-                <el-button class="serch-btn" type="primary"> 导出 </el-button>
+                <el-button size="small" class="serch-btn" type="primary" @click="getPipeData"> 查询 </el-button>
+                <el-button size="small" class="serch-btn" type="primary"> 导出 </el-button>
+                <el-button size="small" class="serch-btn" type="primary" @click="drawFeature">绘制范围</el-button>
+                <el-button size="small" class="serch-btn" type="primary">清除绘制</el-button>
               </div>
             </div>
           </div>
@@ -72,7 +72,7 @@
             <div class="iconSymbol"></div>
             <div class="titleName">统计结果</div>
           </div>
-          <div class="content">
+          <div class="content" v-loading="loading">
             <div style="padding-left: 12px">
               <el-radio v-model="radio" label="1">饼状图</el-radio>
               <el-radio v-model="radio" label="2">柱状图</el-radio>
@@ -137,9 +137,10 @@ export default {
   components: { simpleMap },
   data() {
     return {
+      loading: true, // 加载
       fixSuggestList: [],
       pipNum: true,
-      pipLen: false,
+      pipLen: true,
       pipNumShow: 1,
       pipLenShow: 0,
       tableData: [], // 表格数据
@@ -263,6 +264,7 @@ export default {
         }
       })
       this.$nextTick(() => {
+        this.loading = false
         this.initData()
       })
     },
@@ -317,43 +319,15 @@ export default {
       if (this.radio == '1') {
         myChart.setOption(
           {
+            tooltip: {
+              trigger: 'item'
+            },
             legend: {
               right: 'right',
               top: 'center',
               data: this.typeArr
             },
-            series: [
-              {
-                emptyCircleStyle: {
-                  opacity: this.pipNumShow
-                },
-                name: '管道数量统计',
-                type: 'pie',
-                selectedMode: 'single',
-                radius: [0, '50%'],
-                label: {
-                  show: false,
-                  position: 'inner',
-                  fontSize: 10
-                },
-                labelLine: {
-                  show: false
-                },
-                data: this.numArr
-              },
-              {
-                emptyCircleStyle: {
-                  opacity: this.pipLenShow
-                },
-                name: '管道长度统计',
-                type: 'pie',
-                radius: ['60%', '80%'],
-                labelLine: {
-                  length: 30
-                },
-                data: this.lengthArr
-              }
-            ]
+            series: this.loadEchatrsPie
           },
           true
         )
@@ -361,12 +335,9 @@ export default {
         myChart.setOption(
           {
             tooltip: {
-              trigger: 'item',
-              formatter: function (a) {
-                console.log('标题参数', a)
-                return `（${a['data']['name']}）数量:${a['data']['value']}   `
-              }
+              trigger: 'item'
             },
+
             legend: {},
             xAxis: {
               type: 'category',
@@ -375,37 +346,117 @@ export default {
             yAxis: {
               type: 'value'
             },
-            series: [
-              {
-                emptyCircleStyle: {
-                  opacity: this.pipNumShow
-                },
-                name: '管道数量统计',
-                type: 'bar',
-                data: this.numArr
-              },
-              {
-                emptyCircleStyle: {
-                  opacity: this.pipLenShow
-                },
-                name: '管道长度统计',
-                type: 'bar',
-                data: this.lengthArr
-              }
-            ]
+            series: this.loadEchatrsBar
           },
           true
         )
       }
+
+      mychart.on('legendselectchanged', (e) => {
+        console.log('dianjile', e.name)
+        for (var i = 0; i < option.legend.data.length; i++) {
+          var opt = option.legend.data[i]
+          if (opt === e.name) {
+            seriesindex = i
+            idx = 0
+            console.log(e.name)
+          }
+        }
+      })
+    },
+    // 动态设置echatrs大小
+    setEchatrsMain(main, radius) {
+      main.radius = radius
+      return main
     }
   },
   computed: {
-    // setOptionShowNum() {
-    //   return this.pipNum ? 1 : 0
-    // },
-    // setOptionShowLen() {
-    //   return this.pipLen ? 1 : 0
-    // },
+    // 动态加载echatrs(饼图)
+    loadEchatrsPie() {
+      let seriesNum = {
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            console.log('标题参数', a)
+            return `（${a['data']['name']}）数量:${a['data']['value']}   `
+          }
+        },
+        name: '管道数量统计',
+        type: 'pie',
+        selectedMode: 'single',
+        radius: [0, '50%'],
+        label: {
+          position: 'inner',
+          fontSize: 10
+        },
+        labelLine: {
+          show: false
+        },
+        data: this.numArr
+      }
+      let seriesLength = {
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            console.log('标题参数', a)
+            return `（${a['data']['name']}）长度:${a['data']['value']}   `
+          }
+        },
+        name: '管道长度统计',
+        type: 'pie',
+        radius: ['60%', '80%'],
+        labelLine: {
+          length: 10
+        },
+        label: {
+          formatter: ' {b}：{c} \n {d}% '
+        },
+        data: this.lengthArr
+      }
+      if ((this.pipNum == true && this.pipLen == true) || (this.pipNum == false && this.pipLen == false)) {
+        return [seriesNum, seriesLength]
+      }
+      if (this.pipNum) {
+        return [this.setEchatrsMain(seriesNum, [0, '80%'])]
+      } else {
+        return [this.setEchatrsMain(seriesLength, [0, '80%'])]
+      }
+    },
+    // 动态加载echatrs(柱状图)
+    loadEchatrsBar() {
+      let seriesNum = {
+        name: '管道数量统计',
+        type: 'bar',
+        data: this.numArr,
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            console.log('标题参数', a)
+            return `（${a['data']['name']}）数量:${a['data']['value']}   `
+          }
+        }
+      }
+      let seriesLength = {
+        name: '管道长度统计',
+        type: 'bar',
+        data: this.lengthArr,
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            console.log('标题参数', a)
+            return `（${a['data']['name']}）长度:${a['data']['value']}   `
+          }
+        }
+      }
+      if ((this.pipNum == true && this.pipLen == true) || (this.pipNum == false && this.pipLen == false)) {
+        return [seriesNum, seriesLength]
+      }
+      if (this.pipNum) {
+        return [seriesNum]
+      } else {
+        return [seriesLength]
+      }
+    },
     mapExtent() {
       return this.$store.state.gis.mapExtent
     }

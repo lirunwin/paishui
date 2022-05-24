@@ -77,10 +77,20 @@
               >导出<i class="el-icon-download el-icon--right"></i
             ></el-button>
           </el-popconfirm> -->
+          <download-excel
+            :fields="json_fields"
+            :data="multipleSelection"
+            :before-generate="startDownload"
+            :before-finish="finishDownload"
+            name="管道评估结果表单.xls"
+            type="xls"
+          >
+            <el-button size="small" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
+          </download-excel>
 
-          <el-button size="small" type="primary" @click.stop="exportConfirm()"
+          <!-- <el-button size="small" type="primary" @click.stop="exportConfirm()"
             >导出<i class="el-icon-download el-icon--right"></i
-          ></el-button>
+          ></el-button> -->
         </div>
       </div>
 
@@ -189,12 +199,12 @@
                 >详情</a
               >
             </div>
-            <div>管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}</div>
+            <div style="margin-top: 10px;">管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}</div>
             <div class="content-info" style="justify-content: space-between; display: flex">
-              <div class="left" style="flex: 1">
+              <div class="left" style="width: 230px;">
                 <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
                 <!-- <p style="padding-left: 10px">无文档</p> -->
-                <div class="text-space">
+                <div class="text-space" style="margin: 10px 0;">
                   <el-link
                     style="font-size: 12px; margin-left: 10px"
                     v-if="getCurrentForm.wordFilePath"
@@ -208,7 +218,7 @@
                 <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
                 <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
               </div>
-              <div class="right" style="flex: 1 1 0%; width: 250px; margin-left: 20px; min-height: 240px">
+              <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                 <el-tabs v-model="activeName">
                   <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
                     <div class="container">
@@ -247,35 +257,12 @@
     <transition name="el-fade-in-linear">
       <delete-dialog @sendBool="getBool" v-show="dialogFormVisible" :checkParam="id"></delete-dialog>
     </transition>
-    <!-- 导出弹框 -->
-    <el-dialog title="附件列表" :visible.sync="dialogEnclosure">
-      <el-table :data="enclosureGridData">
-        <el-table-column property="address" label="地址"></el-table-column>
-        <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
-          <template slot-scope="scope">
-            <p v-if="false">{{ scope }}</p>
-            <el-button type="text" size="small" @click="$message('该功能暂未开放')">报告</el-button>
-            <el-button type="text" size="small" @click="dialogEnclosure = false">退出</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div>
-        <el-pagination
-          @size-change="handleSizeChangeEnclosure"
-          @current-change="handleCurrentChangeEnclosure"
-          :current-page="paginationEnclosure.current"
-          :page-sizes="[10, 20, 30, 50, 100, 1000]"
-          :page-size="paginationEnclosure.size"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="paginationEnclosureTotal"
-        >
-        </el-pagination>
-      </div>
-    </el-dialog>
+  
   </div>
 </template>
 
 <script>
+import JsonExcel from 'vue-json-excel'
 import {
   queryPageAssessment,
   downloadFile,
@@ -315,10 +302,26 @@ import { mapUtil } from '../../common/mapUtil/common'
 export default {
   props: ['data'],
   components: {
-    deleteDialog
+    deleteDialog,
+    'download-excel': JsonExcel
   },
   data() {
     return {
+      json_fields: {
+        工程名称: 'prjName',
+        管段编号: 'expNo',
+        管段类型: 'pipeType',
+        '管径(mm)': 'diameter',
+        材质: 'material',
+        结构性缺陷评价: 'structEstimate',
+        缺陷数量: 'defectnum',
+        检测照片: 'picnum',
+        检测视频: 'videoFileName',
+        检测地点: 'checkAddress',
+        检测日期: 'sampleTime',
+        结构性缺陷等级: 'structClass',
+        功能性缺陷等级: 'funcClass'
+      },
       id: null, // 当前列表id
       activeName: 'picnum', // 照片视频tab标签
       imgArrIndex: 0, // 缩略框照片索引
@@ -351,8 +354,6 @@ export default {
         uploadItemDictId: ''
       },
       // 附件弹框参数
-      enclosureGridData: [], // 表格数据
-      dialogEnclosure: false, // 显示隐藏
       paginationEnclosure: { current: 1, size: 30 }, // 分页参数信息
       paginationEnclosureTotal: 0, // 总页数
       // -------->
@@ -402,9 +403,7 @@ export default {
       projUtil: null, // 坐标系工具
       currentDataProjName: 'proj43', // 当前坐标系
       popup: null,
-      hasLoad: false,
-      //导出url
-      expXls: '/psjc/discharger/export'
+      hasLoad: false
     }
   },
   created() {
@@ -466,46 +465,22 @@ export default {
     }
   },
   methods: {
-    //导出前确认
-    exportConfirm() {
-      if (this.paginationTotal <= 1000) {
-        this.exportOperation()
-        return
+    //导出表格
+    startDownload() {
+      let self = this
+      if (self.multipleSelection.length == 0) {
+        self.$message({
+          message: '警告，请勾选数据',
+          type: 'warning'
+        })
       }
-      this.$confirm('仅支持导出前1000条数据，是否确认导出？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          this.exportOperation()
-        })
-        .catch(() => {})
     },
-    // 导出方式
-    exportOperation() {
-      axios.defaults.baseURL = '/api'
-      axios({
-        headers: {
-          'Content-Type': 'application/json;charset=UTF-8',
-          Authorization: 'bearer ' + geteSessionStorage('token')
-        },
-        method: 'get',
-        url: this.expXls,
-        responseType: 'blob'
+    finishDownload() {
+      let self = this
+      self.$message({
+        message: '恭喜，数据导出成功',
+        type: 'success'
       })
-        .then((res) => {
-          var blob = res.data
-          const href = URL.createObjectURL(blob) // 创建新的URL表示指定的blob对象
-          const a = document.createElement('a')
-          a.style.display = 'none'
-          a.href = href // 指定下载链接
-          a.download = '检测报告档案.xls' // 指定下载文件名
-          a.click()
-        })
-        .catch((err) => {
-          console.log(err)
-        })
     },
     // 转换缺陷等级
     getDefectValue(level) {
@@ -868,6 +843,7 @@ export default {
 
     // 表格多选事件
     handleSelectionChange(val) {
+      let self = this
       this.multipleSelection = val
     },
     // 查询数据
@@ -1046,7 +1022,7 @@ export default {
 
     .box-card {
       width: 550px;
-      max-height: 80vh;
+      min-height: 310px;
       border: none;
       border-radius: 5px;
       .el-card__header {
@@ -1055,7 +1031,7 @@ export default {
         background-color: #2d74e7;
       }
       .el-card__body {
-        padding: 0;
+        padding: 15px !important;
         .el-menu-item {
           height: 45px;
           font-size: 16px;
@@ -1140,6 +1116,7 @@ export default {
           .left {
             flex: 1;
             .text-space {
+              margin: 10px 0;
               /deep/.el-link--inner {
                 max-width: 240px;
                 // 1.先强制一行内显示文本
@@ -1152,28 +1129,35 @@ export default {
               }
             }
           }
-          /deep/ .right {
+          .right {
             flex: 1;
-            .container {
-              height: 100%;
-              width: 100%;
-              padding-top: 5px;
-              box-sizing: border-box;
-            }
 
             .is-top {
             }
-            .el-tabs__content {
-              height: 150px;
-              width: 234px;
-            }
-            .el-tabs__item {
-              margin: 11px 0 0 0 !important;
-              background: transparent !important;
-            }
-            .el-tabs__header {
-              border-top: 0 !important;
-              background: transparent !important;
+            // .el-tabs__header{
+            //   border-top: none;
+            //       margin-bottom: 6px;
+            //   background-color: transparent !important;
+            // }
+            /deep/.el-tabs {
+              .container {
+                height: 100%;
+                width: 100%;
+                padding-top: 5px;
+                box-sizing: border-box;
+              }
+              .el-tabs__content {
+                height: 150px;
+                width: 234px;
+              }
+              .el-tabs__item {
+                margin: 11px 0 0 0 !important;
+                background: transparent !important;
+              }
+              .el-tabs__header {
+                border-top: 0 !important;
+                background: transparent !important;
+              }
             }
             // .el-tabs__nav-wrap::after {
             //   z-index: 2;

@@ -404,16 +404,17 @@
               </el-tab-pane>
               <el-tab-pane label="管道缺陷" name="third">
                 <div class="releaseContent">
-                  <div class="detailsTitle">管道缺陷汇总一览表</div>
-                  <defect-one :paramId="id"></defect-one>
+                  <!-- <div class="detailsTitle">管道缺陷汇总一览表</div> -->
+                  <!-- <defect-one :paramId="id"></defect-one> -->
+                  <div class="detailsTitle">检测评估建议</div>
+                  <proposal :paramId="id"></proposal>
                 </div>
               </el-tab-pane>
               <el-tab-pane label="管段状态评估" name="fourth">
                 <div class="releaseContent">
-                  <!-- <div class="detailsTitle">管段状况评估表</div> -->
-                  <!-- <assessment :paramId="id"></assessment> -->
-                  <div class="detailsTitle">检测评估建议</div>
-                  <proposal :paramId="id"></proposal>
+                  <div class="detailsTitle">管段状况评估表</div>
+                  <assessment :paramId="id"></assessment>
+
                   <!-- <div class="detailsTitle">管段检测与评估成果表</div>
                   <inspect-form></inspect-form> -->
                 </div>
@@ -543,6 +544,89 @@
         </el-card>
       </div>
     </transition>
+
+    <!-- 表格当前列信息弹出框 -->
+    <transition name="el-fade-in-linear">
+      <div id="popupCard" class="detailsCrad" v-show="currentInfoCard">
+        <el-card class="box-card" v-if="currentInfoCard">
+          <div class="table-content">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                height: 30px;
+                box-sizing: border-box;
+              "
+            >
+              <span style="font-weight: bold; user-select: none"
+                >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
+                <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
+                {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
+                <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+              </span>
+              <a
+                style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                @click="openDetails(getCurrentForm)"
+                >详情</a
+              >
+            </div>
+            <div style="margin-top: 10px">
+              管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}
+            </div>
+            <div class="content-info" style="justify-content: space-between; display: flex">
+              <div class="left" style="width: 230px">
+                <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
+                <!-- <p style="padding-left: 10px">无文档</p> -->
+                <div class="text-space" style="margin: 10px 0">
+                  <el-link
+                    style="font-size: 12px; margin-left: 10px"
+                    v-if="getCurrentForm.wordFilePath"
+                    type="primary"
+                    @click.stop="downloadDocx"
+                    >{{ getCurrentForm.wordInfoName + 'docx' }}</el-link
+                  >
+                </div>
+                <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
+                <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
+                <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
+                <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
+              </div>
+              <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
+                <el-tabs v-model="activeName">
+                  <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
+                    <div class="container">
+                      <el-image
+                        style="width: 100%; height: 90%; -webkit-user-drag: none"
+                        :src="getImgUrl"
+                        :preview-src-list="getImgUrlArr"
+                      >
+                      </el-image>
+                      <div style="text-align: center">
+                        <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
+                        {{ getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
+                          getCurrentForm.pipeDefects.length || 0
+                        }}
+                        <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
+                      </div>
+                    </div>
+                  </el-tab-pane>
+                  <el-tab-pane :label="`视频`" name="viedoNum">
+                    <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
+                      <video controls="controls" width="100%" height="83%">
+                        <source :src="getVideoUrl" type="video/mp4" />
+                      </video>
+                    </div>
+                    <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">暂无视频</div>
+                  </el-tab-pane>
+                </el-tabs>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </div>
+    </transition>
+  
   </div>
 </template>
 
@@ -618,6 +702,7 @@ export default {
   },
   data() {
     return {
+      pipDialogFormVisible: false, // 详情弹框显影
       lastFileList: [], //上次上次的文件列表
       fullscreenLoading: false, // 加载
       remark: '', // 备注
@@ -839,6 +924,13 @@ export default {
       let myChart = echarts.init(chartDom)
       let option
       option = {
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            // console.log('标题参数', a)
+            return `${a['data']['title']} 数量 ${a['data']['value']} `
+          }
+        },
         series: [
           {
             name: '管道缺陷数量统计图',
@@ -1503,7 +1595,7 @@ export default {
       // this.imageUrl = URL.createObjectURL(file.raw)
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
       // console.log(arrState)
-      if (  res.result == null || res.result.length == 0 ) {
+      if (res.result == null || res.result.length == 0) {
         file.status = 'error'
         // this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }
@@ -1845,6 +1937,10 @@ $fontSize: 14px !important;
     }
     .el-table__row--striped > td {
       background-color: #f3f7fe !important;
+    }
+    .hover-row {
+      color: #e6a23c;
+      background-color: rgba($color: #2d74e7, $alpha: 0.1);
     }
   }
 

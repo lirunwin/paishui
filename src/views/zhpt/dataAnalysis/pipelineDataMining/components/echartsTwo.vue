@@ -73,7 +73,7 @@ export default {
         } else if (v.defectLevel == '四级') {
           this.funArr[3].value += v.defectNum
         }
-        console.log("funcArr里面的等级",v);
+        // console.log("funcArr里面的等级",v);
       })
       this.echartsData.structArr.forEach((v) => {
         if (v.defectLevel == '一级') {
@@ -88,13 +88,13 @@ export default {
       })
       // console.log('funArr', this.funArr)
       // console.log('staArr', this.staArr)
-      console.log('缺陷类型统计图echartsData', this.paramData)
+      // console.log('缺陷类型统计图echartsData', this.paramData)
     },
     //初始化数据(饼状图)
     initData() {
       this.echartsData = this.paramData
       this.setData()
-      console.log('缺陷类型统计图', this.echartsData)
+      // console.log('缺陷类型统计图', this.echartsData)
       let chartDom = document.getElementById('echartsTwo')
       let myChart = echarts.init(chartDom)
       let option
@@ -194,14 +194,14 @@ export default {
       }
 
       option && myChart.setOption(option)
-      console.log('option', option)
+      // console.log('option', option)
     }
   },
   watch: {
     echartsData: {
       handler(nv, ov) {
         this.echartsData = nv 
-        console.log('缺陷类型统计图新的echartsData', this.echartsData)
+        // console.log('缺陷类型统计图新的echartsData', this.echartsData)
         this.initData()
       },
       deep: true,

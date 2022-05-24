@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import { queryPipeStateDetails } from '@/api/pipelineManage'
+import { queryDefectFormDetails } from '@/api/pipelineManage'
 
 export default {
   props: ['paramId'],
@@ -87,8 +87,8 @@ export default {
           { label: '材质', name: 'material' }
         ],
         buriedDepth: [
-          { label: '起点', name: 'material' },
-          { label: '终点', name: 'material' }
+          { label: '起点', name: 'startDepth' },
+          { label: '终点', name: 'endDepth' }
         ],
         structEstimate: [
           { label: '平均值S', name: 'structYmean' },
@@ -112,7 +112,7 @@ export default {
   },
   async mounted() {
     //
-    let resPrj = await queryPipeStateDetails(this.paramId)
+    let resPrj = await queryDefectFormDetails(this.paramId)
     this.tableData = resPrj.result
     console.log('管段状态评估汇总  ', resPrj)
     console.log('上面传来的id', this.paramId)
@@ -126,6 +126,10 @@ export default {
           sums[index] = '总计'
           return
         }
+          if (index === 2) {
+          sums[index] = '/'
+          return
+        }
         const values = data.map((item) => Number(item[column.property]))
         if (!values.every((value) => isNaN(value))) {
           sums[index] = values.reduce((prev, curr) => {
@@ -135,7 +139,7 @@ export default {
             } else {
               return prev
             }
-          }, 0)
+          }, 0).toFixed(2)
           sums[index] += ''
         } else {
           sums[index] = '/'
@@ -181,7 +185,7 @@ export default {
       background-color: #f3f7fe !important;
     }
     .el-table__cell {
-      border: 1px solid #DEDEDE;
+      border: 1px solid #dedede;
     }
   }
 }
