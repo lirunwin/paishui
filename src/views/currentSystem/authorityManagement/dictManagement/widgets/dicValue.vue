@@ -17,6 +17,10 @@
         style="width: 100%;font-size: 14px;border: 0px solid;"
       >
         <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->
+        <template slot="empty">
+          <img src="@/assets/icon/null.png" alt="" />
+          <p class="empty-p">暂无数据</p>
+        </template>
         <el-table-column label="序号" width="80" align="center" type="index" />
         <el-table-column prop="sort" label="排序" width="80" align="center" />
 
@@ -156,7 +160,7 @@ export default {
       rules: {
         codeValue: [
           { required: true, message: '请输入字典值编码', trigger: 'blur' },
-          { pattern: '^[0-9a-zA-Z]+$', message: '字典值不合法' }
+          { pattern: /^[a-zA-Z][\w-]+$/, message: '字典值不合法' }
         ],
         notes: [{ required: true, message: '请输入字典值名称', trigger: 'blur' }]
       }

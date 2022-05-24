@@ -91,19 +91,19 @@
           <el-row type="flex" justify="center">
             <el-col :span="8">
               <el-form-item label="登录名：" prop="username">
-                <el-input v-model="accountApply.username" />
+                <el-input v-model="accountApply.username" clearable />
               </el-form-item>
-              <el-form-item label="密码：" prop="password">
+              <el-form-item label="密码：" prop="password" clearable>
                 <el-input v-model="accountApply.password" type="password" />
               </el-form-item>
               <el-form-item label="用户姓名：" prop="realName">
-                <el-input v-model="accountApply.realName" />
+                <el-input v-model="accountApply.realName" clearable />
               </el-form-item>
               <el-form-item label="联系电话：" prop="phone">
-                <el-input v-model="accountApply.phone" />
+                <el-input v-model="accountApply.phone" clearable />
               </el-form-item>
               <el-form-item label="邮箱：" prop="email">
-                <el-input v-model="accountApply.email" />
+                <el-input v-model="accountApply.email" clearable />
               </el-form-item>
               <el-form-item label="部门：" prop="departmentId">
                 <!-- <el-select
@@ -136,18 +136,19 @@
                   filterable
                   placeholder="请选择"
                   :disabled="!accountApply.departmentId || !accountApply.departmentId.length"
+                  clearable
                 >
                   <el-option v-for="item in reviewers" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
               <el-form-item label="工作岗位：" prop="applyJob">
-                <el-input v-model="accountApply.job" />
+                <el-input v-model="accountApply.job" clearable />
               </el-form-item>
               <el-form-item label="工作职责：" prop="applyNote">
-                <el-input v-model="accountApply.note" :rows="3" type="textarea" />
+                <el-input v-model="accountApply.note" :rows="3" type="textarea" clearable />
               </el-form-item>
               <el-form-item label="申请说明：" prop="applyState">
-                <el-input v-model="accountApply.applystate" type="textarea" />
+                <el-input v-model="accountApply.applystate" type="textarea" clearable />
               </el-form-item>
             </el-col>
             <el-col :offset="2" :span="9">
