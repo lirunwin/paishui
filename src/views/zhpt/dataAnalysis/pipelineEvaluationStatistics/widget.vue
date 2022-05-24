@@ -61,7 +61,7 @@
             </div>
             <div class="operation-box">
               <div class="serch-engineering">
-                <el-button size="small" class="serch-btn" type="primary" @click="getPipeData"> 查询 </el-button>
+                <el-button size="small" class="serch-btn" type="primary" @click="search"> 查询 </el-button>
                 <el-button size="small" class="serch-btn" type="primary"> 导出 </el-button>
                 <el-button size="small" class="serch-btn" type="primary" @click="drawFeature">绘制范围</el-button>
                 <el-button size="small" class="serch-btn" type="primary">清除绘制</el-button>
@@ -180,7 +180,7 @@ export default {
       filter: {
         jcStartDate: '',
         jcEndDate: '',
-        checkSuggest: '',
+        checkSuggest: ''
       }
     }
   },
@@ -271,7 +271,7 @@ export default {
     // 绘制
     drawFeature() {
       this.$refs.myMap.draw({
-        callback: fea => {
+        callback: (fea) => {
           this.getDataFromExtent(fea).then((res) => {
             console.log('这是绘制的数据', res)
           })
@@ -284,9 +284,14 @@ export default {
       })
     },
     // 查询
-    search () {
+    search() {
+      this.filter = {
+        jcStartDate: this.searchValue.startDate,
+        jcEndDate: this.searchValue.finishDate,
+        checkSuggest: this.searchValue.fixSuggest
+      }
       this.getDataFromExtent().then((res) => {
-          console.log('这是查询的数据', res)
+        console.log('这是查询的数据', res)
       })
     },
     async getDataFromExtent(extent) {

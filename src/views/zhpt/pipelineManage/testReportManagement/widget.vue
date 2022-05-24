@@ -1006,7 +1006,7 @@ export default {
       }
       this.currentIndexEV++
     },
-    // 打开缩略提示框
+    // 打开缩略提示框 
     // type: 1: 缺陷，2：管线
     async openPromptBox(row, position, type) {
       console.log('打开缩略提示框', row)

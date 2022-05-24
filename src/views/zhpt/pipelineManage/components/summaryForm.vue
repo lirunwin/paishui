@@ -19,7 +19,7 @@
         </tr>
       </thead>
       <tr class="highlight" v-for="(v, i) in tabelData.defectQuantityStatisticsA" :key="v.title">
-        <td :rowspan="defectQuantityStatisticsA.length" v-if="i < 1">结构性缺陷</td>
+        <td rowspan="10" v-if="i < 1">结构性缺陷</td>
         <td>{{ v.title }}</td>
         <td>{{ v.oneValue }}</td>
         <td>{{ v.twoValue }}</td>
@@ -28,7 +28,7 @@
         <td>{{ v.value }}</td>
       </tr>
       <tr class="highlight" v-for="(v, i) in tabelData.defectQuantityStatisticsB" :key="i">
-        <td :rowspan="defectQuantityStatisticsB.length" v-if="i < 1">功能性缺陷</td>
+        <td rowspan="6" v-if="i < 1">功能性缺陷</td>
         <td>{{ v.title }}</td>
         <td>{{ v.oneValue }}</td>
         <td>{{ v.twoValue }}</td>
