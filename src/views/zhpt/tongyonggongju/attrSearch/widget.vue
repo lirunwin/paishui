@@ -1,6 +1,6 @@
 <template>
   <div style="padding: 0 8px; height:100%; overflow: auto">
-    <el-tabs v-model="activeName" v-way="wayFun('tabs')" style="height:100%">
+    <el-tabs v-model="activeName" style="height:100%">
       <el-tab-pane label="属性标注" name="attQuerry" style="height:100%">        
         <div ref="legend" id="Legend" class="Legend">
           <div class="label" @click="openstate = !openstate">要素选择
@@ -11,15 +11,25 @@
           </div>
           <div v-show="openstate" class="content">
             <el-table highlight-current-row :data="featureData" stripe height="200px" style="width: 100%;margin-bottom: 8px" row-class-name="selectRowC" @row-click="showFea">
-              <el-table-column prop="layer" label="图层" />
-              <el-table-column prop="name" label="编码" />
+              <template slot="empty">
+                <img src="@/assets/icon/null.png" alt="">
+                <p class="empty-p">暂无数据</p>
+              </template>
+              <el-table-column type="index" width="55" label="序号" align="center"/>
+              <el-table-column prop="layer" width="105" label="图层" align="center"/>
+              <el-table-column prop="name" label="编码" align="center"/>
             </el-table>
           </div>
         </div>
-        <tf-legend class="legend_dept" label="要素详细" isopen="true" title="显示标注要素字段及属性。" style="height:calc(100% - 243px)">
+        <tf-legend class="legend_dept" label="要素详细" isopen="true" title="显示标注要素字段及属性。" style="height:600px">
           <el-table :data="attData" stripe height="calc(100% - 8px)" style="width: 100%;margin-bottom: 8px">
-            <el-table-column prop="fix" label="字段" />
-            <el-table-column prop="att" label="属性" />
+              <template slot="empty">
+                <img src="@/assets/icon/null.png" alt="">
+                <p class="empty-p">暂无数据</p>
+              </template>
+              <!-- <el-table-column type="index" label="序号" align="center"/> -->
+            <el-table-column prop="fix" width="150" label="字段" align="center"/>
+            <el-table-column prop="att" label="属性" align="center"/>
           </el-table>
         </tf-legend>
       </el-tab-pane>
@@ -30,9 +40,13 @@
           </el-select>
         </tf-legend>
         <tf-legend class="legend_dept" label="可见属性" isopen="true" title="指定所要查询的属性字段。">
-          <el-table ref="attTable" :data="attDatas" stripe height="400px" style="width: 100%" @select="selectChange" @select-all="selectChange">
-            <el-table-column type="selection" width="55" />
-            <el-table-column prop="name" label="属性" /></el-table>
+          <el-table ref="attTable" :data="attDatas" stripe height="600px" style="width: 100%" @select="selectChange" @select-all="selectChange">
+              <template slot="empty">
+                <img src="@/assets/icon/null.png" alt="">
+                <p class="empty-p">暂无数据</p>
+              </template>
+            <el-table-column type="selection" width="55"/>
+            <el-table-column prop="name" label="属性" align="center"/></el-table>
         </tf-legend>
         <el-button size="mini" type="primary" style="width:100%" @click="saveLayer">保存</el-button>
       </el-tab-pane>
@@ -41,9 +55,17 @@
 </template>
 
 <script>
-import { esriConfig, appconfig } from 'staticPub/config'
+import { appconfig } from 'staticPub/config'
 import tfLegend from '@/views/zhpt/common/Legend'
-import request from '@/utils/request'
+import iDraw from '@/views/zhpt/common/mapUtil/draw'
+import iQuery from '@/views/zhpt/common/mapUtil/query'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
+import { comSymbol } from '@/utils/comSymbol'
+import GeoJSON from 'ol/format/GeoJSON';
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
+
+
 export default {
   name: 'QueryResult',
   components: { tfLegend },
@@ -52,7 +74,7 @@ export default {
       if (typeof bind.value === 'function') bind.value(el)
     }
   },
-  props: { param: Object },
+  props: { data: Object },
   data() {
     return {
       ami: 8,
@@ -61,269 +83,141 @@ export default {
       attDatas: [],
       elements: {},
       openstate: true,
-      layerName: '',
+
       layersAtt: [],
       activeName: 'attQuerry',
       ractSelect: false,
-      featureData: []
+
+      // 
+      drawer: null,
+      vectorLayer: null,
+      layerName: '',
+      featureData: [],
     }
   },
   computed: { sidePanelOn() { return this.$store.state.map.P_editableTabsValue } },
-  mounted: function() {},
+  mounted: function() {
+    this.init()
+  },
+  destroyed () {
+    this.clearAll()
+  },
   watch:{
-    layerName() {
-      var id = this.layersAttIndex[this.layerName]
-      if(!id) return
-      this.attDatas = []
-      $.ajax({
-        url: this.businessMap + "/" + id + "/?f=pjson",
-        type: 'GET',
-        success: (data) => {
-          data = JSON.parse(data).fields
-          if(!data) return this.$message.error('图层信息获取失败')
-          var fields = []
-          var tableDiv = this.$refs.attTable
-          var Nfields = this.NField[this.layernameIndex[id].value]
-          if(!Nfields) Nfields = []
-          var selectIs = []
-          for(let i=0,ii=data.length;i<ii;i++){
-            var layer = data[i]
-            var select = true
-            if(Nfields.indexOf(layer.alias) > -1) {
-              select = false
-            } else {
-              selectIs.push(i)
-            }
-            fields.push({ name: layer.alias, att: layer.name, select: select})      
-          }   
-          this.attDatas = fields
-          this.$nextTick(() => {
-            selectIs.map((i) => tableDiv.toggleRowSelection(fields[i]))
-          })          
-        },
-        error: (error) => this.$message.error(error)
+    layerName(n, o) {
+      let tableName = this.layersAtt.find(item => item.label === n)
+      mapUtil.getFilds(tableName.name).then(res => {
+        if (res) {
+          this.attDatas = res
+          this.attDatas.forEach(row => this.$refs.attTable.toggleRowSelection(row, true))
+        } else this.$message.error('获取字段数据失败')
       })
     },
     sidePanelOn(newTab, oldTab) {
       if(newTab == oldTab) return
-      if(newTab == 'queryResult') {
-        this.$nextTick(() => {
-          if(this.ractSelect) this.isDrawRect()
-          else this.onClick()
-          this.gra.visible = true
-          this.showGeo.visible = true
-        })  
-      } 
-      if(oldTab == 'queryResult') {
-        var mapView = this.mapView
-        var draw = mapView.TF_draw
-        if (draw.activeAction) draw.reset()
-        if (this.click) {
-          this.click.remove()
-          this.click = undefined
-        }
-        this.gra.visible = false
-        this.showGeo.visible = false
-      }
+      console.log('侧边栏', newTab)
+      if(newTab !== 'attrSearch') {
+        this.clearAll()
+      } else this.init()
     }
   },
   methods: {
-    wayFun: function(flag) {
-      return (el) => {
-        this.elements[flag] = el
+    init () {
+      console.log('初始化')
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#0ff', 7, 'rgba(0, 255, 255, 0.7)') })
+      this.data.mapView.addLayer(this.vectorLayer)
+      //
+      let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
+      let info = sources.map(source => source.sublayers.map(sublayer => {
+        return { name: sublayer.name, label: sublayer.title }
+      }))
+      this.layersAtt = info[0]
+    },
+    clearAll () {
+      this.vectorLayer && this.data.mapView.removeLayer(this.vectorLayer)
+      this.drawer && this.drawer.end()
+    },
+    isDrawRect: function(checked) {
+      if (!checked) {
+        this.drawer && this.drawer.end()
+        return
       }
-    },
-    isDrawRect: function() {
-      if (this.click) {
-        this.click.remove()
-        this.click = undefined
+      const KeyId = {
+        'TF_PSPS_PIPE_B': 'LNO',
+        "TF_PSPS_POINT_B": 'EXP_NO',
+        "TF_PSPS_OUTFALL_B": 'EXP_NO'
       }
-      var draw = this.mapView.TF_draw
-      if (draw.activeAction) draw.reset()
-      this[this.ractSelect ? 'onDrawRect' : 'onClick']()
-    },
-    onClick: function() {
-      var mapview = this.mapView
-      mapview.container.style.cursor = 'pointer'
-      if (this.click) {
-        this.click.remove()
-        this.click = undefined
-      }
-      this.click = mapview.on('click', (evt) => {
-        var xy = mapview.toMap({ x: evt.x, y: evt.y })
-        var [x, y] = [xy.x, xy.y]
-        var r = mapview.resolution * 7; var da = Math.PI / 20
-        var ret = []
-        var PI2 = Math.PI * 2; var sin = Math.sin; var cos = Math.cos
-        for (let i = 0; i < PI2; i += da) {
-          ret.push([x + r * cos(i), y + r * sin(i)])
-        }
-        this.gra.geometry = { type: 'polygon', rings: [ret], spatialReference: mapview.spatialReference }
-        this.$refs.isQuery.style.display = 'inline-block'
-        this.query()
-      })
-    },
-    onDrawRect: function() {
-      var view = this.mapView
-      var sp = view.spatialReference
-      this.action = view.TF_drawRect(() => { view.container.style.cursor = 'crosshair' },
-        (evt) => {
-          if (evt.vertices.length < 2) {
-            this.gra.geometry = { type: 'polygon', spatialReference: sp }
-          }
-        }, (evt) => {
-          var v = evt.vertices
-          if (v.length > 1) {
-            this.gra.geometry = { type: 'polygon', rings: [[v[0], [v[1][0], v[0][1]], v[1], [v[0][0], v[1][1]]]], spatialReference: sp }
-          }
-        }, () => {
-          this.query()
-          this.$nextTick(this.onDrawRect())
-        })
-    },
-    query() {
-      var geometry = this.gra.geometry
-      if(!geometry) return
-      var view = this.mapView
-      var mapExtent = view.extent.toJSON()
-      $.ajax({
-        url: this.businessMap + '/identify',
-        type: 'POST',
-        data: {
-          geometry: JSON.stringify(geometry.toJSON()),
-          geometryType: 'esriGeometryPolygon',
-          layers: 'all:' + this.getLayers().join(','),
-          tolerance: '6',
-          mapExtent: mapExtent.xmin + ',' + mapExtent.ymin + ',' + mapExtent.xmax + ',' + mapExtent.ymax,
-          imageDisplay: (view.width / 96).toFixed(2) + ',' + (view.height / 96).toFixed(2) + ',' + '96',
-          f: 'pjson'
-        },  
-        success: (data) => {
-          data = JSON.parse(data).results
-          this.$refs.isQuery.style.display = 'none'
-          if(data.length < 1) {
-            this.$message('无查询结果')
-            return
-          }
-          this.$message('查询结果：' + data.length + ' 项')
-          var featureData = []
-          for(let i=0,ii=data.length;i<ii;i++) {
-            var di = data[i]
-            var inFea = { layer: di.layerName, name: di.value, att: di.attributes }
-            featureData.push(inFea)
-            switch(di.geometryType) {
-              case 'esriGeometryPoint':
-                inFea.geo =  { type: 'point', x: di.geometry.x, y: di.geometry.y} 
-                break
-              case 'esriGeometryPolyline':
-                inFea.geo =  { type: 'polyline', paths: di.geometry.paths} 
-                break
-              case 'esriGeometryPolygon':
-                inFea.geo =  { type: 'polygon', rings: di.geometry.rings} 
-                break
-            }
-          }
-          this.featureData = featureData
+      this.drawer = new iDraw(this.data.mapView, 'rect', {
+        startDrawCallBack: () => {
+          this.vectorLayer.getSource().clear()
+          this.drawer && this.drawer.clearFea()
         },
-        error: (error) => this.$message.error(error)
+        endDrawCallBack: fea => {
+          this.getFacilities(fea).then(res => {
+            let data = res.map(obj => {
+              let { layerName, result, tableName } = obj
+              return result.features.features.map(fea => {
+                return { 
+                  properties: fea.properties, 
+                  tableName, 
+                  feature: fea, name: fea.properties[KeyId[tableName]] || fea.properties['EXP_NO'], 
+                  layer: layerName 
+                }
+              })
+            })
+            this.featureData = data.flat()
+          })
+        },
+        showCloser: false
       })
+      this.drawer.start()
     },
-    getLayers() {
-      var business = this.businessMap
-      for (let i=0,il=this.mapView.map.basemap.baseLayers.items,ii=il.length,sublayerids = [];i<ii; i++) {
-        if(il[i].url && il[i].url == business) {
-          for(let j=0,jl=il[i].allSublayers.items,jj=jl.length;j<jj;j++){
-            var layer = jl[j]
-            if(!layer.sublayers && layer.title != '图幅框') sublayerids.push(layer.id)
-          }
-          return sublayerids.sort((a, b) => a - b)
-        }
-      }
+    // 空间查询 获取设施
+    getFacilities (fea) {
+      let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
+      let info = sources.map(source => source.sublayers.map(sublayer => {
+        return { name: sublayer.name, label: sublayer.title }
+      }))
+      info = info.flat()
+      return new Promise(resolve => {
+        new iQuery(info).spaceQuery(fea).then(res => {
+          console.log('返回的数据', res)
+          let data = res.filter(item => item.type === "processCompleted")
+          resolve(data)
+        })
+      })
+
     },
     showFea(row) {
-      var view = this.mapView
-      this.gra.geometry = { type: 'polygon', rings: [[[0,0]]], spatialReference: view.spatialReference }
-      var geometry = JSON.parse(JSON.stringify(row.geo))
-      geometry.spatialReference = view.spatialReference
-      this.showGeo.geometry = geometry
-      switch(row.geo.type) {
-        case 'point':
-          view.center = {x: geometry.x, y: geometry.y, spatialReference: view.spatialReference}  
-          view.zoom = 6
-          this.showGeo.symbol = { type: 'simple-marker', color: [255, 255, 255], size: 8, outline: { color: [51, 133, 255], width: 2 }}
-          break
-        case 'polyline':
-        case 'polygon':
-          view.goTo(this.showGeo.geometry.extent)
-          this.showGeo.symbol = { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: { color: [45, 116, 231, 1], width: '3px' }}
-          break
-      }
-      var atts = row.att
-      var datatable = []
-      var dontSeeField = this.NField[this.layernameIndex[this.layersAttIndex[row.layer]].value]
-      if(dontSeeField) {
-        for(var field in atts) {          
-          if(dontSeeField.indexOf(field) < 0) {
-            var att = atts[field]
-            if(att == 'Null') att = ''
-            datatable.push({ fix: field, att: att || '' })
+      let { feature, properties, layer, tableName } = row
+      let fea = new GeoJSON().readFeature(feature)
+      this.vectorLayer.getSource().clear()
+      this.vectorLayer.getSource().addFeature(fea)
+      let center = new mapUtil().getCenterFromFeatures(fea)
+      let view = this.data.mapView.getView()
+      view.setCenter(center)
+      view.setZoom(20)
+      // 要素详细信息
+      mapUtil.getFilds(tableName).then(res => {
+        let data = []
+        if (res) {
+          for(let key in properties) {
+            let obj = res.find(item => item.field == key)
+            if (obj) {
+              data.push({ fix: obj.name,  att: properties[key] })
+            }
           }
         }
-      } else {
-        for(var field in atts) {
-          var att = atts[field]
-          if(att == 'Null') att = ''
-          datatable.push({ fix: field, att: att || '' })
-        }
-      }
-      this.attData = datatable      
-    },
-    listRefersh() {
-      request({
-        url: 'gis/customDisplay/viewDynamicLog', method: 'GET'
-      }).then(res => {
-        if(res.code == 1) {
-          var ids = {}
-          res = res.result.records
-          for(let i=0,il=res,ii=il.length;i<ii;i++) {
-            ids[il[i].layerEn] = il[i].nonFields.split(',')
-          }
-          this.NField = ids
-        }
+        this.attData = data
       })
     },
+    // 保存设置
     saveLayer() {
-      var ln = this.layerName
-      var layerName = this.layernameIndex[this.layersAttIndex[ln]].value
-      var dontSeeField = []
-      for(let i=0,il=this.attDatas,ii=il.length;i<ii;i++) {
-        if(!il[i].select) dontSeeField.push(il[i].name)
-      }
-      request({
-        url: 'gis/customDisplay/insertDynamicLogo', method: 'post',
-        data: {
-          layerEn: layerName,
-          nonFields: dontSeeField.join(','),
-        }
-      }).then(res => {
-        if(res.code == 1) {          
-          this.$message.success('保存：' + ln + ' 显示字段成功')
-          this.listRefersh()
-        }
-      })
+
     },
+    // 勾选属性
     selectChange(select, row) {
-      if(row) {
-        row.select = !row.select
-      } else {
-        select = select.length != 0
-        for(let j=0,jl=this.attDatas,jj=jl.length;j<jj;j++) {
-          jl[j].select = select
-        }
-      }
+      
     }
-  },
-  destroyed: function() {
   }
 }
 </script>

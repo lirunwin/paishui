@@ -80,7 +80,7 @@ export class TF_Layer {
                 if (res.type !== "processFailed") {
                     let resSublayers = res.result.subLayers.layers
                     const newLayers = resSublayers.map(item => {
-                        let findlayerObj = sublayers.find(sublayer => sublayer.name === item.name)
+                        let findlayerObj = sublayers.find(sublayer => `${sublayer.name}@tofly` === item.name)
                         return new SuperMap.LayerStatus({ "layerName": item.name, "isVisible": !!findlayerObj && findlayerObj.visible });
                     })
                     // 更新后的图层信息

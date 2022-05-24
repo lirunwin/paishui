@@ -262,7 +262,7 @@ import defectImg0 from '@/assets/images/traingle0.png'
 
 // 引入管道检测组件
 import deleteDialog from '../components/checkDetails.vue'
-import { mapUtil } from '../../common/mapUtil/common'
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 import { Overlay } from 'ol'
 
 import axios from "axios";

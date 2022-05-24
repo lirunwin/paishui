@@ -495,8 +495,8 @@
     </div>
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div class="detailsCrad" style="top: 10%; left: 20%; right: 55%" v-if="currentInfoCard">
-        <el-card class="box-card">
+      <div id="popupCard" class="detailsCrad" style="top: 10%; left: 20%; right: 55%" v-show="currentInfoCard">
+        <el-card class="box-card" v-if="currentInfoCard">
           <div class="table-content">
             <div
               style="
@@ -600,7 +600,7 @@ import defectImg0 from '@/assets/images/traingle0.png'
 
 import Icon from 'ol/style/Icon'
 import { unByKey } from 'ol/Observable'
-
+import { Overlay } from 'ol'
 import * as echarts from 'echarts'
 
 export default {
@@ -888,13 +888,29 @@ export default {
       this.currentIndex++
     },
     // 打开缩略提示框
-    async openPromptBox(row, column, cell, event) {
+    // type: 1: 缺陷，2：管线
+    async openPromptBox(row, position, type) {
       console.log('打开缩略提示框', row)
       this.isPromptBox = { ...row }
       let res = await assessmentDefect(row.id)
       this.currentIndex = 0
       this.currentForm = res.result
       this.currentInfoCard = true
+
+      if (position) {
+        let popupId = type === 1 ? 'popupCard' : 'popupCard'
+        this.popup = new Overlay({
+          element: document.getElementById(popupId),
+          //当前窗口可见
+          autoPan: true,
+          positioning: 'bottom-center',
+          stopEvent: true,
+          offset: [18, -25],
+          autoPanAnimation: { duration: 250 }
+        })
+        this.map.addOverlay(this.popup)
+        this.popup.setPosition(position)
+      }
       // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },
     // 双击打开详情或发布
@@ -914,10 +930,13 @@ export default {
         this.lightLayer.getSource().clear()
         if (features.length !== 0) {
           let feature = features.find((fea) => fea.getGeometry() instanceof Point) || features[0]
+          
+          let type = (feature.getGeometry() instanceof Point ) ? 1 : 1 
           let id = feature.get('id')
           let geometry = feature.getGeometry().clone()
+          let position = new mapUtil().getCenterFromFeatures(feature)
           this.lightLayer.getSource().addFeature(new Feature({ geometry }))
-          this.openPromptBox({ id })
+          this.openPromptBox(feature.values_, position, type)
         } else {
           this.currentInfoCard = false
         }
@@ -2062,6 +2081,19 @@ $fontSize: 14px !important;
         }
       }
     }
+  }
+}
+#popupCard {
+  &::after {
+    content: '';
+    display: block;
+    width: 45px;
+    height: 27px;
+    background: url('../components/testImg/corner.png');
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    transform: translate(-50%, 0);
   }
 }
 </style>

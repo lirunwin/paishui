@@ -84,7 +84,7 @@
     <!-- 表格当前列信息弹出框 -->
 
       <div id='popupCard' class="histroyPipeData" v-show="currentInfoCard">
-        <div class="detailsCrad">
+        <div class="detailsCrad" v-if="currentInfoCard">
           <el-card class="box-card" style="width: 300px">
             <div class="table-content">
               <div
@@ -418,22 +418,21 @@ export default {
       this.pipeFuncLayer.getSource().addFeatures(funcDefectFeatures)
       this.pipeDefectLayer.getSource().addFeatures(pipeDefectFeatures)
 
+      let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures,  ...funcDefectFeatures])
+      this.mapView.getView().setCenter(center)
+      this.mapView.getView().setZoom(18)
+
       this.loading = false
       this.hasLoad = true
 
       this.clickEvent = this.mapView.on('click', (evt) => {
         let feas = this.mapView.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
-          // let id = feas[0].get('id')
-          // this.openPromptBox({ id })
-          // let point = feas.find(item => item.getGeometry() instanceof Point)
-          // if (point) {
-          //   this.$store.state.gis.pipeId = point.values_
-          // }
-          
-          // console.log(com)
+          let point = feas.find(item => item.getGeometry() instanceof Point)
+          if (point) {
+            this.openPromptBox(point.get('id'), 'pipeDefectLayer')
+          }
         } else {
-          // this.currentInfoCard = false
           this.currentInfoCard = false
           this.lightLayer.getSource().clear()
         }
@@ -1016,7 +1015,7 @@ export default {
       }
     }
   }
-&::after {
+  &::after {
     content: '';
     display: block;
     width: 45px;

@@ -50,3 +50,20 @@ export function getDefectDataBySE (params) {
         params
     })
 }
+
+// 获取字段
+export function getFieldByLayerName (params) {
+    return request({
+        url: '/analyse/dataSet/getDataSetData',
+        method: 'get',
+        params
+    })
+}
+// 获取字段唯一值
+export function getUniqueValueByFiled (params) {
+    return request({
+        url: '/analyse/dataSet/getFieldData',
+        method: 'get',
+        params
+    })
+}

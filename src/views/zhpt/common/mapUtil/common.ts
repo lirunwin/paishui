@@ -4,6 +4,7 @@ import iQuery from './query';
 import { appconfig } from 'staticPub/config'
 import { GeoJSON } from 'ol/format';
 import { comSymbol } from '@/utils/comSymbol';
+import { getFieldByLayerName, getUniqueValueByFiled } from '@/api/sysmap/drain'
 
 export class mapUtil {
 
@@ -68,7 +69,7 @@ export class mapUtil {
     }
 
     // 多个要素点获取中心点
-    getCenterFromFeatures (features) {
+    getCenterFromFeatures(features) {
         let pointsArr = []
         if (!Array.isArray(features)) {
             features = [features]
@@ -95,7 +96,7 @@ export class mapUtil {
         return [(xmin + xmax) / 2, (ymin + ymax) / 2]
 
         // 把多维坐标转化为一维
-        function format (arr) {
+        function format(arr) {
         }
     }
 
@@ -129,6 +130,35 @@ export class mapUtil {
                 layer.getSource().addFeatures(features)
                 let data = features.map(fea => fea.values_)
             }
+        })
+    }
+
+    // 获取字段
+    static getFilds(layerName) {
+        return new Promise(resolve => {
+            getFieldByLayerName({ dataSetName: layerName }).then(res => {
+                if (res.code === 1) {
+                    let data = res.result
+                    resolve(format(data))
+                } else resolve(null)
+            })
+        })
+        function format (data) {
+            return data.filter(item => (item.columnComment && item.columnComment !== item.columnName)).map(item => {
+                let name = item.columnComment.match(/[\u4e00-\u9fa5]/g).join('')
+                return { field: item.columnName, name}
+            })
+        }
+    }
+
+    // 获取字段唯一值
+    static getUniqueValue(layerName, field) {
+        return new Promise(resolve => {
+            getUniqueValueByFiled({ dataSetName: layerName, fieldName: field }).then(res => {
+                if (res.code === 1) {
+                    resolve(res.result)
+                } else resolve(null)
+            })
         })
     }
 }

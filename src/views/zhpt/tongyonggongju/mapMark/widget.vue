@@ -128,15 +128,15 @@ export default {
       })
     },
     deleteMarks() {
-      return
       var selects = this.$refs.markTable.selection
       if(!selects.length) return this.$message.error('未选中任何书签');
-      let markNames = selects.map(item =>{ return item.name});
+      let markNames = selects.map(item => item.id );
+      console.log('书签', markNames)
       this.$confirm(
         '确定删除选中的 ' + selects.length + '条书签？', '提示',
         { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }
       ).then(() => {
-        deleteMapMark({}).then(res => {
+        deleteMapMark({ ids: markNames.join(",") }).then(res => {
           if(res.code == 1) {
             this.$message("已删除");
             this.$refs.pagination.internalCurrentPage = 1
