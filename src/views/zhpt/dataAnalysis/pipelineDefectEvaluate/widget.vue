@@ -189,37 +189,71 @@ export default {
       this.searchValue.finishDate = n
     },
     pageData: function (newValue, old) {
-      this.contentEchatrs = [
-        {
-          name: '结构性缺陷',
-          value: 0
-        },
-        {
-          name: '功能性缺陷',
-          value: 0
-        },
-        {
-          name: '正常',
-          value: 0
+      this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }
+      this.contentEchatrs = newValue.map((v) => {
+        return {
+          name: v.defectType,
+          value: v.defectNum
         }
-      ]
+      })
 
-      this.defectQuantityStatisticsA.forEach((v) => {
-        this.contentEchatrs[0].value += v.value
-      })
-      this.defectQuantityStatisticsB.forEach((v) => {
-        this.contentEchatrs[1].value += v.value
-      })
-      newValue.forEach((v) => {
-        if (v.defectCode == 'ZC') {
-          this.contentEchatrs[2].value += v.defectNum
+      this.contentEchatrs = this.contentEchatrs.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = {
+          ...item,
+          frequency: 1
         }
-        this.allArr.forEach((av) => {
-          if (v.defectLevel == av.Lname) {
-            av.value += v.defectNum
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      newValue.forEach((pv) => {
+        if (pv.defectType == '结构性缺陷' && pv.defectType != null) {
+          this.defectQuantityStatisticsA.push({
+            // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
+            name: pv.defectName,
+            type: pv.defectCode,
+            value: pv.defectNum,
+            title: `（${pv.defectCode}）${pv.defectName}`
+          })
+        }
+
+        if (pv.defectType == '功能性缺陷' && pv.defectType != null) {
+          this.defectQuantityStatisticsB.push({
+            // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
+            name: pv.defectName,
+            type: pv.defectCode,
+            value: pv.defectNum,
+            title: `（${pv.defectCode}）${pv.defectName}`
+          })
+        }
+         this.contentEchatrs.forEach((v) => {
+          if (v.name == null) {
+            v.name = '正常'
           }
         })
       })
+      this.defectQuantityStatisticsA = this.defectQuantityStatisticsA.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      this.defectQuantityStatisticsB = this.defectQuantityStatisticsB.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      
 
       let echartsDataArr = newValue.map((v) => {
         return {
