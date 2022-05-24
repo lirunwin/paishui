@@ -156,7 +156,7 @@ export default {
       rules: {
         codeValue: [
           { required: true, message: '请输入字典值编码', trigger: 'blur' },
-          { pattern: '^[0-9a-zA-Z]+$', message: '字典值不合法' }
+          { pattern: /^[a-zA-Z][\w-]+$/, message: '字典值不合法' }
         ],
         notes: [{ required: true, message: '请输入字典值名称', trigger: 'blur' }]
       }
