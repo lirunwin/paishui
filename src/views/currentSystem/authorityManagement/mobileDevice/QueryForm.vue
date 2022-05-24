@@ -82,7 +82,7 @@
         size="small"
         :loading="loading.review"
         :disabled="loading.review || !ids.length"
-        @click="$emit('review', ids)"
+        @click="onReview"
         icon="el-icon-check"
       >
         审核
@@ -111,9 +111,9 @@ export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({ query: false, add: false, del: false, review: false }) })
   loading!: { query?: boolean; add?: boolean; del?: boolean; review?: boolean }
 
-  @Prop({ type: Array, default: () => [] }) selected!: { id?: string }[]
+  @Prop({ type: Array, default: () => [] }) selected!: { id?: string; auditStataus?: string }[]
 
-  formData: { [x: string]: any } = { status: '1', appVersionNew: [], auditStataus: [] }
+  formData: { [x: string]: any } = { status: '0', appVersionNew: [], auditStataus: [] }
 
   users = []
 
@@ -163,6 +163,10 @@ export default class QueryForm extends Vue {
       return data
     }, {})
     this.$emit('query', temp)
+  }
+
+  onReview() {
+    this.$emit('review', this.selected.filter((item) => item.auditStataus === '0').map((item) => item.id))
   }
 
   async getMobileDeviceUsers() {

@@ -2,7 +2,7 @@
   <el-dialog
     title="账号申请"
     :visible="showApply"
-    width="1500px"
+    :width="{ history: '80vw', account: '800px', accountApplyDetail: '800px' }[activeTab] || '800px'"
     append-to-body
     :close-on-click-modal="false"
     @close="closeDialog"
@@ -84,12 +84,12 @@
           size="small"
           :model="accountApply"
           :rules="accountApplyRules"
-          label-width="110px"
+          label-width="8em"
           class="demo-ruleForm"
           style="width: 100%"
         >
-          <el-row type="flex" justify="center">
-            <el-col :span="8">
+          <el-row type="flex" justify="center" gutter="30">
+            <el-col :span="13">
               <el-form-item label="登录名：" prop="username">
                 <el-input v-model="accountApply.username" clearable />
               </el-form-item>
@@ -151,7 +151,7 @@
                 <el-input v-model="accountApply.applystate" type="textarea" clearable />
               </el-form-item>
             </el-col>
-            <el-col :offset="2" :span="9">
+            <el-col :span="11">
               <el-row>
                 <el-col :span="14">
                   <el-form-item label="个性签名图片：" prop="sign">
@@ -197,12 +197,12 @@
           <el-collapse-item title="基本信息" name="baseInfo">
             <el-row>
               <el-col :span="12" class="base-info">
-                <!-- <el-row>
-                  <span class="title">申请人：</span><span>{{detailInfo.applyer}}</span>
+                <el-row>
+                  <span class="title">申请人：</span><span>{{ detailInfo.applyer }}</span>
                 </el-row>
                 <el-row>
-                  <span class="title">申请时间：</span><span>{{detailInfo.applytime}}</span>
-                </el-row> -->
+                  <span class="title">申请时间：</span><span>{{ detailInfo.applytime }}</span>
+                </el-row>
                 <el-row>
                   <span class="title">登录名：</span><span>{{ detailInfo.username }}</span>
                 </el-row>

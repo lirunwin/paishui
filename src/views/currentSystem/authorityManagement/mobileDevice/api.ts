@@ -87,7 +87,7 @@ const uris = {
   page: '/gps/mobiledevice/page',
   departments: '/base/department/list',
   users: '/base/user/getDeptUserList',
-  mobileDeviceUseUsers: '/gps/mobiledevice/mobileDeviceUseUser',
+  mobileDeviceUseUsers: '/gps/mobiledevice/getMobileDeviceUseUser',
   review: 'gps/mobiledevice/deviceAudit'
 }
 
