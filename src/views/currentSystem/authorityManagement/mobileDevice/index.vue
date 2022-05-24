@@ -164,7 +164,7 @@ export default class MobileDevice extends Vue {
   onEdit(row) {
     console.log(row)
     const { useUser, department, ...rest } = row || {}
-    this.current = { userUserId: useUser.id, useDeptId: department.departmentId, ...rest }
+    this.current = { userUserId: (useUser || {}).id, useDeptId: (department || {}).departmentId, ...rest }
     this.visible = true
   }
 
