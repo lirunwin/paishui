@@ -145,7 +145,7 @@ export class mapUtil {
         })
         function format (data) {
             return data.filter(item => (item.columnComment && item.columnComment !== item.columnName)).map(item => {
-                let name = item.columnComment.match(/[\u4e00-\u9fa5]/g).join('')
+                let name = item.columnComment.trim()
                 return { field: item.columnName, name}
             })
         }
