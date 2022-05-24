@@ -547,8 +547,8 @@
 
     <!-- 管道评估结果 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCardEV" class="detailsCrad" v-show="currentInfoCard">
-        <el-card class="box-card" v-if="currentInfoCard">
+      <div id="popupCardEV" class="detailsCrad" v-show="currentInfoCard2">
+        <el-card class="box-card" v-if="currentInfoCard2">
           <div class="table-content">
             <div
               style="
@@ -716,6 +716,7 @@ export default {
       currentFormEV: [], // 缩略提示框
       currentIndexEV: 0, // 当前页数
       currentInfoCard: false, // 弹出框
+      currentInfoCard2: false, // 弹出框
       deleteDialogVisible: false, // 删除提示框显影
       withdrawDialogVisible: false, // 撤回提示框显影
       // 数据为空时的图片
@@ -969,10 +970,6 @@ export default {
 
       option && myChart.setOption(option)
     },
-    // 关闭缩略提示框的方法
-    closePromptBox() {
-      this.currentInfoCard = false
-    },
     // 上一页
     lastPage() {
       if (this.currentIndex <= 0) {
@@ -1008,21 +1005,22 @@ export default {
     },
     // 打开缩略提示框
     // type: 1: 缺陷，2：管线
-    async openPromptBox(row, position, type) {
-      console.log('打开缩略提示框', row)
-      this.isPromptBox = { ...row }
-      let res = await assessmentDefect(row.id)
-      this.currentForm = res.result
-      this.currentIndex = 0
-      this.currentInfoCard = true
-
-      // 管段评估(查询管段部分)
-      let resEV = await histroyPipeData({ expNo: row.expNo })
-      this.currentIndexEV = 0
-      this.currentFormEV = resEV.result
+    async openPromptBox(id, position, type) {
+      if (type === 1) {
+        let res = await assessmentDefect(id)
+        this.currentForm = res.result
+        this.currentIndex = 0
+        this.currentInfoCard = true
+      } else {
+        // 管段评估(查询管段部分)
+        let resEV = await histroyPipeData({ expNo: id })
+        this.currentIndexEV = 0
+        this.currentFormEV = resEV.result
+        this.currentInfoCard2 = true
+      }
 
       if (position) {
-        let popupId = type === 1 ? 'popupCard' : 'popupCard'
+        let popupId = type === 1 ? 'popupCard' : 'popupCardEV'
         this.popup = new Overlay({
           element: document.getElementById(popupId),
           //当前窗口可见
@@ -1054,15 +1052,21 @@ export default {
         this.lightLayer.getSource().clear()
         if (features.length !== 0) {
           let feature = features.find((fea) => fea.getGeometry() instanceof Point) || features[0]
-
-          let type = feature.getGeometry() instanceof Point ? 1 : 1
-          let id = feature.get('id')
+          let type, id
+          if (feature.getGeometry() instanceof Point) {
+            type = 1
+            id = feature.get('id')
+          } else {
+            type = 2
+            id = feature.get('expNo')
+          }
           let geometry = feature.getGeometry().clone()
           let position = new mapUtil().getCenterFromFeatures(feature)
           this.lightLayer.getSource().addFeature(new Feature({ geometry }))
-          this.openPromptBox(feature.values_, position, type)
+          this.openPromptBox(id, position, type)
         } else {
           this.currentInfoCard = false
+          this.currentInfoCard2 = false
         }
       })
     },
@@ -2213,6 +2217,19 @@ $fontSize: 14px !important;
   }
 }
 #popupCard {
+  &::after {
+    content: '';
+    display: block;
+    width: 45px;
+    height: 27px;
+    background: url('../components/testImg/corner.png');
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    transform: translate(-50%, 0);
+  }
+}
+#popupCardEV {
   &::after {
     content: '';
     display: block;

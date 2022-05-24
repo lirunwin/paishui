@@ -420,7 +420,7 @@ export default {
 
       let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures,  ...funcDefectFeatures])
       this.mapView.getView().setCenter(center)
-      this.mapView.getView().setZoom(18)
+      this.mapView.getView().setZoom(14)
 
       this.loading = false
       this.hasLoad = true

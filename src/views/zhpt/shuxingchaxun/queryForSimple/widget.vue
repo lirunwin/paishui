@@ -40,14 +40,14 @@
         </template>
         <el-table-column prop="name" label="图层" width="80px" align="center"/>
         <el-table-column prop="value" label="数量(个)" align="center"/>
-        <el-table-column prop="length" label="长度(m)" align="center">
+        <el-table-column prop="length" label="编号(m)" align="center">
           <template slot-scope="props">{{ props.row.length ? props.row.length.toFixed(2) : '-' }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="50px" align="center">
+        <!-- <el-table-column label="操作" width="50px" align="center">
           <template slot-scope="scope">
             <el-link type="primary" @click="rowC(scope.row)">详情</el-link>
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
     </tf-legend>
   </div>
@@ -57,6 +57,8 @@
 import { attConfig } from '@/views/zhpt/tongyonggongju/queryResult3/attributeConfig'
 import { appconfig } from 'staticPub/config'
 import tfLegend from '@/views/zhpt/common/Legend'
+import { mapUtil } from '../../common/mapUtil/common'
+
 export default {
   name: 'queryForSimple',
   components: { tfLegend },
@@ -89,17 +91,37 @@ export default {
     }
   },
   watch: {
-    layerName() {
-
+    layerName(n, o) {
+      if (!n) return
+      mapUtil.getFilds(n).then(res => {
+        if (res) {
+          this.attLists = res.map(item => {
+            return { name: item.filed , label: item.name }
+          })
+        } else this.$message.error('获取字段数据失败')
+      })
     },
-    attList(e) {
-
+    attList(n, o) {
+      console.log(n)
     }  
   },
   mounted() {
-
+    this.init()
   },
+  destroyed () {
+    this.clearAll()
+  },
+
   methods: {
+    init () {
+      // 加载图层
+      let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
+      let info = sources.map(source => source.sublayers.map(sublayer => {
+        return { value: sublayer.name, label: sublayer.title }
+      }))
+      this.layersAtt = info[0]
+    },
+    clearAll () {},
     queryResult() {
       var layerName = this.layerName
       var attList = this.attList
