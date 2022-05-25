@@ -5,7 +5,7 @@
         <div style="float: left; width: 50%; height: 100%; overflow: hidden auto; border: 1px solid #ddd; border-radius: 3px;">
           <el-checkbox-group v-model="layerSelectList">
             <div v-for="(item, index) in layerList" :key="index" style="margin: 4px 3px; border-bottom: 1px solid #ddd">
-              <el-checkbox :label="item">{{item.name}}</el-checkbox>
+              <el-checkbox @change='setSubLayer(item.name)' :label="item">{{item.name}}</el-checkbox>
             </div>
           </el-checkbox-group>
         </div>
@@ -22,7 +22,7 @@
       <div style="width: 100%; border: 1px solid #ccc; overflow: hidden auto; padding: 8px;">
         <tf-legend class="legend_dept" label="图层名称" isopen="true" title="选择将要进行查询的图层。">
           <el-select v-model="layerId" placeholder="请选择">
-          <el-option v-for="item in layersAtt" :key="item.value" :label="item.label" :value="item.value"></el-option>
+          <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
           </el-select>
         </tf-legend>
         <tf-legend class="legend_dept" label="图层字段" isopen="true" title="选择将要查询的字段。">
@@ -107,6 +107,7 @@ import * as turf from '@turf/turf';
 import { pointFieldDoc } from '@/views/zhpt/common/doc'
 import { getThemLayer, addThemLayer, deleteThemLayer } from '@/api/mainMap/themMap'
 import { SuperMap, FieldService, FeatureService, FieldParameters } from '@supermap/iclient-ol';
+import { mapUtil } from '../../common/mapUtil/common'
 
 export default {
   name: 'countStat',
@@ -125,7 +126,7 @@ export default {
       queText: '',
       elements: {},
       layerFix: [],
-      layersAtt: [],
+      layers: [],
 
       layerId: '',
       lastRange: [0, 0],
@@ -143,14 +144,15 @@ export default {
 
       // 
       layerList: [
-        { name: "检修井" },
-        { name: "消防栓" },
-        { name: "阀门" },
-        { name: "闸阀" },
-        { name: "闸阀井" }
+        { name: '管点', open: false },
+        // { name: "检修井", open: false },
+        // { name: "消防栓", open: false  },
+        // { name: "阀门", open: false  },
+        // { name: "闸阀", open: false  },
+        // { name: "闸阀井", open: false  }
       ],
       attList: [
-        { name: "位置", field: "POINTPOSITION" },
+        { name: "地址", field: "ADDRESS" },
         { name: "权属单位", field: "BELONG" },
         { name: "探测单位", field: "SUNIT" },
       ],
@@ -166,25 +168,15 @@ export default {
     this.initLayer()
   },
   watch: {
-
     queText(nv,ov){
       if(this.queText.length == 0 ) this.queTextName = '';
     },
-    layerSelectList(e) {
-      if (e.length !== 0) {
-        this.layersAtt = this.layerSelectList.map(layer => {
-          return { value: layer.name, label: layer.name }
-        })
-      } else {
-        this.layersAtt = []
-      }
-    },
     layerId(e) {
       if(!e) return
-      new iQuery().getServerFields("TF_PSPS_POINT_B").then(fields => {
-        if (fields) {
-          this.analysisAtt = fields.map(field => {
-            return { label: pointFieldDoc[field] || field, value: field }
+      mapUtil.getFilds(e).then(res => {
+        if (res) {
+          this.analysisAtt = res.map(field => {
+            return { label: field.name, value: field.field }
           })
         } else this.$message.error("获取字段失败")
       })
@@ -212,9 +204,23 @@ export default {
     },
     sidePanelOn(newTab, oldTab) {
       if (newTab !== "countStat") this.removeAll()
+      else this.initLayer()
     }
   },
   methods: {
+    setSubLayer (layerName) {
+      let layer = this.layerList.find(layer => layer.name === layerName)
+      layer.open = !layer.open
+      if (!layer.open) {
+        this.layers = []
+      } else {
+        let layers = mapUtil.getAllSubLayerNames('排水管线', 'point')
+        // 设置图层
+        this.layers = layers.map(layer => {
+          return { label: layer.title, value: layer.name }
+        })
+      }
+    },
     initLayer () {
       var mapView = this.mapView = this.data.mapView
     },
@@ -222,9 +228,11 @@ export default {
     analysis_new () {
       if (!this.layerId) return this.$message.error('请选择查询图层名称')
       if (this.layerSelectList.length === 0) return this.$message.error('请选择管网统计的类型')
+      if (this.attSelectList.length === 0) return this.$message.error('请选择管网统计的属性')
 
-      let dataService = appconfig.gisResource['iserver_resource'].dataService
-      let dataSetInfo = dataService.dataSetInfo.filter(info => info.type === "point")
+      let layerInfo = this.layers.find(layer => layer.value === this.layerId)
+      let dataSetInfo = [{ label: layerInfo.label, name: layerInfo.value }]
+      console.log('请求参数')
       
       let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {
@@ -270,17 +278,13 @@ export default {
         return { name: att.name, value: att.field }
       })
       tableRows = this.layerSelectList.map(layer => {
-        let selectedFeatures = features.filter(fea => {
-          console.log('管点类别', fea.values_['TYPE'])
-          return fea.values_['POINT_TYPE'] === layer.name
-        })
-        return selectedFeatures.map(fea => {
+        return features.map(fea => {
           fea.values_["statistic_num"] = 1
           return fea.values_
         })
       })
       // 添加合计数据
-      
+
       tableData = this.layerSelectList.map((layer, index) => {
         let total = { "statistic_num": tableRows[index].length }
         columns.forEach((item, index) => {
@@ -299,8 +303,7 @@ export default {
       let chartData = this.layerSelectList.map(layer => { 
         let dataX = [], dataY = [];
         let dataBox = new Map() // 以选择的属性的值为 x 轴
-        let selectedFeatures = features.filter(fea => fea.values_['ADJUNCT'] === layer.name)
-        selectedFeatures.forEach(fea => {
+        features.forEach(fea => {
           let values = this.attSelectList.map(att => {
             return fea.values_[att.field]
           })
@@ -352,7 +355,14 @@ export default {
         myField.selectionStart = myField.selectionEnd = startL + length
         myField.focus()
       })
-      // if(isField) this.getAtt(text.replace(/(\s*$)/g,""))
+      isField && this.getUniqueValue(text)
+    },
+    getUniqueValue (filed) {
+      mapUtil.getUniqueValue(this.layerId, filed).then(res => {
+        if(res) {
+          this.layerFix = res
+        } else this.$message.error('获取唯一值失败')
+      })
     },
     /**
      * select下拉框出现或者隐藏时触发  

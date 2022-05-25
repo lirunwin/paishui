@@ -177,9 +177,9 @@ export default {
       let info = sources.map(source => source.sublayers.map(sublayer => {
         return { name: sublayer.name, label: sublayer.title }
       }))
-      info = info.flat()
+      let dataSetInfo = info.flat()
       return new Promise(resolve => {
-        new iQuery(info).spaceQuery(fea).then(res => {
+        new iQuery({ dataSetInfo }).spaceQuery(fea).then(res => {
           console.log('返回的数据', res)
           let data = res.filter(item => item.type === "processCompleted")
           resolve(data)

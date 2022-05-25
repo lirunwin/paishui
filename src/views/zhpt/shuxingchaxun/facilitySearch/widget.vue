@@ -5,7 +5,7 @@
       <el-form label-width="70px">
         <el-form-item label="选取图层" style="margin:0">
           <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small" >
-            <el-option v-for="item in datasetOptions" :key="item.value" :label="item.label" :value="item"> </el-option>
+            <el-option v-for="item in datasetOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -26,7 +26,7 @@
           <div class="item-head">查询结果</div>
         </el-col>
         <el-col :span="24">
-          <el-table :data="resultData" v-loading="queryStatus" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+          <el-table height="300" :data="resultData" v-loading="queryStatus" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
             <template slot="empty">
               <img src="@/assets/icon/null.png" alt="">
               <p class="empty-p">暂无数据</p>
@@ -67,6 +67,7 @@ import { comSymbol } from '@/utils/comSymbol';
 import { fieldDoc, pointFieldDoc } from '@/views/zhpt/common/doc'
 import { Polygon, LineString, Point } from 'ol/geom';
 import { Feature } from 'ol';
+import { mapUtil } from '../../common/mapUtil/common';
 
 export default {
   props: ['data'],
@@ -84,17 +85,11 @@ export default {
       vectorLayer: null,
       drawFeature: null,
       lightFeature: null,
-      lightLayer: null
+      lightLayer: null,
+      datasetOptions: []
     }
   },
   computed: {
-    // 图层选项
-    datasetOptions() {
-      const dataSetInfo = appconfig.gisResource['iserver_resource'].dataService.dataSetInfo
-      return dataSetInfo.map(item => {
-        return { label: item.label, value: item.name, type: item.type }
-      })
-    }
   },
   watch: {
     // 监听面板是否被改变
@@ -134,8 +129,14 @@ export default {
       });
     },
     init() {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f00', 5, '#00FFFF') })
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#FFFFB6') })
+      let layers = mapUtil.getAllSubLayerNames('排水管线')
+
+      // 设置图层
+      this.datasetOptions = layers.map(layer => {
+        return { label: layer.title, value: layer.name }
+      })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f00', 5, '#409EFF') })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#00FFFF') })
       this.mapView.addLayer(this.vectorLayer)
       this.mapView.addLayer(this.lightLayer)
     },
@@ -159,12 +160,9 @@ export default {
         if (!this.selectLayer) return this.$message.error('请先选择要分析的图层!')
         if (this.drawType === "") return this.$message.error('请选择查询范围')
         if (this.drawType === 'extent' && !this.drawFeature) return this.$message.error('请先绘制查询范围!')
-        let dataSetInfo = [{ name: this.selectLayer.value, label: this.selectLayer.label }]
 
-        if (!this.vectorLayer) {
-            this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
-            this.mapView.addLayer(this.vectorLayer)
-        }
+        let findLayer = this.datasetOptions.find(layer => layer.value === this.selectLayer)
+        let dataSetInfo = [{ name: findLayer.value, label: findLayer.label }]
         
         let queryTask = new iQuery({ dataSetInfo })
         this.queryStatus = true
@@ -188,28 +186,29 @@ export default {
                 }
                 this.queryStatus = false
                 this.vectorLayer.getSource().addFeatures(features)
-                tableData.push({ name: obj.layerName, data: features.map(fea => fea.values_) })
+                tableData.push({ name: obj.layerName, tableName: obj.tableName, data: features.map(fea => fea.values_) })
             })
             this.addTableData(tableData)
         })
     },
 
     addTableData (data) {
-        let doc = this.selectLayer.type === "point" ? pointFieldDoc : fieldDoc
-        let keys = Object.keys(doc)
-        keys.length = 15
-        let fields = {}
-        keys.forEach(key => {
-            fields[fieldDoc[key]] = key
-        })
-        this.resultData = data.map(item => {
+      console.log('添加表格数据')
+        mapUtil.getFilds(data[0].tableName).then(res => {
+          let fields = {}
+          res.forEach(field => {
+            fields[field.name] = field.field
+          })
+          this.resultData = data.map(item => {
             return { 
                 layer: item.name, 
                 number: item.data.length,
                 data: item.data,
                 fields
             }
+          })
         })
+        
     },
 
     beforeExport(data) {
