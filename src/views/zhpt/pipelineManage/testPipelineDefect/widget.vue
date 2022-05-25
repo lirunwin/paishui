@@ -54,18 +54,16 @@
           <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div> -->
         <div class="right-btn">
-          <el-popconfirm
-            confirm-button-text="确定"
-            cancel-button-text="取消"
-            icon="el-icon-info"
-            icon-color="##FFDF84"
-            title="确定要导出吗?"
-            @confirm="$message('该功能暂未开放', scope.row.prjName)"
+          <download-excel
+            :fields="json_fields"
+            :data="multipleSelection"
+            :before-generate="startDownload"
+            :before-finish="finishDownload"
+            name="管道缺陷表单.xls"
+            type="xls"
           >
-            <el-button slot="reference" type="primary" size="small" :disabled="multipleSelection.length != 1"
-              >导出<i class="el-icon-download el-icon--right"></i
-            ></el-button>
-          </el-popconfirm>
+            <el-button size="small" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
+          </download-excel>
           <!-- <el-button  type="primary" @click="openDialogEnclosure" :disabled="multipleSelection.length != 1"
             >导出<i class="el-icon-download el-icon--right"></i
           ></el-button> -->
@@ -121,7 +119,7 @@
           </template>
         </el-table-column> -->
       </el-table>
-      <div>
+      <!-- <div>
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -132,13 +130,13 @@
           :total="paginationTotal"
         >
         </el-pagination>
-      </div>
+      </div> -->
     </div>
 
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
       <div class="histroyPipeData">
-        <div class="detailsCrad" :style="{ 'top': cardTop, 'right': cardRight }" v-if="currentInfoCard">
+        <div class="detailsCrad" :style="{ top: cardTop, right: cardRight }" v-if="currentInfoCard">
           <el-card class="box-card" style="width: 300px">
             <div class="table-content">
               <div
@@ -270,6 +268,22 @@ export default {
   },
   data() {
     return {
+      json_fields: {
+        管段编号: 'expNo',
+        管段类型: 'pipeType',
+        '管径(mm)': 'diameter',
+        材质: 'material',
+        检测方向: 'detectDir',
+        '距离(m)': 'checkLength',
+        分值: 'defectNum',
+        等级: 'defectLevel',
+        检测视频: 'videoFileName',
+        工程名称: 'prjName',
+        工程地点: 'checkAddress',
+        检测日期: 'sampleTime',
+        管道内部状况描述: 'structEstimate',
+        缺陷名称代码: 'defectCode'
+      },
       currentId: null,
       id: null,
       activeName: 'picnum', // 照片视频tab标签
@@ -327,7 +341,7 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '', sortable: false, label: '管段编号', name: 'expNo' },
         { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
         { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
         { width: '100', sortable: false, label: '材质', name: 'material' },
@@ -375,15 +389,13 @@ export default {
       clickEvent: null,
       projUtil: null,
       currentDataProjName: 'proj43',
-      cardRight: "20%",
-      cardTop: "10%"
+      cardRight: '20%',
+      cardTop: '10%'
     }
   },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-    },
-    '$store.state.gis.pipeId': function (n, o) {
-    },
+    '$store.state.gis.activeSideItem': function (n, o) {},
+    '$store.state.gis.pipeId': function (n, o) {},
     'searchValue.testTime.startDate': function (n) {
       this.searchValue.testTime.finishDate = n
     }
@@ -409,7 +421,7 @@ export default {
     if (this.param && this.param.rootPage) {
       let { type, level, rootPage, data } = this.param
       this.rootPage = rootPage
-      this.tableData = data.map(fea => fea.values_)
+      this.tableData = data.map((fea) => fea.values_)
       console.log('这里是地图传入的数据', this.tableData)
     }
   },
@@ -421,6 +433,24 @@ export default {
     }
   },
   methods: {
+    //导出前确认
+    //导出表格
+    startDownload() {
+      let self = this
+      if (self.multipleSelection.length == 0) {
+        self.$message({
+          message: '警告，请勾选数据',
+          type: 'warning'
+        })
+      }
+    },
+    finishDownload() {
+      let self = this
+      self.$message({
+        message: '恭喜，数据导出成功',
+        type: 'success'
+      })
+    },
     // 关闭弹框
     getBool(bool) {
       this.dialogFormVisible = bool

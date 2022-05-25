@@ -39,6 +39,8 @@
 
       <el-table
         ref="multipleTable"
+        @row-click="handleRowClick"
+        :row-class-name="modality"
         height="100%"
         :data="tableData"
         tooltip-effect="dark"
@@ -150,7 +152,7 @@
                   value-format="yyyy-MM-dd"
                   size="small"
                   :picker-options="pickerOptions0"
-                  @change="changeDate"
+                  @change="changeDate('startDate')"
                 ></el-date-picker>
               </el-col>
               <el-col :span="1" style="text-align: center">至</el-col>
@@ -214,12 +216,24 @@
               </div>
             </el-upload>
             <!-- 附件列表 -->
-            <div v-show="isDetails" v-if="fileListData.length" style="max-height: 120px; overflow-y: scroll">
+            <p
+              v-show="isEdit"
+              style="height: 20px; font-size: 12px; border-top: 1px solid #666; margin: 0; line-height: 20px"
+            >
+              已上传文件列表
+            </p>
+            <div v-show="isDetails || isEdit" style="max-height: 120px; overflow-y: scroll">
               <div v-for="(item, i) in fileListData" :key="i" class="text-space">
                 <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{ item.originalName }}</el-link>
               </div>
             </div>
-            <p v-if="!fileListData.length" style="text-align: center">暂无附件</p>
+            <p
+              v-show="isDetails || isEdit"
+              v-if="!fileListData.length"
+              style="text-align: center; height: 20px; font-size: 12px; margin: 0px; line-height: 20px"
+            >
+              暂无附件
+            </p>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -389,6 +403,7 @@ export default {
       // 附件分页
       paginationEnclosure: { current: 1, size: 30 }, // 分页参数信息
       paginationEnclosureTotal: 0 // 总页数
+      // handleSelectionList: [] // 单击勾选
     }
   },
   computed: {
@@ -406,6 +421,26 @@ export default {
     this.simplifyRules()
   },
   methods: {
+    // 判断个数小数位
+    // inputSet(key) {
+    //   let formArr = ['plnumber', 'jpoints', 'epoints', 'hpoints']
+    //   if (formArr.some((v) => key == v)) {
+    //     let form = this.form
+    //     console.log('改对了',form.plnumber)
+    //     if (form.plnumber ) {
+    //       this.form.plnumber = form.plnumber.toFixed(0)
+    //     }
+    //     if (form.jpoints) {
+    //       this.form.jpoints = form.jpoints.toFixed(0)
+    //     }
+    //     if (form.epoints) {
+    //       this.form.epoints = form.epoints.toFixed(0)
+    //     }
+    //     if (form.hpoints) {
+    //       this.form.hpoints = form.hpoints.toFixed(0)
+    //     }
+    //   }
+    // },
     // 管道缺陷管理的信息
     openDefect() {
       let info = {
@@ -438,7 +473,7 @@ export default {
           {
             pattern: /^[0-9]+$/,
             message: '只能输入整数',
-            trigger: 'blur'
+            trigger: 'change'
           }
         ]
       })
@@ -510,7 +545,10 @@ export default {
     //   this.form.finishdate = this.dateRange[1]
     // },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
+    changeDate(str) {
+      if (str=='startDate') {
+        this.form.finishDate = this.form.startDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.form.startDate).getTime()
       let date2 = new Date(this.form.finishDate).getTime()
@@ -590,7 +628,6 @@ export default {
           this.form.createUserName = sessionStorage.getItem('username')
           if (this.isEdit) {
             res = await changeInfo(this.form)
-            this.isEdit = false
           } else {
             res = await addData(this.form)
           }
@@ -603,14 +640,27 @@ export default {
             // console.log('附件参数', this.updataParamsId)
             await this.$refs.updataDocx.submit()
           }
-          if (res.result) {
-            this.$message({
-              message: '添加成功',
-              type: 'success'
-            })
+          if (this.isEdit) {
+            if (res.result) {
+              this.$message({
+                message: '修改成功',
+                type: 'success'
+              })
+            } else {
+              this.$message.error('修改失败')
+            }
+            this.isEdit = false
           } else {
-            this.$message.error('添加失败')
+            if (res.result) {
+              this.$message({
+                message: '添加成功',
+                type: 'success'
+              })
+            } else {
+              this.$message.error('添加失败')
+            }
           }
+
           await this.getDate()
           // 最后清空表单
           this.form = { ...this.initForm }
@@ -622,11 +672,55 @@ export default {
         }
       })
     },
+    // 根据状态设置每列表格样式
+    modality(obj) {
+      // 通过id标识来改变当前行的文字颜色
+      console.log('obj', obj.row)
+      let idArr
+      if (this.multipleSelection != []) {
+        idArr = this.multipleSelection.map((v) => v.id)
+      }
+      if (idArr.some((v) => v == obj.row.id)) {
+        return 'rowBgBlue'
+      }
+    },
+    // 点击行勾选数据
+    handleRowClick(row, column, event) {
+      let length = this.multipleSelection.length
+      let id = this.multipleSelection.length == 1 ? this.multipleSelection[0].id : null
+      // let
+      this.$refs.multipleTable.clearSelection(row)
+      if (length > 1 || length < 1) {
+        this.$refs.multipleTable.toggleRowSelection(row)
+      } else if (id) {
+        if (row.id == id) {
+          this.$refs.multipleTable.toggleRowSelection(row, false)
+        } else {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        }
+      }
+    },
+
     // 双击修改
-    dblclickUpdata(row, column, event) {
-      console.log(row, column, event)
+    async dblclickUpdata(row, column, event) {
+      // 打开修改
+      let res = await projectDetailsQuery(row.id)
+      // 获得字典id
+      await this.getParamsId()
+      // 获取附件列表
+      let params = {
+        current: this.paginationEnclosure.current,
+        size: this.paginationEnclosure.size,
+        itemId: row.id,
+        uploadFileTypeDicId: this.updataParamsId.uploadFileTypeDicId,
+        uploadItemDictId: this.updataParamsId.uploadItemDictId
+      }
+      let fileRes = await queryPageEnclosure(params)
+      console.log('附件分页数据', fileRes)
+      this.fileListData = fileRes.result.records
+
       this.initForm = { ...this.form }
-      this.form = row
+      this.form = res.result
       this.isEdit = true
       this.dialogFormVisible = true
     },
@@ -703,8 +797,11 @@ export default {
   },
   watch: {
     'form.startDate': function (n) {
-      if(!this.isDetails && !this.isEdit){
-        this.form.finishDate = n
+      // if (!this.isDetails) {
+      //   this.form.finishDate = n
+      // }
+      if (!this.isDetails && !this.isEdit) {
+      this.form.finishDate = n
       }
     }
   }
@@ -759,17 +856,24 @@ export default {
     /deep/ .el-table {
       flex: 1;
       // overflow-y: scroll;
+      .el-table__row--striped > td {
+        background-color: #f3f7fe !important;
+      }
+      .rowBgBlue {
+        & > td {
+          color: #fff;
+          border-right: 1px solid #ebeef5;
+          background-color: #69a8ea !important;
+        }
+      }
       th.el-table__cell > .cell {
         color: rgb(50, 59, 65);
         height: 40px;
         line-height: 40px;
         background: rgb(234, 241, 253);
       }
-      .el-table__row--striped > td {
-        background-color: #f3f7fe !important;
-      }
-      .hover-row{
-        color: #E6A23C;
+      .hover-row {
+        color: #e6a23c;
         background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
     }
@@ -823,6 +927,7 @@ export default {
     }
     .text-space {
       /deep/.el-link--inner {
+        font-size: 12px;
         max-width: 650px;
         // 1.先强制一行内显示文本
         white-space: nowrap;
@@ -846,6 +951,10 @@ export default {
 
 /deep/ .upload-demo {
   position: relative;
+  .el-upload-list {
+    max-height: 100px;
+    overflow-y: scroll;
+  }
   & > .el-upload {
     // width: 100%;
   }

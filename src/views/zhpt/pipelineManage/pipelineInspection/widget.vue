@@ -44,7 +44,7 @@
               </el-col>
             </el-row>
           </div>
-        
+
           <div class="title">结构性缺陷等级：</div>
           <el-select v-model="searchParams.funcClass" placeholder="">
             <el-option v-for="(item, i) in gradeArr" :key="i + gradeArr.length" :label="item" :value="item"></el-option>
@@ -69,6 +69,7 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
         @row-click="openPromptBox"
+        :row-class-name="modality"
         :default-sort="{ prop: 'date', order: 'descending' }"
       >
         <template slot="empty">
@@ -81,7 +82,7 @@
           <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-        <el-table-column fixed="left" align="center" type="index" label="序号" width="50"> </el-table-column>
+        <el-table-column  align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -189,7 +190,7 @@
                         </div>
                         <div class="info-video">
                           <el-tabs v-model="activeName">
-                            <el-tab-pane :label="'照片（'+urlArr.length+'）'" name="first">
+                            <el-tab-pane :label="'照片（' + urlArr.length + '）'" name="first">
                               <div class="image-list">
                                 <el-image
                                   style="width: 100%; height: 80%; margin-top: 6px; -webkit-user-drag: none"
@@ -288,6 +289,7 @@ export default {
   },
   data() {
     return {
+      multipleSelection: [], // 选中的表格
       id: null,
       checkdialogFormVisible: false,
       imgArrIndex: 0,
@@ -330,7 +332,7 @@ export default {
         { width: '180', sortable: true, label: '最新结构性缺陷等级', name: 'newStructClass' },
         { width: '180', sortable: false, label: '最新结构性缺陷评价', name: 'newStructEstimate' },
         { width: '180', sortable: true, label: '最新功能性缺陷等级', name: 'newFuncClass' },
-        { width: '180', sortable: false, label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
+        { width: '', sortable: false, label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
@@ -643,7 +645,35 @@ export default {
         this.map.getView().setZoom(20)
       }
     },
-    openPromptBox(row) {},
+    // 根据状态设置每列表格样式
+    modality(obj) {
+      // 通过id标识来改变当前行的文字颜色
+      console.log('obj', obj.row)
+      let expNoArr
+      if (this.multipleSelection != []) {
+        expNoArr = this.multipleSelection.map((v) => v.expNo)
+      }
+      if (expNoArr.some((v) => v == obj.row.expNo)) {
+        return 'rowBgBlue'
+      }
+    },
+
+    openPromptBox(row) {
+      // 点击行勾选数据
+      let length = this.multipleSelection.length
+      let expNo = this.multipleSelection.length == 1 ? this.multipleSelection[0].expNo : null
+      // let
+      this.$refs.multipleTable.clearSelection(row)
+      if (length > 1 || length < 1) {
+        this.$refs.multipleTable.toggleRowSelection(row)
+      } else if (expNo) {
+        if (row.expNo == expNo) {
+          this.$refs.multipleTable.toggleRowSelection(row, false)
+        } else {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        }
+      }
+    },
     // 上一页
     lastPage() {
       if (this.currentIndex <= 0) {
@@ -832,9 +862,16 @@ export default {
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
       }
-      .hover-row{
-        color: #E6A23C;
+      .hover-row {
+        color: #e6a23c;
         background-color: rgba($color: #2d74e7, $alpha: 0.1);
+      }
+      .rowBgBlue {
+        & > td {
+          color: #fff;
+          border-right: 1px solid #ebeef5;
+          background-color: #69a8ea !important;
+        }
       }
     }
   }

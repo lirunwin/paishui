@@ -54,18 +54,16 @@
           <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div> -->
         <div class="right-btn">
-          <el-popconfirm
-            confirm-button-text="确定"
-            cancel-button-text="取消"
-            icon="el-icon-info"
-            icon-color="##FFDF84"
-            title="确定要导出吗?"
-            @confirm="$message('该功能暂未开放')"
+          <download-excel
+            :fields="json_fields"
+            :data="multipleSelection"
+            :before-generate="startDownload"
+            :before-finish="finishDownload"
+            name="管道缺陷表单.xls"
+            type="xls"
           >
-            <el-button slot="reference" type="primary" size="small" :disabled="multipleSelection.length != 1"
-              >导出<i class="el-icon-download el-icon--right"></i
-            ></el-button>
-          </el-popconfirm>
+            <el-button size="small" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
+          </download-excel>
           <!-- <el-button  type="primary" @click="openDialogEnclosure" :disabled="multipleSelection.length != 1"
             >导出<i class="el-icon-download el-icon--right"></i
           ></el-button> -->
@@ -104,6 +102,29 @@
         >
         </el-table-column>
 
+        <el-table-column
+          prop="structClass"
+          header-align="center"
+          label="结构性缺陷等级"
+          align="center"
+          show-overflow-tooltip
+          width="170"
+          :sort-method="sortStruct"
+          :sortable="true"
+        >
+        </el-table-column>
+        <el-table-column
+          prop="funcClass"
+          header-align="center"
+          label="功能性缺陷等级"
+          align="center"
+          show-overflow-tooltip
+          width="180"
+          :sortable="true"
+          :sort-method="sortFunc"
+        >
+        </el-table-column>
+
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click.stop="toPdfPage(scope.row.pdfFilePath)">报告</el-button>
@@ -111,7 +132,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div>
+      <!-- <div>
         <el-pagination
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -122,7 +143,7 @@
           :total="paginationTotal"
         >
         </el-pagination>
-      </div>
+      </div> -->
     </div>
 
     <!-- 表格当前列信息弹出框 -->
@@ -233,20 +254,12 @@
         >
         </el-pagination>
       </div>
-    </el-dialog>  
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import {
-  queryPageAssessment,
-  downloadFile,
-  queryPageEnclosure,
-  queryDictionariesId,
-  assessmentDetails,
-  histroyPipeData,
-  assessmentDefect
-} from '@/api/pipelineManage'
+import { queryPageAssessment, downloadFile, queryPageEnclosure } from '@/api/pipelineManage'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
@@ -277,6 +290,21 @@ export default {
   },
   data() {
     return {
+      json_fields: {
+        工程名称: 'prjName',
+        管段编号: 'expNo',
+        管段类型: 'pipeType',
+        '管径(mm)': 'diameter',
+        材质: 'material',
+        结构性缺陷评价: 'structEstimate',
+        缺陷数量: 'defectnum',
+        检测照片: 'picnum',
+        检测视频: 'videoFileName',
+        检测地点: 'checkAddress',
+        检测日期: 'sampleTime',
+        结构性缺陷等级: 'structClass',
+        功能性缺陷等级: 'funcClass'
+      },
       id: null, // 当前列表id
       activeName: 'picnum', // 照片视频tab标签
       imgArrIndex: 0, // 缩略框照片索引
@@ -316,19 +344,17 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { label: '工程名称', name: 'prjName' },
-        { label: '管段编号', name: 'expNo' },
-        { label: '管段类型', name: 'pipeType' },
-        { label: '管径(mm)', name: 'diameter' },
-        { label: '材质', name: 'material' },
-        { label: '结构性缺陷等级', name: 'structClass' },
-        { label: '结构性缺陷评价', name: 'structEstimate' },
-        { label: '功能性缺陷等级', name: 'funcClass' },
-        { label: '缺陷数量', name: 'defectnum' },
-        { label: '检测照片', name: 'picnum' },
-        { label: '检测视频', name: 'videoFileName' },
-        { label: '检测地点', name: 'checkAddress' },
-        { label: '检测日期', name: 'sampleTime' }
+        { width: '100', sortable: false, label: '工程名称', name: 'prjName' },
+        { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
+        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
+        { width: '100', sortable: false, label: '材质', name: 'material' },
+        { width: '', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
+        { width: '100', sortable: true, label: '缺陷数量', name: 'defectnum' },
+        { width: '100', sortable: true, label: '检测照片', name: 'picnum' },
+        { width: '100', sortable: false, label: '检测视频', name: 'videoFileName' },
+        { width: '100', sortable: false, label: '检测地点', name: 'checkAddress' },
+        { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' }
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
@@ -367,8 +393,7 @@ export default {
     // let res = this.getDate()
   },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-    },
+    '$store.state.gis.activeSideItem': function (n, o) {},
     'searchValue.testTime.startDate': function (n) {
       this.searchValue.testTime.finishDate = n
     }
@@ -378,7 +403,7 @@ export default {
     if (this.param && this.param.rootPage) {
       let { type, level, rootPage, data } = this.param
       this.rootPage = rootPage
-      this.tableData = data.map(fea => fea.values_)
+      this.tableData = data.map((fea) => fea.values_)
     }
   },
   destroyed() {
@@ -418,6 +443,24 @@ export default {
     }
   },
   methods: {
+    //导出表格
+    startDownload() {
+      let self = this
+      if (self.multipleSelection.length == 0) {
+        self.$message({
+          message: '警告，请勾选数据',
+          type: 'warning'
+        })
+      }
+    },
+    finishDownload() {
+      let self = this
+      self.$message({
+        message: '恭喜，数据导出成功',
+        type: 'success'
+      })
+    },
+    
     // 下载文档
     downloadDocx() {
       this.$message('正在加载文档地址...')
@@ -819,8 +862,8 @@ export default {
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
       }
-      .hover-row{
-        color: #E6A23C;
+      .hover-row {
+        color: #e6a23c;
         background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
     }

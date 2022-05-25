@@ -95,6 +95,7 @@
         @selection-change="handleSelectionChange"
         @row-dblclick="openDetails"
         @row-click="lightFea"
+        :row-class-name="modality"
         :default-sort="{ prop: 'date', order: 'descending' }"
       >
         <template slot="empty">
@@ -496,52 +497,90 @@
     </div>
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCard" class="detailsCrad" style="top: 10%; left: 20%; right: 55%" v-show="currentInfoCard">
-        <el-card class="box-card" v-if="currentInfoCard">
-          <div class="table-content">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                height: 30px;
-                box-sizing: border-box;
-              "
-            >
-              <span style="font-weight: bold; user-select: none"
-                >{{ getCurrentForm.expNo }}
-                <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
-                {{ currentIndex + 1 }}/{{ currentForm.length }}
-                <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
-              </span>
-              <a
-                style="font-size: 12px; color: #2d74e7; text-decoration: underline"
-                @click="testReportDetails(getCurrentForm.id)"
-                >详情</a
+      <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
+        <div class="detailsCrad" v-if="currentInfoCard">
+          <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
+            <div class="table-content">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  height: 30px;
+                  font-size: 14px;
+                  box-sizing: border-box;
+                "
               >
-            </div>
-            <div>管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}</div>
-            <div class="content-info">
-              <div class="left">
-                <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
-                <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
-                <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
-                <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
-                <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
+                <span style="font-weight: bold; user-select: none"
+                  >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
+                  <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
+                  {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
+                  <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+                </span>
+                <a
+                  style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                  @click="openDetails(getCurrentForm)"
+                  >详情</a
+                >
               </div>
-              <div class="right">
-                <el-tabs v-model="activeName" @tab-click="handleClick">
-                  <el-tab-pane :label="`照片(${getCurrentForm.picnum || '0'})`" name="picnum">
-                    <div class="container">
-                      <img src="./testImg/test.png" alt="" srcset="" />
-                    </div>
-                  </el-tab-pane>
-                  <el-tab-pane :label="`视频(${getCurrentForm.viedoNum || '0'})`" name="viedoNum"></el-tab-pane>
-                </el-tabs>
+              <div style="margin-top: 10px; font-size: 12px">
+                管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}
+              </div>
+              <div class="content-info" style="justify-content: space-between; display: flex; font-size: 12px">
+                <div class="left" style="width: 200px">
+                  <div class="detailsTitle" style="margin-top: 5px">检测日期 {{ getCurrentForm.sampleTime }}</div>
+                  <!-- <p style="padding-left: 10px">无文档</p> -->
+                  <div class="text-space" style="margin: 10px 0">
+                    <el-link
+                      style="font-size: 12px; margin-left: 10px"
+                      v-if="getCurrentForm.wordFilePath"
+                      type="primary"
+                      @click.stop="downloadDocx"
+                      ><div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                        {{ getCurrentForm.wordInfoName + 'docx' }}
+                      </div></el-link
+                    >
+                  </div>
+                  <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
+                  <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
+                  <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
+                </div>
+                <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
+                  <el-tabs v-model="activeName">
+                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
+                      <div class="container">
+                        <el-image
+                          style="width: 100%; height: 90%; -webkit-user-drag: none"
+                          :src="getImgUrl"
+                          :preview-src-list="getImgUrlArr"
+                        >
+                        </el-image>
+                        <div style="text-align: center">
+                          <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
+                          {{ getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
+                            getCurrentForm.pipeDefects.length || 0
+                          }}
+                          <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
+                        </div>
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane :label="`视频`" name="viedoNum">
+                      <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
+                        <video controls="controls" width="100%" height="83%">
+                          <source :src="getVideoUrl" type="video/mp4" />
+                        </video>
+                      </div>
+                      <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">
+                        暂无视频
+                      </div>
+                    </el-tab-pane>
+                  </el-tabs>
+                </div>
               </div>
             </div>
-          </div>
-        </el-card>
+          </el-card>
+        </div>
       </div>
     </transition>
 
@@ -812,7 +851,7 @@ export default {
         name: '',
         report: '1'
       },
-      formLabelWidth: '120px',
+      formLabelWidth: '84px',
       loadingBool: false, // 加载按钮显隐
 
       //
@@ -1003,7 +1042,7 @@ export default {
       }
       this.currentIndexEV++
     },
-    // 打开缩略提示框 
+    // 打开缩略提示框
     // type: 1: 缺陷，2：管线
     async openPromptBox(id, position, type) {
       if (type === 1) {
@@ -1090,7 +1129,32 @@ export default {
       this.vectorLayer2.getSource().clear()
       this.clickEvent && unByKey(this.clickEvent)
     },
+    // 根据状态设置每列表格样式
+    modality(obj) {
+      // 通过id标识来改变当前行的文字颜色
+      console.log('obj', obj.row)
+      let idArr
+      if (this.multipleSelection != []) {
+        idArr = this.multipleSelection.map((v) => v.id)
+      }
+      if (idArr.some((v) => v == obj.row.id)) {
+        return 'rowBgBlue'
+      }
+    },
     lightFea(row) {
+      let length = this.multipleSelection.length
+      let id = this.multipleSelection.length == 1 ? this.multipleSelection[0].id : null
+      // let
+      this.$refs.multipleTable.clearSelection(row)
+      if (length > 1 || length < 1) {
+        this.$refs.multipleTable.toggleRowSelection(row)
+      } else if (id) {
+        if (row.id == id) {
+          this.$refs.multipleTable.toggleRowSelection(row, false)
+        } else {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        }
+      }
       console.log('报告数据')
       let features = this.getPipeDefectData(1, row.id, true)
     },
@@ -1966,6 +2030,7 @@ $fontSize: 14px !important;
   /deep/ .el-table {
     flex: 1;
     // overflow-y: scroll;
+
     th.el-table__cell > .cell {
       color: rgb(50, 59, 65);
       height: 40px;
@@ -1978,6 +2043,13 @@ $fontSize: 14px !important;
     .hover-row {
       color: #e6a23c;
       background-color: rgba($color: #2d74e7, $alpha: 0.1);
+    }
+    .rowBgBlue {
+      & > td {
+        color: #fff;
+        border-right: 1px solid #ebeef5;
+        background-color: #69a8ea !important;
+      }
     }
   }
 

@@ -103,6 +103,7 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
         @row-click="openPromptBox"
+        :row-class-name="modality"
         :default-sort="{ prop: 'date', order: 'descending' }"
       >
         <template slot="empty">
@@ -175,81 +176,90 @@
 
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCard" class="detailsCrad" v-show="currentInfoCard">
-        <el-card class="box-card" v-if="currentInfoCard">
-          <div class="table-content">
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                height: 30px;
-                box-sizing: border-box;
-              "
-            >
-              <span style="font-weight: bold; user-select: none"
-                >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
-                <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
-                {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
-                <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
-              </span>
-              <a
-                style="font-size: 12px; color: #2d74e7; text-decoration: underline"
-                @click="openDetails(getCurrentForm)"
-                >详情</a
+      <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
+        <div class="detailsCrad" v-if="currentInfoCard">
+          <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
+            <div class="table-content">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  height: 30px;
+                  font-size: 14px;
+                  box-sizing: border-box;
+                "
               >
-            </div>
-            <div style="margin-top: 10px;">管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}</div>
-            <div class="content-info" style="justify-content: space-between; display: flex">
-              <div class="left" style="width: 230px;">
-                <div class="detailsTitle">检测日期 {{ getCurrentForm.sampleTime }}</div>
-                <!-- <p style="padding-left: 10px">无文档</p> -->
-                <div class="text-space" style="margin: 10px 0;">
-                  <el-link
-                    style="font-size: 12px; margin-left: 10px"
-                    v-if="getCurrentForm.wordFilePath"
-                    type="primary"
-                    @click.stop="downloadDocx"
-                    >{{ getCurrentForm.wordInfoName + 'docx' }}</el-link
-                  >
+                <span style="font-weight: bold; user-select: none"
+                  >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
+                  <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
+                  {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
+                  <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+                </span>
+                <a
+                  style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                  @click="openDetails(getCurrentForm)"
+                  >详情</a
+                >
+              </div>
+              <div style="margin-top: 10px; font-size: 12px">
+                管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}
+              </div>
+              <div class="content-info" style="justify-content: space-between; display: flex; font-size: 12px">
+                <div class="left" style="width: 200px">
+                  <div class="detailsTitle" style="margin-top: 5px">检测日期 {{ getCurrentForm.sampleTime }}</div>
+                  <!-- <p style="padding-left: 10px">无文档</p> -->
+                  <div class="text-space" style="margin: 10px 0">
+                    <el-link
+                      style="font-size: 12px; margin-left: 10px"
+                      v-if="getCurrentForm.wordFilePath"
+                      type="primary"
+                      @click.stop="downloadDocx"
+                      ><div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                        {{ getCurrentForm.wordInfoName + 'docx' }}
+                      </div></el-link
+                    >
+                  </div>
+                  <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
+                  <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
+                  <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
                 </div>
-                <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
-                <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
-                <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
-                <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
-              </div>
-              <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
-                <el-tabs v-model="activeName">
-                  <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
-                    <div class="container">
-                      <el-image
-                        style="width: 100%; height: 90%; -webkit-user-drag: none"
-                        :src="getImgUrl"
-                        :preview-src-list="getImgUrlArr"
-                      >
-                      </el-image>
-                      <div style="text-align: center">
-                        <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
-                        {{ getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
-                          getCurrentForm.pipeDefects.length || 0
-                        }}
-                        <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
+                <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
+                  <el-tabs v-model="activeName">
+                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
+                      <div class="container">
+                        <el-image
+                          style="width: 100%; height: 90%; -webkit-user-drag: none"
+                          :src="getImgUrl"
+                          :preview-src-list="getImgUrlArr"
+                        >
+                        </el-image>
+                        <div style="text-align: center">
+                          <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
+                          {{ getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
+                            getCurrentForm.pipeDefects.length || 0
+                          }}
+                          <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
+                        </div>
                       </div>
-                    </div>
-                  </el-tab-pane>
-                  <el-tab-pane :label="`视频`" name="viedoNum">
-                    <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
-                      <video controls="controls" width="100%" height="83%">
-                        <source :src="getVideoUrl" type="video/mp4" />
-                      </video>
-                    </div>
-                    <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">暂无视频</div>
-                  </el-tab-pane>
-                </el-tabs>
+                    </el-tab-pane>
+                    <el-tab-pane :label="`视频`" name="viedoNum">
+                      <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
+                        <video controls="controls" width="100%" height="83%">
+                          <source :src="getVideoUrl" type="video/mp4" />
+                        </video>
+                      </div>
+                      <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">
+                        暂无视频
+                      </div>
+                    </el-tab-pane>
+                  </el-tabs>
+                </div>
               </div>
             </div>
-          </div>
-        </el-card>
+          </el-card>
+        </div>
       </div>
     </transition>
 
@@ -257,21 +267,12 @@
     <transition name="el-fade-in-linear">
       <delete-dialog @sendBool="getBool" v-show="dialogFormVisible" :checkParam="id"></delete-dialog>
     </transition>
-  
   </div>
 </template>
 
 <script>
 import JsonExcel from 'vue-json-excel'
-import {
-  queryPageAssessment,
-  downloadFile,
-  queryPageEnclosure,
-  queryDictionariesId,
-  assessmentDetails,
-  histroyPipeData,
-  assessmentDefect
-} from '@/api/pipelineManage'
+import { queryPageAssessment, downloadFile, histroyPipeData } from '@/api/pipelineManage'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Feature } from 'ol'
@@ -788,8 +789,37 @@ export default {
         return center
       }
     },
+    // 根据状态设置每列表格样式
+    modality(obj) {
+      // 通过id标识来改变当前行的文字颜色
+      // console.log('obj', obj.row)
+      let idArr
+      if (this.multipleSelection != []) {
+        idArr = this.multipleSelection.map((v) => v.id)
+      }
+      if (idArr.some((v) => v == obj.row.id)) {
+        return 'rowBgBlue'
+      }
+    },
+    // 点击行勾选数据
+    handleRowClick(row) {
+      let length = this.multipleSelection.length
+      let id = this.multipleSelection.length == 1 ? this.multipleSelection[0].id : null
+      // let
+      this.$refs.multipleTable.clearSelection(row)
+      if (length > 1 || length < 1) {
+        this.$refs.multipleTable.toggleRowSelection(row)
+      } else if (id) {
+        if (row.id == id) {
+          this.$refs.multipleTable.toggleRowSelection(row, false)
+        } else {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        }
+      }
+    },
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
+      this.handleRowClick(row)
       if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
       let position = this.setPositionByPipeId(row.id)
       console.log('打开缩略提示框', row)
@@ -987,6 +1017,17 @@ export default {
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
       }
+      .hover-row {
+      color: #e6a23c;
+      background-color: rgba($color: #2d74e7, $alpha: 0.1);
+    }
+      .rowBgBlue {
+        & > td {
+          color: #fff;
+          border-right: 1px solid #ebeef5;
+          background-color: #69a8ea !important;
+        }
+      }
     }
   }
   .hd-input {
@@ -1006,177 +1047,180 @@ export default {
     }
   }
   // 详情卡片的样式
-  /deep/.detailsCrad {
+  .histroyPipeData {
     position: fixed;
     top: 100px;
     right: 45px;
     z-index: 9;
-    .clearfix:before,
-    .clearfix:after {
-      display: table;
-      content: '';
-    }
-    .clearfix:after {
-      clear: both;
-    }
+    .detailsCrad {
+      .clearfix:before,
+      .clearfix:after {
+        display: table;
+        content: '';
+      }
+      .clearfix:after {
+        clear: both;
+      }
 
-    .box-card {
-      width: 550px;
-      min-height: 310px;
-      border: none;
-      border-radius: 5px;
-      .el-card__header {
-        height: 48px;
-        color: #fff;
-        background-color: #2d74e7;
-      }
-      .el-card__body {
-        padding: 15px !important;
-        .el-menu-item {
-          height: 45px;
-          font-size: 16px;
+      .box-card {
+        width: 550px;
+        min-height: 310px;
+        border: none;
+        border-radius: 5px;
+        /deep/ .el-card__header {
+          height: 48px;
+          color: #fff;
+          background-color: #2d74e7;
         }
-      }
-      .content {
-        /deep/ .content-info {
-          overflow-y: scroll;
-          height: 600px;
-          padding: 10px 20px;
-          .info-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin: 5px 0;
-          }
-          .info-box {
-            height: 100%;
-            display: flex;
-            justify-content: space-between;
-            .info-text {
-              width: 37%;
-              padding: 10px;
-              box-sizing: border-box;
-              background-color: #f3f7fe;
-              border: 1px solid #dedede;
-            }
-            .info-video {
-              width: 60%;
-              border: 1px solid #dedede;
-            }
-          }
-          /deep/ .el-form {
-            .el-link--inner {
-              max-width: 416px;
-              /* 1.先强制一行内显示文本 */
-              white-space: nowrap;
-              /* 2.超出部分隐藏 */
-              overflow: hidden;
-              /* 3.文字用省略号替代超出的部分 */
-              text-overflow: ellipsis;
-            }
-            .is-disabled {
-              .el-input__inner {
-                background-color: transparent;
-              }
-              .el-textarea__inner {
-                background-color: transparent;
-              }
-            }
-            .el-form-item {
-              margin-bottom: 10px;
-            }
-          }
-          .el-textarea__inner,
-          .el-input__inner {
-            color: #666;
-          }
-          .detailsTitle {
-            position: relative;
+        /deep/.el-card__body {
+          padding: 15px !important;
+          .el-menu-item {
+            height: 45px;
             font-size: 16px;
-            padding: 5px 0;
-            box-sizing: border-box;
-          }
-          .detailsTitle::after {
-            position: absolute;
-            top: 5px;
-            left: -10px;
-            content: '';
-            width: 4px;
-            height: 65%;
-            background-color: #2d74e7;
           }
         }
-      }
-      .table-content {
-        padding: 15px;
-        .content-info {
-          font-size: 12px;
-          display: flex;
-          justify-content: space-between;
-
-          .left {
-            flex: 1;
-            .text-space {
-              margin: 10px 0;
-              /deep/.el-link--inner {
-                max-width: 240px;
-                // 1.先强制一行内显示文本
+        .content {
+          .content-info {
+            overflow-y: scroll;
+            height: 600px;
+            padding: 10px 20px;
+            .info-title {
+              font-size: 14px;
+              font-weight: bold;
+              margin: 5px 0;
+            }
+            .info-box {
+              height: 100%;
+              display: flex;
+              justify-content: space-between;
+              .info-text {
+                width: 37%;
+                padding: 10px;
+                box-sizing: border-box;
+                background-color: #f3f7fe;
+                border: 1px solid #dedede;
+              }
+              .info-video {
+                width: 60%;
+                border: 1px solid #dedede;
+              }
+            }
+            /deep/.el-form {
+              .el-link--inner {
+                max-width: 416px;
+                /* 1.先强制一行内显示文本 */
                 white-space: nowrap;
-
-                // 2.超出部分隐藏
+                /* 2.超出部分隐藏 */
                 overflow: hidden;
-                // 3.文字用省略号替换超出的部分
+                /* 3.文字用省略号替代超出的部分 */
                 text-overflow: ellipsis;
               }
+              /deep/.is-disabled {
+                .el-input__inner {
+                  background-color: transparent;
+                }
+                .el-textarea__inner {
+                  background-color: transparent;
+                }
+              }
+              .el-form-item {
+                margin-bottom: 10px;
+              }
+            }
+            /deep/.el-textarea__inner,
+            .el-input__inner {
+              color: #666;
+            }
+            .detailsTitle {
+              position: relative;
+              font-size: 16px;
+              padding: 5px 0;
+              box-sizing: border-box;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              top: 5px;
+              left: -10px;
+              content: '';
+              width: 4px;
+              height: 65%;
+              background-color: #2d74e7;
             }
           }
-          .right {
-            flex: 1;
+        }
+        .table-content {
+          padding: 15px;
+          .content-info {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
 
-            .is-top {
-            }
-            // .el-tabs__header{
-            //   border-top: none;
-            //       margin-bottom: 6px;
-            //   background-color: transparent !important;
-            // }
-            /deep/.el-tabs {
-              .container {
-                height: 100%;
-                width: 100%;
-                padding-top: 5px;
-                box-sizing: border-box;
-              }
-              .el-tabs__content {
-                height: 150px;
-                width: 234px;
-              }
-              .el-tabs__item {
-                margin: 11px 0 0 0 !important;
-                background: transparent !important;
-              }
-              .el-tabs__header {
-                border-top: 0 !important;
-                background: transparent !important;
+            .left {
+              flex: 1;
+              .text-space {
+                margin: 10px 0;
+                /deep/.el-link--inner {
+                  max-width: 240px;
+                  // 1.先强制一行内显示文本
+                  white-space: nowrap;
+
+                  // 2.超出部分隐藏
+                  overflow: hidden;
+                  // 3.文字用省略号替换超出的部分
+                  text-overflow: ellipsis;
+                }
               }
             }
-            // .el-tabs__nav-wrap::after {
-            //   z-index: 2;
-            // }
-            // .el-tabs__active-bar
-          }
-          .detailsTitle {
-            position: relative;
-            margin: 6px 0;
-            padding-left: 10px;
-            box-sizing: border-box;
-          }
-          .detailsTitle::after {
-            position: absolute;
-            left: 0;
-            content: '';
-            width: 4px;
-            height: 100%;
-            background-color: #2d74e7;
+            .right {
+              flex: 1;
+
+              /deep/.is-top {
+                margin: 0 0 10px;
+              }
+              // .el-tabs__header{
+              //   border-top: none;
+              //       margin-bottom: 6px;
+              //   background-color: transparent !important;
+              // }
+              /deep/.el-tabs {
+                .container {
+                  height: 100%;
+                  width: 100%;
+                  padding-top: 5px;
+                  box-sizing: border-box;
+                }
+                .el-tabs__content {
+                  height: 150px;
+                  width: 234px;
+                }
+                .el-tabs__item {
+                  margin: 11px 0 0 0 !important;
+                  background: transparent !important;
+                }
+                .el-tabs__header {
+                  border-top: 0 !important;
+                  background: transparent !important;
+                }
+              }
+              // .el-tabs__nav-wrap::after {
+              //   z-index: 2;
+              // }
+              // .el-tabs__active-bar
+            }
+            .detailsTitle {
+              position: relative;
+              margin: 6px 0;
+              padding-left: 10px;
+              box-sizing: border-box;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              left: 0;
+              content: '';
+              width: 4px;
+              height: 100%;
+              background-color: #2d74e7;
+            }
           }
         }
       }

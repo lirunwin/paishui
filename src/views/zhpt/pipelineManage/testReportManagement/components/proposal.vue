@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { queryPipeStateDetails } from '@/api/pipelineManage'
+import { queryPipeState } from '@/api/pipelineManage'
 
 export default {
   props: ['paramId'],
@@ -82,9 +82,9 @@ export default {
   },
   async mounted() {
     //
-    let resPrj = await queryPipeStateDetails(this.paramId)
-    this.tableData = resPrj.result
-    console.log('管段状态评估汇总  ', resPrj)
+    let resPrj = await queryPipeState(this.paramId)
+    this.tableData = resPrj.result.pipeStates
+    console.log('检测评估建议  ', resPrj)
     console.log('上面传来的id', this.paramId)
   },
   methods: {
