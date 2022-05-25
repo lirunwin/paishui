@@ -1,15 +1,15 @@
 <template>
   <div class="project-box">
     <!-- 报告内管段状态评估汇总 -->
-    <el-table :data="tableData" border  show-summary :summary-method="getSummaries" style="width: 100%; margin-top: 20px" stripe>
-      <el-table-column
-        type="index"
-        label="序号"
-        width="90"
-        align="center"
-        header-align="center"
-        fixed="left"
-      >
+    <el-table
+      :data="tableData"
+      border
+      show-summary
+      :summary-method="getSummaries"
+      style="width: 100%; margin-top: 20px"
+      stripe
+    >
+      <el-table-column type="index" label="序号" width="90" align="center" header-align="center" fixed="left">
       </el-table-column>
       <!-- 前面 -->
       <el-table-column
@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { queryPipeState } from '@/api/pipelineManage'
+import { queryPipeStateDetails, queryProjectDetails, queryDefectFormDetails } from '@/api/pipelineManage'
 
 export default {
   props: ['paramId'],
@@ -81,10 +81,13 @@ export default {
     }
   },
   async mounted() {
-    //
-    let resPrj = await queryPipeState(this.paramId)
-    this.tableData = resPrj.result.pipeStates
-    console.log('检测评估建议  ', resPrj)
+    let resPrj = await queryPipeStateDetails(this.paramId)
+    let resPrj1 = await queryProjectDetails(this.paramId)
+    let resPrj2 = await queryDefectFormDetails(this.paramId)
+    this.tableData = resPrj.result
+    console.log('告内管段状态评估汇总', resPrj)
+    console.log('主要工程量表统计', resPrj1)
+    console.log('报告内管段缺陷汇总', resPrj2)
     console.log('上面传来的id', this.paramId)
   },
   methods: {
