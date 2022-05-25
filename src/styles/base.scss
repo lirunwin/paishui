@@ -275,24 +275,12 @@ div:focus {
   max-width: 80vw;
 }
 
-.page-container {
-  height: 100%;
-  width: 100%;
-  overflow: hidden auto;
-  position: absolute;
-  background-color: #f5f5f6 !important;
-}
-
-.el-dialog__wrapper.dialog .el-dialog__body {
-  max-height: 75vh;
-  overflow: hidden auto;
-}
-
 @mixin base-scroll-bar {
   -webkit-overflow-scrolling: touch;
   &::-webkit-scrollbar {
     width: 10px;
     height: 10px;
+    border-radius: 5px;
   }
 
   &::-webkit-scrollbar-thumb {
@@ -301,13 +289,52 @@ div:focus {
   }
 
   &::-webkit-scrollbar-track {
-    background: rgba(#aaa, 0.4);
+    background: rgba(#aaa, 0.35);
     border-radius: 2px;
   }
 
   &::-webkit-scrollbar-track-piece {
-    background: rgba(#aaa, 0.4);
+    background: rgba(#aaa, 0.35);
   }
+}
+
+.page-container {
+  height: calc(100% - 43px);
+  width: 100%;
+  overflow: hidden auto;
+  position: absolute;
+  background-color: #f5f5f6 !important;
+  display: flex;
+  flex-direction: column;
+  @include base-scroll-bar();
+  > .actions {
+    padding-top: 22px;
+    padding-left: 15px;
+    padding-right: 15px;
+    background: #fff;
+    flex: 0 0 auto;
+    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 15px;
+  }
+  > .el-row {
+    flex: 1 1 100%;
+    display: flex;
+    position: relative;
+    z-index: 99;
+    > .el-col {
+      display: flex;
+      height: 100%;
+      overflow: auto;
+      @include base-scroll-bar();
+    }
+  }
+}
+.el-dialog__wrapper.dialog .el-dialog__body {
+  max-height: 75vh;
+  overflow: hidden auto;
 }
 
 .el-table__body-wrapper,

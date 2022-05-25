@@ -149,7 +149,7 @@ export default class DeviceForm extends Vue {
             options: this.deptmentTree,
             required: true,
             onChange: () => {
-              this.$set(this.formData, 'userUserId', '')
+              this.formData.userUserId && this.$set(this.formData, 'userUserId', '')
             }
           },
           {
@@ -177,7 +177,14 @@ export default class DeviceForm extends Vue {
       { type: 'string', pattern: /^1\d{10}$/, message: '请输入正确的手机号' }
     ],
     note: [{ type: 'string', max: 255, message: '备注不能超过255个字符' }],
-    useDeptId: [{ required: true, message: '请选择使用部门' }],
+    useDeptId: [
+      {
+        type: 'array',
+        required: true,
+        message: '请选择使用部门',
+        fields: [{ type: 'number', required: true, message: '请选择使用部门' }]
+      }
+    ],
     userUserId: [{ required: true, message: '请选择使用人员' }]
   }
 
@@ -206,15 +213,27 @@ export default class DeviceForm extends Vue {
     return this.departments.filter((item) => !item.parentId).map(getChildren)
   }
 
+  fetchingDepartments = false
+
   async onOpen() {
-    const { result = [] } = (await getDepartments()) || {}
-    this.departments = result
+    if (this.fetchingDepartments) return
+    this.fetchingDepartments = true
+    try {
+      const { result = [] } = (await getDepartments()) || {}
+      this.departments = result
+    } catch (error) {
+      console.log(error)
+    }
+    this.fetchingDepartments = false
   }
 
   @Watch('data', { immediate: true })
   setDefaultData(val) {
     const temp = val || {}
     this.formData = { ...temp, useDeptId: [temp.useDeptId] }
+    setTimeout(() => {
+      if (!this.fetchingDepartments) this.onOpen()
+    }, 0)
   }
 
   get useDeptId() {
@@ -223,10 +242,10 @@ export default class DeviceForm extends Vue {
   }
 
   @Watch('useDeptId')
-  async getUsersByDepartmentId(val) {
-    console.log(val)
+  async getUsersByDepartmentId(val, oldVal) {
+    // console.log(val, oldVal)
     this.users = []
-    if (val) {
+    if (val && this.$attrs.visible) {
       const { result = [] } = (await getUsers(val)) || {}
       this.users = (result || []).map(({ id, realName: name, username, ...rest }) => ({
         id,

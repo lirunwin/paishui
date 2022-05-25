@@ -595,9 +595,9 @@ export default {
       this.map.addLayer(this.lightLayer)
       this.clickEvent = this.map.on('click', (evt) => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
+        console.log('点击管线')
         if (feas.length !== 0) {
-          let id = feas[0].get('id')
-          this.openPromptBox({ id })
+          this.openPromptBox(feas[0].values_)
         } else {
           this.currentInfoCard = false
           this.lightLayer.getSource().clear()

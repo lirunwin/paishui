@@ -1,5 +1,5 @@
 <template>
-  <div class="base-table">
+  <div class="base-table" :style="{ paddingBottom: pagination ? 0 : '15px' }">
     <el-table class="table" v-on="$listeners" v-bind="{ ...defaultAttrs, ...attrs }" :style="style">
       <template slot="empty">
         <img src="@/assets/icon/null.png" alt="" />
@@ -21,6 +21,7 @@
     </el-table>
     <el-pagination
       v-if="pagination"
+      class="pagination"
       :current-page="pagination.current"
       :page-sizes="[10, 20, 30, 50, 100, 1000]"
       :page-size="pagination.size"
@@ -87,21 +88,25 @@ export default Vue.extend({
     onPageChange(e: any, type: 'size' | 'current') {
       this.$emit(`${type}-change`, e)
       this.$emit(`${type}Change`, e)
-      this.$emit('page-change', e)
-      this.$emit('pageChange', e)
+      this.$emit('page-change', { [type]: e })
+      this.$emit('pageChange', { [type]: e })
     }
   }
 })
 </script>
 <style lang="scss">
 .base-table {
+  flex: 1 1 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
   width: 100%;
-  height: calc(100% - 40px);
+  padding: 15px 15px 0;
+  background-color: #fff;
+  z-index: 99;
   .table {
     flex: 1 1 auto;
-    margin-bottom: 14px;
+    // min-height: 100%;
     &.el-table--striped {
       /deep/ .el-table__body tr.el-table__row--striped.el-table__row--striped.el-table__row--striped td {
         background-color: #f3f7fe;
@@ -111,21 +116,13 @@ export default Vue.extend({
       border-color: rgba(#dedede, 0.6);
     }
   }
-}
-
-.page-container {
-  display: flex;
-  flex-direction: column;
-  > .el-row {
-    height: 100%;
-    > .el-col {
-      height: 100%;
-    }
-  }
-
-  .table-container {
-    flex: 1 1 100%;
-    height: 100%;
+  .pagination {
+    position: relative;
+    position: sticky;
+    bottom: 0;
+    padding: 15px 0;
+    background-color: #fff;
+    z-index: 100;
   }
 }
 </style>

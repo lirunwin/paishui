@@ -85,7 +85,7 @@
           />
         </div>
         <div class="btn_box">
-          <el-button type="primary" size="small" @click="onSubmit">查询用户</el-button>
+          <el-button type="primary" size="small" @click="onSubmitS">查询用户</el-button>
           <el-button type="primary" size="small" @click="handleAdded">新增用户</el-button>
           <el-button :disabled="disabledEdit" type="primary" size="small" @click="handleEdit">修改用户</el-button>
           <el-button type="primary" size="small" :disabled="multipleSelection.length === 0" @click="handleManyUser"
@@ -486,7 +486,8 @@ export default class UserRights extends Vue {
       label: '邮箱',
       // width: 120,
       prop: 'email',
-      sortable: true
+      sortable: true,
+      width: 120
     },
     {
       label: '角色',
@@ -944,9 +945,11 @@ export default class UserRights extends Vue {
   }
 
   dbClickHandleEdit(row) {
-    this.dialogTitle = '修改用户'
-    this.dialogVisible = true
-    this.editData = row
+    if (row.auditstatus !== '1') {
+      this.dialogTitle = '修改用户'
+      this.dialogVisible = true
+      this.editData = row
+    }
   }
 
   onSubmitS() {
