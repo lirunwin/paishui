@@ -161,20 +161,25 @@ const actions = {
     commit('LOGIN_OUT_DEL')
   },
 
-  changeSys({ commit, dispatch, state }, data) {
+  changeSys({ commit, dispatch, state, rootState }, data) {
     commit('CHANGESYS', data)
+    console.log(JSON.stringify(data, null, 2))
     if (data === 'map') return
     setTimeout(() => {
       const getPath = () => {
         let path
         for (let route of state.routes) {
-          path = (route.children || []).find((item) => !!item.widgetid)
+          path = (route.children || []).find((item) => !!item.widgetid && !!item.path)
           if (path) break
         }
         return path
       }
+
       const path = getPath()
-      if (path) dispatch('map/changeMethod', path, { root: true })
+      if (path) {
+        dispatch('map/changeMethod', path, { root: true })
+        rootState.gis.activeSideItem = path.label
+      }
     }, 100)
 
     //  state.dynamicRoutes[data]
