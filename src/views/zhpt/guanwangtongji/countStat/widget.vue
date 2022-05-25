@@ -152,7 +152,7 @@ export default {
         // { name: "闸阀井", open: false  }
       ],
       attList: [
-        { name: "位置", field: "POINTPOSITION" },
+        { name: "地址", field: "ADDRESS" },
         { name: "权属单位", field: "BELONG" },
         { name: "探测单位", field: "SUNIT" },
       ],
