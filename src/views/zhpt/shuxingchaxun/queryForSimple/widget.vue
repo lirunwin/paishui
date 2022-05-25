@@ -8,7 +8,7 @@
     </tf-legend>
     <tf-legend class="legend_dept" label="选择字段" isopen="true" title="选择查询图层对应的字段">
       <el-select v-model="attList" placeholder="请选择">
-        <el-option v-for="(item, i) in attLists" :key="i" :label="item.label" :value="item.name"/>
+        <el-option v-for="(item, i) in attLists" :key="i" :label="item.label" :value="item.value"/>
       </el-select>
     </tf-legend>
     <tf-legend class="legend_dept" label="查询条件" isopen="true" title="设置查询内容信息进行搜索">
@@ -96,7 +96,7 @@ export default {
       mapUtil.getFilds(n).then(res => {
         if (res) {
           this.attLists = res.map(item => {
-            return { name: item.filed , label: item.name }
+            return { value: item.field , label: item.name }
           })
         } else this.$message.error('获取字段数据失败')
       })
