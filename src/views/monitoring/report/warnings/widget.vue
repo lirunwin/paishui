@@ -3,14 +3,12 @@
     <div class="actions">
       <QueryForm :selected="selected" @query="onQuery" @export="onExport" />
     </div>
-    <div class="table-container">
-      <BaseTable
-        :columns="monitorWarningReportCols"
-        :data="points"
-        @row-dblclick="onDblClick"
-        @selection-change="onSelectionChange"
-      />
-    </div>
+    <BaseTable
+      :columns="monitorWarningReportCols"
+      :data="points"
+      @row-dblclick="onDblClick"
+      @selection-change="onSelectionChange"
+    />
   </div>
 </template>
 

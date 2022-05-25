@@ -51,7 +51,6 @@
               </el-col>
             </el-row>
           </div>
-          
 
           <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
           <el-button size="small" icon="el-icon-search" type="primary" @click="">导出</el-button>
@@ -68,6 +67,9 @@
         style="width: 100%"
         show-summary
         :default-sort="{ prop: 'date', order: 'descending' }"
+        @selection-change="handleSelectionChange"
+        @row-click="handleRowClick"
+        :row-class-name="modality"
       >
         <template slot="empty">
           <img
@@ -123,7 +125,7 @@ export default {
         startDate: '',
         finishDate: '',
         startPoint: '',
-        endPoint: '',
+        endPoint: ''
       },
       // 表格参数
       tableContent: [
@@ -150,7 +152,8 @@ export default {
       tableData: [],
       // 日期选择器规则
       pickerOptions0: '',
-      pickerOptions1: ''
+      pickerOptions1: '',
+      multipleSelection:[], // 选择的列表
     }
   },
   computed: {},
@@ -158,7 +161,38 @@ export default {
     this.getDate()
   },
   methods: {
-    
+    // 根据状态设置每列表格样式
+    modality(obj) {
+      // 通过id标识来改变当前行的文字颜色
+      // console.log('obj', obj.row)
+      let idArr
+      if (this.multipleSelection != []) {
+        idArr = this.multipleSelection.map((v) => v.id)
+      }
+      if (idArr.some((v) => v == obj.row.id)) {
+        return 'rowBgBlue'
+      }
+    },
+    // 点击行勾选数据
+    handleRowClick(row, column, event) {
+      let length = this.multipleSelection.length
+      let id = this.multipleSelection.length == 1 ? this.multipleSelection[0].id : null
+      // let
+      this.$refs.multipleTable.clearSelection(row)
+      if (length > 1 || length < 1) {
+        this.$refs.multipleTable.toggleRowSelection(row)
+      } else if (id) {
+        if (row.id == id) {
+          this.$refs.multipleTable.toggleRowSelection(row, false)
+        } else {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        }
+      }
+    },
+    // 表格多选事件
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
@@ -301,9 +335,16 @@ export default {
       .el-table__row--striped > td {
         background-color: #f3f7fe !important;
       }
-      .hover-row{
-        color: #E6A23C;
+      .hover-row {
+        color: #e6a23c;
         background-color: rgba($color: #2d74e7, $alpha: 0.1);
+      }
+      .rowBgBlue {
+        & > td {
+          color: #fff;
+          border-right: 1px solid #ebeef5;
+          background-color: #69a8ea !important;
+        }
       }
     }
   }

@@ -10,9 +10,7 @@
         @export="onExport"
       />
     </div>
-    <div class="table-container">
-      <BaseTable :columns="cols" :data="archives" @row-dblclick="onDblClick" @selection-change="onSelectionChange" />
-    </div>
+    <BaseTable :columns="cols" :data="archives" @row-dblclick="onDblClick" @selection-change="onSelectionChange" />
     <PointForm :visible.sync="visible" :title="`${current.id ? '修改' : '新增'}采集设备`" :data="current" />
   </div>
 </template>
@@ -36,7 +34,7 @@ export default class MonitoringPoints extends Vue {
 
   visible = false
 
-  current = {}
+  current: { id?: string } = {}
 
   selected = []
 

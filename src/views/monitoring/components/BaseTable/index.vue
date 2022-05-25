@@ -1,5 +1,5 @@
 <template>
-  <div class="base-table">
+  <div class="base-table" :style="{ paddingBottom: pagination ? 0 : '15px' }">
     <el-table class="table" v-on="$listeners" v-bind="{ ...defaultAttrs, ...attrs }" :style="style">
       <template slot="empty">
         <img src="@/assets/icon/null.png" alt="" />
@@ -96,12 +96,12 @@ export default Vue.extend({
 </script>
 <style lang="scss">
 .base-table {
-  flex: 1 1 calc(100% - 40px);
+  flex: 1 1 100%;
   display: flex;
   flex-direction: column;
   position: relative;
   width: 100%;
-  padding: 0 15px;
+  padding: 15px 15px 0;
   background-color: #fff;
   z-index: 99;
   .table {

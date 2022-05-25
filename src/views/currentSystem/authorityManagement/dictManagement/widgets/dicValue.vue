@@ -160,7 +160,7 @@ export default {
       rules: {
         codeValue: [
           { required: true, message: '请输入字典值编码', trigger: 'blur' },
-          { pattern: /^[a-zA-Z][\w-]+$/, message: '字典值不合法' }
+          { pattern: /^[\w-]+$/, message: '字典值不合法', trigger: 'blur' }
         ],
         notes: [{ required: true, message: '请输入字典值名称', trigger: 'blur' }]
       }
@@ -271,15 +271,15 @@ export default {
      * 编辑字典类型
      */
     editDicValue(scope) {
-      this.formData = scope.row
-      ;(this.dialogTitle = '编辑字典值'), (this.dialogVisible = true)
+      this.formData = { ...scope.row }
+      this.dialogTitle = '编辑字典值'
+      this.dialogVisible = true
     },
 
     /**
      * 删除字典
      */
     deleteDicValue(scope) {
-      console.log(scope.row)
       let id = scope.row.id
       this.$confirm('此操作将永久删除该类字典, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -329,7 +329,7 @@ export default {
         codeRemark: this.dicType.codeRemark,
         creater: 'admin',
         ulevel: 2,
-        codeValue: '0',
+        codeValue: '',
         notes: '',
         sort: null,
         discription: ''

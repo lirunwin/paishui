@@ -90,6 +90,7 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
         @row-click="openPromptBox"
+        :row-class-name="modality"
       >
         <template slot="empty">
           <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
@@ -141,7 +142,11 @@
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
       <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
-        <div class="detailsCrad" style="top: 10%; left: 20%; right: 62%" v-if="currentInfoCard">
+        <div
+          class="detailsCrad"
+          style="top: 10%; left: 20%; right: 62%; font-size: 14px; color: red"
+          v-if="currentInfoCard"
+        >
           <el-card class="box-card" style="width: 300px">
             <div class="table-content" style="padding: 15px">
               <div
@@ -174,7 +179,7 @@
                 <div class="right">
                   <el-tabs v-model="activeName">
                     <el-tab-pane :label="`照片`" name="picnum">
-                      <div class="container">
+                      <div class="container" v-if="getImgUrl.length">
                         <el-image
                           style="width: 100%; height: 90%; -webkit-user-drag: none"
                           :src="getImgUrl"
@@ -182,6 +187,7 @@
                         >
                         </el-image>
                       </div>
+                      <div v-show="!getImgUrl.length" style="text-align: center; margin-top: 20px">暂无照片</div>
                     </el-tab-pane>
                     <el-tab-pane :label="`视频`" name="viedoNum">
                       <div style="width: 100%; height: 100%" v-if="DetailsForm.videopath">
@@ -204,31 +210,6 @@
     <transition name="el-fade-in-linear">
       <delete-dialog @sendBool="getBool" v-if="dialogFormVisible" :checkParam="id"></delete-dialog>
     </transition>
-    <!-- 导出弹框 -->
-    <el-dialog title="附件列表" :visible.sync="dialogEnclosure">
-      <el-table :data="enclosureGridData">
-        <el-table-column property="address" label="地址"></el-table-column>
-        <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
-          <template slot-scope="scope">
-            <p v-if="false">{{ scope }}</p>
-            <el-button type="text" size="small" @click="$message('该功能暂未开放')">报告</el-button>
-            <el-button type="text" size="small" @click="dialogEnclosure = false">退出</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div>
-        <el-pagination
-          @size-change="handleSizeChangeEnclosure"
-          @current-change="handleCurrentChangeEnclosure"
-          :current-page="paginationEnclosure.current"
-          :page-sizes="[10, 20, 30, 50, 100, 1000]"
-          :page-size="paginationEnclosure.size"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="paginationEnclosureTotal"
-        >
-        </el-pagination>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -355,7 +336,7 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '', sortable: false, label: '管段编号', name: 'expNo' },
         { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
         { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
         { width: '100', sortable: false, label: '材质', name: 'material' },
@@ -691,9 +672,37 @@ export default {
         return center
       }
     },
-
+    // 根据状态设置每列表格样式
+    modality(obj) {
+      // 通过id标识来改变当前行的文字颜色
+      // console.log('obj', obj.row)
+      let idArr
+      if (this.multipleSelection != []) {
+        idArr = this.multipleSelection.map((v) => v.id)
+      }
+      if (idArr.some((v) => v == obj.row.id)) {
+        return 'rowBgBlue'
+      }
+    },
+    // 点击行勾选数据
+    handleRowClick(row, column, event) {
+      let length = this.multipleSelection.length
+      let id = this.multipleSelection.length == 1 ? this.multipleSelection[0].id : null
+      // let
+      this.$refs.multipleTable.clearSelection(row)
+      if (length > 1 || length < 1) {
+        this.$refs.multipleTable.toggleRowSelection(row)
+      } else if (id) {
+        if (row.id == id) {
+          this.$refs.multipleTable.toggleRowSelection(row, false)
+        } else {
+          this.$refs.multipleTable.toggleRowSelection(row)
+        }
+      }
+    },
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
+      this.handleRowClick(row)
       if (!this.hadLoad) return this.$message.warning('地图数据未加载完')
       let position = this.setPositionByPipeId(row.id)
       console.log('打开缩略提示框', row)
@@ -899,6 +908,13 @@ export default {
         color: #e6a23c;
         background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
+       .rowBgBlue {
+        & > td {
+          color: #fff;
+          border-right: 1px solid #EBEEF5;
+          background-color: #69a8ea !important;
+        }
+      }
     }
   }
   .hd-input {
@@ -917,7 +933,7 @@ export default {
       left: 72%;
     }
   }
-  .histroyPipeData {
+  /deep/.histroyPipeData {
     // 详情卡片的样式
     .detailsCrad {
       position: fixed;
@@ -933,7 +949,7 @@ export default {
         clear: both;
       }
 
-      /deep/ .box-card {
+      .box-card {
         width: 500px;
         max-height: 80vh;
         .el-card__header {
@@ -942,7 +958,7 @@ export default {
           background-color: #2d74e7;
         }
         .el-card__body {
-          padding: 0;
+          padding: 0 !important;
           .el-menu-item {
             height: 45px;
             font-size: 16px;

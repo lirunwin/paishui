@@ -580,7 +580,7 @@ export default {
   left: 0;
   right: 0;
   background-color: rgba($color: #333333, $alpha: 0.7);
-  z-index: 9999;
+  z-index: 1001;
   display: flex;
   justify-content: center;
   .clearfix:before,

@@ -9,8 +9,13 @@
       style="width: 100%; margin-top: 20px"
       stripe
     >
+      <!-- pipeType -->
       <el-table-column type="index" label="序号" width="80" align="center" header-align="center"> </el-table-column>
-      <el-table-column prop="material" label="名称" width="400" align="center" header-align="center"> </el-table-column>
+      <el-table-column label="名称" width="400" align="center" header-align="center">
+        <template slot-scope="scope">
+          <div>{{ scope.row.pipeType }}({{ scope.row.material }})</div>
+        </template>
+      </el-table-column>
       <el-table-column prop="diameter" label="管径(mm)" align="center" header-align="center"> </el-table-column>
       <el-table-column prop="totleLength" label="管段长度(m)" align="center" header-align="center"> </el-table-column>
       <el-table-column prop="totleJcLength" label="检测长度(m)" align="center" header-align="center"> </el-table-column>
@@ -33,14 +38,20 @@ export default {
       tableData: []
     }
   },
-  async mounted() {
-    // 主要工程量表
-    let resPrj = await queryProjectDetails(this.paramId)
-    this.tableData = resPrj.result
-    // console.log('工程量表', resPrj)
-    // console.log('上面传来的id', this.paramId)
+  watch: {
+    paramId(newVal) {
+      this.getdata()
+    }
+  },
+  mounted() {
+    this.getdata()
   },
   methods: {
+    async getdata() {
+      let resPrj = await queryProjectDetails(this.paramId)
+      this.tableData = resPrj.result
+      console.log('工程量表', resPrj)
+    },
     getSummaries(param) {
       const { columns, data } = param
       console.log('工程量表', param)
@@ -50,7 +61,7 @@ export default {
           sums[index] = '总计'
           return
         }
-        if (index === columns.length - 1) {
+        if (index === columns.length - 1 && data != null) {
           let arr = data.map((v) => {
             return v.totleNum
           })
@@ -73,7 +84,7 @@ export default {
             } else {
               return prev
             }
-          }, 0)
+          }, 0).toFixed(2)
           sums[index] += ''
         } else {
           sums[index] = '/'

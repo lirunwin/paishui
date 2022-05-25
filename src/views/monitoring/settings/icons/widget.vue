@@ -13,14 +13,12 @@
         </div>
       </el-row>
     </div>
-    <div class="table-container">
-      <BaseTable
-        :columns="settingIconCols"
-        :data="archives"
-        @row-dblclick="onDblClick"
-        @selection-change="onSelectionChange"
-      />
-    </div>
+    <BaseTable
+      :columns="settingIconCols"
+      :data="archives"
+      @row-dblclick="onDblClick"
+      @selection-change="onSelectionChange"
+    />
     <IconForm :visible.sync="visible" :title="`${current.id ? '修改' : '新增'}采集设备`" :data="current" />
   </div>
 </template>

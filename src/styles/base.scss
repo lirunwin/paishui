@@ -308,7 +308,9 @@ div:focus {
   flex-direction: column;
   @include base-scroll-bar();
   > .actions {
-    padding: 22px 15px 0;
+    padding-top: 22px;
+    padding-left: 15px;
+    padding-right: 15px;
     background: #fff;
     flex: 0 0 auto;
     position: relative;
@@ -318,9 +320,15 @@ div:focus {
     margin-bottom: 15px;
   }
   > .el-row {
-    height: 100%;
+    flex: 1 1 100%;
+    display: flex;
+    position: relative;
+    z-index: 99;
     > .el-col {
+      display: flex;
       height: 100%;
+      overflow: auto;
+      @include base-scroll-bar();
     }
   }
 }

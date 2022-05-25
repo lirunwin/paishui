@@ -10,9 +10,7 @@
         @export="onExport"
       />
     </div>
-    <div class="table-container">
-      <BaseTable :columns="cols" :data="archives" @row-dblclick="onDblClick" @selection-change="onSelectionChange" />
-    </div>
+    <BaseTable :columns="cols" :data="archives" @row-dblclick="onDblClick" @selection-change="onSelectionChange" />
   </div>
 </template>
 
