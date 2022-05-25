@@ -9,33 +9,36 @@
     <tf-legend class="legend_dept" label="图层字段" isopen="true" title="选择将要查询的字段。">
       <ul class="sqlQueryUl" style="height: 150px" v-loading="attLoading">
         <li v-for="(item, id) in analysisAtt" :key="id" @click="addText(item.value + ' ', item.value.length + 1, true)" >{{ item.label }}</li>
-        <span style="color: #C0C4CC;letter-spacing: 1px;margin-left: 5px;"
-             v-if="!analysisAtt.length">{{layerId ? '图层无字段' : '请选择图层查询字段'}}</span>
+        <span style="color: #C0C4CC;letter-spacing: 1px;margin-left: 5px;" v-if="!analysisAtt.length">{{layerId ? '图层无字段' : '请选择图层查询字段'}}</span>
       </ul>
     </tf-legend>
     <tf-legend class="legend_dept" label="构造查询语句" isopen="true" title="查询条件的计算逻辑，及图层属性字段对应的唯一值。">
       <div style="width: 100%">
-        <div style="width: 100%; float: left">
+        <div style="width: 130px; float: left"> 
           <div style="margin-bottom: 3px">
             <el-button size="mini" type="primary" plain @click="addText('=', 2)" style="width:56px">＝</el-button>
             <el-button size="mini" type="primary" plain @click="addText('like \'%%\'', 7)" style="width:56px">模糊</el-button>
+          </div>
+          <div style="margin-bottom: 3px">
             <el-button size="mini" type="primary" plain @click="addText('<>', 3)" style="width:56px">≠</el-button>
             <el-button size="mini" type="primary" plain @click="addText('and ', 4)" style="width:56px">与</el-button>
           </div>
           <div style="margin-bottom: 3px">
             <el-button size="mini" type="primary" plain @click="addText('>', 2)" style="width:56px">＞</el-button>
             <el-button size="mini" type="primary" plain @click="addText('<', 2)" style="width:56px">＜</el-button>
+          </div>
+          <div>
             <el-button size="mini" type="primary" plain @click="addText('or ', 3)" style="width:56px">或</el-button>
             <el-button size="mini" type="primary" plain @click="addText('% ', 2)" style="width:56px">占位</el-button>
           </div>
         </div>
-        <!-- <div style="width: calc(100% - 130px); float: right">
+        <div style="width: calc(100% - 130px); float: right">
           <ul class="sqlQueryUl" style="height: 120px" v-loading="fixLoading">
             <li v-for="(item, id) in layerFix" :key="id" @click="addText('\'' + item + '\' ', item.length + 3)">{{ item }}</li>
             <span style="color: #C0C4CC;letter-spacing: 1px;margin-left: 5px;"
                   v-if="!layerFix.length">请选择字段</span>
           </ul>
-        </div> -->
+        </div>
       </div>
     </tf-legend>
     <tf-legend class="legend_dept" label="组合查询条件" isopen="true" style="clear: both" title="选择字段、属性及构造语句组合成查询过滤的语句，通过构建的条件过滤数据。">    
@@ -52,7 +55,7 @@
       <el-button size="mini" type="primary" style="width:100%;display:block;margin-left: 0;margin-top:8px;" @click="clearAll">清空</el-button>
     </tf-legend>
     <tf-legend class="legend_dept" label="查询结果" isopen="true" title="显示查询统计结果。">
-      <el-table :data="finalData" stripe style="width: 100%">
+      <el-table @row-click="rowC" :data="finalData" stripe style="width: 100%">
         <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
         <template slot="empty">
           <img src="@/assets/icon/null.png" alt="">
@@ -62,11 +65,6 @@
         <el-table-column prop="value" label="数量(个)" align="center"/>
         <el-table-column prop="length" label="长度(m)" align="center">
           <template slot-scope="props">{{ props.row.length ? props.row.length.toFixed(2) : '-' }}</template>
-        </el-table-column>
-        <el-table-column label="操作" width="50px" align="center">
-          <template slot-scope="scope">
-            <el-link type="primary" @click="rowC(scope.row)">详情</el-link>
-          </template>
         </el-table-column>
       </el-table>
     </tf-legend>
@@ -88,6 +86,7 @@ import * as turf from '@turf/turf';
 import { fieldDoc } from '@/views/zhpt/common/doc'
 import { getThemLayer, addThemLayer, deleteThemLayer } from '@/api/mainMap/themMap'
 import { SuperMap, FieldService, FeatureService, FieldParameters } from '@supermap/iclient-ol';
+import { mapUtil } from '../../common/mapUtil/common';
 
 export default {
   name: "queryForSQL",
@@ -125,12 +124,11 @@ export default {
   },
   watch: {
     layerId(e) {
-      if(!e) return 
-      let dataService = appconfig.gisResource['iserver_resource'].dataService
-      new iQuery().getServerFields(this.layerId).then(fields => {
-        if (fields) {
-          this.analysisAtt = fields.map(field => {
-            return { label: fieldDoc[field] || field, value: field }
+      if(!e) return
+      mapUtil.getFilds(e).then(res => {
+        if (res) {
+          this.analysisAtt = res.map(field => {
+            return { label: field.name, value: field.field }
           })
         } else this.$message.error("获取字段失败")
       })
@@ -143,12 +141,10 @@ export default {
     }
   },
   mounted: function () {
-      let { dataService } = appconfig.gisResource["iserver_resource"]
-      let netLayers = dataService.dataSetInfo.filter(layer => layer.type === "line")
-
+      let layers = mapUtil.getAllSubLayerNames('排水管线')
       // 设置图层
-      this.layers = netLayers.map(layer => {
-        return { label: layer.label, value: layer.name }
+      this.layers = layers.map(layer => {
+        return { label: layer.title, value: layer.name }
       })
 
       this.mapView = this.data.mapView
@@ -168,6 +164,14 @@ export default {
         myField.selectionStart = myField.selectionEnd = startL + length;
         myField.focus();
       });
+      isField && this.getUniqueValue(text)
+    },
+    getUniqueValue (filed) {
+      mapUtil.getUniqueValue(this.layerId, filed).then(res => {
+        if(res) {
+          this.layerFix = res
+        } else this.$message.error('获取唯一值失败')
+      })
     },
     languageChange(text, length, isField){
       if(isField){

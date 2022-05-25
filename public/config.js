@@ -139,22 +139,27 @@ export const appconfig = {
               {
                 title: "特征点",
                 name: "TF_PSPS_POINT_B",
-                visible: true
+                visible: true,
+                type: 'point'
+                // 字段备注到这儿
               },
               {
                 title: "检查井",
                 name: "TF_PSPS_MANHOLE_B",
-                visible: true
+                visible: true,
+                type: 'point'
               },
               {
                 title: "雨水口",
                 name: "TF_PSPS_COMB_B",
-                visible: true
+                visible: true,
+                type: 'point'
               },
               {
                 title: "排放口",
                 name: "TF_PSPS_OUTFALL_B",
-                visible: true
+                visible: true,
+                type: 'point'
               },
               {
                 title: "溢流堰",
@@ -164,12 +169,14 @@ export const appconfig = {
               {
                 title: "闸门",
                 name: "TF_PSPS_GATE_B",
-                visible: true
+                visible: true,
+                type: 'point'
               },
               {
                 title: "阀门",
                 name: "TF_PSPS_VALVE_B",
-                visible: true
+                visible: true,
+                type: 'point'
               },
               {
                 title: "排水泵站",

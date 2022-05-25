@@ -7,7 +7,7 @@
         </tf-legend>
         <tf-legend class="legend_dept" label="图层选择" isopen="true" title="选择将要进行查询的图层">
           <el-select v-model="layerId" placeholder="请选择图层">
-            <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.name"/>
+            <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.value"/>
           </el-select>
         </tf-legend>        
         <tf-legend class="legend_dept" label="图层字段" isopen="true" title="请选择图层查询字段。">
@@ -19,21 +19,25 @@
         </tf-legend>
         <tf-legend class="legend_dept" label="构造查询语句" isopen="true" title="查询条件的计算逻辑，及图层属性字段对应的唯一值。">
           <div style="width: 100%">
-            <div style="width: 100%; float: left">
+            <div style="width: 130px; float: left">
               <div style="margin-bottom: 3px">
                 <el-button size="mini" type="primary" plain @click="addText('= ', 2)" style="width:56px">＝</el-button>
                 <el-button size="mini" type="primary" plain @click="addText('like \'%%\'', 7)" style="width:56px">模糊</el-button>
+              </div>
+              <div style="margin-bottom: 3px">
                 <el-button size="mini" type="primary" plain @click="addText('> ', 2)" style="width:56px">＞</el-button>
                 <el-button size="mini" type="primary" plain @click="addText('< ', 2)" style="width:56px">＜</el-button>
               </div>
               <div style="margin-bottom: 3px">
-                <el-button size="mini" type="primary" plain @click="addText('<> ', 3)" style="width:56px">≠</el-button>
-                <el-button size="mini" type="primary" plain @click="addText('and ', 4)" style="width:56px">与</el-button>
                 <el-button size="mini" type="primary" plain @click="addText('or ', 3)" style="width:56px">或</el-button>
                 <el-button size="mini" type="primary" plain @click="addText('% ', 2)" style="width:56px">占位</el-button>
               </div>
+              <div>
+                <el-button size="mini" type="primary" plain @click="addText('<> ', 3)" style="width:56px">≠</el-button>
+                <el-button size="mini" type="primary" plain @click="addText('and ', 4)" style="width:56px">与</el-button>
+              </div>
             </div>
-            <div v-if="false" style="width: calc(100% - 130px); float: right">
+            <div style="width: calc(100% - 130px); float: right">
               <ul class="sqlQueryUl" style="height: 120px" v-loading="fixLoading">
                 <li v-for="(item, id) in layerFix" :key="id" @click="addText('\'' + item + '\' ', item.length + 3)">{{ item }}</li>
                 <span style="color: #C0C4CC;letter-spacing: 1px;margin-left: 5px;"
@@ -77,17 +81,16 @@
     <el-tab-pane label="图层列表" name="listShow" style="height:calc(100% - 40px);">
       <div style="width: 100%; height: 100%; padding: 5px">
         <tf-legend class="legend_dept" label="专题地图图层" isopen="true" title="当前为你创建的专题图。">
-          <el-table ref="multipleTable" :data="themLayerData" tooltip-effect="dark" max-height="400px" style="width: 100%" @select="selectChange" @select-all="selectChange">
+          <el-table @row-click='jump' ref="multipleTable" :data="themLayerData" tooltip-effect="dark" max-height="400px" style="width: 100%" @select="selectChange" @select-all="selectChange">
           <template slot="empty">
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>
           </template>
-            <el-table-column type="selection" width="30"> </el-table-column>
+            <!-- <el-table-column type="selection" width="30"> </el-table-column> -->
             <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
-            <el-table-column prop="mapName" label="图层"  align="center"/> 
+            <el-table-column prop="mapName" label="名称" width="200" align="center"/> 
             <el-table-column prop="size" label="操作"  align="center">
               <template slot-scope="scope">
-                <el-link type="primary" @click="jump(scope.row, scope.$index)">跳转</el-link>
                 <el-link type="primary" @click="deleteThemLayer(scope.row)">删除</el-link>
               </template>
             </el-table-column>
@@ -124,6 +127,7 @@ import { Polygon, LineString, Point } from 'ol/geom';
 import * as turf from '@turf/turf';
 import { fieldDoc } from '@/views/zhpt/common/doc'
 import { getThemLayer, addThemLayer, deleteThemLayer } from '@/api/mainMap/themMap'
+import { mapUtil } from '../../common/mapUtil/common'
 
 
 export default {
@@ -177,10 +181,10 @@ export default {
     },
     layerId(e) {
       if(!e) return
-      new iQuery().getServerFields(this.layerId).then(fields => {
-        if (fields) {
-          this.analysisAtt = fields.map(field => {
-            return { label: fieldDoc[field] || field, value: field }
+      mapUtil.getFilds(e).then(res => {
+        if (res) {
+          this.analysisAtt = res.map(field => {
+            return { label: field.name, value: field.field }
           })
         } else this.$message.error("获取字段失败")
       })
@@ -205,15 +209,7 @@ export default {
         this.limitFeature = null
       }
     },
-    queText(newValue, oldValue){
-      if (newValue.length < oldValue.length || newValue=="") {
-        this.queTextName = ''
-      } 
-      // else {
-      //   let etrStr = newValue.replace(oldValue, "")
-      //   this.queTextName = this.queTextName + etrStr
-      // }
-    }
+
   },
   mounted() {
     this.$refs.tabs.$el.children[0].style.background = '#fff'
@@ -222,12 +218,11 @@ export default {
   },
   methods: { 
     init() {
-      let { dataService } = appconfig.gisResource["iserver_resource"]
-      let netLayers = dataService.dataSetInfo.filter(layer => layer.type === "line")
-
+      let layers = mapUtil.getAllSubLayerNames('排水管线')
+ 
       // 设置图层
-      this.layers = netLayers.map(layer => {
-        return { label: layer.label, name: layer.name }
+      this.layers = layers.map(layer => {
+        return { label: layer.title, value: layer.name }
       })
 
       var mapView = this.mapView = this.data.mapView
@@ -289,6 +284,14 @@ export default {
       setTimeout(() => {
         myField.selectionStart = myField.selectionEnd = startL + length
         myField.focus()
+      })
+      isField && this.getUniqueValue(text)
+    },
+    getUniqueValue (filed) {
+      mapUtil.getUniqueValue(this.layerId, filed).then(res => {
+        if(res) {
+          this.layerFix = res
+        } else this.$message.error('获取唯一值失败')
       })
     },
     languageChange(text, length, isField){

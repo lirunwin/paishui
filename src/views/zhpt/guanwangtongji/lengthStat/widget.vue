@@ -5,7 +5,7 @@
         <div style="float: left; width: 50%; height: 100%; overflow: hidden auto; border: 1px solid #ddd; border-radius: 3px;">
           <el-checkbox-group v-model="layerSelectList">
             <div v-for="(item, index) in layerList" :key="index" style="margin: 4px 3px; border-bottom: 1px solid #ddd">
-              <el-checkbox :label="item">{{item.name}}</el-checkbox>
+              <el-checkbox @change='setSubLayer(item.name)' :label="item">{{item.name}}</el-checkbox>
             </div>
           </el-checkbox-group>
         </div>
@@ -22,7 +22,7 @@
       <div style="width: 100%; border: 1px solid #ccc; overflow: hidden auto; padding: 8px;">
         <tf-legend class="legend_dept" label="图层名称" isopen="true" title="选择将要进行查询的图层。">
           <el-select v-model="layerId" placeholder="请选择">
-          <el-option v-for="item in layersAtt" :key="item.value" :label="item.label" :value="item.value"></el-option>
+          <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
           </el-select>
         </tf-legend>
         <tf-legend class="legend_dept" label="图层字段" isopen="true" title="选择将要查询的字段。">
@@ -106,6 +106,7 @@ import * as turf from '@turf/turf';
 import { fieldDoc } from '@/views/zhpt/common/doc'
 import { getThemLayer, addThemLayer, deleteThemLayer } from '@/api/mainMap/themMap'
 import { SuperMap, FieldService, FeatureService, FieldParameters } from '@supermap/iclient-ol';
+import { mapUtil } from '../../common/mapUtil/common'
 
 export default {
   name: 'lengthStat',
@@ -124,7 +125,7 @@ export default {
       queText: '',
       elements: {},
       layerFix: [],
-      layersAtt: [],
+      layers: [],
       titleName: '',
       layerId: '',
       lastRange: [0, 0],
@@ -150,7 +151,7 @@ export default {
         { name: "位置", field: "POINTPOSITION" }
       ],
       limitFeature: null,
-      layerList: [ { name: "管线" }],
+      layerList: [ { name: "排水管线", open: false }],
     }
   },
   computed: { 
@@ -172,10 +173,10 @@ export default {
     },
     layerId(e) {
       if(!e) return
-      new iQuery().getServerFields(this.layerId).then(fields => {
-        if (fields) {
-          this.analysisAtt = fields.map(field => {
-            return { label: fieldDoc[field] || field, value: field }
+      mapUtil.getFilds(e).then(res => {
+        if (res) {
+          this.analysisAtt = res.map(field => {
+            return { label: field.name, value: field.field }
           })
         } else this.$message.error("获取字段失败")
       })
@@ -203,11 +204,24 @@ export default {
     sidePanelOn(newTab, oldTab) {
       if (newTab !== "lengthStat") this.removeAll()
       else this.initLayer()
-    }
+    },
   },
   methods: {
+    setSubLayer (layerName) {
+      let layer = this.layerList.find(layer => layer.name === layerName)
+      layer.open = !layer.open
+      if (!layer.open) {
+        this.layers = []
+      } else {
+        let layers = mapUtil.getAllSubLayerNames('排水管线')
+        // 设置图层
+        this.layers = layers.map(layer => {
+          return { label: layer.title, value: layer.name }
+        })
+      }
+    },
     removeAll () {
-      this.layersAtt = []
+      this.layers = []
       this.drawer && this.drawer.end()
       //销毁所有浮动框
       this.$store.dispatch('map/handelClose', {
@@ -224,23 +238,16 @@ export default {
     },
     // 初始化地图
     initLayer () {
-      let { dataService } = appconfig.gisResource["iserver_resource"]
-      let netLayers = dataService.dataSetInfo.filter(layer => layer.type === "line")
-
-      // 设置图层
-      this.layersAtt = netLayers.map(layer => {
-        return { value: layer.name, label: layer.label }
-      })
-
       var mapView = this.mapView = this.data.mapView
     },
 
     analysis () {
       if (!this.layerId) return this.$message.error('请选择查询图层名称')
       if (this.layerSelectList.length === 0) return this.$message.error('请选择管网统计的类型')
+      if (this.attSelectList.length === 0) return this.$message.error('请选择管网统计的属性')
 
-      let dataService = appconfig.gisResource['iserver_resource'].dataService
-      let dataSetInfo = dataService.dataSetInfo.filter(info => info.name === this.layerId)
+      let layerInfo = this.layers.find(layer => layer.value === this.layerId)
+      let dataSetInfo = [{ label: layerInfo.label, name: layerInfo.value }]
       
       let queryTask = new iQuery({ dataSetInfo })
       queryTask.sqlQuery(this.queText).then(resArr => {
@@ -365,7 +372,14 @@ export default {
         myField.focus()
       })
       // 获取该字段所有 值
-      // if(isField) this.getAtt(text.replace(/(\s*$)/g,""))
+      isField && this.getUniqueValue(text)
+    },
+    getUniqueValue (filed) {
+      mapUtil.getUniqueValue(this.layerId, filed).then(res => {
+        if(res) {
+          this.layerFix = res
+        } else this.$message.error('获取唯一值失败')
+      })
     },
     /**
      * select下拉框出现或者隐藏时触发  

@@ -36,6 +36,14 @@ export class mapUtil {
         }
         return center
     }
+    static getCenter(feature) {
+        let center = []
+        if (feature instanceof Feature) {
+            let [xmin, ymin, xmax, ymax] = feature.getGeometry().getExtent()
+            center = [(xmin + xmax) / 2, (ymin + ymax) / 2]
+        }
+        return center
+    }
 
     // 设置图层在最上层
     setTop(layer) {
@@ -160,5 +168,21 @@ export class mapUtil {
                 } else resolve(null)
             })
         })
+    }
+
+    // 设置子图层显隐
+    setSublayerVisible (subLayerNames, visible) {
+
+    }
+    
+    // 
+    static getAllSubLayerNames (parentLayerName, type) {
+        let layers = appconfig.gisResource['iserver_resource'].layerService.layers
+        let showlayers = layers.filter(layer => layer.type === 'smlayer')
+        let filterLayer = showlayers.find(layer => layer.name = parentLayerName)
+        if (type) {
+            return filterLayer.sublayers.filter(layer => layer.type ===  type)
+        }
+        return filterLayer.sublayers
     }
 }

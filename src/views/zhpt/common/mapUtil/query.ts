@@ -79,6 +79,7 @@ export default class iQuery {
         // console.log("sql过滤条件", sqlStr)
         let queryPromises = this.dataSetInfo.map(info => {
             let layerName = info.label
+            let tableName = info.name
             return new Promise(resolve => {
                 let params = new SuperMap.GetFeaturesBySQLParameters({
                     maxFeatures: this.maxFeatures,
@@ -90,6 +91,7 @@ export default class iQuery {
                     if (result.type == "processFailed") resolve(null);
                     else {
                         result.layerName = layerName
+                        result.tableName = tableName
                         resolve(result)
                     };
                 })

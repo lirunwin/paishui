@@ -19,7 +19,7 @@
         @check="subLayerChange"
         :default-checked-keys="defaultCheckedKeys"
       >
-        <el-row slot-scope="{ node, data }" class="custom-tree-node" style="width: 100%">
+        <!-- <el-row slot-scope="{ node, data }" class="custom-tree-node" style="width: 100%">
           <el-tooltip placement="right" effect="light">
             <div slot="content" style="width: 130px">
               <div>
@@ -35,7 +35,7 @@
             </div>
             <span class="el-tree-node__label">{{ node.label }}</span>
           </el-tooltip>
-        </el-row>
+        </el-row> -->
       </el-tree>
     </tf-legend>
     <tf-legend
@@ -44,67 +44,48 @@
       isopen="true"
       title="控制副视图中的底图图层显示，如需控制主视图请直接使用主视图的图层控制。"
     >
-      <!-- <el-row>
-        <el-col :span="8">
-          <el-switch
-            v-model="showLabel"
-            style="display: block"
-            active-color="#2d74e7"
-            inactive-color="#ecf2ff"
-            active-text
-            inactive-text="标注图"
-            @change="labelChange"
-          />
-        </el-col>
-        <el-col :span="6" style="transform: translateX(-5px);">
-          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[0] }}</span>
-        </el-col>
-        <el-col :span="10">
-          <el-slider v-model="baseMapsNum[0]" @input="inputBaseLayer(0)" :disabled="!showLabel" />
-        </el-col>
-      </el-row> -->
       <el-row style="margin-top: 5px">
-        <el-col :span="8" style="padding-top:9px;">
+        <el-col :span="10" style="padding-top:9px;">
           <el-switch
             v-model="showVectorBase"
             style="display: block"
             active-color="#2d74e7"
             inactive-color="#ecf2ff"
             active-text
-            inactive-text="矢量图"
+            inactive-text="矢量底图"
             @change="baseMapChange(true)"
           />
         </el-col>
         <el-col :span="6" style="transform: translateX(-5px);padding-top:9px;">
           <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[1] }}</span>
         </el-col>
-        <el-col :span="10">
+        <el-col :span="8">
           <el-slider
-            v-model="baseMapsNum[1]"
-            @input="inputBaseLayer(1)"
+            v-model="baseMapsNum[0]"
+            @input="inputBaseLayer(0)"
             :disabled="!showVectorBase"
           />
         </el-col>
       </el-row>
       <el-row style="margin-top: 5px">
-        <el-col :span="8" style="padding-top:9px;">
+        <el-col :span="10" style="padding-top:9px;">
           <el-switch
             v-model="showImageBase"
             style="display: block"
             active-color="#2d74e7"
             inactive-color="#ecf2ff"
             active-text
-            inactive-text="影像图"
+            inactive-text="影像底图"
             @change="baseMapChange(false)"
           />
         </el-col>
         <el-col :span="6" style="transform: translateX(-5px);padding-top:9px;">
           <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[2] }}</span>
         </el-col>
-        <el-col :span="10">
+        <el-col :span="8">
           <el-slider
-            v-model="baseMapsNum[2]"
-            @input="inputBaseLayer(2)"
+            v-model="baseMapsNum[1]"
+            @input="inputBaseLayer(1)"
             :disabled="!showImageBase"
           />
         </el-col>
@@ -139,7 +120,7 @@ export default {
       showVectorBase: true,
       showLabel: true,
       baseMaps: undefined,
-      baseMapsNum: [0, 0, 0],
+      baseMapsNum: [0, 0],
       followExtentC: true,
       followExtentZ: true,
       layerTable: [],
@@ -190,7 +171,7 @@ export default {
       this.currMap = map
       this.addLayers(layerResource)
 
-      this.setTreeData()
+      this.setTreeData(layerResource)
 
       this.mapView.getView().on('change', (evt) => {
         let currView = map.getView()
@@ -210,60 +191,71 @@ export default {
       // }
     },
 
-  addLayers(layers) {
-    layers.forEach(layerConfig => {
-      let { name, type, url, parentname, id, visible = true } = layerConfig
-      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-      this.currMap.addLayer(layer)
-    })
-  },
-
-    setTreeData() {
-      let layers = this.currMap.getLayers().array_
-      let [a, b, ...last] = layers
-      let layerGroup = new Map()
-      last.forEach(layer => {
-        let { name, parentname, id, visible } = layer.values_
-        if (layerGroup.get(parentname)) {
-          if (!layerGroup.get(parentname).includes(name)) {
-            layerGroup.get(parentname).push({ name, id, visible, layer })
-          }
-        } else {
-          layerGroup.set(parentname, [{ name, id, visible, layer }])
-        }
-      })
-
-      let parentid = 0, layersData = [], defaultCheckedKeys = []
-      layerGroup.forEach((sublayers, parentname) => {
-        layersData.push({
-          id: parentid++,
-          label: parentname,
-          children: sublayers.map(sublayer => {
-            let { id, name, layer } = sublayer
-            let opacity, visibleNum;
-            if (sublayer.visible) {
-              defaultCheckedKeys.push(id)
-              visibleNum = 0
-            } else {
-              visibleNum = 0
-            }
-            return { label: name, id, layer, opacity, visibleNum }
-          })
+    addLayers(layersSource) {
+      new TF_Layer().createLayers(layersSource).then(layers => {
+        layers.forEach(layer => {
+          layer && this.currMap.addLayer(layer)
         })
       })
-      this.layerTable = layersData
-      this.defaultCheckedKeys = defaultCheckedKeys
     },
 
-    subLayerChange (node) {
-      if (node.children) {
-        node.children.forEach(child => {
-          child.layer.values_.visible = !child.layer.values_.visible;
+    setTreeData(layers) {
+      let showlayers = layers.filter(layer => layer.type === 'smlayer')
+      let id = 0, ids = []
+      let layersData = showlayers.map(parentlayer => {
+        let parentId = id++
+        let parentName = parentlayer.name
+        ids.push({ id: parentId, name: parentName, isParent: true })
+        let sublayers = parentlayer.sublayers.map(sublayer => {
+          let layerId = id++
+          ids.push({ id: layerId, name: sublayer.title, isParent: false })
+          return { id: layerId, label: sublayer.title, parentName }
         })
+        return { id: parentId, label: parentlayer.name, children: sublayers }
+      })
+      this.layerTable = layersData
+      this.defaultCheckedKeys = ids.map(obj => obj.id)
+    },
+
+    subLayerChange (row, check) {
+      let visible = check.checkedKeys.includes(row.id)
+      let isParent, parentLayerName = ''
+
+      if ('children' in row) {
+        isParent = true
+        parentLayerName = row.label
       } else {
-        node.layer.values_.visible = !node.layer.values_.visible;
+        isParent = false
+        parentLayerName = row.parentName
       }
-      this.currMap.render()
+      // 筛选选择的图层
+      let layers = appconfig.gisResource['iserver_resource'].layerService.layers
+      let showlayers = layers.filter(layer => layer.type === 'smlayer')
+      let filterLayer = showlayers.find(layer => layer.name = parentLayerName)
+      // 设置子图层显隐
+      let findLayer = null
+      if (filterLayer) {
+        let tempSublayers = filterLayer.sublayers.map(layer => {
+          return { ...layer }
+        })
+        findLayer = { ...filterLayer, sublayers: [ ...tempSublayers ] }
+        findLayer.sublayers.forEach(l => {
+          if (isParent) {
+            l.visible = visible
+          } else {
+            let visible = check.checkedNodes.find(obj => obj.label === l.title)
+            l.visible = !!visible
+          }
+        })
+      }
+      // 删掉原有图层，添加新图层
+      new TF_Layer().createLayers([findLayer]).then(layers => {
+        let layerInMap = this.currMap.getLayers().getArray().find(layer => layer.get('name') === findLayer.name)
+        this.currMap.addLayer(layers[0])
+        setTimeout(() => {
+          this.currMap.removeLayer(layerInMap)
+        }, 1000)
+      })
     },
     opacityChange (data) {
       data.layer.values_.opacity = 1 - data.visibleNum / 100
@@ -281,8 +273,8 @@ export default {
       layers.forEach(layer => {
         let { parentname, name, } = layer.values_
         if (parentname === "底图") {
-          if (name === "矢量底图") layer.setVisible(this.showVectorBase)
-          else if (name === "影像底图") layer.setVisible(!this.showVectorBase)
+          if (name.includes("矢量")) layer.setVisible(this.showVectorBase)
+          else if (name.includes("影像")) layer.setVisible(!this.showVectorBase)
         }
       })
     },
@@ -290,11 +282,12 @@ export default {
       this.anthorBaseMaps[this.showImageBase ? 3 : 1].visible = e
     },
     inputBaseLayer: function(w) {
-      const layerBox = ["标注底图", "矢量底图", "影像底图"]
+      let layerBox = ['矢量', '影像']
       let opacity = this.baseMapsNum[w];
-      let layers = this.currMap.getLayers().array_
-      let thisLayer = layers.find(layer => layer.values_.name === layerBox[w])
-      thisLayer.setOpacity(1 - opacity / 100)
+      let layers = this.currMap.getLayers().getArray()
+      layers.filter(layer => layer.get('name').includes(layerBox[w])).forEach(layer => {
+        layer.setOpacity(1 - opacity / 100)
+      })
     }
   },
   watch: {

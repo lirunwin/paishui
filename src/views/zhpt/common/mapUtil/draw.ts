@@ -58,7 +58,7 @@ export default class iDraw {
         this.vectorLayer = new VectorLayer({
             source: this.vectorSource,
             style:  ! this.drawStyle 
-                    ? comSymbol.getAllStyle(7, "#f40", 5, "#C0DB8D")
+                    ? comSymbol.getAllStyle(7, "#f40", 5, "#409EFF")
                     : comSymbol.getAllStyle(this.drawStyle.pointSize, this.drawStyle.pointColor, this.drawStyle.lineWidth, this.drawStyle.lineColor)
         })
         this.map.addLayer(this.vectorLayer);
