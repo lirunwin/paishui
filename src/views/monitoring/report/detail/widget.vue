@@ -55,6 +55,182 @@
               style="width:100%"
             />
           </div>
+          <div style="padding: 10px 0">
+            <!-- <el-row type="flex" justify="space-between">
+              <span>某楼盘销售情况</span>
+              <span>
+                <el-button type="text" icon="el-icon-s-grid" />
+                <el-button type="text" icon="el-icon-pie-chart" />
+                <el-button type="text" icon="el-icon-data-analysis" />
+                <el-button type="text" icon="el-icon-download" />
+              </span>
+            </el-row> -->
+            <v-chart
+              :options="lines"
+              autoresize
+              theme="ovilia-green"
+              :loading-options="{
+                text: 'Loading…',
+                color: '#4ea397',
+                maskColor: 'rgba(255, 255, 255, 0.4)'
+              }"
+              style="width:100%"
+            />
+          </div>
+          <div style="padding: 10px 0">
+            <!-- <el-row type="flex" justify="space-between">
+              <span>某楼盘销售情况</span>
+              <span>
+                <el-button type="text" icon="el-icon-s-grid" />
+                <el-button type="text" icon="el-icon-pie-chart" />
+                <el-button type="text" icon="el-icon-data-analysis" />
+                <el-button type="text" icon="el-icon-download" />
+              </span>
+            </el-row> -->
+            <v-chart
+              :options="lines"
+              autoresize
+              theme="ovilia-green"
+              :loading-options="{
+                text: 'Loading…',
+                color: '#4ea397',
+                maskColor: 'rgba(255, 255, 255, 0.4)'
+              }"
+              style="width:100%"
+            />
+          </div>
+          <div style="padding: 10px 0">
+            <!-- <el-row type="flex" justify="space-between">
+              <span>某楼盘销售情况</span>
+              <span>
+                <el-button type="text" icon="el-icon-s-grid" />
+                <el-button type="text" icon="el-icon-pie-chart" />
+                <el-button type="text" icon="el-icon-data-analysis" />
+                <el-button type="text" icon="el-icon-download" />
+              </span>
+            </el-row> -->
+            <v-chart
+              :options="lines"
+              autoresize
+              theme="ovilia-green"
+              :loading-options="{
+                text: 'Loading…',
+                color: '#4ea397',
+                maskColor: 'rgba(255, 255, 255, 0.4)'
+              }"
+              style="width:100%"
+            />
+          </div>
+          <div style="padding: 10px 0">
+            <!-- <el-row type="flex" justify="space-between">
+              <span>某楼盘销售情况</span>
+              <span>
+                <el-button type="text" icon="el-icon-s-grid" />
+                <el-button type="text" icon="el-icon-pie-chart" />
+                <el-button type="text" icon="el-icon-data-analysis" />
+                <el-button type="text" icon="el-icon-download" />
+              </span>
+            </el-row> -->
+            <v-chart
+              :options="lines"
+              autoresize
+              theme="ovilia-green"
+              :loading-options="{
+                text: 'Loading…',
+                color: '#4ea397',
+                maskColor: 'rgba(255, 255, 255, 0.4)'
+              }"
+              style="width:100%"
+            />
+          </div>
+          <div style="padding: 10px 0">
+            <!-- <el-row type="flex" justify="space-between">
+              <span>某楼盘销售情况</span>
+              <span>
+                <el-button type="text" icon="el-icon-s-grid" />
+                <el-button type="text" icon="el-icon-pie-chart" />
+                <el-button type="text" icon="el-icon-data-analysis" />
+                <el-button type="text" icon="el-icon-download" />
+              </span>
+            </el-row> -->
+            <v-chart
+              :options="lines"
+              autoresize
+              theme="ovilia-green"
+              :loading-options="{
+                text: 'Loading…',
+                color: '#4ea397',
+                maskColor: 'rgba(255, 255, 255, 0.4)'
+              }"
+              style="width:100%"
+            />
+          </div>
+          <div style="padding: 10px 0">
+            <!-- <el-row type="flex" justify="space-between">
+              <span>某楼盘销售情况</span>
+              <span>
+                <el-button type="text" icon="el-icon-s-grid" />
+                <el-button type="text" icon="el-icon-pie-chart" />
+                <el-button type="text" icon="el-icon-data-analysis" />
+                <el-button type="text" icon="el-icon-download" />
+              </span>
+            </el-row> -->
+            <v-chart
+              :options="lines"
+              autoresize
+              theme="ovilia-green"
+              :loading-options="{
+                text: 'Loading…',
+                color: '#4ea397',
+                maskColor: 'rgba(255, 255, 255, 0.4)'
+              }"
+              style="width:100%"
+            />
+          </div>
+          <div style="padding: 10px 0">
+            <!-- <el-row type="flex" justify="space-between">
+              <span>某楼盘销售情况</span>
+              <span>
+                <el-button type="text" icon="el-icon-s-grid" />
+                <el-button type="text" icon="el-icon-pie-chart" />
+                <el-button type="text" icon="el-icon-data-analysis" />
+                <el-button type="text" icon="el-icon-download" />
+              </span>
+            </el-row> -->
+            <v-chart
+              :options="lines"
+              autoresize
+              theme="ovilia-green"
+              :loading-options="{
+                text: 'Loading…',
+                color: '#4ea397',
+                maskColor: 'rgba(255, 255, 255, 0.4)'
+              }"
+              style="width:100%"
+            />
+          </div>
+          <div style="padding: 10px 0">
+            <!-- <el-row type="flex" justify="space-between">
+              <span>某楼盘销售情况</span>
+              <span>
+                <el-button type="text" icon="el-icon-s-grid" />
+                <el-button type="text" icon="el-icon-pie-chart" />
+                <el-button type="text" icon="el-icon-data-analysis" />
+                <el-button type="text" icon="el-icon-download" />
+              </span>
+            </el-row> -->
+            <v-chart
+              :options="lines"
+              autoresize
+              theme="ovilia-green"
+              :loading-options="{
+                text: 'Loading…',
+                color: '#4ea397',
+                maskColor: 'rgba(255, 255, 255, 0.4)'
+              }"
+              style="width:100%"
+            />
+          </div>
         </div>
       </el-col>
     </el-row>
@@ -210,6 +386,7 @@ export default class ReportDetail extends Vue {
   .query,
   .chart {
     background-color: #fff;
+    width: 100%;
     height: 100%;
     padding: 20px;
     overflow: hidden auto;
@@ -224,7 +401,7 @@ export default class ReportDetail extends Vue {
   .chart {
     padding-top: 0;
     .title {
-      padding: 20px 0;
+      padding: 20px 0 1px;
       position: sticky;
       top: 0;
       background-color: #fff;

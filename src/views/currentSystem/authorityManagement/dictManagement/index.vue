@@ -68,6 +68,10 @@
               "
               @row-click="rowClick"
             >
+              <template slot="empty">
+                <img src="@/assets/icon/null.png" alt="" />
+                <p class="empty-p">暂无数据</p>
+              </template>
               <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->
               <el-table-column label="序号" width="80" align="center">
                 <template slot-scope="scope">
@@ -321,7 +325,7 @@ export default {
      * 编辑字典类型
      */
     editDicType(scope) {
-      this.formData = scope.row
+      this.formData = { ...scope.row }
       this.formData.creater = this.user.hasOwnProperty('username') ? this.user.username : ''
       this.dialogTitle = '编辑字典'
       this.dialogVisible = true
