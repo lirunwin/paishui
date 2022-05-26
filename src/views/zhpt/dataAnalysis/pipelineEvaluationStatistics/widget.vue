@@ -311,6 +311,7 @@ export default {
         jcStartDate: '',
         jcEndDate: '',
         checkSuggest: '',
+        wordInfoState: 1,
         ...this.filter
       }
       return getDefectDataBySE(params)

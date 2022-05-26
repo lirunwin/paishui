@@ -148,6 +148,7 @@ export default {
         structClass: '',
         jcStartDate: '',
         jcEndDate: '',
+        wordInfoState: "1",
         checkSuggest: '修复计划',
         ...filter
       }
