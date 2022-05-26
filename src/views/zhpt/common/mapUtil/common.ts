@@ -152,9 +152,9 @@ export class mapUtil {
             })
         })
         function format (data) {
-            return data.filter(item => (item.columnComment && item.columnComment !== item.columnName)).map(item => {
-                let name = item.columnComment.trim()
-                return { field: item.columnName, name}
+            return data.filter(item => (item.smfieldcaption && item.smfieldcaption !== item.smfieldname)).map(item => {
+                let name = item.smfieldcaption.trim()
+                return { field: item.smfieldname, name}
             })
         }
     }

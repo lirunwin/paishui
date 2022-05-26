@@ -29,7 +29,7 @@
         </li>
         <li>
           <span style="width:50%">权属单位：<i v-text="infoObject.properties.BELONG"></i></span>
-          <span v-show="hasDetail"><el-link @click="showDetail">详细信息...</el-link></span>
+          <span v-show="hasDetail"><el-link style="color: #80C3FF" @click="showDetail">详细信息...</el-link></span>
         </li>
       </ul>
     </div>
@@ -59,6 +59,15 @@
         </li>
       </ul>
     </div>
+    <el-dialog width='80%' title="详细信息" :visible.sync="showDialog" append-to-body='true'>
+        <div class="container i-scrollbar">
+          <el-form v-if="formData.length !== 0" :inline="true" class="">
+              <el-form-item style="width:23%" label-width='120px' v-for="(item, index) in formData" :key="index" :label="item.label">
+                  <el-input v-model="item.value" disabled></el-input>
+              </el-form-item>
+          </el-form>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -71,6 +80,8 @@ import Stroke from "ol/style/Stroke";
 import Fill from "ol/style/Fill";
 import Circle from "ol/style/Circle";
 import GeoJSON from 'ol/format/GeoJSON';
+import { fieldDoc, pointFieldDoc } from '@/views/zhpt/common/doc'
+
 export default {
   props: ['map'],
   data() {
@@ -79,7 +90,9 @@ export default {
       infoObject: {},
       afterClosePopup: null,
       popup: null,
-      hasDetail: false
+      hasDetail: false,
+      showDialog: false,
+      formData: []
     }
   },
   mounted() {
@@ -99,13 +112,28 @@ export default {
      * 打开详情
      * */
     showDetail () {
-      let info = {
-        label: '详细信息',
-        widgetid: 'FullPanel',
-        pathId: 'detailInfo',
-        param: { info: this.infoObject }
-      }
-      this.$store.dispatch('map/changeMethod', info)
+
+      // let info = {
+      //   label: '详细信息',
+      //   widgetid: 'FullPanel',
+      //   pathId: 'detailInfo',
+      //   param: { info: this.infoObject }
+      // }
+      // this.$store.dispatch('map/changeMethod', info)
+        let { geometry, properties } = this.infoObject
+        if (geometry.type === 'LineString') {
+            this.doc = fieldDoc
+        } else {
+            this.doc = pointFieldDoc
+        }
+        let data = []
+        for (let key in properties) {
+            if (this.doc[key]) {
+                data.push({ label: this.doc[key], value: properties[key] })
+            }
+        }
+        this.formData = data
+        this.showDialog = true
     },
     /**
      * 打开弹窗 
@@ -209,5 +237,14 @@ export default {
       }
     }
   }
+}
+.container {
+  height: 600px;
+  width: 100%;
+}
+.i-scrollbar {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  @include scrollBar;
 }
 </style>

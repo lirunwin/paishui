@@ -200,7 +200,7 @@ import { Vue, Component, Watch } from 'vue-property-decorator'
 import TableItem from '@/components/Table/index.vue'
 import SelectItem from '@/components/FormItem/Select/index.vue'
 import { recordList, upLoadFiles, deleteRecord, publishRecord } from '@/api/base'
-@Component({
+@Component<APPV>({
   name: 'APPV',
   components: { TableItem, SelectItem },
   filters: {
@@ -214,6 +214,7 @@ import { recordList, upLoadFiles, deleteRecord, publishRecord } from '@/api/base
   }
 })
 export default class APPV extends Vue {
+  formatBytes?: any
   pagination = { current: 1, size: 30 } // 分页参数信息
   total = 1
   appClassfication = '2'
@@ -328,7 +329,7 @@ export default class APPV extends Vue {
   multipleSelection = []
   detailDialog = false
   uploadDialog = false
-  detailInfo = {}
+  detailInfo: { [x: string]: any } = {}
   fileList = []
   uploadWaiting = false
   appFormRules = {
@@ -396,9 +397,12 @@ export default class APPV extends Vue {
     // debugger
     // this.fileList.push(data.raw);
     if (
-      data.raw.type === 'text/plain' ||
-      data.raw.type === 'application/vnd.android.package-archive' ||
-      data.raw.type === 'application/x-zip-compressed'
+      [
+        'text/plain', // .txt
+        'application/vnd.android.package-archive', // .apk
+        'application/x-zip-compressed', // .zip
+        'application/zip' // .zip
+      ].includes(data.raw.type)
     ) {
       this.fileList = [...this.fileList, data.raw]
     } else {

@@ -437,7 +437,7 @@ export default {
         pllength: [
           {
             pattern: /^[0-9]+([.]{1}[0-9]{1,2})?$/,
-            message: '只能输入正数(小数点不能超过两位)',
+            message: '只能输入正数(小数不能超过两位)',
             trigger: 'change'
           }
         ]
