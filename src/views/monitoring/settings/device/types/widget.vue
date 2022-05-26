@@ -119,9 +119,4 @@ export default class DeviceTypes extends Vue {
   padding-bottom: 22px;
   margin-bottom: 15px;
 }
-
-.table-container {
-  padding: 15px;
-  background-color: #fff;
-}
 </style>

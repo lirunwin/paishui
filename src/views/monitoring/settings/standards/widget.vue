@@ -118,13 +118,7 @@ export default class MonitoringStandards extends Vue {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px;
+  padding-bottom: 22px;
   margin-bottom: 15px;
-  background: #fff;
-}
-
-.table-container {
-  padding: 15px;
-  background-color: #fff;
 }
 </style>
