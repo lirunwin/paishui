@@ -188,8 +188,8 @@
     </div>
     <!-- 报告上传 -->
     <div class="public-box">
-      <el-dialog title="检测报告上传" @close="closeDialog" :visible.sync="dialogFormVisible">
-        <el-form ref="form" :model="form" :rules="rules">
+      <el-dialog title="检测报告上传" @close="closeDialogDocx" :visible.sync="dialogFormVisible">
+        <el-form ref="formDocx" :model="form" :rules="rules">
           <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
             <el-select
               clearable
@@ -285,7 +285,7 @@
     </div>
     <!-- 视频上传 -->
     <div class="public-box">
-      <el-dialog title="附件视频上传" @close="closeDialog" :visible.sync="dialogFormVisible2">
+      <el-dialog title="附件视频上传" @close="closeDialogVideo" :visible.sync="dialogFormVisible2">
         <el-form ref="formVideo" :model="form" :rules="rules">
           <!-- <el-input size="small" v-model="selectWord.name" disabled show-word-limit></el-input> -->
           <el-form-item label="报告名称" :label-width="formLabelWidth" prop="name">
@@ -1232,7 +1232,7 @@ export default {
     getFeatures(featureArr, hasStyle) {
       let style = null,
         features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
-      if (featureArr.length === 0) {
+      if (featureArr.length === 0 || !featureArr[0]) {
         return features
       }
       featureArr.forEach((feaObj) => {
@@ -1339,17 +1339,32 @@ export default {
     },
 
     // 关闭上传弹框时
-    closeDialog() {
+    closeDialogDocx() {
       this.loadingBool = false
-      this.$refs['formVideo'] && this.$refs['formVideo'].resetFields()
-      this.$refs['form'] && this.$refs['form'].resetFields()
+      this.$refs['formDocx'] && this.$refs['formDocx'].resetFields()
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
-      this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
-      this.upDataTable = []
+      console.log("this.$refs['updataDocx']", this.$refs['updataDocx'])
       this.selectParm = { current: 1, size: 30 }
       this.selectLoadTotal = 0 // 选择框总页数
+      this.upDataTable = []
+      this.fileList= []
       this.getPipeDefectData() // 刷新地图
       this.getDate()
+
+      console.log('关闭了弹框')
+      return false
+    },
+    closeDialogVideo() {
+      this.loadingBool = false
+      this.$refs['formVideo'] && this.$refs['formVideo'].resetFields()
+      this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
+      console.log("this.$refs['updataVideo']", this.$refs['updataVideo'])
+      this.selectParm = { current: 1, size: 30 }
+      this.selectLoadTotal = 0 // 选择框总页数
+      this.upDataTable = []
+      this.getPipeDefectData() // 刷新地图
+      this.getDate()
+
       console.log('关闭了弹框')
       return false
     },
@@ -1554,10 +1569,10 @@ export default {
     getFile(file, fileList) {
       this.fileList = fileList
       let num = 1024.0 //byte
-      // console.log('file', file)
+      // console.log('视频file', file)
       // console.log('上传file的状态', file.status)
-      // console.log('fileList', fileList)
-      this.upDataTable = fileList.map((v) => {
+      // console.log('视频fileList', fileList)
+      this.upDataTable = this.fileList.map((v) => {
         return {
           name: v.name,
           size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
@@ -1658,7 +1673,7 @@ export default {
     },
     // 上传按钮
     async uploadWord() {
-      this.$refs['form'].validate(async (valid) => {
+      this.$refs['formDocx'].validate(async (valid) => {
         if (valid) {
           this.loadingBool = true
           // 获取字典id
