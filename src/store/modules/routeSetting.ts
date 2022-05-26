@@ -78,8 +78,8 @@ const mutations = {
     state.addRoutes = []
   },
   CHANGESYS: (state, data) => {
+    console.log('state.dynamicRoutes: ', state.dynamicRoutes, data)
     state.routes = state.dynamicRoutes[data] && state.dynamicRoutes[data]
-
     sessionStorage.setItem('last-route', JSON.stringify(state.routes))
   },
   SET_NAVMENUS: (state, menus) => {
@@ -161,9 +161,9 @@ const actions = {
     commit('LOGIN_OUT_DEL')
   },
 
-  changeSys({ commit, dispatch, state, rootState }, data) {
+  changeSys({ commit, dispatch, state }, data) {
     commit('CHANGESYS', data)
-    console.log(JSON.stringify(data, null, 2))
+
     if (data === 'map') return
     setTimeout(() => {
       const getPath = () => {
@@ -176,9 +176,9 @@ const actions = {
       }
 
       const path = getPath()
+      console.log(path)
       if (path) {
         dispatch('map/changeMethod', path, { root: true })
-        rootState.gis.activeSideItem = path.label
       }
     }, 100)
 

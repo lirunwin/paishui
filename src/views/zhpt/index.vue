@@ -84,35 +84,33 @@
             <!-- <OverviewMap :map-view="view" /> -->
             <!-- 弹出框 -->
             <popupWindow v-if="view" ref="popupWindow" :map="view"></popupWindow>
-
-
           </div>
-            <!-- 左下角工具栏 -->
-            <leftBottomTool
-              :toolList="leftBottomTool.children"
-              :map="view"
-              v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
-            ></leftBottomTool>
-          
-            <!-- 右下角工具栏 -->
-            <rightBottomTool
-              :toolList="rightBottomTool.children"
-              :map="view"
-              v-if="rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
-            ></rightBottomTool>
+          <!-- 左下角工具栏 -->
+          <leftBottomTool
+            :toolList="leftBottomTool.children"
+            :map="view"
+            v-if="leftBottomTool && leftBottomTool.children && leftBottomTool.children.length > 0"
+          ></leftBottomTool>
+
+          <!-- 右下角工具栏 -->
+          <rightBottomTool
+            :toolList="rightBottomTool.children"
+            :map="view"
+            v-if="rightBottomTool && rightBottomTool.children && rightBottomTool.children.length > 0"
+          ></rightBottomTool>
           <!-- 右上角工具栏 -->
-            <rightTopTool
-              :toolList="rightTopTool.children"
-              :map="view"
-              :rootPage="this"
-              v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
-            ></rightTopTool>
-            <!-- 左上角工具栏 -->
-            <leftTopTool
-              :toolList="leftTopTool.children"
-              :map="view"
-              v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
-            ></leftTopTool>
+          <rightTopTool
+            :toolList="rightTopTool.children"
+            :map="view"
+            :rootPage="this"
+            v-if="rightTopTool && rightTopTool.children && rightTopTool.children.length > 0"
+          ></rightTopTool>
+          <!-- 左上角工具栏 -->
+          <leftTopTool
+            :toolList="leftTopTool.children"
+            :map="view"
+            v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
+          ></leftTopTool>
           <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
             <span id="mapView_close" ref="legend_close" title="收缩" @click="legendClick">▼</span>
@@ -120,20 +118,20 @@
           </div>
           <!-- 公共图例 -->
           <transition name="el-zoom-in-top">
-          <div v-show="showMapLengend" class="map-legend">
-            <div class="map-legend-title">
-              <span>图例</span>
-              <!-- <span ref="legendCloser" style="float: right; cursor: pointer" title="收缩" @click="legendChange">▼</span> -->
-            </div>
-            <div v-show="showLegendBox" class="map-legend-item" v-for="(item, index) in legendData" :key="index">
-              <div style="flex: 0.3; text-align: center">
-                <div :class="'map-legend-' + item.type" :style="'background-color:' + item.color"></div>
+            <div v-show="showMapLengend" class="map-legend">
+              <div class="map-legend-title">
+                <span>图例</span>
+                <!-- <span ref="legendCloser" style="float: right; cursor: pointer" title="收缩" @click="legendChange">▼</span> -->
               </div>
-              <div style="flex: 0.7; text-align: center">
-                <div class="map-legend-label">{{ item.label }}</div>
+              <div v-show="showLegendBox" class="map-legend-item" v-for="(item, index) in legendData" :key="index">
+                <div style="flex: 0.3; text-align: center">
+                  <div :class="'map-legend-' + item.type" :style="'background-color:' + item.color"></div>
+                </div>
+                <div style="flex: 0.7; text-align: center">
+                  <div class="map-legend-label">{{ item.label }}</div>
+                </div>
               </div>
             </div>
-          </div>
           </transition>
           <div></div>
 
@@ -166,16 +164,15 @@
               @handelClose="handelClose"
             />
           </el-aside> -->
-          
         </el-main>
         <el-aside :style="{ width: side_width, height: '100%' }">
-            <side-panels
-              :panels="Panels"
-              :data="panels"
-              :side-width.sync="side_width"
-              :panel-visible.sync="sidepanel_visible"
-              @handelClose="handelClose"
-            />
+          <side-panels
+            :panels="Panels"
+            :data="panels"
+            :side-width.sync="side_width"
+            :panel-visible.sync="sidepanel_visible"
+            @handelClose="handelClose"
+          />
         </el-aside>
       </el-container>
       <el-footer :style="{ height: footer_height, width: '100%', padding: '0px' }">
@@ -202,7 +199,7 @@
     </el-container>
   </div>
 </template>
-<script lang='ts'>
+<script lang="ts">
 import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
 import 'ol/ol.css'
 import Map from 'ol/Map'
@@ -248,7 +245,7 @@ import { defaults as controls } from 'ol/control'
 import * as turf from '@turf/turf'
 import iQuery from './common/mapUtil/query'
 import { unByKey } from 'ol/Observable'
-import GeoJSON from 'ol/format/GeoJSON';
+import GeoJSON from 'ol/format/GeoJSON'
 
 @Component({
   components: {
@@ -269,6 +266,7 @@ import GeoJSON from 'ol/format/GeoJSON';
   }
 })
 export default class BaseMap extends Vue {
+  LOADING!: (payload: boolean) => void
   currTitle = ''
   showTool = true
   showMapLengend = false
@@ -334,7 +332,7 @@ export default class BaseMap extends Vue {
   get jumpText() {
     return this.$store.state.jumpText
   }
-  get activeHeaderItem () {
+  get activeHeaderItem() {
     return this.$store.state.gis.activeHeaderItem
   }
   @Watch('Panels')
@@ -441,6 +439,7 @@ export default class BaseMap extends Vue {
     this.$store.state.gis.hasLoadIds = false
 
     this.loading = false
+    this.$store.commit('map/LOADING', false)
     this.$nextTick(this.controlToolDisplay)
     // 触发地图视野变化
     let timer = null,
@@ -454,7 +453,7 @@ export default class BaseMap extends Vue {
       }, time)
     })
     // 点击查询管段详情
-    this.view.on('click', evt => {
+    this.view.on('click', (evt) => {
       if (this.activeHeaderItem !== 'map') return
       this.spaceQuery(evt.coordinate)
     })
@@ -465,7 +464,7 @@ export default class BaseMap extends Vue {
     this.view.addLayer(this.vectorLayer)
   }
 
-  async spaceQuery (position) {
+  async spaceQuery(position) {
     const bufferDis = 3e-3
     let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
     let dataServerConfig = appconfig.gisResource.iserver_resource.dataService
@@ -477,17 +476,17 @@ export default class BaseMap extends Vue {
         showData.push(features)
       }
     }
-    if(showData.length !== 0) {
+    if (showData.length !== 0) {
       let feature = showData[0][0]
       this.openPopup(position, feature)
     }
   }
-  openPopup (position, feature) {
+  openPopup(position, feature) {
     let com = this.$refs.popupWindow as any
     com.showPopup(position, feature, afterClosePopup, true)
     let vectorLayer = new VectorLayer({
       source: new VectorSource(),
-      style: comSymbol.getAllStyle(3, "#f00", 5, "#0ff", "rgba(255, 255, 255, 0.6)")
+      style: comSymbol.getAllStyle(3, '#f00', 5, '#0ff', 'rgba(255, 255, 255, 0.6)')
     })
     let ifeature = new GeoJSON().readFeature(feature)
     if (ifeature) {
@@ -495,14 +494,14 @@ export default class BaseMap extends Vue {
       this.view.addLayer(vectorLayer)
     }
     // 重置事件
-    function afterClosePopup () {
+    function afterClosePopup() {
       vectorLayer.getSource().removeFeature(ifeature)
     }
   }
   // 加载图层
   addLayers(layersSource) {
-    new TF_Layer().createLayers(layersSource).then(layers => {
-      layers.forEach(layer => {
+    new TF_Layer().createLayers(layersSource).then((layers) => {
+      layers.forEach((layer) => {
         layer && this.view.addLayer(layer)
       })
     })
@@ -510,10 +509,7 @@ export default class BaseMap extends Vue {
 
   legendClick() {
     this.legendHide = !this.legendHide
-    var whichP = [
-      ['收缩', 350, '▼'],
-      ['展开', 0, '▲']
-    ][this.legendHide ? 0 : 1]
+    var whichP = [['收缩', 350, '▼'], ['展开', 0, '▲']][this.legendHide ? 0 : 1]
     //@ts-ignore
     this.$refs.legend_close.title = whichP[0]
     //@ts-ignore
@@ -524,10 +520,7 @@ export default class BaseMap extends Vue {
 
   // 定位某条管线
   setPipesView(pipes) {
-    let coors = pipes || [
-      [113.14459646427814, 29.365111002105298],
-      [113.14462310850658, 29.36565173168358]
-    ]
+    let coors = pipes || [[113.14459646427814, 29.365111002105298], [113.14462310850658, 29.36565173168358]]
     let feature = new Feature({ geometry: new LineString(coors) })
     if (!this.vectorLayer) {
       this.vectorLayer = new VectorLayer({
@@ -607,7 +600,7 @@ export default class BaseMap extends Vue {
                     if (service.name === '图层服务') {
                       source = resource.layerService.layers
                       resData.forEach((data) => {
-                        let findItem = source.find(sourceItem => {
+                        let findItem = source.find((sourceItem) => {
                           if (sourceItem.name.includes('底图')) {
                             return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
                           } else {
@@ -766,13 +759,15 @@ export default class BaseMap extends Vue {
     margin-top: 4px;
     overflow: hidden hidden;
     transition: 0.4s;
-    >>> div{
-      padding:2px;
-      img{
-        width:18px;height:18px
+    >>> div {
+      padding: 2px;
+      img {
+        width: 18px;
+        height: 18px;
       }
-      span{
-        padding-left: 3px;font-size:12px
+      span {
+        padding-left: 3px;
+        font-size: 12px;
       }
     }
   }
@@ -791,14 +786,14 @@ export default class BaseMap extends Vue {
     user-select: none;
   }
 }
-.qufen{
+.qufen {
   position: absolute;
   top: 0px;
   background: chartreuse;
   padding: 5px;
 }
-#antherPanel::after{
-  content: "副视图  主视图";
+#antherPanel::after {
+  content: '副视图  主视图';
   border-radius: 0px 0px 5px 5px;
   border: 1px solid #2d74e7;
   background: #ecf2ffcc;
@@ -869,7 +864,7 @@ export default class BaseMap extends Vue {
         }
       }
       .scadaLayer-float-value {
-        color: #2D74E7;
+        color: #2d74e7;
         font-weight: bold;
         margin-left: 8px;
         animation: mymove 0.8s;
@@ -879,12 +874,12 @@ export default class BaseMap extends Vue {
       // }
       .scadaLayer-float-arrow2::after {
         content: '↑';
-        color: #F56C6C;
+        color: #f56c6c;
         animation: mymove 0.8s;
       }
       .scadaLayer-float-arrow0::after {
         content: '↓';
-        color: #67C23A;
+        color: #67c23a;
         animation: mymove 0.8s;
       }
       .scadaLayer-float-arrow1::after {
@@ -911,10 +906,15 @@ export default class BaseMap extends Vue {
       max-height: 500px;
     }
   }
-  @keyframes mymove
-  {
-    from { background: rgb(158,54,153); color: #fff; }
-    to { background: #fff0; color: #2D74E7; }
+  @keyframes mymove {
+    from {
+      background: rgb(158, 54, 153);
+      color: #fff;
+    }
+    to {
+      background: #fff0;
+      color: #2d74e7;
+    }
   }
 }
 
