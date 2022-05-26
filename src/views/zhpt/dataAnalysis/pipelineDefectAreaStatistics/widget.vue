@@ -185,10 +185,9 @@ export default {
       filter: {
         jcStartDate: '',
         jcEndDate: '',
-        checkSuggest: '',
+        checkSuggest: ''
       }
     }
-    
   },
 
   mounted() {
@@ -201,7 +200,7 @@ export default {
   },
   destroyed() {
     this.$refs.myMap.showLegend('testReport', false)
-    this.data.that.clearMap() 
+    this.data.that.clearMap()
   },
   beforeCreate() {
     console.log('销毁echatrs')
@@ -245,7 +244,7 @@ export default {
     getMapData(res) {
       let arr = res.defectData
       this.pageData = arr
-      console.log('arr', arr)
+      console.log('0202002arr', arr)
       // 按缺陷名称给数据分类
       // 缺陷数量统计
       if (arr) {
@@ -306,16 +305,18 @@ export default {
           this.defectSumObj.total += v.value
         })
       }
+       
       // console.log('returnTabel', this.returnTabel)
+      console.log('数据处理完了')
+      this.loading = false
       this.$nextTick(() => {
-        this.loading = false
         this.initData()
       })
     },
     // 绘制
     drawFeature() {
       this.$refs.myMap.draw({
-        callback: fea => {
+        callback: (fea) => {
           this.getDataFromExtent(fea).then((res) => {
             console.log('这是绘制的数据', res)
             this.getMapData(res)
@@ -327,12 +328,14 @@ export default {
     mapMoveEvent(extent) {
       this.getDataFromExtent(extent).then((res) => {
         console.log('这是地图移动的数据', res)
+          this.getMapData(res)
       })
     },
     // 查询
-    search () {
+    search() {
       this.getDataFromExtent().then((res) => {
-          console.log('这是查询的数据', res)
+        console.log('这是查询的数据', res)
+          this.getMapData(res)
       })
     },
     async getDataFromExtent(extent) {
@@ -493,32 +496,32 @@ export default {
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            console.log('标题参数', a)
+            // console.log('标题参数', a)
             return `（${a['data']['name']}）类型:${a['data']['value']}   `
           }
         }
       }
       let seriesName = {
-        name: '缺陷数量统计',
+        name: '缺陷同等级数量统计',
         type: 'bar',
         data: this.allArr,
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            console.log('标题参数', a)
+            // console.log('标题参数', a)
             return `（${a['data']['name']}）数量:${a['data']['value']}   `
           }
         }
       }
       let seriesLevel = {
-        name: '缺陷等级统计',
+        name: '缺陷总数量统计',
         type: 'bar',
         data: this.echartsData,
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            console.log('标题参数', a)
-            return `（${a['data']['name']}）等级:${a['data']['value']}   `
+            // console.log('标题参数', a)
+            return `（${a['data']['name']}）数量:${a['data']['value']}   `
           }
         }
       }
@@ -645,6 +648,10 @@ export default {
         return titleV.name
       })
       this.echartsData = echartsDataArr
+      // 建议类型数组
+      // this.typeArr = this.echartsData.map((v) => {
+      //   return v.name
+      // })
       console.log(' this.echartsData ', this.echartsData)
       this.initData()
     },
@@ -692,7 +699,7 @@ export default {
       overflow-y: scroll;
       .table-box {
         width: 96%;
-        height: 100%;
+        // height: 100%;
         margin: 20px auto;
         .top-tool {
           display: flex;

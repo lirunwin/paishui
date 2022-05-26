@@ -40,6 +40,7 @@ export default {
   },
   watch: {
     paramId(newVal) {
+      this.paramId = newVal
       this.getdata()
     }
   },
@@ -50,11 +51,11 @@ export default {
     async getdata() {
       let resPrj = await queryProjectDetails(this.paramId)
       this.tableData = resPrj.result
-      console.log('工程量表', resPrj)
+      // console.log('工程量表', resPrj)
     },
     getSummaries(param) {
       const { columns, data } = param
-      console.log('工程量表', param)
+      // console.log('工程量表', param)
       const sums = []
       columns.forEach((column, index) => {
         if (index === 0) {
@@ -77,14 +78,16 @@ export default {
         }
         const values = data.map((item) => Number(item[column.property]))
         if (!values.every((value) => isNaN(value))) {
-          sums[index] = values.reduce((prev, curr) => {
-            const value = Number(curr)
-            if (!isNaN(value)) {
-              return prev + curr
-            } else {
-              return prev
-            }
-          }, 0).toFixed(2)
+          sums[index] = values
+            .reduce((prev, curr) => {
+              const value = Number(curr)
+              if (!isNaN(value)) {
+                return prev + curr
+              } else {
+                return prev
+              }
+            }, 0)
+            .toFixed(2)
           sums[index] += ''
         } else {
           sums[index] = '/'

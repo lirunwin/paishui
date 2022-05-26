@@ -1,6 +1,6 @@
 <template>
   <div class="project-box">
-    <!-- 报告内管段状态评估汇总 -->
+    <!-- 检测评估建议 -->
     <el-table
       :data="tableData"
       border
@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { queryPipeStateDetails, queryProjectDetails, queryDefectFormDetails } from '@/api/pipelineManage'
+import { queryPipeStateDetails } from '@/api/pipelineManage'
 
 export default {
   props: ['paramId'],
@@ -80,17 +80,23 @@ export default {
       tableData: []
     }
   },
+  watch: {
+    paramId(newVal) {
+      this.paramId = newVal
+      this.getdata()
+    }
+  },
   async mounted() {
-    let resPrj = await queryPipeStateDetails(this.paramId)
-    let resPrj1 = await queryProjectDetails(this.paramId)
-    let resPrj2 = await queryDefectFormDetails(this.paramId)
-    this.tableData = resPrj.result
-    console.log('告内管段状态评估汇总', resPrj)
-    console.log('主要工程量表统计', resPrj1)
-    console.log('报告内管段缺陷汇总', resPrj2)
-    console.log('上面传来的id', this.paramId)
+      this.getdata()
+
   },
   methods: {
+    async getdata() {
+      let resPrj = await queryPipeStateDetails(this.paramId)
+      this.tableData = resPrj.result
+      console.log('检测评估建议  ', resPrj)
+      console.log('上面传来的id', this.paramId)
+    },
     getSummaries(param) {
       const { columns, data } = param
       const sums = []

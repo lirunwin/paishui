@@ -908,10 +908,10 @@ export default {
         color: #e6a23c;
         background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
-       .rowBgBlue {
+      .rowBgBlue {
         & > td {
           color: #fff;
-          border-right: 1px solid #EBEEF5;
+          border-right: 1px solid #ebeef5;
           background-color: #69a8ea !important;
         }
       }
