@@ -54,11 +54,11 @@
             </el-row>
           </div>
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="searchValue.structClass" placeholder="全部">
+          <el-select clearable v-model="searchValue.structClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="searchValue.funcClass" placeholder="全部">
+          <el-select clearable v-model="searchValue.funcClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
@@ -92,8 +92,14 @@
         @row-click="openPromptBox"
         :row-class-name="modality"
       >
-        <template slot="empty">
-          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+       <template slot="empty">
+          <img
+            style="width: 100px; height: 100px; -webkit-user-drag: none"
+            src="@/assets/images/nullData.png"
+            alt="暂无数据"
+            srcset=""
+          />
+          <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
@@ -390,7 +396,6 @@ export default {
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
-      if (this.param) return
       if (n !== '管道缺陷管理') {
         this.clearAll()
       } else {
@@ -527,7 +532,7 @@ export default {
     },
     // 获取缺陷数据
     getPipeDefectData() {
-      getDefectData().then((res) => {
+      getDefectData({ state: 1 }).then((res) => {
         if (res.code === 1) {
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result]
@@ -535,11 +540,11 @@ export default {
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
             this.vectorLayer.getSource().clear()
             this.lightLayer.getSource().clear()
-            if (
-              strucDefectFeatures.length !== 0 ||
-              funcDefectFeatures.length !== 0 ||
-              pipeDefectFeatures.length !== 0
-            ) {
+            if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
+              let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+              let view = this.map.getView()
+              view.setCenter(center)
+              view.animate({ zoom: 13 })
               this.vectorLayer.getSource().addFeatures(pipeDefectFeatures)
             }
             this.hadLoad = true
@@ -767,6 +772,7 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = this.pagination
+        data.wordInfoState = 1
       if (params) {
         data.jcStartDate = params.testTime.startDate
         data.jcEndDate = params.testTime.finishDate
@@ -908,10 +914,10 @@ export default {
         color: #e6a23c;
         background-color: rgba($color: #2d74e7, $alpha: 0.1);
       }
-       .rowBgBlue {
+      .rowBgBlue {
         & > td {
           color: #fff;
-          border-right: 1px solid #EBEEF5;
+          border-right: 1px solid #ebeef5;
           background-color: #69a8ea !important;
         }
       }
@@ -936,9 +942,6 @@ export default {
   /deep/.histroyPipeData {
     // 详情卡片的样式
     .detailsCrad {
-      position: fixed;
-      top: 100px;
-      right: 24px;
       z-index: 9;
       .clearfix:before,
       .clearfix:after {

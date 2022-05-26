@@ -274,6 +274,7 @@ export default {
         callback: (fea) => {
           this.getDataFromExtent(fea).then((res) => {
             console.log('这是绘制的数据', res)
+            this.getMapData(res)
           })
         }
       })
@@ -281,6 +282,7 @@ export default {
     mapMoveEvent(extent) {
       this.getDataFromExtent(extent).then((res) => {
         console.log('这是地图移动的数据', res)
+        this.getMapData(res)
       })
     },
     // 查询
@@ -292,6 +294,7 @@ export default {
       }
       this.getDataFromExtent().then((res) => {
         console.log('这是查询的数据', res)
+        this.getMapData(res)
       })
     },
     async getDataFromExtent(extent) {
@@ -311,6 +314,7 @@ export default {
         jcStartDate: '',
         jcEndDate: '',
         checkSuggest: '',
+        wordInfoState: 1,
         ...this.filter
       }
       return getDefectDataBySE(params)

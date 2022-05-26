@@ -54,11 +54,11 @@
             </el-row>
           </div>
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="searchValue.structClass" placeholder="全部">
+          <el-select clearable v-model="searchValue.structClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="searchValue.funcClass" placeholder="全部">
+          <el-select clearable v-model="searchValue.funcClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
@@ -613,7 +613,7 @@ export default {
     },
     // 获取缺陷数据
     getPipeDefectData() {
-      getDefectData().then((res) => {
+      getDefectData({ state: 1 }).then((res) => {
         if (res.code === 1) {
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result]
@@ -621,11 +621,11 @@ export default {
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
             this.vectorLayer.getSource().clear()
             this.lightLayer.getSource().clear()
-            if (
-              strucDefectFeatures.length !== 0 ||
-              funcDefectFeatures.length !== 0 ||
-              pipeDefectFeatures.length !== 0
-            ) {
+            if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
+              let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+              let view = this.map.getView()
+              view.setCenter(center)
+              view.animate({ zoom: 13 })
               this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
             this.hasLoad = true
@@ -879,6 +879,7 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = this.pagination
+      data.wordInfoState = 1
       if (params) {
         data.jcStartDate = params.testTime.startDate
         data.jcEndDate = params.testTime.finishDate
@@ -1018,9 +1019,9 @@ export default {
         background-color: #f3f7fe !important;
       }
       .hover-row {
-      color: #e6a23c;
-      background-color: rgba($color: #2d74e7, $alpha: 0.1);
-    }
+        color: #e6a23c;
+        background-color: rgba($color: #2d74e7, $alpha: 0.1);
+      }
       .rowBgBlue {
         & > td {
           color: #fff;
@@ -1048,9 +1049,6 @@ export default {
   }
   // 详情卡片的样式
   .histroyPipeData {
-    position: fixed;
-    top: 100px;
-    right: 45px;
     z-index: 9;
     .detailsCrad {
       .clearfix:before,

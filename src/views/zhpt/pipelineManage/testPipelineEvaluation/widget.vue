@@ -125,12 +125,12 @@
         >
         </el-table-column>
 
-        <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
+        <!-- <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click.stop="toPdfPage(scope.row.pdfFilePath)">报告</el-button>
             <el-button type="text" size="small" @click.stop="openDetails(scope.row)">详情</el-button>
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
       <!-- <div>
         <el-pagination
@@ -291,19 +291,19 @@ export default {
   data() {
     return {
       json_fields: {
-        工程名称: 'prjName',
-        管段编号: 'expNo',
-        管段类型: 'pipeType',
+        // "工程名称": 'prjName',
+        "管段编号": 'expNo',
+        "管段类型": 'pipeType',
         '管径(mm)': 'diameter',
-        材质: 'material',
-        结构性缺陷评价: 'structEstimate',
-        缺陷数量: 'defectnum',
-        检测照片: 'picnum',
-        检测视频: 'videoFileName',
-        检测地点: 'checkAddress',
-        检测日期: 'sampleTime',
-        结构性缺陷等级: 'structClass',
-        功能性缺陷等级: 'funcClass'
+        "材质": 'material',
+        "结构性缺陷评价": 'structEstimate',
+        "缺陷数量": 'defectnum',
+        "检测照片": 'picnum',
+        "检测视频": 'videoFileName',
+        "检测地点": 'checkAddress',
+        "检测日期": 'sampleTime',
+        "结构性缺陷等级": 'structClass',
+        "功能性缺陷等级": 'funcClass'
       },
       id: null, // 当前列表id
       activeName: 'picnum', // 照片视频tab标签

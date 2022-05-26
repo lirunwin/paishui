@@ -57,7 +57,7 @@
           />
         </el-col>
         <el-col :span="6" style="transform: translateX(-5px);padding-top:9px;">
-          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[1] }}</span>
+          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[0] }}</span>
         </el-col>
         <el-col :span="8">
           <el-slider
@@ -80,7 +80,7 @@
           />
         </el-col>
         <el-col :span="6" style="transform: translateX(-5px);padding-top:9px;">
-          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[2] }}</span>
+          <span class="el-tree-node__label" style="white-space: nowrap;">透明度：{{ baseMapsNum[1] }}</span>
         </el-col>
         <el-col :span="8">
           <el-slider

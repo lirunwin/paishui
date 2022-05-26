@@ -8,10 +8,11 @@ export function getDefectDataById (id) {
     })
 }
 // 获取全部缺陷
-export function getDefectData () {
+export function getDefectData (params) {
     return request({
         url: "/psjc/wordInfo/pipeState/list",
-        method: "get"
+        method: "get",
+        params
     })
 }
 // 获取全部工程

@@ -12,7 +12,7 @@
     <tf-legend class="legend_dept" label="我的书签" isopen="true" title="查看所有已保存的地图书签。">      
       <el-row>
         <el-col :span="24">
-          <el-table @row-click='jump' ref="markTable" :default-sort="{ prop: 'date', order: 'descending' }" :data="list" stripe style="width: 100%;" height='400px' max-height="800px" row-class-name="selectRowC">
+          <el-table height='650px' @row-click='jump' ref="markTable" :default-sort="{ prop: 'date', order: 'descending' }" :data="list" stripe style="width: 100%;" row-class-name="selectRowC">
             <!-- <el-table-column type="selection" width="55" /> -->
             <template slot="empty">
               <img src="@/assets/icon/null.png" alt="">
@@ -20,7 +20,7 @@
             </template>
             <el-table-column type="selection" width="30"> </el-table-column>
             <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
-            <el-table-column prop="time" label="时间" width="100" align="center" sortable='true'></el-table-column>
+
             <el-table-column prop="markName" label="名称" width="100" align="center" sortable='true'>
               <template slot-scope="scope">
                 <el-tooltip class="item" effect="dark" :content="scope.row.markName" placement="top-start">
@@ -35,6 +35,7 @@
                 </el-tooltip>
               </template>
             </el-table-column>
+            <el-table-column prop="time" label="时间" width="100" align="center" sortable='true'></el-table-column>
             <!-- <el-table-column prop="center" label="操作" width="100" align="center">
               <template slot-scope="scope">
                 <el-link type="primary" @click="jump(scope.row)">跳转</el-link>

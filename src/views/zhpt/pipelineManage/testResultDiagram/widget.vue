@@ -4,7 +4,7 @@
     <p class="title">查询设置</p>
     <el-form ref="form" :model="form" label-width="auto" :rules="rules">
       <el-form-item label="工程名称:" prop="name">
-        <el-select @change='projectChange' v-model="form.project">
+        <el-select @change='projectChange' v-model="form.project" clearable>
           <el-option
             v-for="(item, index) in projectOpt"
             :key="index"
@@ -14,7 +14,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="检测报告:">
-        <el-select :disabled="!form.project" v-model="form.report" placeholder="请选择检测报告" multiple>
+        <el-select :disabled="!form.project" v-model="form.report" placeholder="请选择检测报告" multiple clearable>
           <el-option
             v-for="(item, index) in reportOpt"
             :key="index"
@@ -338,7 +338,9 @@ export default {
       this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(7, 'rgba(255, 0, 0, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
       this.addLayers([this.pipeFuncLayer, this.pipeStrucLayer, this.pipeDefectLayer, this.lightLayer])  
 
+      // 添加缺陷数据
       this.setAllDefect()
+      // 添加项目
       this.setProjectData()
     },
     clearAll () {
@@ -367,7 +369,7 @@ export default {
     // 项目变化
     projectChange (prjNo) {
       prjNo = prjNo || this.form.project
-      getReportByProjecetId({ prjNo }).then(res => {
+      getReportByProjecetId({ prjNo, state: 1 }).then(res => {
         if (res.code === 1) {
           this.form.report = ''
           let data = res.result
@@ -398,7 +400,7 @@ export default {
       layers.forEach((layer) => this.mapView.addLayer(layer))
     },
     setAllDefect () {
-      getDefectData().then(res => {
+      getDefectData({ state: 1 }).then(res => {
         if (res.code === 1) {
           this.initMap(res.result)
         } else this.$message.error('请求缺陷数据失败')
@@ -409,34 +411,35 @@ export default {
       let pipeData = data.map(item => item.pipeStates).flat()
       let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
       
-      this.lightLayer.getSource().clear()
-      this.pipeStrucLayer.getSource().clear()
-      this.pipeFuncLayer.getSource().clear()
-      this.pipeDefectLayer.getSource().clear()
+      if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
+        this.lightLayer.getSource().clear()
+        this.pipeStrucLayer.getSource().clear()
+        this.pipeFuncLayer.getSource().clear()
+        this.pipeDefectLayer.getSource().clear()
 
-      this.pipeStrucLayer.getSource().addFeatures(strucDefectFeatures)
-      this.pipeFuncLayer.getSource().addFeatures(funcDefectFeatures)
-      this.pipeDefectLayer.getSource().addFeatures(pipeDefectFeatures)
+        this.pipeStrucLayer.getSource().addFeatures(strucDefectFeatures)
+        this.pipeFuncLayer.getSource().addFeatures(funcDefectFeatures)
+        this.pipeDefectLayer.getSource().addFeatures(pipeDefectFeatures)
 
-      let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures,  ...funcDefectFeatures])
-      this.mapView.getView().setCenter(center)
-      this.mapView.getView().setZoom(14)
+        let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures,  ...funcDefectFeatures])
+        this.mapView.getView().setCenter(center)
+        this.mapView.getView().setZoom(13)
 
+        this.clickEvent = this.mapView.on('click', (evt) => {
+          let feas = this.mapView.getFeaturesAtPixel(evt.pixel)
+          if (feas.length !== 0) {
+            let point = feas.find(item => item.getGeometry() instanceof Point)
+            if (point) {
+              this.openPromptBox(point.get('id'), 'pipeDefectLayer')
+            }
+          } else {
+            this.currentInfoCard = false
+            this.lightLayer.getSource().clear()
+          }
+        })
+      }
       this.loading = false
       this.hasLoad = true
-
-      this.clickEvent = this.mapView.on('click', (evt) => {
-        let feas = this.mapView.getFeaturesAtPixel(evt.pixel)
-        if (feas.length !== 0) {
-          let point = feas.find(item => item.getGeometry() instanceof Point)
-          if (point) {
-            this.openPromptBox(point.get('id'), 'pipeDefectLayer')
-          }
-        } else {
-          this.currentInfoCard = false
-          this.lightLayer.getSource().clear()
-        }
-      })
     },
 
     /**
