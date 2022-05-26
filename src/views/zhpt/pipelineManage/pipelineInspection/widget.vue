@@ -46,11 +46,11 @@
           </div>
 
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="searchParams.funcClass" placeholder="">
+          <el-select clearable v-model="searchParams.funcClass" placeholder="">
             <el-option v-for="(item, i) in gradeArr" :key="i + gradeArr.length" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="searchParams.structClass" placeholder="">
+          <el-select clearable v-model="searchParams.structClass" placeholder="">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
         </div>
@@ -754,6 +754,7 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = { ...this.pagination }
+      data.wordInfoState = 1
       console.log('参数', params)
       if (params) {
         data.jcStartDate = params.jcDate.startDate

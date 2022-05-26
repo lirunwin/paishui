@@ -517,7 +517,11 @@
                 <span style="font-weight: bold"
                   >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
                 </span>
-                <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails">详情</a>
+                <a
+                  style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                  @click="openDetailsDialog(DetailsForm.stateId)"
+                  >详情</a
+                >
               </div>
               <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
               <div class="content-info" style="font-size: 12px">
@@ -586,7 +590,7 @@
                 </span>
                 <a
                   style="font-size: 12px; color: #2d74e7; text-decoration: underline"
-                  @click="openDetails(getCurrentForm)"
+                  @click="openDetailsDialog(getCurrentForm.id)"
                   >详情</a
                 >
               </div>
@@ -625,7 +629,7 @@
                         </el-image>
                         <div style="text-align: center">
                           <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
-                          {{ getCurrentForm.pipeDefects.length ? imgArrIndexEV + 1 : 0 }}/{{
+                          {{ getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
                             getCurrentForm.pipeDefects.length || 0
                           }}
                           <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
@@ -653,7 +657,7 @@
 
     <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
-      <delete-dialog @sendBool="getBool" v-if="detailsDialogFormVisible" :checkParam="detailsId"></delete-dialog>
+      <delete-dialog @sendBool="getBool" v-if="detailsDialogFormVisible" :checkParam="DetailsId"></delete-dialog>
     </transition>
   </div>
 </template>
@@ -679,6 +683,8 @@ import {
 
 // 引入预览pdf插件
 import pdfSee from '../components/OpenPdf.vue'
+// 引入管道检测组件
+import deleteDialog from '../components/checkDetails.vue'
 
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
@@ -727,12 +733,13 @@ export default {
     proposal,
     pdfSee,
     simpleMap,
-    oneRelease
+    oneRelease,
+    deleteDialog
   },
   data() {
     return {
+      DetailsId: null, // 检测详情的id
       DetailsForm: {}, // 管道缺陷缩略框
-      imgArrIndexEV: 0,
       imgArrIndex: 0, // 缩略框照片索引
       detailsDialogFormVisible: false, // 检测详情弹框显影
       pipDialogFormVisible: false, // 详情弹框显影
@@ -872,6 +879,10 @@ export default {
     }
   },
   computed: {
+    // 提示框当前信息
+    getCurrentForm() {
+      return this.currentForm ? this.currentForm[this.currentIndex] : {}
+    },
     // <--- 管道缺陷
     // 获取文件url
     getVideoUrl() {
@@ -922,10 +933,6 @@ export default {
       console.log('address', address)
       return address
     },
-    // 提示框当前信息
-    getCurrentForm() {
-      return this.currentForm ? this.currentForm[this.currentIndex] : {}
-    },
 
     returnTabel() {
       let obj = {
@@ -962,9 +969,18 @@ export default {
     this.clearAll()
   },
   methods: {
-    // 管道缺陷
-    // 管到评估
-     // 下载文档
+    // 打开检测详情
+    async openDetailsDialog(id) {
+      this.DetailsId = id
+      console.log('打开检测详情', this.DetailsId)
+      this.detailsDialogFormVisible = true
+    },
+
+    // 关闭检测详情弹框
+    getBool(bool) {
+      this.detailsDialogFormVisible = bool
+    },
+    // 下载文档
     downloadDocx() {
       this.$message('正在加载文档地址...')
       let url = baseAddress + '/psjc/file' + this.getCurrentForm.wordFilePath
@@ -982,11 +998,6 @@ export default {
         .catch(console.error)
     },
 
- 
-    // 关闭检测详情弹框
-    getBool(bool) {
-      this.detailsDialogFormVisible = bool
-    },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
@@ -1056,20 +1067,19 @@ export default {
     lastImg() {
       console.log('上一张照片', this.getCurrentForm.pipeDefects)
 
-      if (this.imgArrIndexEV <= 0) {
-        this.imgArrIndexEV = 0
+      if (this.imgArrIndex <= 0) {
+        this.imgArrIndex = 0
         return
       }
-      this.imgArrIndexEV--
+      this.imgArrIndex--
     },
     // 下一张照片
     nextImg() {
-      console.log('下一张照片', this.getCurrentForm())
-      if (this.imgArrIndexEV + 1 >= this.getCurrentForm.pipeDefects.length) {
-        this.imgArrIndexEV = this.getCurrentForm.pipeDefects.length - 1
+      if (this.imgArrIndex + 1 >= this.getCurrentForm.pipeDefects.length) {
+        this.imgArrIndex = this.getCurrentForm.pipeDefects.length - 1
         return
       }
-      this.imgArrIndexEV++
+      this.imgArrIndex++
     },
     // 上一页
     lastPage() {
@@ -1193,15 +1203,18 @@ export default {
       let id = this.multipleSelection.length == 1 ? this.multipleSelection[0].id : null
       // let
       this.$refs.multipleTable.clearSelection(row)
-      if (length > 1 || length < 1) {
-        this.$refs.multipleTable.toggleRowSelection(row)
-      } else if (id) {
-        if (row.id == id) {
-          this.$refs.multipleTable.toggleRowSelection(row, false)
-        } else {
+      if (row.state != '1') {
+        if (length > 1 || length < 1) {
           this.$refs.multipleTable.toggleRowSelection(row)
+        } else if (id) {
+          if (row.id == id) {
+            this.$refs.multipleTable.toggleRowSelection(row, false)
+          } else {
+            this.$refs.multipleTable.toggleRowSelection(row)
+          }
         }
       }
+
       console.log('报告数据')
       let features = this.getPipeDefectData(1, row.id, true)
     },

@@ -66,7 +66,7 @@
         </div>
         <div class="right-btn"></div>
       </div>
-      <div class="content">
+      <div class="content" v-if="!isNull">
         <div id="mainA" style="height: 500px"></div>
         <div style="border: 1px solid #ccc">
           <div class="detailsTitle">管道缺陷分类统计表</div>
@@ -100,6 +100,17 @@
           </table>
         </div>
       </div>
+      <div v-if="isNull" style="height: 100%; display: flex; justify-content: center; align-items: center">
+        <div style="text-align: center">
+          <img
+            style="width: 100px; height: 100px; -webkit-user-drag: none"
+            src="@/assets/images/nullData.png"
+            alt="暂无数据"
+            srcset=""
+          />
+          <p>暂无数据</p>
+        </div>
+      </div>
     </div>
     <!-- 添加卡片 -->
   </div>
@@ -117,6 +128,7 @@ require('echarts/lib/component/title')
 export default {
   data() {
     return {
+      isNull: false, // 数据是否为空
       // 日期选择器规则
       pickerOptions0: '',
       pickerOptions1: '',
@@ -130,10 +142,8 @@ export default {
       },
       defectSum: 0, // 合计
       zc: { value: 0, name: '正常', title: '(ZC)正常', type: 'ZC' },
-      defectQuantityStatisticsA: [
-      ], // 管道缺陷数量统计表
-      defectQuantityStatisticsB: [
-      ],
+      defectQuantityStatisticsA: [], // 管道缺陷数量统计表
+      defectQuantityStatisticsB: [],
       echartsTitle: [],
       echartsData: [],
       contentEchatrs: [],
@@ -281,7 +291,7 @@ export default {
     async getData(params) {
       // {jcStartDate:检测开始日期,jcEndDate:检测结束日期,startPoint：起始井号", "endPoint：终止井号,defectType:缺陷类型，defectName：缺陷名称}
       let data = {}
-
+      data.wordInfoState = '1'
       if (params) {
         data.startDate = params.startDate
         data.finishDate = params.finishDate
@@ -290,8 +300,14 @@ export default {
         data.defectType = params.defectType
         data.defectName = params.defectName
       }
+
       let res = await getPipeDefectsTypeCount(data)
       this.pageData = res.result
+      if (res.result.length === 0) {
+        this.isNull = true
+      } else {
+        this.isNull = false
+      }
     },
     //初始化数据
     initData() {

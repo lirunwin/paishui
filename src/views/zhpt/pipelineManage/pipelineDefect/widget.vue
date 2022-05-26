@@ -54,11 +54,11 @@
             </el-row>
           </div>
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="searchValue.structClass" placeholder="全部">
+          <el-select clearable v-model="searchValue.structClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="searchValue.funcClass" placeholder="全部">
+          <el-select clearable v-model="searchValue.funcClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
@@ -92,8 +92,14 @@
         @row-click="openPromptBox"
         :row-class-name="modality"
       >
-        <template slot="empty">
-          <img style="-webkit-user-drag: none" src="@/assets/images/nullData.png" alt="暂无数据" srcset="" />
+       <template slot="empty">
+          <img
+            style="width: 100px; height: 100px; -webkit-user-drag: none"
+            src="@/assets/images/nullData.png"
+            alt="暂无数据"
+            srcset=""
+          />
+          <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
         <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
@@ -767,6 +773,7 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = this.pagination
+        data.wordInfoState = 1
       if (params) {
         data.jcStartDate = params.testTime.startDate
         data.jcEndDate = params.testTime.finishDate

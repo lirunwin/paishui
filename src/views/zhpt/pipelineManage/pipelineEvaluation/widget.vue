@@ -54,11 +54,11 @@
             </el-row>
           </div>
           <div class="title">结构性缺陷等级：</div>
-          <el-select v-model="searchValue.structClass" placeholder="全部">
+          <el-select clearable v-model="searchValue.structClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select v-model="searchValue.funcClass" placeholder="全部">
+          <el-select clearable v-model="searchValue.funcClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
@@ -879,6 +879,7 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = this.pagination
+      data.wordInfoState = 1
       if (params) {
         data.jcStartDate = params.testTime.startDate
         data.jcEndDate = params.testTime.finishDate
@@ -1018,9 +1019,9 @@ export default {
         background-color: #f3f7fe !important;
       }
       .hover-row {
-      color: #e6a23c;
-      background-color: rgba($color: #2d74e7, $alpha: 0.1);
-    }
+        color: #e6a23c;
+        background-color: rgba($color: #2d74e7, $alpha: 0.1);
+      }
       .rowBgBlue {
         & > td {
           color: #fff;

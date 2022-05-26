@@ -254,7 +254,7 @@ export default {
         current: this.pagination.current,
         size: this.pagination.size
       }
-
+      data.wordInfoState = 1
       if (params) {
         data.startPoint = this.searchValue.startPoint
         data.endPoint = this.searchValue.endPoint

@@ -153,7 +153,7 @@ export default {
       // 日期选择器规则
       pickerOptions0: '',
       pickerOptions1: '',
-      multipleSelection:[], // 选择的列表
+      multipleSelection: [] // 选择的列表
     }
   },
   computed: {},
@@ -237,6 +237,7 @@ export default {
         current: this.pagination.current,
         size: this.pagination.size
       }
+      data.wordInfoState = 1
 
       if (params) {
         data.startPoint = this.searchValue.startPoint

@@ -393,6 +393,7 @@ export default class APPV extends Vue {
   }
   // 上传文件之前进行文件类型验证
   verificationFileType(data) {
+    // debugger
     // this.fileList.push(data.raw);
     if (
       data.raw.type === 'text/plain' ||
