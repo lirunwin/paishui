@@ -212,19 +212,44 @@
                 </span>
               </div>
               <div slot="tip" class="el-upload__tip">
+                <p style="line-height: 10px; margin: 10px 0">只能上传docx/doc文件</p>
+                <p
+                  v-show="isEdit"
+                  style="height: 20px; font-size: 12px; border-bottom: 1px solid #dedede; margin: 0; line-height: 20px"
+                >
+                  需要上传的文件列表
+                </p>
                 <!-- <p>只能上传docx/doc文件</p> -->
               </div>
             </el-upload>
             <!-- 附件列表 -->
             <p
               v-show="isEdit"
-              style="height: 20px; font-size: 12px; border-top: 1px solid #666; margin: 0; line-height: 20px"
+              style="
+                height: 20px;
+                font-size: 12px;
+                border-bottom: 1px solid #dedede;
+                border-top: 1px solid #dedede;
+                margin: 0;
+                margin-top: 10px;
+                line-height: 20px;
+              "
             >
-              已上传文件列表
+              已上传的文件列表
             </p>
-            <div v-show="isDetails || isEdit" style="max-height: 120px; overflow-y: scroll">
-              <div v-for="(item, i) in fileListData" :key="i" class="text-space">
+            <div
+              v-show="isDetails || isEdit"
+              class="hideScrollBar"
+              style="max-height: 120px; overflow-y: scroll; border: 1px solid #dedede; padding-left: 10px"
+            >
+              <div
+                v-for="(item, i) in fileListData"
+                :key="i"
+                class="text-space"
+                style="height: 20px; line-height: 20px"
+              >
                 <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{ item.originalName }}</el-link>
+                <el-link type="danger" @click="removeFile(item)">删除</el-link>
               </div>
             </div>
             <p
@@ -253,6 +278,24 @@
         </span>
       </el-dialog>
     </div>
+    <!-- 删除附件框 -->
+    <div class="delete-box">
+      <!-- 删除提示框 -->
+      <el-dialog title="提示" :visible.sync="deleteFlieDialogVisible" width="30%">
+        <div style="display: flex; align-items: center">
+          <!-- <i class="el-icon-info" style="color: #e6a23c"></i> -->
+          <span
+            class="iconfont icondtbz"
+            style="font-size: 22px; color: #e6a23c; margin-right: 10px; line-height: 20px"
+          ></span>
+          确认要删除附件《{{ currentFlie.fileName }}》吗?
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="small" @click="deleteFlieDialogVisible = false">取 消</el-button>
+          <el-button size="small" type="primary" @click="removeFlieDatas">确 定</el-button>
+        </span>
+      </el-dialog>
+    </div>
     <!-- <button @click="fileLinkToStreamDownload('http://117.174.10.73:1114/psjc/opt2/upload/projectInfoDoc/36/202205081114180005.docx')">下载附件</button> -->
   </div>
 </template>
@@ -268,7 +311,8 @@ import {
   queryDictionariesId,
   projectDetailsQuery,
   queryPageEnclosure,
-  downloadFile
+  downloadFile,
+  removeEnclosureByIds
 } from '@/api/pipelineManage'
 
 // 引入公共ip地址
@@ -282,8 +326,12 @@ export default {
   },
   data() {
     return {
+      id: null, // 当前列id
+      currentFlie: {}, // 删除时的当前附件
       fileListData: [], // 附件列表数据
       deleteDialogVisible: false, // 删除提示框显影
+      deleteFlieDialogVisible: false, // 删除附件提示框显影
+
       updataParamsId: {
         itemId: '',
         uploadFileTypeDicId: '',
@@ -305,19 +353,19 @@ export default {
           { maxLength: '20', label: '工程编号', name: 'prjNo' }
         ],
         [
-          { maxLength: '50', label: '检测单位', name: 'jcunit' },
-          { maxLength: '50', label: '勘察单位', name: 'kcunit' }
+          { maxLength: '25', label: '检测单位', name: 'jcunit' },
+          { maxLength: '25', label: '勘察单位', name: 'kcunit' }
         ],
         [
-          { maxLength: '4', label: '探测单位', name: 'tcunit' },
-          { maxLength: '30', label: '设计单位', name: 'sjunit' }
+          { maxLength: '25', label: '探测单位', name: 'tcunit' },
+          { maxLength: '25', label: '设计单位', name: 'sjunit' }
         ],
         [
-          { maxLength: '4', label: '建设单位', name: 'jsunit' },
-          { maxLength: '50', label: '监理单位', name: 'ctunit' }
+          { maxLength: '25', label: '建设单位', name: 'jsunit' },
+          { maxLength: '25', label: '监理单位', name: 'ctunit' }
         ],
         [
-          { maxLength: '50', label: '施工单位', name: 'sgunit' },
+          { maxLength: '25', label: '施工单位', name: 'sgunit' },
           { maxLength: '30', label: '施工负责人', name: 'constructionCharge' }
         ],
         [
@@ -325,7 +373,7 @@ export default {
           { maxLength: '20', label: '平面坐标系统', name: 'pcoord' }
         ],
         [
-          { maxLength: '9', label: '管线总长度(m)', name: 'pllength' },
+          { maxLength: '7', label: '管线总长度(m)', name: 'pllength' },
           { maxLength: '9', label: '管线种类数量(个)', name: 'plnumber' }
         ],
         [
@@ -382,18 +430,17 @@ export default {
           { required: true, message: '不能为空', trigger: 'blur' },
           {
             pattern: /^[a-zA-Z0-9]+$/,
-            message: '只能输入数字或英文',
+            message: '只能输入数字或英文字母',
             trigger: 'blur'
           }
+        ],
+        pllength: [
+          {
+            pattern: /^[0-9]+([.]{1}[0-9]{1,2})?$/,
+            message: '只能输入正数(小数不能超过两位)',
+            trigger: 'change'
+          }
         ]
-        // pllength: [
-        //   { required: true, message: '不能为空', trigger: 'blur' },
-        //   {
-        //     pattern: /^[0-9]+([.]{1}[0-9]{1,2})?$/,
-        //     message: '只能输入数字',
-        //     trigger: 'blur'
-        //   }
-        // ]
       },
       // 查询附件列表需要的参数id
       updataParamsId: {
@@ -421,6 +468,27 @@ export default {
     this.simplifyRules()
   },
   methods: {
+    // 确认删除附件
+    async removeFlieDatas() {
+      let id = this.currentFlie.id
+      let res = await removeEnclosureByIds({ ids: id + '' })
+      if (res.result) {
+        this.$message({
+          showClose: true,
+          message: '删除成功',
+          type: 'success'
+        })
+      }
+      this.getFileList(this.id)
+      this.deleteFlieDialogVisible = false
+      this.currentFlie = {}
+    },
+    // 删除附件
+    removeFile(file) {
+      console.log('当前附件', file)
+      this.currentFlie = file
+      this.deleteFlieDialogVisible = true
+    },
     // 判断个数小数位
     // inputSet(key) {
     //   let formArr = ['plnumber', 'jpoints', 'epoints', 'hpoints']
@@ -472,7 +540,7 @@ export default {
         this.rules[v] = [
           {
             pattern: /^[0-9]+$/,
-            message: '只能输入整数',
+            message: '只能输入整数(不能为负数)',
             trigger: 'change'
           }
         ]
@@ -546,7 +614,7 @@ export default {
     // },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate(str) {
-      if (str=='startDate') {
+      if (str == 'startDate') {
         this.form.finishDate = this.form.startDate
       }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
@@ -565,7 +633,7 @@ export default {
       this.pickerOptions1 = {
         disabledDate: (time) => {
           // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1
+          return time.getTime() < date1 - 8.64e7
         }
       }
     },
@@ -604,7 +672,9 @@ export default {
       }
     },
     // 上传触发的方法
-    beforeUpload() {},
+    beforeUpload() {
+      console.log('附件列表', this.fileList)
+    },
     handleExceed(files, fileList) {
       this.$message.warning(
         `当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`
@@ -701,23 +771,28 @@ export default {
       }
     },
 
-    // 双击修改
-    async dblclickUpdata(row, column, event) {
-      // 打开修改
-      let res = await projectDetailsQuery(row.id)
+    // 获取附件列表
+    async getFileList(id) {
       // 获得字典id
       await this.getParamsId()
       // 获取附件列表
       let params = {
         current: this.paginationEnclosure.current,
         size: this.paginationEnclosure.size,
-        itemId: row.id,
+        itemId:id,
         uploadFileTypeDicId: this.updataParamsId.uploadFileTypeDicId,
         uploadItemDictId: this.updataParamsId.uploadItemDictId
       }
       let fileRes = await queryPageEnclosure(params)
       console.log('附件分页数据', fileRes)
       this.fileListData = fileRes.result.records
+    },
+    // 双击修改
+    async dblclickUpdata(row, column, event) {
+      // 打开修改
+      let res = await projectDetailsQuery(row.id)
+      this.id = row.id
+      await this.getFileList(this.id)
 
       this.initForm = { ...this.form }
       this.form = res.result
@@ -801,7 +876,7 @@ export default {
       //   this.form.finishDate = n
       // }
       if (!this.isDetails && !this.isEdit) {
-      this.form.finishDate = n
+        this.form.finishDate = n
       }
     }
   }
@@ -816,6 +891,9 @@ export default {
   position: relative;
   font-size: 12px;
 
+  .hideScrollBar::-webkit-scrollbar {
+    width: 0 !important;
+  }
   // 表格样式
   .table-box {
     height: 100%;

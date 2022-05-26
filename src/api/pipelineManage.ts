@@ -68,6 +68,15 @@ export function queryPageEnclosure(params) {
     })
 }
 
+// 通过ID删除管段检测信息表 删除附件
+// /sysUploadFile/removeByIds
+export function removeEnclosureByIds(params) {
+    return request({
+        url: psjc + "/sysUploadFile/removeByIds",
+        method: 'delete',
+        params
+    })
+}
 
 // 管道内窥检测数据导入(文件导入) / 检测报告管理
 // export function importFiles(params) {

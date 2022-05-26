@@ -535,6 +535,7 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = this.pagination
+      data.wordInfoState = 1
       if (params) {
         data.jcStartDate = params.testTime.startDate
         data.jcEndDate = params.testTime.finishDate

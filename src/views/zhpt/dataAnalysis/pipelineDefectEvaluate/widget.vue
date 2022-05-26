@@ -309,6 +309,7 @@ export default {
         data.defectType = params.defectType
         data.defectName = params.defectName
       }
+      data.wordInfoState = '1'
       let res = await getPipeDefectsTypeCountMap(data)
       console.log('管道缺陷评价统计', res)
       this.pageData = res.result
