@@ -114,6 +114,11 @@ export default {
     float: left;
     padding: 0px 3px;
     top: 2px;
+    &:hover {
+      cursor: pointer;
+      color: rgb(64, 158, 255);
+      transform: scale(1.2);
+    }
   }
 }
 </style>

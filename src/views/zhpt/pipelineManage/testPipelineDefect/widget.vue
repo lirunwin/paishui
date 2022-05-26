@@ -269,7 +269,7 @@ export default {
   data() {
     return {
       json_fields: {
-        管段编号: 'expNo',
+        "管段编号": 'expNo',
         管段类型: 'pipeType',
         '管径(mm)': 'diameter',
         材质: 'material',
@@ -341,18 +341,15 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { width: '', sortable: false, label: '管段编号', name: 'expNo' },
-        { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
-        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
-        { width: '100', sortable: false, label: '材质', name: 'material' },
-        { width: '100', sortable: false, label: '检测方向', name: 'detectDir' },
-        { width: '100', sortable: true, label: '距离(m)', name: 'checkLength' },
-        { width: '100', sortable: true, label: '分值', name: 'defectNum' },
-        { width: '100', sortable: true, label: '等级', name: 'defectLevel' },
-        { width: '100', sortable: false, label: '检测视频', name: 'videoFileName' },
-        { width: '100', sortable: false, label: '工程名称', name: 'prjName' },
-        { width: '100', sortable: false, label: '工程地点', name: 'checkAddress' },
-        { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' }
+        { width: '200', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '120', sortable: false, label: '检测方向', name: 'detectDir' },
+        { width: '120', sortable: true, label: '距离(m)', name: 'checkLength' },
+        { width: '120', sortable: true, label: '分值', name: 'defectNum' },
+        { width: '120', sortable: true, label: '等级', name: 'defectLevel' },
+        { width: '120', sortable: false, label: '检测视频', name: 'videoFileName' },
+        { width: '120', sortable: false, label: '修复方式', name: 'repairMode' },
+        { width: '120', sortable: true, label: '检测日期', name: 'sampleTime' },
+        { width: '', sortable: false, label: '评价', name: 'pipeNote' },
         // { label: '结构性缺陷评价', name: 'structEstimate' },
         // { label: '检测地点', name: 'checkAddress' },
       ],

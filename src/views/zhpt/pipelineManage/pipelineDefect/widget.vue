@@ -390,7 +390,6 @@ export default {
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
-      if (this.param) return
       if (n !== '管道缺陷管理') {
         this.clearAll()
       } else {
@@ -527,7 +526,7 @@ export default {
     },
     // 获取缺陷数据
     getPipeDefectData() {
-      getDefectData().then((res) => {
+      getDefectData({ state: 1 }).then((res) => {
         if (res.code === 1) {
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result]
@@ -535,11 +534,11 @@ export default {
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
             this.vectorLayer.getSource().clear()
             this.lightLayer.getSource().clear()
-            if (
-              strucDefectFeatures.length !== 0 ||
-              funcDefectFeatures.length !== 0 ||
-              pipeDefectFeatures.length !== 0
-            ) {
+            if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
+              let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+              let view = this.map.getView()
+              view.setCenter(center)
+              view.animate({ zoom: 13 })
               this.vectorLayer.getSource().addFeatures(pipeDefectFeatures)
             }
             this.hadLoad = true
@@ -936,9 +935,6 @@ export default {
   /deep/.histroyPipeData {
     // 详情卡片的样式
     .detailsCrad {
-      position: fixed;
-      top: 100px;
-      right: 24px;
       z-index: 9;
       .clearfix:before,
       .clearfix:after {

@@ -542,13 +542,13 @@
                     >
                   </div>
                   <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
-                  <p style="padding-left: 10px">评价:{{ getCurrentForm.structEstimate }}</p>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.structEstimate }}</p>
                   <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
                   <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
                 </div>
                 <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                   <el-tabs v-model="activeName">
-                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
+                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum">
                       <div class="container">
                         <el-image
                           style="width: 100%; height: 90%; -webkit-user-drag: none"
@@ -558,8 +558,8 @@
                         </el-image>
                         <div style="text-align: center">
                           <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
-                          {{ getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0 }}/{{
-                            getCurrentForm.pipeDefects.length || 0
+                          {{ getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0) : 0 }}/{{
+                            getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0) : 0
                           }}
                           <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
                         </div>
@@ -1047,8 +1047,8 @@ export default {
     async openPromptBox(id, position, type) {
       if (type === 1) {
         let res = await assessmentDefect(id)
-        this.currentForm = res.result
         this.currentIndex = 0
+        this.currentForm = [res.result]
         this.currentInfoCard = true
       } else {
         // 管段评估(查询管段部分)
@@ -1059,6 +1059,7 @@ export default {
       }
 
       if (position) {
+        console.log('打开弹窗')
         let popupId = type === 1 ? 'popupCard' : 'popupCardEV'
         this.popup = new Overlay({
           element: document.getElementById(popupId),
@@ -1128,6 +1129,7 @@ export default {
       this.$refs.myMap && this.$refs.myMap.map.removeLayer(this.vectorLayer2)
       this.vectorLayer2.getSource().clear()
       this.clickEvent && unByKey(this.clickEvent)
+      this.popup && this.map.removeOverlay(this.popup)
     },
     // 根据状态设置每列表格样式
     modality(obj) {
@@ -1175,7 +1177,6 @@ export default {
       let dataApi = null,
         map,
         layer
-      console.log('打开小地图')
       if (type === 1) {
         map = this.data.mapView
         layer = this.vectorLayer
@@ -1212,11 +1213,7 @@ export default {
               this.lightLayer.getSource().clear()
               layer.getSource().clear()
               map.getView().setZoom(12)
-              if (
-                strucDefectFeatures.length !== 0 ||
-                funcDefectFeatures.length !== 0 ||
-                pipeDefectFeatures.length !== 0
-              ) {
+              if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
                 layer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
               }
             }
@@ -2182,9 +2179,6 @@ $fontSize: 14px !important;
   }
   // 详情卡片的样式
   .detailsCrad {
-    position: fixed;
-    top: 100px;
-    right: 45px;
     z-index: 9;
     .clearfix:before,
     .clearfix:after {

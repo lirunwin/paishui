@@ -1,6 +1,6 @@
 <template>
   <div class='searchTool'>
-    <el-input :placeholder="'请输入'+title" v-model="searchInput" class="searchInput input-with-select">
+    <el-input :placeholder="'请输入'+ title" v-model="searchInput" class="searchInput input-with-select" clearable>
       <el-select v-model="select" class='selectInput' @change="selectChange" slot="prepend" placeholder="请选择">
         <template v-for="(item,index) in selectList">
           <el-option :label="item.label" :value="item.value" :key="'searchTool_'+index"></el-option>
@@ -8,12 +8,12 @@
       </el-select>
       <el-button class='buttonDiv' style="color:#fff;" slot="append" @click="searchInfo" :icon="isloading ? 'el-icon-loading' : 'el-icon-search'"></el-button>
     </el-input>
-    <div v-if="resData.length !== 0" :v-loading='true' class="res-box i-scrollbar" v-scrollMore='getMore'>
+    <div id="searchBox" v-if="resData.length !== 0" :v-loading='true' class="res-box i-scrollbar" v-scrollMore='getMore'>
       <div v-for="(item, index) in resData" :key="index" class="more res-box-item" @click="setlocation(item.geometry, item.name)">
         <div class="box-address" :title="item.title" v-html='item.mark'></div>
         <div>
-          <span style="font-size:14px;float:left;color:#bbb">编号：{{ item.name }}</span>
-          <span style="font-size:14px;float:right;color:#bbb">设备类型：{{ item.type}}</span>
+          <span class="res-box-item-span" style="float:left;">编号：{{ item.name }}</span>
+          <span class="res-box-item-span" style="float:right;">设备类型：{{ item.type }}</span>
         </div>
       </div>
       <div v-show="showBottom" style="text-align:center;color:#ddd;margin-top:5px;height:20px;font-size:14px;">到底啦</div>
@@ -102,7 +102,7 @@ export default {
     */
     selectChange(){
       let selectData=this.selectList.find(item=>{return item.value==this.select});
-      this.title=selectData.label
+      this.title= selectData.label === '坐标' ? '坐标如:101,26': selectData.label
     },
 
     /**
@@ -156,6 +156,8 @@ export default {
       let coors = this.searchInput.split(',')
       if (isNaN(coors[0] || isNaN(coors[1]))) {
         this.$message.warning('请输入正确的坐标格式，如：101.72,26.57')
+      } else if (coors[0] > 180 || coors[1] > 90){
+        this.$message.warning('请输入正确的坐标格式, 经度不超过180, 纬度不超过90')
       } else {
         let feature = new Feature({ geometry: new Point([Number(coors[0]), Number(coors[1])]) })
         feature.setStyle(new Style({ image: new Icon({ src: markImg, size:[200, 200], scale: 0.2 }) }))
@@ -231,10 +233,12 @@ export default {
     color:#000;
   }
   .i-scrollbar {
-    overflow: scroll;
-    @include scrollBar;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    // @include scrollBar;
   }
   .res-box-item {
+    cursor: pointer;
     font-size: 15px;
     border-radius: 3px;
     background-color: #fff;
@@ -243,10 +247,27 @@ export default {
     box-sizing: border-box;
     padding: 10px 5px;
     margin: 5px 0;
-    &:hover {
-      background-color: rgb(64, 158, 255);
-      color: #fff
-    }
+    // &:hover {
+    //   background-color: rgb(64, 158, 255);
+    //   color: #fff;
+    // }
+  }
+  .res-box-item-span {
+    font-size: 13px;
+    color:#bbb;
+  }
+  #searchBox .res-box-item:hover div {
+    color: #fff;
+  }
+  #searchBox .res-box-item:hover{
+    background: rgb(45, 116, 231);
+    color: #fff;
+  }
+  #searchBox .res-box-item:hover div .res-box-item-span{
+    color: #fff;
+  }
+  /deep/ #searchBox .res-box-item:hover div .light-text{
+    color: #fff;
   }
 }
 </style>
