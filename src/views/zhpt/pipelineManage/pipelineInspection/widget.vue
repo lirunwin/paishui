@@ -82,7 +82,7 @@
           <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
+        <el-table-column  align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -116,8 +116,9 @@
       </div>
     </div>
     <!-- 详情卡片 -->
-      <div id="popupCard" class="histroyPipeData" v-show="dialogFormVisible">
-        <div class="detailsCrad" v-if="dialogFormVisible">
+    <transition name="el-fade-in-linear">
+      <div class="histroyPipeData" v-show="dialogFormVisible">
+        <div class="detailsCrad" v-show="dialogFormVisible">
           <el-card class="box-card">
             <div slot="header" class="clearfix">
               <span style="font-size: 16px">管道检测历史详情（{{ detailsTitle.pipeType + detailsTitle.expNo }}）</span>
@@ -132,7 +133,7 @@
               <div class="box1">
                 <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
                   <div class="detailsTitle">管段信息</div>
-                  <el-row v-for="(v, i) in cardTableContent" :key="i">
+                  <el-row v-for="v in cardTableContent" :key="v[0].name">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
                         <el-input size="small" v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
@@ -250,83 +251,13 @@
           </el-card>
         </div>
       </div>
+    </transition>
     <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
       <delete-dialog @sendBool="getBool" v-show="checkdialogFormVisible" :checkParam="id"></delete-dialog>
     </transition>
-
-    <!-- 当前列缺陷信息弹出框 -->
-    <transition name="el-fade-in-linear">
-      <div id="popupCard" class="defectPipeData" v-show="currentInfoCard">
-        <div
-          class="detailsCrad"
-          style="top: 10%; left: 20%; right: 62%; font-size: 14px; color: red"
-          v-if="currentInfoCard"
-        >
-          <el-card class="box-card" style="width: 300px">
-            <div class="table-content" style="padding: 15px">
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  height: 30px;
-                  box-sizing: border-box;
-                "
-              >
-                <span style="font-weight: bold"
-                  >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
-                </span>
-                <a
-                  style="font-size: 12px; color: #2d74e7; text-decoration: underline"
-                  @click="openDetailsDialog(DetailsForm.stateId)"
-                  >详情</a
-                >
-              </div>
-              <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
-              <div class="content-info" style="font-size: 12px">
-                <div class="left">
-                  <div style="padding: 3px 0">检测日期&emsp; {{ DetailsForm.sampleTime }}</div>
-                  <div style="display: flex; padding: 3px 0">
-                    <span style="flex: 1">距离:&emsp;{{ DetailsForm.distanceStartPoint }}</span
-                    ><span style="flex: 1">等级:&emsp;{{ DetailsForm.defectLevel }}</span>
-                  </div>
-                  <div style="display: flex; padding: 3px 0">
-                    <span style="width: 40px">评价:</span>
-                    <span style="line-height: 16px; padding-left: 10px">{{ DetailsForm.pipeNote }}</span>
-                  </div>
-                </div>
-                <div class="right">
-                  <el-tabs v-model="activeName">
-                    <el-tab-pane :label="`照片`" name="picnum">
-                      <div class="container" v-if="getDefectImgUrl">
-                        <el-image
-                          style="width: 100%; height: 90%; -webkit-user-drag: none"
-                          :src="getDefectImgUrl"
-                          :preview-src-list="[getDefectImgUrl]"
-                        >
-                        </el-image>
-                      </div>
-                      <div v-show="!getDefectImgUrl" style="text-align: center; margin-top: 20px">暂无照片</div>
-                    </el-tab-pane>
-                    <el-tab-pane :label="`视频`" name="viedoNum">
-                      <div style="width: 100%; height: 100%" v-if="DetailsForm.videopath">
-                        <video controls="controls" width="100%" height="83%">
-                          <source :src="getDefectVideoUrl" type="video/mp4" />
-                        </video>
-                      </div>
-                      <div v-show="!DetailsForm.videopath" style="text-align: center; margin-top: 20px">暂无视频</div>
-                    </el-tab-pane>
-                  </el-tabs>
-                </div>
-              </div>
-            </div>
-          </el-card>
-        </div>
-      </div>
-    </transition>
-
-    <!-- 管道评估结果 -->
+    
+    <!-- 管道弹窗 -->
     <transition name="el-fade-in-linear">
       <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
         <div class="detailsCrad" v-if="currentInfoCard2">
@@ -345,7 +276,7 @@
                 <span style="font-weight: bold; user-select: none"
                   >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
                   <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
-                  {{ currentFormEV.length ? currentIndexEV + 1 : 0 }}/{{ currentFormEV.length }}
+                  {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
                   <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
                 </span>
                 <a
@@ -379,10 +310,7 @@
                 </div>
                 <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                   <el-tabs v-model="activeName">
-                    <el-tab-pane
-                      :label="`照片(${getCurrentForm.pipeDefects ? getCurrentForm.pipeDefects.length || 0 : 0})`"
-                      name="picnum"
-                    >
+                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum">
                       <div class="container">
                         <el-image
                           style="width: 100%; height: 90%; -webkit-user-drag: none"
@@ -392,9 +320,9 @@
                         </el-image>
                         <div style="text-align: center">
                           <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
-                          {{
-                            getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length ? imgArrIndexEV + 1 : 0) : 0
-                          }}/{{ getCurrentForm.pipeDefects ? getCurrentForm.pipeDefects.length || 0 : 0 }}
+                          {{ getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0) : 0 }}/{{
+                            getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0) : 0
+                          }}
                           <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
                         </div>
                       </div>
@@ -417,6 +345,7 @@
         </div>
       </div>
     </transition>
+
   </div>
 </template>
 
@@ -450,18 +379,13 @@ export default {
   },
   data() {
     return {
-      DetailsForm: {}, // 管道缺陷缩略框数据
-      currentInfoCard: false, // 缺陷弹出框
-      currentInfoCard2: false, // 管段弹出框
       multipleSelection: [], // 选中的表格
       id: null,
       checkdialogFormVisible: false,
       imgArrIndex: 0,
-      imgArrIndexEV:0,
       urlArr: [],
       activeName: 'first',
       currentForm: {}, // 当前详情表单
-      currentFormEV: {}, // 当前管段详情表单
       detailsTitle: {}, // 详情头部信息
       cardTableContent: [
         [
@@ -482,7 +406,6 @@ export default {
         ]
       ], // 详情表格参数
       currentIndex: 0, // 详情页数
-      currentIndexEV:0,
       cardTable: [], // 详情表格数据
       activeIndex: '1', // 详情导航索引
       dialogFormVisible: false, // 详情弹框显影
@@ -520,6 +443,7 @@ export default {
       pagination: { current: 1, size: 30 }, // 分页参数信息
       paginationTotal: 0, // 总页数
       tableData: [],
+      isPromptBox: {}, // 当前列信息
       form: {},
       //
       vectorLayer: null,
@@ -528,7 +452,7 @@ export default {
       clickEvent: null,
       projUtil: null, // 坐标系工具
       currentDataProjName: 'proj43', // 当前坐标系
-      popup: null
+      popup: null,
     }
   },
   created() {
@@ -557,44 +481,6 @@ export default {
     }
   },
   computed: {
-    // <--------
-     // 管段当前信息
-    getCurrentForm() {
-      return this.currentFormEV ? this.currentFormEV[this.currentIndexEV] : {}
-    },
-     // 获取照片数组路径
-    getImgUrlArrEV() {
-      let arr = this.getCurrentForm.pipeDefects.map((v) => {
-        return baseAddress + '/psjc/file' + v.picPath
-      })
-      return arr
-    },
-    // 获取文件url
-    getImgUrlEV() {
-      let address = baseAddress + '/psjc/file' + this.getCurrentForm.pipeDefects[this.imgArrIndexEV].picPath
-      console.log('address', address)
-      return address
-    },
-    getVideoUrlEV() {
-      console.log('照片', this.getCurrentForm.pipeDefects.length)
-      let address = baseAddress + '/psjc/file' + this.getCurrentForm.videoPath
-      console.log('address', address)
-      return address
-    },
-    // ----------->
-    // <--- 管道缺陷
-    // 获取文件url
-    getDefectVideoUrl() {
-      let address = baseAddress + '/psjc/file' + this.DetailsForm.videopath
-      console.log('address', address)
-      return address
-    },
-    getDefectImgUrl() {
-      let address = baseAddress + '/psjc/file' + this.DetailsForm.picPath
-      console.log('address', address)
-      return address
-    },
-    // ------>
     // 获取文件url
     getImgUrl() {
       let address = this.urlArr[this.imgArrIndex]
@@ -660,9 +546,6 @@ export default {
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
-      if (!this.searchParams.jcDate.startDate) {
-        this.searchParams.jcDate.startDate = this.searchParams.jcDate.finishDate
-      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchParams.jcDate.startDate).getTime()
       let date2 = new Date(this.searchParams.jcDate.finishDate).getTime()
@@ -698,7 +581,7 @@ export default {
           this.setPositionByPipeId(feas[0].get('id'))
           this.openPromptBox({ expNo })
         } else {
-          this.currentInfoCard = false
+          this.dialogFormVisible = false
           this.lightLayer.getSource().clear()
         }
       })
@@ -723,7 +606,7 @@ export default {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
-              view.animate({ zoom: 15 })
+              view.animate({ zoom: 14 })
               this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
           }
@@ -841,7 +724,6 @@ export default {
     setPositionByPipeId(id) {
       let features = this.vectorLayer.getSource().getFeatures()
       let filterFea = features.find((fea) => fea.get('id') === id)
-      console.log('定位')
       if (filterFea) {
         let feature = new Feature({ geometry: filterFea.getGeometry().clone() })
         this.lightLayer.getSource().clear()
@@ -854,7 +736,6 @@ export default {
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
-      // console.log('obj', obj.row)
       let expNoArr
       if (this.multipleSelection != []) {
         expNoArr = this.multipleSelection.map((v) => v.expNo)
@@ -879,10 +760,6 @@ export default {
           this.$refs.multipleTable.toggleRowSelection(row)
         }
       }
-
-      //       
-      this.openDetails(row)
-
     },
     // 上一页
     lastPage() {
@@ -891,6 +768,7 @@ export default {
         return
       }
       this.currentIndex--
+      // this.openDetails(this.isPromptBox)
     },
     // 下一页
     nextPage() {
@@ -899,6 +777,7 @@ export default {
         return
       }
       this.currentIndex++
+      // this.openDetails(this.isPromptBox)
     },
     // 详情导航选择事件
     handleSelect(key, keyPath) {
@@ -911,6 +790,7 @@ export default {
       console.log('详情触发')
 
       this.currentForm = row // 保存当前列信息
+      this.isPromptBox = { ...row }
       let res = await histroyPipeData({ expNo: row.expNo })
       this.detailsTitle = {
         expNo: row.expNo,
@@ -921,31 +801,27 @@ export default {
       this.urlArr = this.tableForm.pipeDefects.map((v) => {
         return baseAddress + '/psjc/file' + v.picPath
       })
+
+      // if (1) {
+      //   let fea = this.vectorLayer.getSource().getFeatures().find(fea => fea.get('expNo') === row.expNo)
+      //   let position = mapUtil.getCenter(fea)
+      //   this.popup = new Overlay({
+      //     element: document.getElementById('popupCard'),
+      //     //当前窗口可见
+      //     autoPan: true,
+      //     positioning: 'bottom-center',
+      //     stopEvent: true,
+      //     offset: [18, -25],
+      //     autoPanAnimation: { duration: 250 }
+      //   })
+      //   this.map.addOverlay(this.popup)
+      //   this.popup.setPosition(position)
+      // }
+
       // console.log("this.tableForm.pipeDefects",this.tableForm.pipeDefects);
-      let features = this.vectorLayer.getSource().getFeatures()
-      let fea = features.find(fea => fea.get('expNo') === row.expNo)
-      this.lightLayer.getSource().clear()
-      this.lightLayer.getSource().addFeature(new Feature({ geometry: fea.getGeometry().clone() }))
-      let center = mapUtil.getCenter(fea)
-      let view = this.map.getView()
-      view.setCenter(center)
-      view.setZoom(16)
-
-      if (center) {
-        this.popup = new Overlay({
-          element: document.getElementById('popupCard'),
-          //当前窗口可见
-          autoPan: true,
-          positioning: 'bottom-center',
-          stopEvent: true,
-          offset: [18, -25],
-          autoPanAnimation: { duration: 250 }
-        })
-        this.map.addOverlay(this.popup)
-        this.popup.setPosition(center)
-      }
-
       this.dialogFormVisible = true
+
+      
     },
     // 重置
     async resetBtn() {
@@ -964,7 +840,6 @@ export default {
     },
     // 搜索
     searchApi() {
-      this.pagination.current = 1
       this.getDate(this.searchParams)
     },
     // 表格多选事件
@@ -1014,317 +889,6 @@ export default {
   box-sizing: border-box;
   position: relative;
   font-size: 12px;
-
-  // 管道缺陷弹框样式
-  /deep/.defectPipeData {
-    // 详情卡片的样式
-    .detailsCrad {
-      position: fixed;
-      top: 100px;
-      right: 24px;
-      z-index: 9;
-      .clearfix:before,
-      .clearfix:after {
-        display: table;
-        content: '';
-      }
-      .clearfix:after {
-        clear: both;
-      }
-
-      .box-card {
-        width: 500px;
-        max-height: 80vh;
-        .el-card__header {
-          height: 48px;
-          color: #fff;
-          background-color: #2d74e7;
-        }
-        .el-card__body {
-          padding: 0 !important;
-          .el-menu-item {
-            height: 45px;
-            font-size: 16px;
-          }
-        }
-        .content {
-          height: 600px;
-          /deep/ .content-info {
-            overflow-y: scroll;
-            // max-height: 545px;
-            height: 100%;
-            padding: 10px 20px;
-            .el-textarea__inner,
-            .el-input__inner {
-              color: #666;
-            }
-            .detailsTitle {
-              position: relative;
-              font-size: 16px;
-              padding: 5px 0;
-              box-sizing: border-box;
-            }
-            .detailsTitle::after {
-              position: absolute;
-              top: 5px;
-              left: -10px;
-              content: '';
-              width: 4px;
-              height: 65%;
-              background-color: #2d74e7;
-            }
-            /deep/ .el-form {
-              .is-disabled {
-                .el-input__inner {
-                  background-color: transparent;
-                }
-                .el-textarea__inner {
-                  background-color: transparent;
-                }
-              }
-              .el-form-item {
-                margin-bottom: 10px;
-              }
-            }
-          }
-        }
-        .table-content {
-          padding: 15px;
-          .content-info {
-            font-size: 12px;
-            display: flex;
-            // justify-content: space-between;
-            flex-direction: column;
-            align-content: center;
-            .left {
-              font-family: 'Microsoft YaHei UI', sans-serif;
-              flex: 1;
-            }
-            .right {
-              flex: 1;
-              .container {
-                height: 100%;
-                width: 100%;
-                padding: 5px;
-                box-sizing: border-box;
-              }
-
-              .is-top {
-              }
-              .el-tabs__item {
-                margin: 11px 0 0 0;
-                background: transparent;
-              }
-              .el-tabs__header {
-                border-top: 0;
-                background: #fff;
-              }
-              // .el-tabs__nav-wrap::after {
-              //   z-index: 2;
-              // }
-              // .el-tabs__active-bar
-            }
-            .detailsTitle {
-              position: relative;
-              margin: 6px 0;
-              padding-left: 10px;
-              box-sizing: border-box;
-              margin-bottom: 10px;
-            }
-            .detailsTitle::after {
-              position: absolute;
-              left: 0;
-              content: '';
-              width: 4px;
-              height: 100%;
-              background-color: #2d74e7;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // 管道评估弹框的样式
-  .PipeEvData {
-    position: fixed;
-    top: 100px;
-    right: 45px;
-    z-index: 9;
-    .detailsCrad {
-      .clearfix:before,
-      .clearfix:after {
-        display: table;
-        content: '';
-      }
-      .clearfix:after {
-        clear: both;
-      }
-
-      .box-card {
-        width: 550px;
-        min-height: 310px;
-        border: none;
-        border-radius: 5px;
-        /deep/ .el-card__header {
-          height: 48px;
-          color: #fff;
-          background-color: #2d74e7;
-        }
-        /deep/.el-card__body {
-          padding: 15px !important;
-          .el-menu-item {
-            height: 45px;
-            font-size: 16px;
-          }
-        }
-        .content {
-          .content-info {
-            overflow-y: scroll;
-            height: 600px;
-            padding: 10px 20px;
-            .info-title {
-              font-size: 14px;
-              font-weight: bold;
-              margin: 5px 0;
-            }
-            .info-box {
-              height: 100%;
-              display: flex;
-              justify-content: space-between;
-              .info-text {
-                width: 37%;
-                padding: 10px;
-                box-sizing: border-box;
-                background-color: #f3f7fe;
-                border: 1px solid #dedede;
-              }
-              .info-video {
-                width: 60%;
-                border: 1px solid #dedede;
-              }
-            }
-            /deep/.el-form {
-              .el-link--inner {
-                max-width: 416px;
-                /* 1.先强制一行内显示文本 */
-                white-space: nowrap;
-                /* 2.超出部分隐藏 */
-                overflow: hidden;
-                /* 3.文字用省略号替代超出的部分 */
-                text-overflow: ellipsis;
-              }
-              /deep/.is-disabled {
-                .el-input__inner {
-                  background-color: transparent;
-                }
-                .el-textarea__inner {
-                  background-color: transparent;
-                }
-              }
-              .el-form-item {
-                margin-bottom: 10px;
-              }
-            }
-            /deep/.el-textarea__inner,
-            .el-input__inner {
-              color: #666;
-            }
-            .detailsTitle {
-              position: relative;
-              font-size: 16px;
-              padding: 5px 0;
-              box-sizing: border-box;
-            }
-            .detailsTitle::after {
-              position: absolute;
-              top: 5px;
-              left: -10px;
-              content: '';
-              width: 4px;
-              height: 65%;
-              background-color: #2d74e7;
-            }
-          }
-        }
-        .table-content {
-          padding: 15px;
-          .content-info {
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-
-            .left {
-              flex: 1;
-              .text-space {
-                margin: 10px 0;
-                /deep/.el-link--inner {
-                  max-width: 240px;
-                  // 1.先强制一行内显示文本
-                  white-space: nowrap;
-
-                  // 2.超出部分隐藏
-                  overflow: hidden;
-                  // 3.文字用省略号替换超出的部分
-                  text-overflow: ellipsis;
-                }
-              }
-            }
-            .right {
-              flex: 1;
-
-              /deep/.is-top {
-                margin: 0 0 10px;
-              }
-              // .el-tabs__header{
-              //   border-top: none;
-              //       margin-bottom: 6px;
-              //   background-color: transparent !important;
-              // }
-              /deep/.el-tabs {
-                .container {
-                  height: 100%;
-                  width: 100%;
-                  padding-top: 5px;
-                  box-sizing: border-box;
-                }
-                .el-tabs__content {
-                  height: 150px;
-                  width: 234px;
-                }
-                .el-tabs__item {
-                  margin: 11px 0 0 0 !important;
-                  background: transparent !important;
-                }
-                .el-tabs__header {
-                  border-top: 0 !important;
-                  background: transparent !important;
-                }
-              }
-              // .el-tabs__nav-wrap::after {
-              //   z-index: 2;
-              // }
-              // .el-tabs__active-bar
-            }
-            .detailsTitle {
-              position: relative;
-              margin: 6px 0;
-              padding-left: 10px;
-              box-sizing: border-box;
-            }
-            .detailsTitle::after {
-              position: absolute;
-              left: 0;
-              content: '';
-              width: 4px;
-              height: 100%;
-              background-color: #2d74e7;
-            }
-          }
-        }
-      }
-    }
-  }
   // 表格样式
   .table-box {
     width: 96%;
@@ -1438,9 +1002,8 @@ export default {
 
   .histroyPipeData {
     position: fixed;
-    top: 90px;
-    right: 53px;
-    z-index: 9;
+    top: 120px;
+    right: 50px;
     // 详情卡片的样式
     .detailsCrad {
       z-index: 9;
@@ -1461,173 +1024,162 @@ export default {
           color: #fff;
           background-color: #2d74e7;
         }
-        .clearfix:after {
-          clear: both;
+        .el-card__body {
+          padding: 0;
+          .el-menu-item {
+            height: 45px;
+          }
         }
-
-        /deep/ .box-card {
-          width: 500px;
-          max-height: 80vh;
-          .el-card__header {
-            height: 48px;
-            color: #fff;
-            background-color: #2d74e7;
-          }
-          .el-card__body {
-            padding: 0;
-            .el-menu-item {
-              height: 45px;
+        .content {
+          height: 600px;
+          // padding: 22px;
+          // box-sizing: border-box;
+          .box1 {
+            overflow-y: scroll;
+            // max-height: 545px;
+            height: 100%;
+            padding: 10px 20px;
+            .el-row {
+              padding: 0 10px;
             }
-          }
-          .content {
-            height: 600px;
-            // padding: 22px;
-            // box-sizing: border-box;
-            .box1 {
-              overflow-y: scroll;
-              // max-height: 545px;
-              height: 100%;
-              padding: 10px 20px;
-              .el-row {
-                padding: 0 10px;
-              }
-              .historyList {
-                .historyTitle {
-                  height: 30px;
-                  color: #555555;
-                  font-weight: bold;
-                  padding: 5px 10px;
-                  box-sizing: border-box;
-                  margin: 10px 0;
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  background-color: #f6f9fe;
-                }
-
-                .info-box {
-                  height: 100%;
-                  display: flex;
-                  margin: 5px 0;
-                  justify-content: space-between;
-                  .info-text {
-                    width: 48%;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    .el-form {
-                      .el-form-item {
-                        margin-bottom: 10px;
-                      }
-                      .el-link--inner {
-                        max-width: 140px;
-                        /* 1.先强制一行内显示文本 */
-                        white-space: nowrap;
-                        /* 2.超出部分隐藏 */
-                        overflow: hidden;
-                        /* 3.文字用省略号替代超出的部分 */
-                        text-overflow: ellipsis;
-                      }
-                    }
-                  }
-                  .info-video {
-                    width: 48%;
-                    .image-list {
-                      height: 155px;
-                      display: flex;
-                      flex-direction: column;
-                    }
-                    .el-tabs {
-                      .el-tabs__nav-wrap {
-                        width: 100% !important;
-                      }
-                      .el-tabs__item {
-                        margin: 11px 0 0 0 !important;
-                        background: transparent !important;
-                      }
-                      .el-tabs__header {
-                        border-top: 0 !important;
-                        background: transparent !important;
-                      }
-                    }
-                  }
-                }
-              }
-
-              .el-textarea__inner,
-              .el-input__inner {
-                color: #666;
-              }
-              .detailsTitle {
-                position: relative;
-                font-size: 16px;
+            .historyList {
+              .historyTitle {
+                height: 30px;
+                color: #555555;
+                font-weight: bold;
                 padding: 5px 10px;
                 box-sizing: border-box;
+                margin: 10px 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background-color: #f6f9fe;
               }
-              .detailsTitle::after {
-                position: absolute;
-                top: 5px;
-                left: -10px;
-                content: '';
-                width: 4px;
-                height: 65%;
-                background-color: #2d74e7;
+
+              .info-box {
+                height: 100%;
+                display: flex;
+                margin: 5px 0;
+                justify-content: space-between;
+                .info-text {
+                  width: 48%;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  .el-form {
+                    .el-form-item {
+                      margin-bottom: 10px;
+                    }
+                    .el-link--inner {
+                      max-width: 140px;
+                      /* 1.先强制一行内显示文本 */
+                      white-space: nowrap;
+                      /* 2.超出部分隐藏 */
+                      overflow: hidden;
+                      /* 3.文字用省略号替代超出的部分 */
+                      text-overflow: ellipsis;
+                    }
+                  }
+                }
+                .info-video {
+                  width: 48%;
+                  .image-list {
+                    height: 155px;
+                    display: flex;
+                    flex-direction: column;
+                  }
+                  .el-tabs {
+                    .el-tabs__nav-wrap {
+                      width: 100% !important;
+                    }
+                    .el-tabs__item {
+                      margin: 11px 0 0 0 !important;
+                      background: transparent !important;
+                    }
+                    .el-tabs__header {
+                      border-top: 0 !important;
+                      background: transparent !important;
+                    }
+                  }
+                }
               }
             }
-            /deep/ .el-form {
-              .is-disabled {
-                .el-input__inner {
-                  background-color: transparent;
-                }
-                .el-textarea__inner {
-                  background-color: transparent;
-                }
-              }
-              .el-form-item {
-                margin-bottom: 10px;
-              }
+
+            .el-textarea__inner,
+            .el-input__inner {
+              color: #666;
+            }
+            .detailsTitle {
+              position: relative;
+              font-size: 16px;
+              padding: 5px 10px;
+              box-sizing: border-box;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              top: 5px;
+              left: -10px;
+              content: '';
+              width: 4px;
+              height: 65%;
+              background-color: #2d74e7;
             }
           }
-          .table-content {
-            padding: 15px;
-            /deep/ .content-info {
-              font-size: 12px;
-              display: flex;
-              justify-content: space-between;
+          /deep/ .el-form {
+            .is-disabled {
+              .el-input__inner {
+                background-color: transparent;
+              }
+              .el-textarea__inner {
+                background-color: transparent;
+              }
+            }
+            .el-form-item {
+              margin-bottom: 10px;
+            }
+          }
+        }
+        .table-content {
+          padding: 15px;
+          /deep/ .content-info {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
 
-              .detailsTitle {
-                position: relative;
-                padding-left: 10px;
-                box-sizing: border-box;
-                margin-bottom: 10px;
-              }
-              .detailsTitle::after {
-                position: absolute;
-                left: 0;
-                content: '';
-                width: 4px;
-                height: 100%;
-                background-color: #2d74e7;
-              }
+            .detailsTitle {
+              position: relative;
+              padding-left: 10px;
+              box-sizing: border-box;
+              margin-bottom: 10px;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              left: 0;
+              content: '';
+              width: 4px;
+              height: 100%;
+              background-color: #2d74e7;
             }
           }
         }
       }
     }
   }
-  #popupCard {
-    &::after {
-      content: '';
-      display: block;
-      width: 45px;
-      height: 27px;
-      background: url('../components/testImg/corner.png');
-      position: absolute;
-      bottom: -26px;
-      left: 50%;
-      transform: translate(-50%, 0);
-    }
-  }
 }
 
+
+
+#popupCard {
+  &::after {
+    content: '';
+    display: block;
+    width: 45px;
+    height: 27px;
+    background: url('../components/testImg/corner.png');
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    transform: translate(-50%, 0);
+  }
+}
 </style>
