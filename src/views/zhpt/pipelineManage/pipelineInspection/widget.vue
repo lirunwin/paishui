@@ -82,7 +82,7 @@
           <p>暂无数据</p>
         </template>
         <el-table-column header-align="center" align="center" type="selection" width="55"> </el-table-column>
-        <el-table-column  align="center" type="index" label="序号" width="50"> </el-table-column>
+        <el-table-column align="center" type="index" label="序号" width="50"> </el-table-column>
         <el-table-column
           :prop="v.name"
           header-align="center"
@@ -455,6 +455,9 @@ export default {
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
+      if (!this.searchParams.jcDate.startDate) {
+        this.searchParams.jcDate.startDate = this.searchParams.jcDate.finishDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchParams.jcDate.startDate).getTime()
       let date2 = new Date(this.searchParams.jcDate.finishDate).getTime()
@@ -516,7 +519,9 @@ export default {
               let view = this.map.getView()
               view.setCenter(center)
               view.animate({ zoom: 13 })
-              this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+              this.vectorLayer
+                .getSource()
+                .addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
             }
           }
         } else this.$message.error('管线缺陷数据请求失败')
@@ -646,7 +651,7 @@ export default {
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
-      console.log('obj', obj.row)
+      // console.log('obj', obj.row)
       let expNoArr
       if (this.multipleSelection != []) {
         expNoArr = this.multipleSelection.map((v) => v.expNo)
@@ -732,6 +737,7 @@ export default {
     },
     // 搜索
     searchApi() {
+      this.pagination.current = 1
       this.getDate(this.searchParams)
     },
     // 表格多选事件
@@ -893,6 +899,10 @@ export default {
   }
 
   .histroyPipeData {
+    position: fixed;
+    top: 90px;
+    right: 53px;
+    z-index: 9;
     // 详情卡片的样式
     .detailsCrad {
       z-index: 9;

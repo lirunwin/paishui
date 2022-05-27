@@ -65,7 +65,6 @@
         tooltip-effect="dark"
         stripe
         style="width: 100%"
-        show-summary
         :default-sort="{ prop: 'date', order: 'descending' }"
         @selection-change="handleSelectionChange"
         @row-click="handleRowClick"
@@ -195,6 +194,9 @@ export default {
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
+      if (!this.searchValue.startDate) {
+        this.searchValue.startDate = this.searchValue.finishDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchValue.startDate).getTime()
       let date2 = new Date(this.searchValue.finishDate).getTime()
@@ -217,6 +219,7 @@ export default {
     },
     // 搜索
     searchApi() {
+      this.pagination.current = 1
       this.getDate(this.searchValue)
     },
 

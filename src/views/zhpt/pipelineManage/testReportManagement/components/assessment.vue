@@ -1,14 +1,7 @@
 <template>
   <div class="project-box">
     <!-- 报告内管段状态评估汇总 -->
-    <el-table
-      :data="tableData"
-      border
-      :summary-method="getSummaries"
-      show-summary
-      style="width: 100%; margin-top: 20px"
-      stripe
-    >
+    <el-table :data="tableData" border style="width: 100%; margin-top: 20px" stripe>
       <el-table-column type="index" label="序号" width="80" align="center" header-align="center" fixed="left">
       </el-table-column>
       <!-- 其它 -->
@@ -117,38 +110,7 @@ export default {
     console.log('管段状态评估汇总  ', resPrj)
     console.log('上面传来的id', this.paramId)
   },
-  methods: {
-    getSummaries(param) {
-      const { columns, data } = param
-      const sums = []
-      columns.forEach((column, index) => {
-        if (index === 0) {
-          sums[index] = '总计'
-          return
-        }
-          if (index === 2) {
-          sums[index] = '/'
-          return
-        }
-        const values = data.map((item) => Number(item[column.property]))
-        if (!values.every((value) => isNaN(value))) {
-          sums[index] = values.reduce((prev, curr) => {
-            const value = Number(curr)
-            if (!isNaN(value)) {
-              return prev + curr
-            } else {
-              return prev
-            }
-          }, 0).toFixed(2)
-          sums[index] += ''
-        } else {
-          sums[index] = '/'
-        }
-      })
-
-      return sums
-    }
-  }
+  methods: {}
 }
 </script>
 
