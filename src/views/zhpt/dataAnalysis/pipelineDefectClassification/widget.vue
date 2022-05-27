@@ -70,7 +70,7 @@
         <div id="mainA" style="height: 500px"></div>
         <div style="border: 1px solid #ccc">
           <div class="detailsTitle">管道缺陷分类统计表</div>
-          <table width="100%" height="300" border="1" class="left-table" cellspacing="0" align="center" stripe>
+          <table width="100%" height="160" border="1" class="left-table" cellspacing="0" align="center" stripe>
             <thead>
               <tr height="34">
                 <th>缺陷类型</th>

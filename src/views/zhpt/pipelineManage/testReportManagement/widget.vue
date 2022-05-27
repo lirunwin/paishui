@@ -288,7 +288,7 @@
       <el-dialog title="附件视频上传" @close="closeDialogVideo" :visible.sync="dialogFormVisible2">
         <el-form ref="formVideo" :model="form" :rules="rules">
           <!-- <el-input size="small" v-model="selectWord.name" disabled show-word-limit></el-input> -->
-           <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
+          <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
             <el-select
               clearable
               v-model="form.name"
@@ -418,17 +418,16 @@
               </el-tab-pane>
               <el-tab-pane label="管道缺陷" name="third">
                 <div class="releaseContent">
-                  <!-- <div class="detailsTitle">管道缺陷汇总一览表</div> -->
+                  <div class="detailsTitle">管道缺陷汇总一览表</div>
                   <!-- <defect-one :paramId="id"></defect-one> -->
-                  <div class="detailsTitle">检测评估建议</div>
-                  <proposal v-if="isOpen" :paramId="id"></proposal>
                 </div>
               </el-tab-pane>
               <el-tab-pane label="管段状态评估" name="fourth">
                 <div class="releaseContent">
                   <div class="detailsTitle">管段状况评估表</div>
                   <assessment v-if="isOpen" :paramId="id"></assessment>
-
+                  <div class="detailsTitle">检测评估建议</div>
+                  <proposal v-if="isOpen" :paramId="id"></proposal>
                   <!-- <div class="detailsTitle">管段检测与评估成果表</div>
                   <inspect-form></inspect-form> -->
                 </div>
@@ -789,21 +788,21 @@ export default {
       isRelease: false, // 判断是否从发布按钮进入详情
       defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }, // 合计
       defectQuantityStatisticsA: [
-        { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: '/', value: 0 },
         { title: '(BX)变形', type: 'BX', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(CK)错口', type: 'CK', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
-        { title: '(CR)异物穿入', type: 'CR', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
-        { title: '(FS)腐蚀', type: 'FS', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CR)异物穿入', type: 'CR', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: '/', value: 0 },
+        { title: '(FS)腐蚀', type: 'FS', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: '/', value: 0 },
         { title: '(PL)破裂', type: 'PL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(QF)起伏', type: 'QF', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(SL)渗透', type: 'SL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(TJ)脱节', type: 'TJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
-        { title: '(TL)接口材料脱落', type: 'TL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
+        { title: '(TL)接口材料脱落', type: 'TL', oneValue: 0, twoValue: 0, threeValue: '/', fourValue: '/', value: 0 }
       ], // 管道缺陷数量统计表
       defectQuantityStatisticsB: [
         { title: '(CJ)沉积', type: 'CJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(CQ)残墙、坝根', type: 'CQ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
-        { title: '(FZ)浮渣', type: 'FZ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(FZ)浮渣', type: 'FZ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: '/', value: 0 },
         { title: '(JG)结垢', type: 'JG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(SG)树根', type: 'SG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(ZW)障碍物', type: 'ZW', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
@@ -1533,6 +1532,14 @@ export default {
       this.isRelease = false
       console.log('关闭了弹框', this.defectQuantityStatisticsA)
     },
+    // 判断是否是'/'
+    judge(value) {
+      if (value == '/') {
+        return 0
+      } else {
+        return value
+      }
+    },
     // 单行管段详情
     async testReportDetails(id, isRelease) {
       // 显示加载
@@ -1602,19 +1609,19 @@ export default {
       })
 
       this.defectQuantityStatisticsA.forEach((v) => {
-        v.value = v.oneValue + v.twoValue + v.threeValue + v.fourValue
-        this.defectSumObj.oneSum += v.oneValue
-        this.defectSumObj.twoSum += v.twoValue
-        this.defectSumObj.threeSum += v.threeValue
-        this.defectSumObj.fourSum += v.fourValue
+        v.value = this.judge(v.oneValue) + this.judge(v.twoValue) + this.judge(v.threeValue) + this.judge(v.fourValue)
+        this.defectSumObj.oneSum += this.judge(v.oneValue)
+        this.defectSumObj.twoSum += this.judge(v.twoValue)
+        this.defectSumObj.threeSum += this.judge(v.threeValue)
+        this.defectSumObj.fourSum += this.judge(v.fourValue)
         this.defectSumObj.total += v.value
       })
       this.defectQuantityStatisticsB.forEach((v) => {
-        v.value = v.oneValue + v.twoValue + v.threeValue + v.fourValue
-        this.defectSumObj.oneSum += v.oneValue
-        this.defectSumObj.twoSum += v.twoValue
-        this.defectSumObj.threeSum += v.threeValue
-        this.defectSumObj.fourSum += v.fourValue
+        v.value = this.judge(v.oneValue) + this.judge(v.twoValue) + this.judge(v.threeValue) + this.judge(v.fourValue)
+        this.defectSumObj.oneSum += this.judge(v.oneValue)
+        this.defectSumObj.twoSum += this.judge(v.twoValue)
+        this.defectSumObj.threeSum += this.judge(v.threeValue)
+        this.defectSumObj.fourSum += this.judge(v.fourValue)
         this.defectSumObj.total += v.value
       })
 
