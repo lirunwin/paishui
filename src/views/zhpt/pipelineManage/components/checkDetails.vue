@@ -84,7 +84,7 @@
           <div class="box1" v-show="activeIndex == '2'">
             <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
               <div class="detailsTitle">功能性缺陷评价（等级：{{ DetailsForm.funcClass }}）</div>
-              <el-row v-for="(v, i) in funcArr" :key="v[0].label">
+              <el-row v-for="v in funcArr" :key="v[0].label">
                 <el-col :span="12" style="padding-right: 15px">
                   <el-form-item :label="v[0].label">
                     <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
@@ -123,7 +123,7 @@
                 />
                 <p style="color: #999999; font-size: 14px">暂无数据</p>
               </div>
-              <div v-if="structDefectArr" v-for="v in structDefectArr" style="margin-top: 20px; height: 200px">
+              <div v-show="structDefectArr" v-for="(v, i) in structDefectArr" :key="i" style="margin-top: 20px; height: 200px">
                 <div class="info-title">（{{ v.defectCode }}）{{ v.defectName }} 距离：{{ v.distanceStartPoint }}m</div>
                 <div class="info-box">
                   <div class="info-text">
@@ -187,7 +187,7 @@
                 <p style="color: #999999; font-size: 14px">暂无数据</p>
               </div>
 
-              <div v-if="funcDefectArr" v-for="v in funcDefectArr" style="margin-top: 20px; height: 240px">
+              <div v-show="funcDefectArr" v-for="(v, i) in funcDefectArr" :key="i" style="margin-top: 20px; height: 240px">
                 <div class="info-title">（{{ v.defectCode }}）{{ v.defectName }} 距离：{{ v.distanceStartPoint }}m</div>
                 <div class="info-box">
                   <div class="info-text">

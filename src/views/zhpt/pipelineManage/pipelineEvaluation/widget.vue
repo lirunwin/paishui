@@ -628,7 +628,7 @@ export default {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
-              view.animate({ zoom: 13 })
+              view.animate({ zoom: 15 })
               this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
             this.hasLoad = true
@@ -788,7 +788,7 @@ export default {
         this.lightLayer.getSource().addFeature(feature)
         let center = new mapUtil().getCenterFromFeatures(feature)
         this.map.getView().setCenter(center)
-        this.map.getView().setZoom(21)
+        this.map.getView().setZoom(18)
         return center
       }
     },
@@ -829,7 +829,6 @@ export default {
       let res = await histroyPipeData({ expNo: row.expNo })
       this.currentIndex = 0
       this.currentForm = res.result
-      this.currentInfoCard = true
       // 定位
       if (position) {
         this.popup = new Overlay({
@@ -843,6 +842,7 @@ export default {
         })
         this.map.addOverlay(this.popup)
         this.popup.setPosition(position)
+        this.currentInfoCard = true
       }
     },
 

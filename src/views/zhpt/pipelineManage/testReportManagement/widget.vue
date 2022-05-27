@@ -1282,6 +1282,7 @@ export default {
     afterMapLoad() {
       console.log('小地图加载')
       this.getPipeDefectData(2, this.id)
+      this.$refs.myMap.showLegend('testReport', true)
     },
     /**
      * 构造要素
@@ -1406,7 +1407,7 @@ export default {
                 { level: '二级', img: defectImg2, index: 1 },
                 { level: '三级', img: defectImg3, index: 2 },
                 { level: '四级', img: defectImg4, index: 3 },
-                { level: '/', img: defectImg0, index: 4 }
+                // { level: '/', img: defectImg0, index: 4 }
               ]
               let findimg = null
 

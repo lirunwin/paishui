@@ -279,6 +279,10 @@
   </div>
 </template>
 <script lang='ts'>
+/**
+ * @description 该功能为巡检子系统，隐患管理模块中的隐患上报功能
+ * @author 梁罗、李顺<876330731@qq.com>
+ */
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import troubleDetail from '@/views/zhpt/hiddendangermanage/components/troubleDetails.vue'
 import { esriConfig, appconfig } from 'staticPub/config'
