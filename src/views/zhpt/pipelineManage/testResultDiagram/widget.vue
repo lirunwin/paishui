@@ -92,6 +92,7 @@
     <!-- 表格当前列信息弹出框 -->
 
     <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
+
       <div class="detailsCrad" v-if="currentInfoCard">
         <el-card class="box-card" style="width: 300px">
           <div class="table-content">
@@ -152,6 +153,8 @@
           </div>
         </el-card>
       </div>
+    </div>
+    
     <!-- 管道评估结果 -->
     <transition name="el-fade-in-linear">
       <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
@@ -243,6 +246,7 @@
     <transition name="el-fade-in-linear">
       <check-details @close="dialogClose" @sendBool='dialogFormVisible=false' v-show="dialogFormVisible" :checkParam="pipeId"></check-details>
     </transition>
+
   </div>
 </template>
 
