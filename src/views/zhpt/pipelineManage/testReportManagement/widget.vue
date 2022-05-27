@@ -288,7 +288,20 @@
       <el-dialog title="附件视频上传" @close="closeDialogVideo" :visible.sync="dialogFormVisible2">
         <el-form ref="formVideo" :model="form" :rules="rules">
           <!-- <el-input size="small" v-model="selectWord.name" disabled show-word-limit></el-input> -->
-          <el-form-item label="报告名称" :label-width="formLabelWidth" prop="name">
+           <el-form-item label="工程名称" :label-width="formLabelWidth" prop="name">
+            <el-select
+              clearable
+              v-model="form.name"
+              placeholder="请选择工程名称"
+              v-selectLoadMore="selectLoadMore"
+              @blur="initSelectDate"
+              filterable
+              :disabled="loadingBool"
+            >
+              <el-option v-for="(item, i) in selectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
+            </el-select>
+          </el-form-item>
+          <!-- <el-form-item label="报告名称" :label-width="formLabelWidth" prop="name">
             <el-select
               clearable
               v-model="form.name"
@@ -298,9 +311,9 @@
               filterable
               :disabled="loadingBool"
             >
-              <el-option v-for="(item, i) in videoSelectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
+              <el-option v-for="(item, i) in selectArr" :key="i" :label="item.name" :value="item.No"> </el-option>
             </el-select>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="检测视频" :label-width="formLabelWidth" class="hd-input" prop="report">
             <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
             <el-upload
@@ -396,9 +409,9 @@
               <el-tab-pane label="统计汇总" name="first">
                 <div class="releaseContent">
                   <div class="detailsTitle">主要工程量表</div>
-                  <project-form :paramId="id"></project-form>
+                  <project-form :paramId="id" v-if="isOpen"></project-form>
                   <div class="detailsTitle">管道缺陷数量统计表</div>
-                  <summary-form :tabelData="returnTabel"></summary-form>
+                  <summary-form :tabelData="returnTabel" v-if="isOpen"></summary-form>
                   <div class="detailsTitle">管道缺陷数量统计图</div>
                   <div id="statistics_echatrs" style="width: 600px; display: flex; height: 600px"></div>
                 </div>
@@ -408,13 +421,13 @@
                   <!-- <div class="detailsTitle">管道缺陷汇总一览表</div> -->
                   <!-- <defect-one :paramId="id"></defect-one> -->
                   <div class="detailsTitle">检测评估建议</div>
-                  <proposal :paramId="id"></proposal>
+                  <proposal v-if="isOpen" :paramId="id"></proposal>
                 </div>
               </el-tab-pane>
               <el-tab-pane label="管段状态评估" name="fourth">
                 <div class="releaseContent">
                   <div class="detailsTitle">管段状况评估表</div>
-                  <assessment :paramId="id"></assessment>
+                  <assessment v-if="isOpen" :paramId="id"></assessment>
 
                   <!-- <div class="detailsTitle">管段检测与评估成果表</div>
                   <inspect-form></inspect-form> -->
@@ -619,7 +632,10 @@
                 </div>
                 <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                   <el-tabs v-model="activeName">
-                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum">
+                    <el-tab-pane
+                      :label="`照片(${getCurrentForm.pipeDefects ? getCurrentForm.pipeDefects.length || 0 : 0})`"
+                      name="picnum"
+                    >
                       <div class="container">
                         <el-image
                           style="width: 100%; height: 90%; -webkit-user-drag: none"
@@ -629,9 +645,9 @@
                         </el-image>
                         <div style="text-align: center">
                           <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
-                          {{ getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0) : 0 }}/{{
-                            getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0) : 0
-                          }}
+                          {{
+                            getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0) : 0
+                          }}/{{ getCurrentForm.pipeDefects ? getCurrentForm.pipeDefects.length || 0 : 0 }}
                           <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
                         </div>
                       </div>
@@ -657,6 +673,7 @@
 
     <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
+      <!-- @sendBool是子传父事件 -->
       <delete-dialog @sendBool="getBool" v-if="detailsDialogFormVisible" :checkParam="DetailsId"></delete-dialog>
     </transition>
   </div>
@@ -738,6 +755,9 @@ export default {
   },
   data() {
     return {
+      initdefectQuantityStatisticsA: [],
+      initdefectQuantityStatisticsB: [],
+      isOpen: false, // 打开详情弹框时触发
       DetailsId: null, // 检测详情的id
       DetailsForm: {}, // 管道缺陷缩略框
       imgArrIndex: 0, // 缩略框照片索引
@@ -865,6 +885,10 @@ export default {
   },
   created() {
     let res = this.getDate()
+
+    this.initdefectQuantityStatisticsA = JSON.parse(JSON.stringify(this.defectQuantityStatisticsA))
+    this.initdefectQuantityStatisticsB = JSON.parse(JSON.stringify(this.defectQuantityStatisticsB))
+    console.log('触发created', this.initdefectQuantityStatisticsA)
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
@@ -1000,6 +1024,9 @@ export default {
 
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
+      if (!this.searchValue.dateTime.startDate) {
+        this.searchValue.dateTime.startDate = this.searchValue.dateTime.finishDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchValue.dateTime.startDate).getTime()
       let date2 = new Date(this.searchValue.dateTime.finishDate).getTime()
@@ -1034,6 +1061,36 @@ export default {
             return `${a['data']['title']} 数量 ${a['data']['value']} `
           }
         },
+
+        color: [
+          'red',
+          'orange',
+          'yellow',
+          'green',
+          'blue',
+          'indigo',
+          'purple',
+          '#ff7f50',
+          '#87cefa',
+          '#da70d6',
+          '#32cd32',
+          '#6495ed',
+          '#ff69b4',
+          '#ba55d3',
+          '#cd5c5c',
+          '#ffa500',
+          '#40e0d0',
+          '#1e90ff',
+          '#ff6347',
+          '#7b68ee',
+          '#00fa9a',
+          '#ffd700',
+          '#6699FF',
+          '#ff6666',
+          '#3cb371',
+          '#b8860b',
+          '#30e0e0'
+        ],
         series: [
           {
             name: '管道缺陷数量统计图',
@@ -1191,7 +1248,7 @@ export default {
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
-      console.log('obj', obj.row)
+      // console.log('obj', obj.row)
       let idArr
       if (this.multipleSelection != []) {
         idArr = this.multipleSelection.map((v) => v.id)
@@ -1469,9 +1526,12 @@ export default {
     // 关闭发布弹框时触发
     closeRelease() {
       this.id = ''
+      this.defectQuantityStatisticsA = JSON.parse(JSON.stringify(this.initdefectQuantityStatisticsA))
+      this.defectQuantityStatisticsB = JSON.parse(JSON.stringify(this.initdefectQuantityStatisticsB))
       this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }
+      this.isOpen = false
       this.isRelease = false
-      console.log('关闭了弹框')
+      console.log('关闭了弹框', this.defectQuantityStatisticsA)
     },
     // 单行管段详情
     async testReportDetails(id, isRelease) {
@@ -1569,6 +1629,8 @@ export default {
       }
       this.dialogFormVisible3 = true
       this.$nextTick(() => {
+        this.isOpen = true
+
         this.renderEcharts()
 
         loading.close()
@@ -1718,19 +1780,17 @@ export default {
     },
     // 视频上传按钮
     async videoShowUpdata() {
-      let arr
-      // 选择报告名称的分页查询
-      await queryPageTestReportNew(this.selectParm).then((res) => {
-        arr = res.result.records
-        this.selectLoadTotal = res.result.total
-      })
-      this.videoSelectArr = arr.map((v) => {
+      // 选择工程名称的分页查询
+      let res = await projectPagingQuery(this.selectParm)
+      this.selectLoadTotal = res.result.records
+      let data = res.result.records
+      this.selectArr = data.map((v) => {
         return {
-          name: v.wordInfoName,
+          name: v.prjName,
           No: v.id
         }
       })
-      console.log('视频选择框数据', this.videoSelectArr)
+      // console.log('视频选择框数据', this.videoSelectArr)
       this.dialogFormVisible2 = true
     },
     // 上传按钮
@@ -1755,7 +1815,7 @@ export default {
         if (valid) {
           this.loadingBool = true
           // 获取字典id
-          await this.getParamsId('pipeVideo', 'tf_ywpn_wordinfo_w')
+          await this.getParamsId('pipeVideo', 'tf_ywpn_prjinfo_w')
           this.updataParamsId.itemId = this.form.name
           console.log('提交前', this.$refs.updataVideo)
           await this.$refs.updataVideo.submit()
@@ -1884,6 +1944,7 @@ export default {
     },
     // 搜索
     searchApi() {
+      this.pagination.current = 1
       let params = { ...this.searchValue }
       if (params.checkList.length == 1) {
         params.checkList = params.checkList[0]

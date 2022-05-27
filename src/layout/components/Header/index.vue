@@ -70,7 +70,7 @@
             <div>
               <img :src="avatar || headPortrait" class="user-avatar" />
             </div>
-            <!-- <span class="username_text">{{ realName }}1231312</span> -->
+            <span class="username_text">{{ realName }}</span>
             <i class="el-icon-arrow-down" />
           </div>
           <el-dropdown-menu slot="dropdown" class="user-dropdown">
@@ -169,7 +169,6 @@ import Notification from './Notification.vue'
 import { getNotifications, markAsRead } from '@/api/dashboard'
 import { notificationInterval } from 'staticPub/config'
 import { regPassword } from '@/utils/reg'
-import { nextTick } from 'q'
 import UserInfoEdit from './UserInfoEdit.vue'
 import gisNames from '@/utils/gisNames'
 
@@ -505,6 +504,7 @@ export default class Header extends Vue {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          margin-right: 1em;
         }
 
         .el-icon-caret-bottom {

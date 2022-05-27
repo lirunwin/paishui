@@ -617,6 +617,9 @@ export default {
       if (str == 'startDate') {
         this.form.finishDate = this.form.startDate
       }
+      if (!this.form.startDate) {
+        this.form.startDate = this.form.finishDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.form.startDate).getTime()
       let date2 = new Date(this.form.finishDate).getTime()
@@ -645,6 +648,7 @@ export default {
     },
     // 搜索
     searchApi() {
+      this.pagination.current = 1
       this.getDate(this.searchValue)
     },
     // 删除按钮
@@ -745,7 +749,7 @@ export default {
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
-      console.log('obj', obj.row)
+      // console.log('obj', obj.row)
       let idArr
       if (this.multipleSelection != []) {
         idArr = this.multipleSelection.map((v) => v.id)
@@ -779,7 +783,7 @@ export default {
       let params = {
         current: this.paginationEnclosure.current,
         size: this.paginationEnclosure.size,
-        itemId:id,
+        itemId: id,
         uploadFileTypeDicId: this.updataParamsId.uploadFileTypeDicId,
         uploadItemDictId: this.updataParamsId.uploadItemDictId
       }

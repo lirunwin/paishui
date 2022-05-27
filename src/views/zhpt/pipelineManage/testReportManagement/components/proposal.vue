@@ -4,8 +4,6 @@
     <el-table
       :data="tableData"
       border
-      show-summary
-      :summary-method="getSummaries"
       style="width: 100%; margin-top: 20px"
       stripe
     >
@@ -93,38 +91,16 @@ export default {
   methods: {
     async getdata() {
       let resPrj = await queryPipeStateDetails(this.paramId)
-      this.tableData = resPrj.result
+      let arr = resPrj.result.map((v)=>{
+        if(v.defectCode != "ZC"){
+          return v
+        }
+      })
+      this.tableData = arr
       console.log('检测评估建议  ', resPrj)
       console.log('上面传来的id', this.paramId)
     },
-    getSummaries(param) {
-      const { columns, data } = param
-      const sums = []
-      columns.forEach((column, index) => {
-        if (index === 0) {
-          sums[index] = '总计'
-          return
-        }
-        const values = data.map((item) => Number(item[column.property]))
-        if (!values.every((value) => isNaN(value))) {
-          sums[index] = values
-            .reduce((prev, curr) => {
-              const value = Number(curr)
-              if (!isNaN(value)) {
-                return prev + curr
-              } else {
-                return prev
-              }
-            }, 0)
-            .toFixed(2)
-          sums[index] += ''
-        } else {
-          sums[index] = '/'
-        }
-      })
-
-      return sums
-    }
+   
   }
 }
 </script>

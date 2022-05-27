@@ -92,7 +92,7 @@
         @row-click="openPromptBox"
         :row-class-name="modality"
       >
-       <template slot="empty">
+        <template slot="empty">
           <img
             style="width: 100px; height: 100px; -webkit-user-drag: none"
             src="@/assets/images/nullData.png"
@@ -178,7 +178,7 @@
                     ><span style="flex: 1">等级:&emsp;{{ DetailsForm.defectLevel }}</span>
                   </div>
                   <div style="display: flex; padding: 3px 0">
-                    <span style="width: 35px">评价:</span>
+                    <span style="width: 40px">评价:</span>
                     <span style="line-height: 16px; padding-left: 10px">{{ DetailsForm.pipeNote }}</span>
                   </div>
                 </div>
@@ -484,6 +484,9 @@ export default {
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
+      if (!this.searchValue.testTime.startDate) {
+        this.searchValue.testTime.startDate = this.searchValue.testTime.finishDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchValue.testTime.startDate).getTime()
       let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
@@ -772,7 +775,7 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = this.pagination
-        data.wordInfoState = 1
+      data.wordInfoState = 1
       if (params) {
         data.jcStartDate = params.testTime.startDate
         data.jcEndDate = params.testTime.finishDate

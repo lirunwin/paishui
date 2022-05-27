@@ -230,14 +230,11 @@
                       DetailsForm.wordInfoName
                     }}</el-link> -->
                     <!-- 附件列表 -->
-                    <div v-if="fileListData.length" style="max-height: 120px; overflow-y: scroll">
-                      <div v-for="(item, i) in fileListData" :key="i" class="text-space">
-                        <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{
-                          item.wordInfoName + 'docx'
-                        }}</el-link>
-                      </div>
-                    </div>
-                    <p v-if="!fileListData.length" style="text-align: center">暂无报告</p>
+                    <!-- wordFilePath -->
+                    <el-link v-if="DetailsForm.wordFilePath" style="max-width: 836px" @click="downloadDocx" type="primary">{{
+                      DetailsForm.wordInfoName + 'docx'
+                    }}</el-link>
+                    <p v-if="!DetailsForm.wordFilePath" style="text-align: center">暂无报告</p>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -260,6 +257,8 @@ import * as echarts from 'echarts'
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
 
+import axios from 'axios'
+
 export default {
   props: ['checkParam'],
   data() {
@@ -271,7 +270,6 @@ export default {
       structDefectArr: [],
       defectQuantityStatisticsA: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'], // 结构性缺陷
       defectQuantityStatisticsB: ['CJ', 'CQ', 'FZ', 'JG', 'SG', 'ZW'], // 功能性缺陷
-      fileListData: [], // 附件列表数据
       // 附件分页
       paginationEnclosure: { current: 1, size: 30 }, // 分页参数信息
       paginationEnclosureTotal: 0, // 总页数
@@ -341,6 +339,23 @@ export default {
     console.log('切换了组价')
   },
   methods: {
+    // 下载文档
+    downloadDocx() {
+      this.$message('正在加载文档地址,请稍等...')
+      let url = baseAddress + '/psjc/file' + this.DetailsForm.wordFilePath
+      let label = this.DetailsForm.wordInfoName + '.docx'
+      axios
+        .get(url, { responseType: 'blob' })
+        .then((response) => {
+          const blob = new Blob([response.data])
+          const link = document.createElement('a')
+          link.href = URL.createObjectURL(blob)
+          link.download = label
+          link.click()
+          URL.revokeObjectURL(link.href)
+        })
+        .catch(console.error)
+    },
     // 获取视频url
     getVideoUrl(url) {
       let address = baseAddress + '/psjc/file' + url
@@ -421,7 +436,6 @@ export default {
         }
         let fileRes = await queryPageEnclosure(params)
         console.log('附件分页数据', fileRes)
-        this.fileListData = fileRes.result.records
 
         // 绘制剖面图
         this.$nextTick(() => {
@@ -617,7 +631,7 @@ export default {
             margin-top: 10px;
             align-items: center;
             .profile-text {
-              width: 50px;
+              width: 100px;
               text-align: right;
               margin-right: 10px;
             }
@@ -649,7 +663,7 @@ export default {
           margin: 5px 0;
         }
         .info-box {
-          height: 94% !important;
+          height: 100% !important;
           display: flex;
           justify-content: space-between;
           .info-text {
@@ -666,7 +680,7 @@ export default {
         }
         .el-form {
           .el-link--inner {
-            max-width: 416px;
+            max-width: 834px;
             /* 1.先强制一行内显示文本 */
             white-space: nowrap;
             /* 2.超出部分隐藏 */

@@ -27,7 +27,8 @@ const getDefaultState = (): dStore.map.state => {
     fullP_editableTabsValue: '',
     halfP_editableTabsValue: '',
     floatP_editableTabsValue: '',
-    P_editableTabsValue: ''
+    P_editableTabsValue: '',
+    isMapLoading: true
   }
 }
 
@@ -134,6 +135,9 @@ const mutations = {
     Object.keys(state).forEach((key) => {
       state[key] = newState[key]
     })
+  },
+  LOADING: (state: dStore.map.state, payload) => {
+    state.isMapLoading = payload
   }
 }
 
@@ -144,7 +148,7 @@ const actions = {
     console.log('被切换的tab', val)
   },
   // 添加
-  changeMethod({ commit }, value) {
+  changeMethod({ commit, state }, value) {
     const data = {
       com: value.id || value.pathId,
       box: value.widgetid,
