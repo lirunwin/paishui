@@ -18,14 +18,31 @@ export const settingDeviceTypeCols: ColItem[] = [
 /**设备类型配置 - 参数 */
 export const settingDeviceTypeParamCols: ColItem[] = [
   { type: 'selection', width: '50px' },
-  { type: 'index', label: '序号' },
-  { prop: 'name', label: '参数名称', align: 'left' },
-  { prop: 'code', label: '参数代码', align: 'left' },
-  { prop: 'codeAbridge', label: '参数缩写', align: 'left' },
-  { prop: 'unit', label: '参数单位' },
-  { prop: 'lrange', label: '量程' },
-  { prop: 'isDisplay', label: '是否显示', formatter: ({ isDisplay }: ITypeParam) => (isDisplay ? '是' : '否') },
-  { prop: 'note', label: '备注' }
+  { type: 'index', label: '序号', width: '60px' },
+  { prop: 'name', label: '参数名称', width: '100px', align: 'left', headerAlign: 'left' },
+  { prop: 'code', label: '参数代码', width: '100px', align: 'left', headerAlign: 'left' },
+  { prop: 'codeAbridge', label: '参数缩写', width: '100px', align: 'left', headerAlign: 'left' },
+  { prop: 'unit', label: '参数单位', width: '90px' },
+  {
+    prop: 'lrange',
+    label: '量程',
+    width: '120px',
+    formatter: ({ lrangeUp, lrangeLow }: ITypeParam) => {
+      if (!lrangeLow && !lrangeUp) {
+        return '-'
+      } else {
+        return `${lrangeLow || 0} - ${lrangeUp || '∞'}`
+      }
+    }
+  },
+  {
+    prop: 'isDisplay',
+    label: '是否显示',
+    width: '80px',
+    // formatter: ({ isDisplay }: ITypeParam) => (isDisplay ? '是' : '否'),
+    _slot:true
+  },
+  { prop: 'note', label: '备注', minWidth: '150px', align: 'left', headerAlign: 'left', showOverflowTooltip: true }
 ]
 
 /**设备档案管理 */

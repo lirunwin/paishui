@@ -2,61 +2,90 @@
   <div class="page-container">
     <div class="actions">
       <div>
-        <el-button type="primary" size="small" @click="onTypeAdd">新增设备类型</el-button>
+        <el-button type="primary" size="small" :loading="loading.typeSubmitting" @click="onTypeAdd">
+          新增设备类型
+        </el-button>
         <el-button
           type="primary"
           size="small"
           :disabled="!selected.type.length"
-          :loading="loading.del"
+          :loading="loading.typeDeleting"
           @click="onTypeDelete"
         >
           删除设备类型
         </el-button>
       </div>
       <div>
-        <el-button type="primary" size="small" :disabled="!current.type.id" @click="onParamAdd">新增参数</el-button>
-        <el-button type="primary" size="small" :disabled="!selected.param.length">删除参数</el-button>
+        <el-button
+          type="primary"
+          size="small"
+          :loading="loading.paramSubmitting"
+          :disabled="!current.type.id"
+          @click="onParamAdd"
+          >新增参数</el-button
+        >
+        <el-button
+          type="primary"
+          size="small"
+          :disabled="!selected.param.length"
+          :loading="loading.paramDeleting"
+          @click="onParamDelete"
+        >
+          删除参数
+        </el-button>
       </div>
     </div>
     <el-row :gutter="15">
       <el-col :span="12">
         <BaseTable
-          :columns="settingDeviceTypeCols"
           :data="types"
+          :columns="settingDeviceTypeCols"
+          :pagination="pagination.type"
+          highlight-current-row
+          current-row-key="id"
+          v-loading="loading.type"
           @row-dblclick="onTypeRowDblClick"
           @selection-change="onTypeSelectionChange"
           @page-change="onTypeQuery"
-          :pagination="pagination.type"
-          v-loading="loading.type"
-          highlight-current-row
-          current-row-key="id"
           @current-change="onCurrentTypeChange"
         />
       </el-col>
       <el-col :span="12">
         <BaseTable
-          :columns="settingDeviceTypeParamCols"
           :data="params"
-          @row-dblclick="onParamRowDblClick"
-          @selection-change="onParamSelectionChange"
+          :columns="settingDeviceTypeParamCols"
           :pagination="pagination.param"
           v-loading="loading.param"
+          @row-dblclick="onParamRowDblClick"
+          @selection-change="onParamSelectionChange"
           @page-change="onParamQuery"
-        />
+        >
+          <template v-for="(_, index) of params" v-slot:[`isDisplay-${index}`]="{ row }">
+            <el-switch
+              :key="`${index}-${row.id}`"
+              :active-value="true"
+              :inactive-value="false"
+              :value="row.isDisplay"
+              size="small"
+              style="user-select:none"
+              @change="($event) => onParamSubmit({ ...row, isDisplay: $event })"
+            />
+          </template>
+        </BaseTable>
       </el-col>
     </el-row>
     <TypeForm
       :visible.sync="visible.type"
       :title="`${current.type.id ? '修改' : '新增'}设备类型`"
       :data="current.type"
-      :loading="loading.type"
+      :loading="loading.typeSubmitting"
       @submit="onTypeSubmit"
     />
     <ParamForm
       :visible.sync="visible.param"
       :title="`${current.param.id ? '修改' : '新增'}设备参数`"
       :data="current.param"
-      :loading="loading.param"
+      :loading="loading.paramSubmitting"
       @submit="onParamSubmit"
     />
   </div>
@@ -76,7 +105,8 @@ import {
   updateType,
   deleteTypeBatch,
   updateTypeParam,
-  addTypeParam
+  addTypeParam,
+  deleteParamBatch
 } from '@/views/monitoring/api'
 
 const getDefaultPagination = () => ({ current: 1, size: 30 })
@@ -87,7 +117,14 @@ export default class DeviceTypes extends Vue {
   settingDeviceTypeParamCols = settingDeviceTypeParamCols
 
   visible = { type: false, param: false }
-  loading = { type: false, param: false, del: false }
+  loading = {
+    type: false,
+    param: false,
+    typeDeleting: false,
+    paramDeleting: false,
+    typeSubmitting: false,
+    paramSubmitting: false
+  }
 
   current: {
     type: { id?: string; [x: string]: string }
@@ -107,13 +144,13 @@ export default class DeviceTypes extends Vue {
   params = []
 
   onTypeAdd() {
-    this.visible.type = true
     this.current = { ...this.current, type: {} }
+    this.visible.type = true
   }
 
   onParamAdd() {
-    this.visible.param = true
     this.current = { ...this.current, param: {} }
+    this.visible.param = true
   }
 
   onTypeRowDblClick() {
@@ -165,7 +202,7 @@ export default class DeviceTypes extends Vue {
 
   async onTypeSubmit(data) {
     try {
-      this.loading.type = true
+      this.loading.typeSubmitting = true
       const { result } = await (data.id ? updateType(data) : addType(data))
       this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}设备类型${result ? '成功!' : '失败!'}`)
       if (result) {
@@ -175,12 +212,15 @@ export default class DeviceTypes extends Vue {
     } catch (error) {
       console.log(error)
     }
-    this.loading.type = false
+    this.loading.typeSubmitting = false
   }
+
   async onParamSubmit(data) {
     try {
-      this.loading.param = true
-      const { result } = await (data.id ? updateTypeParam(data) : addTypeParam(data))
+      this.loading.paramSubmitting = true
+      const { result } = await (data.id
+        ? updateTypeParam(data)
+        : addTypeParam({ ...data, typeId: this.current.type.id }))
       this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}参数${result ? '成功!' : '失败!'}`)
       if (result) {
         this.visible.param = false
@@ -189,7 +229,7 @@ export default class DeviceTypes extends Vue {
     } catch (error) {
       console.log(error)
     }
-    this.loading.param = false
+    this.loading.paramSubmitting = false
   }
 
   async onTypeDelete() {
@@ -198,7 +238,7 @@ export default class DeviceTypes extends Vue {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    this.loading.del = true
+    this.loading.typeDeleting = true
     try {
       const { result } = await deleteTypeBatch(this.selected.type.map(({ id }) => id).join())
       this.$message[result ? 'success' : 'error'](`删除设备类型${result ? '成功!' : '失败!'}`)
@@ -206,7 +246,24 @@ export default class DeviceTypes extends Vue {
     } catch (error) {
       console.log(error)
     }
-    this.loading.del = false
+    this.loading.typeDeleting = false
+  }
+
+  async onParamDelete() {
+    await this.$confirm('是否确认删除设备参数？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    this.loading.paramDeleting = true
+    try {
+      const { result } = await deleteParamBatch(this.selected.param.map(({ id }) => id).join())
+      this.$message[result ? 'success' : 'error'](`删除设备参数${result ? '成功!' : '失败!'}`)
+      result && this.onParamQuery()
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading.paramDeleting = false
   }
 
   onCurrentTypeChange(row) {

@@ -219,9 +219,9 @@ export interface ITypeParam extends ICreator {
   /** 数据采集频率，单位分钟 */
   rate?: number
   /**量程下限 */
-  LRangeLow?: string
+  lrangeLow?: string
   /** 量程上限 */
-  LRangeUp?: string
+  lrangeUp?: string
 }
 
 interface ITypeArchive extends ICreator {
