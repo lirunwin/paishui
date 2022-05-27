@@ -221,6 +221,21 @@ export default class DeviceForm extends Vue {
     try {
       const { result = [] } = (await getDepartments()) || {}
       this.departments = result
+
+      const { useDeptId } = this.formData
+      // 获取所有父级id
+      if (Array.isArray(useDeptId) && useDeptId.length === 1) {
+        const path = []
+        const getParent = (id) => {
+          const { parentId } = result.find((item) => item.id === id) || {}
+          path.unshift(id)
+          if (parentId) {
+            getParent(parentId)
+          }
+        }
+        getParent([...useDeptId].pop())
+        this.$set(this.formData, 'useDeptId', path)
+      }
     } catch (error) {
       console.log(error)
     }
