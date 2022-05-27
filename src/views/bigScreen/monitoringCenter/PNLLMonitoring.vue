@@ -1,0 +1,201 @@
+<template>
+    <transition 
+    appear               
+    name="animate__animated animate__move"
+    enter-active-class="animate__slideInUp"
+    leave-active-class="animate__slideOutDown">
+        <div class="widget-PNLLMonitoring" v-if="show">
+            <div class="head">
+                <div class="title">
+                    <div class="icon"></div>
+                    <span class="site-info">管网液位监测</span>
+                </div>
+            </div>
+            <div class="content-info" id="content-info">
+                <specificTable :column="column" :tableData="tableData" isScroll/>
+            </div>
+        </div>
+    </transition>
+</template>
+
+<script>
+import Config from './config.json'
+import specificTable from './components/specificTable.vue'
+export default {
+    name:"PNLLMonitoring",//管网液位监测
+    components:{
+        specificTable
+    },
+    props:{
+        show:{},
+    },
+    data(){
+        return{
+            tableData:[
+                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+                                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+
+                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },{
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+                {
+                    "expNo":"213124324",
+                    "outfalltype":"管井监测设备1",
+                    "outfallshape":"管井监测站",
+                    "sewagesystemId":"在线",
+                    "stormsystemId":"正常",
+                    "receivewater":"0",
+                    "address":"0",
+                    "datasource":"2021-6-10  12:2:34",
+                },
+                
+            ],
+            column:[],
+        }
+    },
+    computed:{
+        config(){
+            return Config
+        }
+    },
+    mounted(){
+        this.column=this.config.PNLLMColumn
+    },
+    methods:{
+    }
+}
+</script>
+
+<style lang="scss" scoped>
+.animate__slideInUp,.animate__slideOutDown{
+    animation-duration: 3s;//动画持续时间
+    animation-delay: 0s;//动画延迟时间
+}
+.widget-PNLLMonitoring{
+    z-index: 2;
+    margin-left: 2.34375rem;
+    bottom: .052083rem /* 10/192 */;
+    height:  1.390625rem /* 267/192 */;
+    width: 5.302083rem /* 1018/192 */;
+    overflow: hidden;
+    position: absolute;
+    background-color: rgba(20, 24, 47, 0.5);
+    color: #eee;
+    box-shadow:0 0 20px rgba(1,9,20,1);
+    .head{
+        height: .166667rem /* 32/192 */;
+        width: 100%; 
+        background: linear-gradient(-90deg, rgba(43, 167, 255, 0.2) 0%, rgba(43, 167, 255, 0.08) 100%);
+        .title{
+            width:100%;
+            height: 100%;
+            display: flex; 
+            font-weight: 400;
+            .icon{
+                height: .166667rem /* 32/192 */;
+                width: .34375rem /* 66/192 */;
+                background: url("./images/管网液位监测.png") no-repeat center center;
+                background-size: 100% 100%;
+            }
+            span{
+                font-weight: bold;
+                font-size: .083333rem /* 16/192 */;
+                color: #ffffff;
+                text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
+                padding: .041667rem /* 8/192 */;
+            }
+        }
+    }
+    .content-info{
+        width: 100%;
+        height: calc(100% - .166667rem);
+        display: flex;
+        flex-flow: row wrap;
+        padding: .010417rem /* 2/192 */;
+    }
+}
+</style>>

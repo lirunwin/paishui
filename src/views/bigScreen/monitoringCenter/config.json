@@ -1,0 +1,37 @@
+{
+    "PNLLMColumn":[
+        {
+            "prop":"expNo",
+            "label":"设备号"
+        },
+        {
+            "prop":"outfalltype",
+            "label":"设备名称"
+        },
+        {
+            "prop":"outfallshape",
+            "label":"安装地址"
+        },
+        {
+            "prop":"sewagesystemId",
+            "label":"设备状态"
+        },
+        {
+            "prop":"stormsystemId",
+            "label":"监测状态"
+        },
+        {
+            "prop":"receivewater",
+            "label":"液位值"
+        },
+        {
+            "prop":"address",
+            "label":"阈值上下限"
+        },
+        {
+            "prop":"datasource",
+            "label":"上报时间",
+            "width":150
+        }
+    ]
+}
