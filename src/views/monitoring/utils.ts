@@ -1,4 +1,5 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
+import { ITypeParam } from './api'
 
 interface ColItem extends Partial<ElTableColumn> {
   _slot?: boolean
@@ -8,22 +9,22 @@ interface ColItem extends Partial<ElTableColumn> {
 /**设备类型配置 - 类型 */
 export const settingDeviceTypeCols: ColItem[] = [
   { type: 'selection', width: '50px' },
-  { type: 'index', label: '序号', width: '100px' },
-  { prop: 'name', label: '设备类型名称' },
-  { prop: 'code', label: '设备类型代码' },
-  { prop: 'time', label: '数据归集时间（分钟）' }
+  { type: 'index', label: '序号', width: '60px' },
+  { prop: 'name', label: '设备类型名称', minWidth: '150px', align: 'left', headerAlign: 'left' },
+  { prop: 'typeCode', label: '设备类型代码', minWidth: '110px', align: 'left', headerAlign: 'left' },
+  { prop: 'collectTime', label: '数据归集时间（分钟）', width: '160px' }
 ]
 
 /**设备类型配置 - 参数 */
 export const settingDeviceTypeParamCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号' },
-  { prop: 'name', label: '参数名称' },
-  { prop: 'code', label: '参数代码' },
-  { prop: 'short', label: '参数缩写' },
+  { prop: 'name', label: '参数名称', align: 'left' },
+  { prop: 'code', label: '参数代码', align: 'left' },
+  { prop: 'codeAbridge', label: '参数缩写', align: 'left' },
   { prop: 'unit', label: '参数单位' },
-  { prop: 'distance', label: '量程' },
-  { prop: 'display', label: '是否显示' },
+  { prop: 'lrange', label: '量程' },
+  { prop: 'isDisplay', label: '是否显示', formatter: ({ isDisplay }: ITypeParam) => (isDisplay ? '是' : '否') },
   { prop: 'note', label: '备注' }
 ]
 

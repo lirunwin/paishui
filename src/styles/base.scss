@@ -359,3 +359,9 @@ div:focus {
     }
   }
 }
+
+.input-number {
+  &.el-input-number > .el-input > .el-input__inner {
+    text-align: left;
+  }
+}

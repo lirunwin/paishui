@@ -7,7 +7,7 @@
       </template>
       <template v-for="{ prop, type, _slot, ...col } of columns">
         <template v-if="_slot">
-          <el-table-column :key="prop || type" v-bind="{ align: 'center', prop, type, ...col }">
+          <el-table-column :key="prop || type" v-bind="{ headerAlign: 'center', align: 'center', prop, type, ...col }">
             <template v-slot="slotScope" v-if="_slot">
               <slot
                 :name="`${prop}-${slotScope.$index}`"
@@ -16,7 +16,11 @@
             </template>
           </el-table-column>
         </template>
-        <el-table-column v-else :key="prop || type" v-bind="{ align: 'center', prop, type, ...col }" />
+        <el-table-column
+          v-else
+          :key="prop || type"
+          v-bind="{ headerAlign: 'center', align: 'center', prop, type, ...col }"
+        />
       </template>
     </el-table>
     <el-pagination
@@ -63,8 +67,7 @@ export default Vue.extend({
         headerCellStyle: {
           background: '#Eaf1Fd',
           color: 'rgb(50,59,65)',
-          height: '46px',
-          textAlign: 'center'
+          height: '46px'
         },
         cellStyle: {
           height: '40px'
