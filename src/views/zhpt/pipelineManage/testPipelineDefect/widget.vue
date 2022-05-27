@@ -289,26 +289,7 @@ export default {
       activeName: 'picnum', // 照片视频tab标签
       currentForm: [], // 缩略提示框
       currentIndex: 0, // 当前页数
-      structArr: [
-        [
-          { label: '平均值S', name: 'structYmean' },
-          { label: '最大值Smax', name: 'structYmax' }
-        ],
-        [
-          { label: '缺陷密度', name: 'structDensity' },
-          { label: '修复指数RI', name: 'repairIndex' }
-        ]
-      ], // 结构性数据
-      funcArr: [
-        [
-          { label: '平均值S', name: 'funcYmean' },
-          { label: '最大值Smax', name: 'funcYmax' }
-        ],
-        [
-          { label: '缺陷密度', name: 'funcDensity' },
-          { label: '养护指数MI', name: 'maintainIndex' }
-        ]
-      ], // 功能性性数据
+
       DetailsForm: {}, // 详情表单
       cardTableContent: [
         [
@@ -496,7 +477,7 @@ export default {
     },
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
-      this.rootPage.openPromptBox(row.id, this.param.layerName)
+      this.rootPage.openPromptBox(row.id, this.param.layerName) 
       // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },
     // 详情导航选择事件

@@ -625,7 +625,7 @@ export default {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
-              view.animate({ zoom: 13 })
+              view.animate({ zoom: 15 })
               this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
             this.hasLoad = true

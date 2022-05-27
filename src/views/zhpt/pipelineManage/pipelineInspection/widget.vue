@@ -116,9 +116,8 @@
       </div>
     </div>
     <!-- 详情卡片 -->
-    <transition name="el-fade-in-linear">
-      <div class="histroyPipeData">
-        <div class="detailsCrad" v-show="dialogFormVisible">
+      <div id="popupCard" class="histroyPipeData" v-show="dialogFormVisible">
+        <div class="detailsCrad" v-if="dialogFormVisible">
           <el-card class="box-card">
             <div slot="header" class="clearfix">
               <span style="font-size: 16px">管道检测历史详情（{{ detailsTitle.pipeType + detailsTitle.expNo }}）</span>
@@ -133,7 +132,7 @@
               <div class="box1">
                 <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
                   <div class="detailsTitle">管段信息</div>
-                  <el-row v-for="(v, i) in cardTableContent" :key="v[0].name">
+                  <el-row v-for="(v, i) in cardTableContent" :key="i">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
                         <el-input size="small" v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
@@ -251,7 +250,6 @@
           </el-card>
         </div>
       </div>
-    </transition>
     <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
       <delete-dialog @sendBool="getBool" v-show="checkdialogFormVisible" :checkParam="id"></delete-dialog>
@@ -263,7 +261,7 @@
 import { queryPageHistory, histroyPipeData, downloadFile } from '@/api/pipelineManage'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
-import { Feature } from 'ol'
+import { Feature, Overlay } from 'ol'
 import { LineString, Point } from 'ol/geom'
 import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import { comSymbol } from '@/utils/comSymbol'
@@ -353,7 +351,6 @@ export default {
       pagination: { current: 1, size: 30 }, // 分页参数信息
       paginationTotal: 0, // 总页数
       tableData: [],
-      isPromptBox: {}, // 当前列信息
       form: {},
       //
       vectorLayer: null,
@@ -361,7 +358,8 @@ export default {
       lightLayer: null,
       clickEvent: null,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43' // 当前坐标系
+      currentDataProjName: 'proj43', // 当前坐标系
+      popup: null
     }
   },
   created() {
@@ -515,8 +513,8 @@ export default {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
-              view.animate({ zoom: 13 })
-              this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+              view.animate({ zoom: 15 })
+              this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
           }
         } else this.$message.error('管线缺陷数据请求失败')
@@ -583,7 +581,7 @@ export default {
                 { level: '二级', img: defectImg2, index: 1 },
                 { level: '三级', img: defectImg3, index: 2 },
                 { level: '四级', img: defectImg4, index: 3 },
-                { level: '/', img: defectImg0, index: 4 }
+                // { level: '/', img: defectImg0, index: 4 }
               ]
               let findimg = null
 
@@ -646,7 +644,6 @@ export default {
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
-      console.log('obj', obj.row)
       let expNoArr
       if (this.multipleSelection != []) {
         expNoArr = this.multipleSelection.map((v) => v.expNo)
@@ -671,6 +668,10 @@ export default {
           this.$refs.multipleTable.toggleRowSelection(row)
         }
       }
+
+      //       
+      this.openDetails(row)
+
     },
     // 上一页
     lastPage() {
@@ -679,7 +680,6 @@ export default {
         return
       }
       this.currentIndex--
-      // this.openDetails(this.isPromptBox)
     },
     // 下一页
     nextPage() {
@@ -688,7 +688,6 @@ export default {
         return
       }
       this.currentIndex++
-      // this.openDetails(this.isPromptBox)
     },
     // 详情导航选择事件
     handleSelect(key, keyPath) {
@@ -701,7 +700,6 @@ export default {
       console.log('详情触发')
 
       this.currentForm = row // 保存当前列信息
-      this.isPromptBox = { ...row }
       let res = await histroyPipeData({ expNo: row.expNo })
       this.detailsTitle = {
         expNo: row.expNo,
@@ -713,6 +711,29 @@ export default {
         return baseAddress + '/psjc/file' + v.picPath
       })
       // console.log("this.tableForm.pipeDefects",this.tableForm.pipeDefects);
+      let features = this.vectorLayer.getSource().getFeatures()
+      let fea = features.find(fea => fea.get('expNo') === row.expNo)
+      this.lightLayer.getSource().clear()
+      this.lightLayer.getSource().addFeature(new Feature({ geometry: fea.getGeometry().clone() }))
+      let center = mapUtil.getCenter(fea)
+      let view = this.map.getView()
+      view.setCenter(center)
+      view.setZoom(16)
+
+      if (center) {
+        this.popup = new Overlay({
+          element: document.getElementById('popupCard'),
+          //当前窗口可见
+          autoPan: true,
+          positioning: 'bottom-center',
+          stopEvent: true,
+          offset: [18, -25],
+          autoPanAnimation: { duration: 250 }
+        })
+        this.map.addOverlay(this.popup)
+        this.popup.setPosition(center)
+      }
+
       this.dialogFormVisible = true
     },
     // 重置
@@ -892,180 +913,184 @@ export default {
     }
   }
 
-  .histroyPipeData {
-    // 详情卡片的样式
-    .detailsCrad {
-      z-index: 9;
-      .clearfix:before,
-      .clearfix:after {
-        display: table;
-        content: '';
-      }
-      .clearfix:after {
-        clear: both;
-      }
+    /deep/ .histroyPipeData {
+      position: fixed;
+      top: 150px;
+      right: 45px;
+      // 详情卡片的样式
+      .detailsCrad {
+        z-index: 9;
+        .clearfix:before,
+        .clearfix:after {
+          display: table;
+          content: '';
+        }
+        .clearfix:after {
+          clear: both;
+        }
 
-      /deep/ .box-card {
-        width: 500px;
-        max-height: 80vh;
-        .el-card__header {
-          height: 48px;
-          color: #fff;
-          background-color: #2d74e7;
-        }
-        .el-card__body {
-          padding: 0;
-          .el-menu-item {
-            height: 45px;
+        /deep/ .box-card {
+          width: 500px;
+          max-height: 80vh;
+          .el-card__header {
+            height: 48px;
+            color: #fff;
+            background-color: #2d74e7;
           }
-        }
-        .content {
-          height: 600px;
-          // padding: 22px;
-          // box-sizing: border-box;
-          .box1 {
-            overflow-y: scroll;
-            // max-height: 545px;
-            height: 100%;
-            padding: 10px 20px;
-            .el-row {
-              padding: 0 10px;
+          .el-card__body {
+            padding: 0;
+            .el-menu-item {
+              height: 45px;
             }
-            .historyList {
-              .historyTitle {
-                height: 30px;
-                color: #555555;
-                font-weight: bold;
+          }
+          .content {
+            height: 600px;
+            // padding: 22px;
+            // box-sizing: border-box;
+            .box1 {
+              overflow-y: scroll;
+              // max-height: 545px;
+              height: 100%;
+              padding: 10px 20px;
+              .el-row {
+                padding: 0 10px;
+              }
+              .historyList {
+                .historyTitle {
+                  height: 30px;
+                  color: #555555;
+                  font-weight: bold;
+                  padding: 5px 10px;
+                  box-sizing: border-box;
+                  margin: 10px 0;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  background-color: #f6f9fe;
+                }
+
+                .info-box {
+                  height: 100%;
+                  display: flex;
+                  margin: 5px 0;
+                  justify-content: space-between;
+                  .info-text {
+                    width: 48%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    .el-form {
+                      .el-form-item {
+                        margin-bottom: 10px;
+                      }
+                      .el-link--inner {
+                        max-width: 140px;
+                        /* 1.先强制一行内显示文本 */
+                        white-space: nowrap;
+                        /* 2.超出部分隐藏 */
+                        overflow: hidden;
+                        /* 3.文字用省略号替代超出的部分 */
+                        text-overflow: ellipsis;
+                      }
+                    }
+                  }
+                  .info-video {
+                    width: 48%;
+                    .image-list {
+                      height: 155px;
+                      display: flex;
+                      flex-direction: column;
+                    }
+                    .el-tabs {
+                      .el-tabs__nav-wrap {
+                        width: 100% !important;
+                      }
+                      .el-tabs__item {
+                        margin: 11px 0 0 0 !important;
+                        background: transparent !important;
+                      }
+                      .el-tabs__header {
+                        border-top: 0 !important;
+                        background: transparent !important;
+                      }
+                    }
+                  }
+                }
+              }
+
+              .el-textarea__inner,
+              .el-input__inner {
+                color: #666;
+              }
+              .detailsTitle {
+                position: relative;
+                font-size: 16px;
                 padding: 5px 10px;
                 box-sizing: border-box;
-                margin: 10px 0;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                background-color: #f6f9fe;
               }
+              .detailsTitle::after {
+                position: absolute;
+                top: 5px;
+                left: -10px;
+                content: '';
+                width: 4px;
+                height: 65%;
+                background-color: #2d74e7;
+              }
+            }
+            /deep/ .el-form {
+              .is-disabled {
+                .el-input__inner {
+                  background-color: transparent;
+                }
+                .el-textarea__inner {
+                  background-color: transparent;
+                }
+              }
+              .el-form-item {
+                margin-bottom: 10px;
+              }
+            }
+          }
+          .table-content {
+            padding: 15px;
+            /deep/ .content-info {
+              font-size: 12px;
+              display: flex;
+              justify-content: space-between;
 
-              .info-box {
+              .detailsTitle {
+                position: relative;
+                padding-left: 10px;
+                box-sizing: border-box;
+                margin-bottom: 10px;
+              }
+              .detailsTitle::after {
+                position: absolute;
+                left: 0;
+                content: '';
+                width: 4px;
                 height: 100%;
-                display: flex;
-                margin: 5px 0;
-                justify-content: space-between;
-                .info-text {
-                  width: 48%;
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  .el-form {
-                    .el-form-item {
-                      margin-bottom: 10px;
-                    }
-                    .el-link--inner {
-                      max-width: 140px;
-                      /* 1.先强制一行内显示文本 */
-                      white-space: nowrap;
-                      /* 2.超出部分隐藏 */
-                      overflow: hidden;
-                      /* 3.文字用省略号替代超出的部分 */
-                      text-overflow: ellipsis;
-                    }
-                  }
-                }
-                .info-video {
-                  width: 48%;
-                  .image-list {
-                    height: 155px;
-                    display: flex;
-                    flex-direction: column;
-                  }
-                  .el-tabs {
-                    .el-tabs__nav-wrap {
-                      width: 100% !important;
-                    }
-                    .el-tabs__item {
-                      margin: 11px 0 0 0 !important;
-                      background: transparent !important;
-                    }
-                    .el-tabs__header {
-                      border-top: 0 !important;
-                      background: transparent !important;
-                    }
-                  }
-                }
+                background-color: #2d74e7;
               }
-            }
-
-            .el-textarea__inner,
-            .el-input__inner {
-              color: #666;
-            }
-            .detailsTitle {
-              position: relative;
-              font-size: 16px;
-              padding: 5px 10px;
-              box-sizing: border-box;
-            }
-            .detailsTitle::after {
-              position: absolute;
-              top: 5px;
-              left: -10px;
-              content: '';
-              width: 4px;
-              height: 65%;
-              background-color: #2d74e7;
-            }
-          }
-          /deep/ .el-form {
-            .is-disabled {
-              .el-input__inner {
-                background-color: transparent;
-              }
-              .el-textarea__inner {
-                background-color: transparent;
-              }
-            }
-            .el-form-item {
-              margin-bottom: 10px;
-            }
-          }
-        }
-        .table-content {
-          padding: 15px;
-          /deep/ .content-info {
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-
-            .detailsTitle {
-              position: relative;
-              padding-left: 10px;
-              box-sizing: border-box;
-              margin-bottom: 10px;
-            }
-            .detailsTitle::after {
-              position: absolute;
-              left: 0;
-              content: '';
-              width: 4px;
-              height: 100%;
-              background-color: #2d74e7;
             }
           }
         }
       }
     }
+  #popupCard {
+    &::after {
+      content: '';
+      display: block;
+      width: 45px;
+      height: 27px;
+      background: url('../components/testImg/corner.png');
+      position: absolute;
+      bottom: -26px;
+      left: 50%;
+      transform: translate(-50%, 0);
+    }
   }
 }
-#popupCard {
-  &::after {
-    content: '';
-    display: block;
-    width: 45px;
-    height: 27px;
-    background: url('../components/testImg/corner.png');
-    position: absolute;
-    bottom: -26px;
-    left: 50%;
-    transform: translate(-50%, 0);
-  }
-}
+
 </style>

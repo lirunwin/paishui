@@ -59,7 +59,7 @@
         </li>
       </ul>
     </div>
-    <el-dialog width='80%' title="详细信息" :visible.sync="showDialog" append-to-body='true'>
+    <el-dialog width='80%' title="详细信息" v-if="formData.length !== 0" :visible.sync="showDialog" :append-to-body="true">
         <div class="container i-scrollbar">
           <el-form v-if="formData.length !== 0" :inline="true" class="">
               <el-form-item style="width:23%" label-width='120px' v-for="(item, index) in formData" :key="index" :label="item.label">

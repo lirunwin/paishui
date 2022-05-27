@@ -109,7 +109,6 @@
           align="center"
           show-overflow-tooltip
           width="170"
-          :sort-method="sortStruct"
           :sortable="true"
         >
         </el-table-column>
@@ -121,7 +120,6 @@
           show-overflow-tooltip
           width="180"
           :sortable="true"
-          :sort-method="sortFunc"
         >
         </el-table-column>
 
@@ -686,7 +684,7 @@ export default {
     },
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
-      console.log('打开弹窗', row)
+      this.rootPage.openPromptBox(row.expNo, this.param.layerName) 
     },
 
     // 详情

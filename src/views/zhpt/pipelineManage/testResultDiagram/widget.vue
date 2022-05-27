@@ -31,6 +31,7 @@
             v-model="form.startDate"
             :picker-options="sOpition"
             style="width: 100%"
+            @change="sDateChange"
           ></el-date-picker>
         </el-row>
         <!-- <el-col style="text-align: center" :span="2">至</el-col> -->
@@ -41,6 +42,7 @@
             v-model="form.endDate"
             :picker-options="eOpition"
             style="width: 100%"
+            @change="eDateChange"
           ></el-date-picker>
         </el-row>
       </el-form-item>
@@ -141,8 +143,96 @@
           </el-card>
         </div>
       </div>
+    <!-- 管道评估结果 -->
     <transition name="el-fade-in-linear">
-      <check-details @close="dialogClose" v-show="dialogFormVisible" :checkParam="pipeId"></check-details>
+      <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
+        <div class="detailsCrad" v-if="currentInfoCard2">
+          <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
+            <div class="table-content">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  height: 30px;
+                  font-size: 14px;
+                  box-sizing: border-box;
+                "
+              >
+                <span style="font-weight: bold; user-select: none"
+                  >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
+                  <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
+                  {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
+                  <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+                </span>
+                <a
+                  style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                  @click="openDetailsDialog(getCurrentForm.id)"
+                  >详情</a
+                >
+              </div>
+              <div style="margin-top: 10px; font-size: 12px">
+                管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}
+              </div>
+              <div class="content-info" style="justify-content: space-between; display: flex; font-size: 12px">
+                <div class="left" style="width: 200px">
+                  <div class="detailsTitle" style="margin-top: 5px">检测日期 {{ getCurrentForm.sampleTime }}</div>
+                  <!-- <p style="padding-left: 10px">无文档</p> -->
+                  <div class="text-space" style="margin: 10px 0">
+                    <el-link
+                      style="font-size: 12px; margin-left: 10px"
+                      v-if="getCurrentForm.wordFilePath"
+                      type="primary"
+                      @click.stop="downloadDocx"
+                      ><div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                        {{ getCurrentForm.wordInfoName + 'docx' }}
+                      </div></el-link
+                    >
+                  </div>
+                  <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.structEstimate }}</p>
+                  <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
+                </div>
+                <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
+                  <el-tabs v-model="activeName">
+                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum">
+                      <div class="container">
+                        <el-image
+                          style="width: 100%; height: 90%; -webkit-user-drag: none"
+                          :src="getImgUrlEV"
+                          :preview-src-list="getImgUrlArrEV"
+                        >
+                        </el-image>
+                        <div style="text-align: center">
+                          <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
+                          {{ getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0) : 0 }}/{{
+                            getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0) : 0
+                          }}
+                          <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
+                        </div>
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane :label="`视频`" name="viedoNum">
+                      <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
+                        <video controls="controls" width="100%" height="83%">
+                          <source :src="getVideoUrlEV" type="video/mp4" />
+                        </video>
+                      </div>
+                      <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">
+                        暂无视频
+                      </div>
+                    </el-tab-pane>
+                  </el-tabs>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </div>
+      </div>
+    </transition>
+    <transition name="el-fade-in-linear">
+      <check-details @close="dialogClose" @sendBool='dialogFormVisible=false' v-show="dialogFormVisible" :checkParam="pipeId"></check-details>
     </transition>
   </div>
 </template>
@@ -170,7 +260,7 @@ import defectImg0 from '@/assets/images/traingle0.png';
 
 import { unByKey } from 'ol/Observable'
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
-import { queryDefectdetails } from '@/api/pipelineManage'
+import { queryDefectdetails, histroyPipeData } from '@/api/pipelineManage'
 import { Overlay } from 'ol';
 import { baseAddress } from '@/utils/request';
 import checkDetails from '@/views/zhpt/pipelineManage/components/checkDetails.vue'
@@ -218,7 +308,7 @@ export default {
             { color: '2', label: '二级', num: 0, unit: '个' },
             { color: '3', label: '三级', num: 0, unit: '个' },
             { color: '4', label: '四级', num: 0, unit: '个' },
-            { color: '0', label: '未定级', num: 0, unit: '个' }
+            // { color: '0', label: '正常', num: 0, unit: '个' }
           ]
         },
         {
@@ -231,7 +321,7 @@ export default {
             { color: 'blue', label: 'Ⅱ级', num: 0, unit: '条' },
             { color: 'pink', label: 'Ⅲ级', num: 0, unit: '条' },
             { color: 'red', label: 'Ⅳ级', num: 0, unit: '条' },
-            { color: 'un', label: '未定级', num: 0, unit: '条' }
+            { color: 'un', label: '正常', num: 0, unit: '条' }
           ]
         },    
         {
@@ -244,7 +334,7 @@ export default {
             { color: 'blue', label: 'Ⅱ级', num: 0, unit: '条' },
             { color: 'pink', label: 'Ⅲ级', num: 0, unit: '条' },
             { color: 'red', label: 'Ⅳ级', num: 0, unit: '条' },
-            { color: 'un', label: '未定级', num: 0, unit: '条' }
+            { color: 'un', label: '正常', num: 0, unit: '条' }
           ]
         }
       ],
@@ -262,6 +352,8 @@ export default {
       DetailsForm: {},
       popup: null,
       activeName: 'picnum',
+
+      currentInfoCard2: false,
       // 时间过滤
       sOpition: {
         disabledDate: time => {
@@ -284,7 +376,11 @@ export default {
       // 
       dialogFormVisible: false,
       pipeId: 0,
-      hasLoad: false
+      hasLoad: false,
+      //
+      currentForm: [], // 缩略提示框
+      currentIndex: 0,
+      imgArrIndex: 0, // 缩略框照片索引
     }
   },
   mounted() {
@@ -295,6 +391,29 @@ export default {
     this.clearAll()
   },
   computed: {
+    // 获取照片数组路径
+    getImgUrlArrEV() {
+      let arr = this.getCurrentForm.pipeDefects.map((v) => {
+        return baseAddress + '/psjc/file' + v.picPath
+      })
+      return arr
+    },
+    // 获取文件url
+    getImgUrlEV() {
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.pipeDefects[this.imgArrIndex].picPath
+      console.log('address', address)
+      return address
+    },
+    getVideoUrlEV() {
+      console.log('照片', this.getCurrentForm.pipeDefects.length)
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.videoPath
+      console.log('address', address)
+      return address
+    },
+    // 提示框当前信息
+    getCurrentForm() {
+      return this.currentForm ? this.currentForm[this.currentIndex] : {}
+    },
     getVideoUrl() {
       let address = baseAddress + '/psjc/file' + this.DetailsForm.videopath
       console.log('address', address)
@@ -304,7 +423,19 @@ export default {
       let address = baseAddress + '/psjc/file' + this.DetailsForm.picPath
       console.log('address', address)
       return address
-    }
+    },
+    // 获取文件url
+    getImgUrlEV() {
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.pipeDefects[this.imgArrIndex].picPath
+      console.log('address', address)
+      return address
+    },
+    getVideoUrlEV() {
+      console.log('照片', this.getCurrentForm.pipeDefects.length)
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.videoPath
+      console.log('address', address)
+      return address
+    },
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
@@ -321,6 +452,16 @@ export default {
     }
   },
   methods: {
+    sDateChange (t) {
+      if (!this.endDate) {
+        this.endDate = t
+      }
+    },
+    eDateChange (t) {
+      if (!this.startDate) {
+        this.startDate = t
+      }
+    },
     init () {
       this.projUtil = new projUtil()
       this.projUtil.resgis(this.currentDataProjName)
@@ -338,8 +479,8 @@ export default {
       this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(7, 'rgba(255, 0, 0, 0.6)', 9, 'rgba(0, 255, 255, 0.6)') })
       this.addLayers([this.pipeFuncLayer, this.pipeStrucLayer, this.pipeDefectLayer, this.lightLayer])  
 
-      // 添加缺陷数据
-      this.setAllDefect()
+      // // 添加缺陷数据
+      // this.setAllDefect()
       // 添加项目
       this.setProjectData()
     },
@@ -357,6 +498,18 @@ export default {
           // label, value
           this.projectOpt = res.result.records.map(record => {
             return { label: record.prjName, value: record.prjNo }
+          })
+          this.form.project = this.projectOpt[0].label
+          let prjNo = this.projectOpt[0].value
+          getReportByProjecetId({ prjNo, state: 1 }).then(res => {
+            if (res.code === 1) {
+              let data = res.result
+              this.reportOpt = data.map(d => {
+                return { label: d.wordInfoName, value: d.id }
+              })
+              this.form.report = this.reportOpt.length !== 0 ? this.reportOpt[0] : ''
+              this.showLayer()
+            } else this.$message.error('获取报告失败!')
           })
           // 默认选择第一项
           // if (this.projectOpt.length !== 0) {
@@ -427,19 +580,55 @@ export default {
 
         this.clickEvent = this.mapView.on('click', (evt) => {
           let feas = this.mapView.getFeaturesAtPixel(evt.pixel)
+          
           if (feas.length !== 0) {
-            let point = feas.find(item => item.getGeometry() instanceof Point)
-            if (point) {
-              this.openPromptBox(point.get('id'), 'pipeDefectLayer')
+            let fea = feas.find(item => item.getGeometry() instanceof Point)
+            fea = fea || feas[0]
+            if (fea.getGeometry() instanceof Point) {
+              this.openPromptBox(fea.get('id'), 'pipeDefectLayer')
+            } else {
+              this.openPromptBox(fea.get('expNo'), 'pipeStrucLayer')
             }
           } else {
             this.currentInfoCard = false
+            this.currentInfoCard2 = false
             this.lightLayer.getSource().clear()
           }
         })
       }
-      this.loading = false
-      this.hasLoad = true
+    },
+   lastImg() {
+      console.log('上一张照片', this.getCurrentForm.pipeDefects)
+
+      if (this.imgArrIndex <= 0) {
+        this.imgArrIndex = 0
+        return
+      }
+      this.imgArrIndex--
+    },
+    // 下一张照片
+    nextImg() {
+      if (this.imgArrIndex + 1 >= this.getCurrentForm.pipeDefects.length) {
+        this.imgArrIndex = this.getCurrentForm.pipeDefects.length - 1
+        return
+      }
+      this.imgArrIndex++
+    },
+    // 上一页
+    lastPage() {
+      if (this.currentIndex <= 0) {
+        this.currentIndex = 0
+        return
+      }
+      this.currentIndex--
+    },
+    // 下一页
+    nextPage() {
+      if (this.currentIndex + 1 >= this.currentForm.length) {
+        this.currentIndex = this.currentForm.length - 1
+        return
+      }
+      this.currentIndex++
     },
 
     /**
@@ -501,7 +690,7 @@ export default {
                   { level: '二级', img: defectImg2, index: 1 },
                   { level: '三级', img: defectImg3, index: 2 },
                   { level: '四级', img: defectImg4, index: 3 },
-                  { level: '/', img: defectImg0, index: 4 }
+                  // { level: '/', img: defectImg0, index: 4 }
                 ]
                 let findimg = null
 
@@ -565,7 +754,7 @@ export default {
     showLayer() {
       if (!this.form.project) return this.$message.warning('请先填写工程名称')
       this.loading = true
-      let ids = this.form.report.join(",")
+      let ids = !this.form.report ? this.form.report: this.form.report.join(",")
       let params = {
         prjNo: this.form.project,
         ids: this.form.report,
@@ -573,6 +762,8 @@ export default {
         jcEndDate: this.form.endDate ? this.form.endDate.toLocaleDateString().replace(/\//g,   '-') : ''
       }
       getDefectDataByFilter(params).then(res => {
+        this.loading = false
+        this.hasLoad = true
         if (res.code === 1) {
           let data = res.result
           if (data.length !== 0) {
@@ -629,15 +820,26 @@ export default {
     },
     // 打开弹窗
     async openPromptBox (id, layerName) {
+      let type = layerName === "pipeDefectLayer" ? 1 : 2
       console.log('打开弹窗')
-      let res = await queryDefectdetails(id)
-      let position = this.lightFea(id, layerName)
-      this.DetailsForm = res.result
-      this.currentInfoCard = true
+      let position = []
+      if (type === 1) {
+        let res = await queryDefectdetails(id)
+        position = this.lightFea(id, layerName)
+        this.DetailsForm = res.result
+        this.currentInfoCard = true
+      } else {
+        let resEV = await histroyPipeData({ expNo: id })
+        position = this.lightFea(id, layerName)
+        this.currentIndex = 0
+        this.currentForm = resEV.result
+        this.currentInfoCard2 = true
+      }
       // 
       if (position) {
+        let popupId = type === 1 ? 'popupCard' : 'popupCardEV'
         this.popup = new Overlay({
-          element: document.getElementById("popupCard"),
+          element: document.getElementById(popupId),
           //当前窗口可见
           autoPan: true,
           positioning: 'bottom-center',
@@ -647,23 +849,22 @@ export default {
         });
         this.mapView.addOverlay(this.popup)
         this.popup.setPosition(position)
+        this.mapView.getView().setCenter(position)
+        this.mapView.getView().setZoom(18)
       }
     },
     clearLightFeas () {
       this.lightLayer.getSource().clear()
     },
     lightFea (feaid, layerName) {
+      let field = layerName === "pipeDefectLayer" ? "id" : 'expNo'
       let feas = this[layerName].getSource().getFeatures()
-      let fea = feas.find(fea => fea.get('id') === feaid)
+      let fea = feas.find(fea => fea.get(field) === feaid)
       if (fea) {
         let geometry = fea.getGeometry().clone()
         this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(new Feature({ geometry }))
-        let coors = geometry.getCoordinates()
-        let center = new mapUtil().getCenter(fea)
-        
-        this.mapView.getView().setCenter(center)
-        this.mapView.getView().setZoom(20)
+        let center = mapUtil.getCenter(fea)
         return center
       } else {
         this.$message.warning('该点无位置信息')
@@ -673,6 +874,11 @@ export default {
     openDetails () {
       console.log('打开详情', this.DetailsForm)
       this.pipeId = this.DetailsForm.id
+      this.dialogFormVisible = true
+    },
+    openDetailsDialog(id) {
+      this.pipeId = id
+      console.log('打开检测详情', this.DetailsId)
       this.dialogFormVisible = true
     },
     // 详情关闭
@@ -1031,4 +1237,17 @@ export default {
   }
 }
 
+#popupCardEV {
+  &::after {
+    content: '';
+    display: block;
+    width: 45px;
+    height: 27px;
+    background: url('../components/testImg/corner.png');
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    transform: translate(-50%, 0);
+  }
+}
 </style>
