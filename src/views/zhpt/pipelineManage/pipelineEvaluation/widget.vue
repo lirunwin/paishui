@@ -479,7 +479,7 @@ export default {
     finishDownload() {
       let self = this
       self.$message({
-        message: '恭喜，数据导出成功',
+        message: '准备导出数据',
         type: 'success'
       })
     },
@@ -519,7 +519,7 @@ export default {
     },
     // 下载文档
     downloadDocx() {
-      this.$message('正在加载文档地址...')
+      this.$message('正在加载文档地址,请稍等...')
       let url = baseAddress + '/psjc/file' + this.getCurrentForm.wordFilePath
       let label = this.getCurrentForm.wordInfoName + '.docx'
       axios
@@ -546,6 +546,9 @@ export default {
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
+       if (!this.searchValue.testTime.startDate) {
+        this.searchValue.testTime.startDate = this.searchValue.testTime.finishDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchValue.testTime.startDate).getTime()
       let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
@@ -625,7 +628,7 @@ export default {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
-              view.animate({ zoom: 13 })
+              view.animate({ zoom: 15 })
               this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
             this.hasLoad = true
@@ -785,7 +788,7 @@ export default {
         this.lightLayer.getSource().addFeature(feature)
         let center = new mapUtil().getCenterFromFeatures(feature)
         this.map.getView().setCenter(center)
-        this.map.getView().setZoom(21)
+        this.map.getView().setZoom(18)
         return center
       }
     },
@@ -826,7 +829,6 @@ export default {
       let res = await histroyPipeData({ expNo: row.expNo })
       this.currentIndex = 0
       this.currentForm = res.result
-      this.currentInfoCard = true
       // 定位
       if (position) {
         this.popup = new Overlay({
@@ -840,6 +842,7 @@ export default {
         })
         this.map.addOverlay(this.popup)
         this.popup.setPosition(position)
+        this.currentInfoCard = true
       }
     },
 

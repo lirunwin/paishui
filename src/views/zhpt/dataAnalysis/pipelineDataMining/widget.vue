@@ -83,6 +83,9 @@ export default {
   methods: {
     // 处理地图数据
     getData(res) {
+      if (!res) {
+        this.loading = false
+      }
       let pipArr = res.pipeData // 管道列表
       let defectArr = res.defectData // 缺陷列表
 
@@ -109,6 +112,7 @@ export default {
         }
       })
       this.loading = false
+
       // console.log('this.defectTypeObj', this.defectTypeObj)
     },
     // 绘制

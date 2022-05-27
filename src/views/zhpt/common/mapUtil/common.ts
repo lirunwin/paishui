@@ -78,21 +78,10 @@ export class mapUtil {
 
     // 多个要素点获取中心点
     getCenterFromFeatures(features) {
-        let pointsArr = []
         if (!Array.isArray(features)) {
             features = [features]
         }
-        features.forEach(fea => {
-            let geometry = fea.getGeometry()
-            let coordinates = geometry.getCoordinates()
-            if (geometry instanceof Point) {
-                pointsArr.push(coordinates)
-            } else if (geometry instanceof LineString) {
-                pointsArr = [...pointsArr, ...coordinates]
-            } else if (geometry instanceof Polygon) {
-                pointsArr = [...pointsArr, ...coordinates.flat()]
-            } //...
-        })
+        let pointsArr = features.map(fea => this.getCenter(fea))
         let xmin, xmax, ymin, ymax
         pointsArr.forEach(point => {
             let [x, y] = point

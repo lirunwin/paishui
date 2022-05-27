@@ -1,14 +1,7 @@
 <template>
   <div class="project-box">
     <!-- 报告内管段状态评估汇总 -->
-    <el-table
-      :data="tableData"
-      border
-      :summary-method="getSummaries"
-      show-summary
-      style="width: 100%; margin-top: 20px"
-      stripe
-    >
+    <el-table :data="tableData" border style="width: 100%; margin-top: 20px" stripe>
       <el-table-column type="index" label="序号" width="80" align="center" header-align="center" fixed="left">
       </el-table-column>
       <!-- 其它 -->
@@ -18,6 +11,7 @@
         :label="v.label"
         align="center"
         show-overflow-tooltip
+        :width="v.width"
         v-for="(v, i) in tableContent.other"
         :key="i"
         :show-overflow-tooltip="true"
@@ -31,6 +25,7 @@
           :label="v.label"
           align="center"
           show-overflow-tooltip
+          :width="v.width"
           v-for="(v, i) in tableContent.buriedDepth"
           :key="i"
           :show-overflow-tooltip="true"
@@ -46,6 +41,7 @@
           :label="v.label"
           align="center"
           show-overflow-tooltip
+          :width="v.width"
           v-for="(v, i) in tableContent.structEstimate"
           :key="i"
           :show-overflow-tooltip="true"
@@ -61,6 +57,7 @@
           :label="v.label"
           align="center"
           show-overflow-tooltip
+          :width="v.width"
           v-for="(v, i) in tableContent.funcEstimate"
           :key="i"
           :show-overflow-tooltip="true"
@@ -81,30 +78,30 @@ export default {
       // 表格参数
       tableContent: {
         other: [
-          { label: '管段编号', name: 'expNo' },
-          { label: '管径(mm)', name: 'diameter' },
-          { label: '长度(m)', name: 'pipeLength' },
-          { label: '材质', name: 'material' }
+          { width: '120', label: '管段编号', name: 'expNo' },
+          { width: '120', label: '管径(mm)', name: 'diameter' },
+          { width: '120', label: '长度(m)', name: 'pipeLength' },
+          { width: '120', label: '材质', name: 'material' }
         ],
         buriedDepth: [
-          { label: '起点', name: 'startDepth' },
-          { label: '终点', name: 'endDepth' }
+          { width: '120', label: '起点', name: 'startDepth' },
+          { width: '120', label: '终点', name: 'endDepth' }
         ],
         structEstimate: [
-          { label: '平均值S', name: 'structYmean' },
-          { label: '最大值Smax', name: 'structYmax' },
-          { label: '缺陷等级', name: 'structClass' },
-          { label: '缺陷密度', name: 'structDensity' },
-          { label: '修复指数RI', name: 'repairIndex' },
-          { label: '综合状况评价', name: 'structEstimate' }
+          { width: '120', label: '平均值S', name: 'structYmean' },
+          { width: '120', label: '最大值Smax', name: 'structYmax' },
+          { width: '120', label: '缺陷等级', name: 'structClass' },
+          { width: '120', label: '缺陷密度', name: 'structDensity' },
+          { width: '120', label: '修复指数RI', name: 'repairIndex' },
+          { width: '120', label: '综合状况评价', name: 'structEstimate' }
         ],
         funcEstimate: [
-          { label: '平均值S', name: 'funcYmean' },
-          { label: '最大值Ymax', name: 'funcYmax' },
-          { label: '缺陷等级', name: 'funcClass' },
-          { label: '缺陷密度', name: 'funcDensity' },
-          { label: '养护指数MI', name: 'maintainIndex' },
-          { label: '综合状况评价', name: 'funcEstimate' }
+          { width: '120', label: '平均值Y', name: 'funcYmean' },
+          { width: '120', label: '最大值Ymax', name: 'funcYmax' },
+          { width: '120', label: '缺陷等级', name: 'funcClass' },
+          { width: '120', label: '缺陷密度', name: 'funcDensity' },
+          { width: '120', label: '养护指数MI', name: 'maintainIndex' },
+          { width: '120', label: '综合状况评价', name: 'funcEstimate' }
         ]
       },
       tableData: []
@@ -117,38 +114,7 @@ export default {
     console.log('管段状态评估汇总  ', resPrj)
     console.log('上面传来的id', this.paramId)
   },
-  methods: {
-    getSummaries(param) {
-      const { columns, data } = param
-      const sums = []
-      columns.forEach((column, index) => {
-        if (index === 0) {
-          sums[index] = '总计'
-          return
-        }
-          if (index === 2) {
-          sums[index] = '/'
-          return
-        }
-        const values = data.map((item) => Number(item[column.property]))
-        if (!values.every((value) => isNaN(value))) {
-          sums[index] = values.reduce((prev, curr) => {
-            const value = Number(curr)
-            if (!isNaN(value)) {
-              return prev + curr
-            } else {
-              return prev
-            }
-          }, 0).toFixed(2)
-          sums[index] += ''
-        } else {
-          sums[index] = '/'
-        }
-      })
-
-      return sums
-    }
-  }
+  methods: {}
 }
 </script>
 

@@ -89,12 +89,24 @@
  * @author 梁罗、李顺<876330731@qq.com>
  */
 import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
+import { Map, View } from 'ol'
+import {unByKey} from 'ol/Observable'
+import Feature from 'ol/Feature'
+import VectorSource from 'ol/source/Vector'
+import { Vector as VectorLayer } from 'ol/layer'
+import { Point,MultiPoint, LineString } from 'ol/geom'
+import {getLength} from 'ol/sphere'
+import { Icon, Style } from 'ol/style'
+import Draw from 'ol/interaction/Draw'
 import tfLegend from '@/views/zhpt/common/Legend.vue'
 import tfTableLegend from '@/views/zhpt/common/TableLegend.vue'
 import { esriConfig, appconfig } from 'staticPub/config'
 import { loadModules } from 'esri-loader'
 import { queryXjLine, addXjLine, alterXjLine, deleteXjLine } from '@/api/xjDailyManageApi'
 import $ from 'jquery'
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
+import request from '@/utils/request'
+import axios from 'axios'
 @Component({
   name: 'xjMissionLineManagement',
   components: { tfTableLegend, tfLegend }
@@ -114,11 +126,11 @@ export default class XjMissionLineManagement extends Vue {
   // 显示修改巡检线信息确定按钮
   showAlterConfirmButton = false
   //绘制图层
-  drawLayer = null
+  drawLayer: VectorLayer<VectorSource<any>> = null
   //巡检线图层
-  xjGraphicLayer = null
+  xjGraphicLayer: VectorLayer<VectorSource<any>> = null
   //高亮图层
-  highGraphicLayer = null
+  highGraphicLayer: VectorLayer<VectorSource<any>> = null
   //查询名称
   name = ''
   updateRow = null
@@ -139,6 +151,7 @@ export default class XjMissionLineManagement extends Vue {
     polylines: [], //线段数组
     lengths: [] //长度数据
   }
+  draw:Draw=null;
   //编辑数据
   editInfo = {
     geometry: '',
@@ -157,25 +170,10 @@ export default class XjMissionLineManagement extends Vue {
   }
   layerId = 17 //片区图层id
   dataT1 = []
-  mapV=null
+  mapV:Map=null;
   mounted() {
-    var that = this
-    var div = this.$refs.cctvMap
-    var mapV = this.data.mapView
-    var map = mapV.map
-    // loadModules(["esri/views/MapView"], { url: esriConfig.baseUrl }).then(
-    //   ([MapView]) => {
-    //     const mapview = new MapView({
-    //       container: div,
-    //       map: map
-    //     });
-    //     that.mapV = mapview;
-    //     mapview.ui.components = [];
-    //     mapview.constraints.lods = mapV.constraints.lods;
-    //   }
-    // );
     this.getData()
-    this.getPartArea()
+    this.initMapSource()
   }
   @Watch('pagination.current')
   currentPageChange() {
@@ -192,17 +190,114 @@ export default class XjMissionLineManagement extends Vue {
   @Watch('showHistoryLine')
   showHistoryLineChange() {
     if (this.xjGraphicLayer) {
-      this.xjGraphicLayer.visible = this.showHistoryLine
+      this.xjGraphicLayer.setVisible(this.showHistoryLine)
     }
   }
   destroyed() {
-    let mapV = this.data.mapView
-    let map = mapV.map
+    let mapV = this.data.mapView as Map;
     if (this.xjGraphicLayer) {
-      map.remove(this.xjGraphicLayer)
+      mapV.removeLayer(this.xjGraphicLayer)
     }
     if (this.highGraphicLayer) {
-      map.remove(this.highGraphicLayer)
+      mapV.removeLayer(this.highGraphicLayer)
+    }
+  }
+  /**
+   * 在模块打开的时候预先加载地图
+   */
+  addMap() {
+    let { initCenter, initZoom } = appconfig
+    var div = this.$refs.cctvMap as HTMLElement
+    let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
+    const map = new Map({
+      target: div,
+      view: new View({
+        center: initCenter,
+        zoom: initZoom,
+        maxZoom: 17,
+        minZoom: 5,
+        projection: 'EPSG:4326'
+      })
+    })
+    this.mapV = map
+
+    layerResource.forEach((layerConfig) => {
+      let { name, type, url, parentname, id, visible = true } = layerConfig
+      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
+      map.addLayer(layer)
+    })
+    //添加矢量点图层
+    const vectorLayer = new VectorLayer({
+      source: new VectorSource()
+    })
+    this.drawLayer = vectorLayer
+    map.addLayer(this.drawLayer)
+  }
+  initMapSource() {
+    var resource = appconfig.gisResource['iserver_resource']
+    if (appconfig.isloadServer) {
+      request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then((res1) => {
+        if (res1.code == 1) {
+          const res = res1.result
+          //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
+          let onlineIndex = res.findIndex((item) => item.code == 'isOnlineAddress')
+          if (onlineIndex !== -1) {
+            let isOnline = true
+            let onLineAddress = res[onlineIndex].child[0].cval
+            axios
+              .get(onLineAddress)
+              .then(
+                (res) => {
+                  isOnline = res.status === 200
+                },
+                (error) => {
+                  isOnline = false // 异常返回
+                }
+              )
+              .catch((e) => {
+                isOnline = false //异常返回
+              })
+              .finally(() => {
+                const repItems = ['地图配置服务']
+                res.forEach((service) => {
+                  let resData = service.child,
+                    source = null
+                  if (repItems.includes(service.name) && resData && resData.length !== 0) {
+                    if (service.name === '图层服务') {
+                      source = resource.layerService.layers
+                      resData.forEach((data) => {
+                        let findItem = source.find((sourceItem) => {
+                          return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
+                        })
+                        if (findItem) {
+                          findItem.url = data.cval
+                        }
+                      })
+                    } else if (service.name === '地图配置服务') {
+                      source = appconfig
+                      resData.forEach((item) => {
+                        if (item.ckey === 'center') {
+                          source.initCenter = item.cval.split(',')
+                        } else if (item.ckey === 'zoom') {
+                          source.initZoom = item.cval
+                        }
+                      })
+                    } else if (service.name === '网络分析服务') {
+                      source = resource.netAnalysisService
+                      source.url = resData[0].cval
+                    } else if (service.name === '数据服务') {
+                      source = resource.dataService
+                      source.url = resData[0].cval
+                    }
+                  }
+                })
+                this.addMap()
+              })
+          }
+        } else this.$message('服务加载失败 启用默认服务配置')
+      })
+    } else {
+      //nextDo()
     }
   }
   /**
@@ -225,7 +320,7 @@ export default class XjMissionLineManagement extends Vue {
   //清除高亮图层
   clearHighGra() {
     if (this.highGraphicLayer) {
-      this.highGraphicLayer.removeAll()
+      this.highGraphicLayer.getSource().clear()
     }
   }
   //选中表格行时触发事件
@@ -237,14 +332,14 @@ export default class XjMissionLineManagement extends Vue {
         width: '2px',
         type: 'simple-line'
       }
-      let geo = JSON.parse(val.geometry)
-      geo.type = 'polyline'
-      let graphic = new this.data.mapView.TF_graphic({
-        geometry: geo,
-        symbol: lineSymbol
-      })
-      this.highGraphicLayer.add(graphic)
-      this.data.mapView.extent = graphic.geometry.extent
+      // let geo = JSON.parse(val.geometry)
+      // geo.type = 'polyline'
+      // let graphic = new this.data.mapView.TF_graphic({
+      //   geometry: geo,
+      //   symbol: lineSymbol
+      // })
+      // this.highGraphicLayer.add(graphic)
+      // this.data.mapView.extent = graphic.geometry.extent
     }
   }
   // 点击确定，提交添加的巡检线信息
@@ -333,7 +428,14 @@ export default class XjMissionLineManagement extends Vue {
   loadMap() {
     (this.$refs.mapBox as HTMLElement).appendChild(this.$refs.cctvMap as HTMLElement);
     (this.$refs.cctvMap as HTMLElement).style.display = ''
-    this.mapV.extent = this.data.mapView.extent
+    //地图容器初始隐藏，需要更新size
+    if (this.mapV) {
+      this.mapV.updateSize()
+    }
+    //添加历史巡检点图层
+    // if(this.historyPointLayaer){
+    //   this.mapV.addLayer(this.historyPointLayaer);
+    // }
   }
   addText(text, length) {
     // var myField = this.$refs.textBox.$el
@@ -365,11 +467,12 @@ export default class XjMissionLineManagement extends Vue {
   }
   //取消绘制
   drawLineClose() {
-    if (this.drawEvent) {
-      this.drawEvent.reset()
+    if(this.draw){
+      this.mapV.removeInteraction(this.draw);
+      this.draw=null;
     }
     if (this.drawLayer) {
-      this.drawLayer.removeAll()
+      this.drawLayer.getSource().clear();
     }
     //如果处于修改状态，取消绘制过后，将目前的图形还原为最初始的图形
     if (this.showAlterConfirmButton) {
@@ -385,132 +488,104 @@ export default class XjMissionLineManagement extends Vue {
   }
   // 绘制线
   drawLine() {
-    console.log('画线启动')
-    const that = this
-    const mapV = this.data.mapView
-    const map = mapV.map
+    
+    const mapV = this.data.mapView;
+    const map = this.mapV;
     this.drawLineClose()
     this.isDrawEnd = false
-    loadModules(
-      [
-        'esri/Graphic',
-        'esri/views/draw/Draw',
-        'esri/geometry/Point',
-        'esri/geometry/Polyline',
-        'esri/layers/GraphicsLayer',
-        'esri/symbols/LineSymbol'
-      ],
-      { url: esriConfig.baseUrl }
-    ).then(([Graphic, Draw, Point, Polyline, GraphicsLayer, LineSymbol]) => {
-      //绘制图层
-      if (!that.drawLayer) {
-        that.drawLayer = new GraphicsLayer()
-        that.mapV.map.add(that.drawLayer)
-      } else {
-        that.drawLayer.removeAll()
-      }
-      //绘制对象
-      that.drawEvent = new Draw({
-        view: that.mapV
-      })
-      //绘制形状的样式
-      let lineSymbol = {
-        color: 'red',
-        width: '2px',
-        type: 'simple-line'
-      }
-      var action = that.drawEvent.create('polyline', { mode: 'click' })
-      action.on('vertex-add', function (evt) {
-        if (evt.vertices.length == 1) {
-          addLinePoint(evt, true)
-        } else {
-          addLinePoint(evt)
-        }
-      })
-      action.on('cursor-update', function (evt) {
-        addLinePoint(evt)
-      })
-      action.on('vertex-remove', function (evt) {
-        addLinePoint(evt)
-      })
-      action.on('draw-complete', function (evt) {
-        addLinePoint(evt, true)
-      })
-      function addLinePoint(evt, action?) {
-        //一条线完成至少需要两个点
-        if (evt.vertices.length > 1) {
-          let darwGeo = new Polyline()
-          that.drawLayer.removeAll()
-          let graphic = new Graphic({
-            geometry: {
-              paths: [evt.vertices],
-              spatialReference: that.mapV.spatialReference,
-              type: 'polyline'
-            },
-            symbol: lineSymbol
-          })
-          if (action) {
-            that.isDrawEnd = true
-            let endGeo = graphic.geometry.clone().toJSON()
-            let geometrys = []
-            for (let i = 0; i < endGeo.paths[0].length - 1; i++) {
-              let startPoint = endGeo.paths[0][i]
-              let endPoint = endGeo.paths[0][i + 1]
-              let itemGeometry = {
-                paths: [[startPoint, endPoint]],
-                spatialReference: that.mapV.spatialReference,
-                type: 'polyline'
-              }
-              geometrys.push(itemGeometry)
-            }
-            that.mathLength(geometrys)
-          }
-          that.drawLayer.add(graphic)
-        }
-        //添加第一个点时确定片区
-        else if (evt.vertices.length == 1 && action) {
-          that.fristPointR(evt.vertices[0][0], evt.vertices[0][1])
-          that.isDrawEnd = false
-        }
-      }
+    this.draw=new Draw({
+      type:"LineString",
+      source:this.drawLayer.getSource()
     })
-  }
-  //获取所有片区
-  getPartArea() {
-    loadModules(
-      [
-        'esri/geometry/geometryEngine',
-        'esri/geometry/Point',
-        'esri/tasks/GeometryService',
-        'esri/tasks/support/LengthsParameters',
-        'esri/symbols/LineSymbol'
-      ],
-      { url: esriConfig.baseUrl }
-    ).then(([geometryEngine, Point, GeometryService, LengthsParameters, LineSymbol]) => {
-      let sp = this.data.mapView.spatialReference
-      this.geometryEngine = geometryEngine
-      this.GeometryService = GeometryService
-      this.LengthsParameters = LengthsParameters
-      this.LineSymbol = LineSymbol
-      $.ajax({
-        url: appconfig.gisResource.business_map.config[0].url + '/' + this.layerId + '/query?f=pjson',
-        type: 'POST',
-        data: {
-          where: '1=1',
-          f: 'pjson',
-          outFields: '*'
-        },
-        success: (data) => {
-          this.regions = []
-          data = JSON.parse(data)
-          this.regionsFea = data.features
-          for (let item of this.regionsFea) {
-            this.regions.push(item.attributes)
-          }
-        },
-        error: (error) => this.$message.error(error)
-      })
+    this.drawEvent=this.draw.on('drawend',(e)=>{
+      const geometry=(e.feature as Feature<LineString>).getGeometry();
+      const length=getLength(geometry,{projection:'EPSG:4326'});
+      this.editInfo.length = length.toFixed(2);
     })
+    map.addInteraction(this.draw);
+    // loadModules(
+    //   [
+    //     'esri/Graphic',
+    //     'esri/views/draw/Draw',
+    //     'esri/geometry/Point',
+    //     'esri/geometry/Polyline',
+    //     'esri/layers/GraphicsLayer',
+    //     'esri/symbols/LineSymbol'
+    //   ],
+    //   { url: esriConfig.baseUrl }
+    // ).then(([Graphic, Draw, Point, Polyline, GraphicsLayer, LineSymbol]) => {
+    //   //绘制图层
+    //   if (!that.drawLayer) {
+    //     that.drawLayer = new GraphicsLayer()
+    //     that.mapV.map.add(that.drawLayer)
+    //   } else {
+    //     that.drawLayer.removeAll()
+    //   }
+    //   //绘制对象
+    //   that.drawEvent = new Draw({
+    //     view: that.mapV
+    //   })
+    //   //绘制形状的样式
+    //   let lineSymbol = {
+    //     color: 'red',
+    //     width: '2px',
+    //     type: 'simple-line'
+    //   }
+    //   var action = that.drawEvent.create('polyline', { mode: 'click' })
+    //   action.on('vertex-add', function (evt) {
+    //     if (evt.vertices.length == 1) {
+    //       addLinePoint(evt, true)
+    //     } else {
+    //       addLinePoint(evt)
+    //     }
+    //   })
+    //   action.on('cursor-update', function (evt) {
+    //     addLinePoint(evt)
+    //   })
+    //   action.on('vertex-remove', function (evt) {
+    //     addLinePoint(evt)
+    //   })
+    //   action.on('draw-complete', function (evt) {
+    //     addLinePoint(evt, true)
+    //   })
+    //   function addLinePoint(evt, action?) {
+    //     //一条线完成至少需要两个点
+    //     if (evt.vertices.length > 1) {
+    //       let darwGeo = new Polyline()
+    //       that.drawLayer.removeAll()
+    //       let graphic = new Graphic({
+    //         geometry: {
+    //           paths: [evt.vertices],
+    //           spatialReference: that.mapV.spatialReference,
+    //           type: 'polyline'
+    //         },
+    //         symbol: lineSymbol
+    //       })
+    //       if (action) {
+    //         that.isDrawEnd = true
+    //         let endGeo = graphic.geometry.clone().toJSON()
+    //         let geometrys = []
+    //         for (let i = 0; i < endGeo.paths[0].length - 1; i++) {
+    //           let startPoint = endGeo.paths[0][i]
+    //           let endPoint = endGeo.paths[0][i + 1]
+    //           let itemGeometry = {
+    //             paths: [[startPoint, endPoint]],
+    //             spatialReference: that.mapV.spatialReference,
+    //             type: 'polyline'
+    //           }
+    //           geometrys.push(itemGeometry)
+    //         }
+    //         that.mathLength(geometrys)
+    //       }
+    //       that.drawLayer.add(graphic)
+    //     }
+    //     //添加第一个点时确定片区
+    //     else if (evt.vertices.length == 1 && action) {
+    //       that.fristPointR(evt.vertices[0][0], evt.vertices[0][1])
+    //       that.isDrawEnd = false
+    //     }
+    //   }
+    // })
   }
   //绘制巡检线第一个点所在的片区
   fristPointR(lon, lat) {
@@ -602,17 +677,20 @@ export default class XjMissionLineManagement extends Vue {
       queryXjLine(data).then((res) => {
         console.log(res)
         let lines = []
-        let mapV = this.data.mapView
-        let map = mapV.map
+        let mapV = this.data.mapView as Map;
         if (this.xjGraphicLayer) {
-          this.xjGraphicLayer.removeAll()
+          this.xjGraphicLayer.getSource().clear()
         } else {
-          this.xjGraphicLayer = new mapV.TF_graphicsLayer()
-          map.add(this.xjGraphicLayer)
+          this.xjGraphicLayer = new VectorLayer({
+            source:new VectorSource()
+          })
+          mapV.addLayer(this.xjGraphicLayer)
         }
         if (!this.highGraphicLayer) {
-          this.highGraphicLayer = new mapV.TF_graphicsLayer()
-          map.add(this.highGraphicLayer)
+          this.highGraphicLayer = new VectorLayer({
+            source:new VectorSource()
+          })
+          mapV.addLayer(this.highGraphicLayer)
         }
         this.clearHighGra()
         if (res.result.records && res.result.records.length > 0) {
@@ -625,21 +703,21 @@ export default class XjMissionLineManagement extends Vue {
         } else {
           return
         }
-        let polyline = {
-          type: 'polyline',
-          paths: lines,
-          spatialReference: mapV.spatialReference
-        }
-        let lineSymbol = {
-          color: '2D74E7',
-          width: '2px',
-          type: 'simple-line'
-        }
-        let graphic = new mapV.TF_graphic({
-          geometry: polyline,
-          symbol: lineSymbol
-        })
-        this.xjGraphicLayer.add(graphic)
+        // let polyline = {
+        //   type: 'polyline',
+        //   paths: lines,
+        //   spatialReference: mapV.spatialReference
+        // }
+        // let lineSymbol = {
+        //   color: '2D74E7',
+        //   width: '2px',
+        //   type: 'simple-line'
+        // }
+        // let graphic = new mapV.TF_graphic({
+        //   geometry: polyline,
+        //   symbol: lineSymbol
+        // })
+        // this.xjGraphicLayer.add(graphic)
       })
     }
     this.isRefreshMap = false
@@ -710,7 +788,7 @@ export default class XjMissionLineManagement extends Vue {
     }
     this.editInfo.geometry = JSON.stringify({
       paths: geoEnd,
-      spatialReference: this.mapV.spatialReference,
+      spatialReference: "EPSG:4326",
       type: 'polyline'
     })
   }

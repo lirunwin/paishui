@@ -42,10 +42,10 @@ export default {
         },
         addLayers(){
             let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
-            layerResource.forEach((layerConfig) => {
-                let { name, type, url, parentname, id, visible = true } = layerConfig
-                let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-                this.view.addLayer(layer)
+            new TF_Layer().createLayers(layerResource).then(layers => {
+                layers.forEach(layer => {
+                    layer && this.view.addLayer(layer)
+                })
             })
         },
     }

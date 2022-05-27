@@ -61,10 +61,10 @@
             </div>
             <div class="operation-box">
               <div class="serch-engineering">
-                <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制 </el-button>
-                <el-button class="serch-btn" type="primary"> 清除 </el-button>
                 <el-button class="serch-btn" type="primary"> 查询 </el-button>
                 <el-button class="serch-btn" type="primary"> 导出 </el-button>
+                <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制范围 </el-button>
+                <el-button class="serch-btn" type="primary"> 清除绘制 </el-button>
               </div>
             </div>
           </div>
@@ -220,6 +220,9 @@ export default {
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
+      if (!this.searchValue.startDate) {
+        this.searchValue.startDate = this.searchValue.finishDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchValue.startDate).getTime()
       let date2 = new Date(this.searchValue.finishDate).getTime()
@@ -242,6 +245,9 @@ export default {
     },
     // 处理地图给的数据
     getMapData(res) {
+       if(!res){
+        this.loading = false
+      }
       let arr = res.defectData
       this.pageData = arr
       console.log('0202002arr', arr)
@@ -305,7 +311,7 @@ export default {
           this.defectSumObj.total += v.value
         })
       }
-       
+
       // console.log('returnTabel', this.returnTabel)
       console.log('数据处理完了')
       this.loading = false
@@ -328,14 +334,14 @@ export default {
     mapMoveEvent(extent) {
       this.getDataFromExtent(extent).then((res) => {
         console.log('这是地图移动的数据', res)
-          this.getMapData(res)
+        this.getMapData(res)
       })
     },
     // 查询
     search() {
       this.getDataFromExtent().then((res) => {
         console.log('这是查询的数据', res)
-          this.getMapData(res)
+        this.getMapData(res)
       })
     },
     async getDataFromExtent(extent) {
@@ -715,7 +721,7 @@ export default {
             // justify-content: space-around;
             align-items: center;
             // margin-right: 10px;
-            padding-left: 16px;
+            padding-left: 10px;
             box-sizing: border-box;
             margin-bottom: 10px;
             .sampleTime {

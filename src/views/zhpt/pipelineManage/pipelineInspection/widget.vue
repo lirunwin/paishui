@@ -117,7 +117,7 @@
     </div>
     <!-- 详情卡片 -->
     <transition name="el-fade-in-linear">
-      <div class="histroyPipeData">
+      <div class="histroyPipeData" v-show="dialogFormVisible">
         <div class="detailsCrad" v-show="dialogFormVisible">
           <el-card class="box-card">
             <div slot="header" class="clearfix">
@@ -133,7 +133,7 @@
               <div class="box1">
                 <el-form ref="form" :model="tableForm" label-width="auto" label-position="right">
                   <div class="detailsTitle">管段信息</div>
-                  <el-row v-for="(v, i) in cardTableContent" :key="v[0].name">
+                  <el-row v-for="v in cardTableContent" :key="v[0].name">
                     <el-col :span="12" style="padding-right: 15px">
                       <el-form-item :label="v[0].label">
                         <el-input size="small" v-model="tableForm[v[0].name]" disabled show-word-limit></el-input>
@@ -256,6 +256,96 @@
     <transition name="el-fade-in-linear">
       <delete-dialog @sendBool="getBool" v-show="checkdialogFormVisible" :checkParam="id"></delete-dialog>
     </transition>
+    
+    <!-- 管道弹窗 -->
+    <transition name="el-fade-in-linear">
+      <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
+        <div class="detailsCrad" v-if="currentInfoCard2">
+          <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
+            <div class="table-content">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  height: 30px;
+                  font-size: 14px;
+                  box-sizing: border-box;
+                "
+              >
+                <span style="font-weight: bold; user-select: none"
+                  >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
+                  <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
+                  {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
+                  <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+                </span>
+                <a
+                  style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                  @click="openDetailsDialog(getCurrentForm.id)"
+                  >详情</a
+                >
+              </div>
+              <div style="margin-top: 10px; font-size: 12px">
+                管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}
+              </div>
+              <div class="content-info" style="justify-content: space-between; display: flex; font-size: 12px">
+                <div class="left" style="width: 200px">
+                  <div class="detailsTitle" style="margin-top: 5px">检测日期 {{ getCurrentForm.sampleTime }}</div>
+                  <!-- <p style="padding-left: 10px">无文档</p> -->
+                  <div class="text-space" style="margin: 10px 0">
+                    <el-link
+                      style="font-size: 12px; margin-left: 10px"
+                      v-if="getCurrentForm.wordFilePath"
+                      type="primary"
+                      @click.stop="downloadDocx"
+                      ><div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                        {{ getCurrentForm.wordInfoName + 'docx' }}
+                      </div></el-link
+                    >
+                  </div>
+                  <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.structEstimate }}</p>
+                  <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
+                </div>
+                <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
+                  <el-tabs v-model="activeName">
+                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum">
+                      <div class="container">
+                        <el-image
+                          style="width: 100%; height: 90%; -webkit-user-drag: none"
+                          :src="getImgUrlEV"
+                          :preview-src-list="getImgUrlArrEV"
+                        >
+                        </el-image>
+                        <div style="text-align: center">
+                          <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
+                          {{ getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length ? imgArrIndex + 1 : 0) : 0 }}/{{
+                            getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0) : 0
+                          }}
+                          <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
+                        </div>
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane :label="`视频`" name="viedoNum">
+                      <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
+                        <video controls="controls" width="100%" height="83%">
+                          <source :src="getVideoUrlEV" type="video/mp4" />
+                        </video>
+                      </div>
+                      <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">
+                        暂无视频
+                      </div>
+                    </el-tab-pane>
+                  </el-tabs>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </div>
+      </div>
+    </transition>
+
   </div>
 </template>
 
@@ -263,7 +353,7 @@
 import { queryPageHistory, histroyPipeData, downloadFile } from '@/api/pipelineManage'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
-import { Feature } from 'ol'
+import { Feature, Overlay } from 'ol'
 import { LineString, Point } from 'ol/geom'
 import { projUtil } from '@/views/zhpt/common/mapUtil/proj'
 import { comSymbol } from '@/utils/comSymbol'
@@ -281,7 +371,7 @@ import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 import deleteDialog from '../components/checkDetails.vue'
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
-
+import axios from 'axios'
 export default {
   props: ['data'],
   components: {
@@ -361,7 +451,8 @@ export default {
       lightLayer: null,
       clickEvent: null,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43' // 当前坐标系
+      currentDataProjName: 'proj43', // 当前坐标系
+      popup: null,
     }
   },
   created() {
@@ -490,7 +581,7 @@ export default {
           this.setPositionByPipeId(feas[0].get('id'))
           this.openPromptBox({ expNo })
         } else {
-          this.currentInfoCard = false
+          this.dialogFormVisible = false
           this.lightLayer.getSource().clear()
         }
       })
@@ -515,8 +606,8 @@ export default {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
-              view.animate({ zoom: 13 })
-              this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+              view.animate({ zoom: 14 })
+              this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
           }
         } else this.$message.error('管线缺陷数据请求失败')
@@ -583,7 +674,7 @@ export default {
                 { level: '二级', img: defectImg2, index: 1 },
                 { level: '三级', img: defectImg3, index: 2 },
                 { level: '四级', img: defectImg4, index: 3 },
-                { level: '/', img: defectImg0, index: 4 }
+                // { level: '/', img: defectImg0, index: 4 }
               ]
               let findimg = null
 
@@ -633,7 +724,6 @@ export default {
     setPositionByPipeId(id) {
       let features = this.vectorLayer.getSource().getFeatures()
       let filterFea = features.find((fea) => fea.get('id') === id)
-      console.log('定位')
       if (filterFea) {
         let feature = new Feature({ geometry: filterFea.getGeometry().clone() })
         this.lightLayer.getSource().clear()
@@ -646,7 +736,6 @@ export default {
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
-      console.log('obj', obj.row)
       let expNoArr
       if (this.multipleSelection != []) {
         expNoArr = this.multipleSelection.map((v) => v.expNo)
@@ -712,8 +801,27 @@ export default {
       this.urlArr = this.tableForm.pipeDefects.map((v) => {
         return baseAddress + '/psjc/file' + v.picPath
       })
+
+      // if (1) {
+      //   let fea = this.vectorLayer.getSource().getFeatures().find(fea => fea.get('expNo') === row.expNo)
+      //   let position = mapUtil.getCenter(fea)
+      //   this.popup = new Overlay({
+      //     element: document.getElementById('popupCard'),
+      //     //当前窗口可见
+      //     autoPan: true,
+      //     positioning: 'bottom-center',
+      //     stopEvent: true,
+      //     offset: [18, -25],
+      //     autoPanAnimation: { duration: 250 }
+      //   })
+      //   this.map.addOverlay(this.popup)
+      //   this.popup.setPosition(position)
+      // }
+
       // console.log("this.tableForm.pipeDefects",this.tableForm.pipeDefects);
       this.dialogFormVisible = true
+
+      
     },
     // 重置
     async resetBtn() {
@@ -893,6 +1001,9 @@ export default {
   }
 
   .histroyPipeData {
+    position: fixed;
+    top: 120px;
+    right: 50px;
     // 详情卡片的样式
     .detailsCrad {
       z-index: 9;
@@ -1055,6 +1166,9 @@ export default {
     }
   }
 }
+
+
+
 #popupCard {
   &::after {
     content: '';

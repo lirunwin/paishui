@@ -9,6 +9,14 @@ const state = {
   menus: [],
   dynamicRoutes: {}
 }
+const bigScreenRoutes={
+  path: '/bigScreen',
+  component: () => import('@/views/bigScreen/index.vue'),
+  meta: { title: '一张图' },
+  type: 'sys',
+  label: '一张图',
+  icon: 'el-icon-star-on',
+}
 const dashboardRoute = {
   path: '/',
   component: () => import('@/layout/index.vue'),
@@ -123,6 +131,7 @@ const actions = {
                 path: autoLink(item.type, item)
               }
             })
+            menus.some((item, i) => {if (item.name === 'bigScreen') menus.splice(i, 1)})
             commit('SET_NAVMENUS', menus)
             let routes = data.map((item) => item.childrens)
             routes = routes.flat()
@@ -130,9 +139,9 @@ const actions = {
 
             const addRouter = packageRouter(routes)
             commit('SET_ROUTES', addRouter)
-            console.log('akjshdkjsahkjdhsakjhdkjsa', data)
             if (data.some((item) => item.type === 'map' || gisNames.includes(item.type))) addRouter.unshift(mapRoute)
             if (data.some((item) => item.type === 'dashboard')) addRouter.unshift(dashboardRoute)
+            if (data.some((item) => item.type === 'bigScreen')) addRouter.unshift(bigScreenRoutes)
             else if (!data.some((item) => item.type === 'dashboard')) {
               const redirectParent = state.addRoutes[0]
               noDashboardRedict.redirect =
