@@ -788,7 +788,7 @@ export default {
         this.lightLayer.getSource().addFeature(feature)
         let center = new mapUtil().getCenterFromFeatures(feature)
         this.map.getView().setCenter(center)
-        this.map.getView().setZoom(21)
+        this.map.getView().setZoom(18)
         return center
       }
     },
@@ -829,7 +829,6 @@ export default {
       let res = await histroyPipeData({ expNo: row.expNo })
       this.currentIndex = 0
       this.currentForm = res.result
-      this.currentInfoCard = true
       // 定位
       if (position) {
         this.popup = new Overlay({
@@ -843,6 +842,7 @@ export default {
         })
         this.map.addOverlay(this.popup)
         this.popup.setPosition(position)
+        this.currentInfoCard = true
       }
     },
 
