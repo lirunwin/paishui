@@ -38,5 +38,5 @@ export const mobileDeviceCols: ColItem[] = [
       return mdStatus[String(val)] || val || ''
     }
   },
-  { prop: 'action', label: '操作', _slot: true }
+  { prop: 'action', label: '操作', _slot: true, fixed: 'right' }
 ]
