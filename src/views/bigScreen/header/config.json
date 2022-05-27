@@ -1,0 +1,14 @@
+{
+    "title":"仁寿智慧排水监测平台",
+    "menuList":[
+        {
+            "id": "overviewData",
+            "label": "数据总览"
+        },
+        {
+            "id": "monitoringCenter",
+            "label": "监测中心"
+        }
+    ]
+
+}

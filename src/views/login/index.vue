@@ -230,7 +230,7 @@ export default class Login extends Vue {
                 } else {
                   this.loading = false
                   setTimeout(() => {
-                    this.$router.push({ path: '/' })
+                    this.$router.push({ path: '/bigScreen' })
                   }, 0)
                 }
               })
