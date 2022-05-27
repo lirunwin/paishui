@@ -444,7 +444,7 @@ import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 import deleteDialog from '../components/checkDetails.vue'
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
-
+import axios from 'axios'
 export default {
   props: ['data'],
   components: {

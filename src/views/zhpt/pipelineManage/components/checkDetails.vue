@@ -232,7 +232,7 @@
                     <!-- 附件列表 -->
                     <!-- wordFilePath -->
                     <el-link v-if="DetailsForm.wordFilePath" style="max-width: 836px" @click="downloadDocx" type="primary">{{
-                      DetailsForm.wordInfoName + 'docx'
+                      DetailsForm.wordInfoName + '.docx'
                     }}</el-link>
                     <p v-if="!DetailsForm.wordFilePath" style="text-align: center">暂无报告</p>
                   </el-form-item>

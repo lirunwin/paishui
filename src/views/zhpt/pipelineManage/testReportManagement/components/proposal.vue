@@ -7,7 +7,7 @@
       style="width: 100%; margin-top: 20px"
       stripe
     >
-      <el-table-column type="index" label="序号" width="90" align="center" header-align="center" fixed="left">
+      <el-table-column type="index" label="序号" width="90" align="center" header-align="center">
       </el-table-column>
       <!-- 前面 -->
       <el-table-column

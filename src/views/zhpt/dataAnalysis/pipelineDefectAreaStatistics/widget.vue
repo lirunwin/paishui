@@ -61,10 +61,10 @@
             </div>
             <div class="operation-box">
               <div class="serch-engineering">
-                <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制 </el-button>
-                <el-button class="serch-btn" type="primary"> 清除 </el-button>
                 <el-button class="serch-btn" type="primary"> 查询 </el-button>
                 <el-button class="serch-btn" type="primary"> 导出 </el-button>
+                <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制范围 </el-button>
+                <el-button class="serch-btn" type="primary"> 清除绘制 </el-button>
               </div>
             </div>
           </div>
@@ -721,7 +721,7 @@ export default {
             // justify-content: space-around;
             align-items: center;
             // margin-right: 10px;
-            padding-left: 16px;
+            padding-left: 10px;
             box-sizing: border-box;
             margin-bottom: 10px;
             .sampleTime {
