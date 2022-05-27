@@ -22,7 +22,7 @@
           </div>
         </div>
         <tf-legend class="legend_dept" label="要素详细" isopen="true" title="显示标注要素字段及属性。" style="height:600px">
-          <el-table :data="attData" stripe height="calc(100% - 8px)" style="width: 100%;margin-bottom: 8px">
+          <el-table :data="attData" stripe height="calc(100vh - 200px)" style="width: 100%;margin-bottom: 8px">
               <template slot="empty">
                 <img src="@/assets/icon/null.png" alt="">
                 <p class="empty-p">暂无数据</p>
@@ -40,7 +40,7 @@
           </el-select>
         </tf-legend>
         <tf-legend class="legend_dept" label="可见属性" isopen="true" title="指定所要查询的属性字段。">
-          <el-table ref="attTable" :data="attDatas" stripe height="600px" style="width: 100%" @select="selectChange" @select-all="selectChange">
+          <el-table ref="attTable" :data="attDatas" stripe height="800px" style="width: 100%" @select="selectChange" @select-all="selectChange">
               <template slot="empty">
                 <img src="@/assets/icon/null.png" alt="">
                 <p class="empty-p">暂无数据</p>

@@ -231,7 +231,7 @@
                     }}</el-link> -->
                     <!-- 附件列表 -->
                     <!-- wordFilePath -->
-                    <el-link style="max-width: 836px" @click="downloadDocx" type="primary">{{
+                    <el-link v-if="DetailsForm.wordFilePath" style="max-width: 836px" @click="downloadDocx" type="primary">{{
                       DetailsForm.wordInfoName + 'docx'
                     }}</el-link>
                     <p v-if="!DetailsForm.wordFilePath" style="text-align: center">暂无报告</p>
@@ -631,7 +631,7 @@ export default {
             margin-top: 10px;
             align-items: center;
             .profile-text {
-              width: 50px;
+              width: 100px;
               text-align: right;
               margin-right: 10px;
             }
@@ -680,7 +680,7 @@ export default {
         }
         .el-form {
           .el-link--inner {
-            max-width: 416px;
+            max-width: 834px;
             /* 1.先强制一行内显示文本 */
             white-space: nowrap;
             /* 2.超出部分隐藏 */

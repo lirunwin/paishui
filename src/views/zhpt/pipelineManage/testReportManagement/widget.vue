@@ -673,6 +673,7 @@
 
     <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
+      <!-- @sendBool是子传父事件 -->
       <delete-dialog @sendBool="getBool" v-if="detailsDialogFormVisible" :checkParam="DetailsId"></delete-dialog>
     </transition>
   </div>
@@ -1316,25 +1317,26 @@ export default {
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData, !light)
 
-            console.log('获取数据')
-            let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
-            map.getView().setCenter(center)
-            if (light) {
-              this.lightLayer.getSource().clear()
-              this.lightLayer.getSource().addFeatures([...funcDefectFeatures, ...strucDefectFeatures])
+            if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               map.getView().setCenter(center)
-              map.getView().setZoom(18)
-            } else {
-              this.lightLayer.getSource().clear()
-              layer.getSource().clear()
-              map.getView().setZoom(12)
-              if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
-                layer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+              if (light) {
+                this.lightLayer.getSource().clear()
+                this.lightLayer.getSource().addFeatures([...funcDefectFeatures, ...strucDefectFeatures])
+                let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+                map.getView().setCenter(center)
+                map.getView().setZoom(18)
+              } else {
+                this.lightLayer.getSource().clear()
+                layer.getSource().clear()
+                map.getView().setZoom(12)
+                if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
+                  layer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+                }
               }
-            }
-            if (id) {
-              map.getView().setZoom(18)
+              if (id) {
+                map.getView().setZoom(18)
+              }
             }
           }
         } else this.$message.error('管线缺陷数据请求失败')

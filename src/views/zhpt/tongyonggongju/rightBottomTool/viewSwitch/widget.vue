@@ -14,6 +14,7 @@
 
 <script>
 import { appconfig } from "staticPub/config";
+import VectorLayer from 'ol/layer/Vector';
 export default {
   data() {
     return {
@@ -33,11 +34,13 @@ export default {
       let showVectorLayer = type === "1"
       let layers = this.map.getLayers().getArray()
       layers.forEach(layer => {
-        let layername = layer.get('name')
-        if (layername === '矢量底图') {
-          layer.setVisible(showVectorLayer)
-        } else if (layername === '影像底图') {
-          layer.setVisible(!showVectorLayer)
+        if(!(layer instanceof VectorLayer)) {
+          let layername = layer.get('name')
+          if (layername.includes("矢量")) {
+            layer.setVisible(showVectorLayer)
+          } else if (layername.includes("影像")) {
+            layer.setVisible(!showVectorLayer)
+          }
         }
       })
     }

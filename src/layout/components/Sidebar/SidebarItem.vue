@@ -58,7 +58,7 @@ import path from 'path'
   mixins: [FixiOSBug]
 })
 export default class SidebarItem extends Vue {
-  @Prop({ required: true }) item: object
+  @Prop({ required: true }) item: { [x: string]: any }
   @Prop({ default: true }) isNest: boolean
   @Prop({ default: '' }) basePath: string
   @Prop({ default: '' }) color: string

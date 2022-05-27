@@ -301,6 +301,21 @@ const columns = [
   { prop: 'audittime', label: '审核时间' },
   { label: '操作', scopedSlot: 'actions' }
 ]
+const getDefaultVal = () => ({
+  username: '',
+  password: '',
+  realName: '',
+  phone: '',
+  email: '',
+  departmentId: [],
+  recipient: '', // 审核人
+  note: '',
+  job: '',
+  applystate: '',
+  file: '', // 用户头像
+  electronicFile: '' // 电子签名
+})
+
 @Component({
   filters: {
     formatteAuditStatus(val) {
@@ -320,20 +335,7 @@ const columns = [
 export default class AccountApply extends Vue {
   @Prop({ default: false }) showApply: boolean
   formatteAuditStatus: any
-  accountApply = {
-    username: '',
-    password: '',
-    realName: '',
-    phone: '',
-    email: '',
-    departmentId: [],
-    recipient: '', // 审核人
-    note: '',
-    job: '',
-    applystate: '',
-    file: '', // 用户头像
-    electronicFile: '' // 电子签名
-  }
+  accountApply = getDefaultVal()
   accountApplyRules = {
     username: [
       { required: true, message: '请输入登录名', trigger: 'blur' },
@@ -504,6 +506,7 @@ export default class AccountApply extends Vue {
             })
 
             this.accountApplyTab = false
+            this.accountApply = getDefaultVal()
             this.activeTab = 'history'
             this.$store.dispatch('user/finnishApply', true)
             this.historyList()

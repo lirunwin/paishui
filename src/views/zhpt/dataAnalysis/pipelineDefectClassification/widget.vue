@@ -78,17 +78,27 @@
                 <th>缺陷数量</th>
               </tr>
             </thead>
-            <tr class="highlight">
+            <tr class="highlight" style="height: 20px">
               <td>{{ zc.name }}</td>
               <td>{{ zc.title }}</td>
               <td>{{ zc.value }}</td>
             </tr>
-            <tr class="highlight" v-for="(v, i) in defectQuantityStatisticsA" :key="v.title">
+            <tr
+              class="highlight"
+              :style="defectQuantityStatisticsA.length == 1 ? 'height: 20px;' : ''"
+              v-for="(v, i) in defectQuantityStatisticsA"
+              :key="v.title"
+            >
               <td :rowspan="defectQuantityStatisticsA.length" v-if="i < 1">结构性缺陷</td>
               <td>{{ v.title }}</td>
               <td>{{ v.value }}</td>
             </tr>
-            <tr class="highlight" v-for="(v, i) in defectQuantityStatisticsB" :key="i">
+            <tr
+              class="highlight"
+              :style="defectQuantityStatisticsB.length == 1 ? 'height: 20px;' : ''"
+              v-for="(v, i) in defectQuantityStatisticsB"
+              :key="i"
+            >
               <td :rowspan="defectQuantityStatisticsB.length" v-if="i < 1">功能性缺陷</td>
               <td>{{ v.title }}</td>
               <td>{{ v.value }}</td>
@@ -392,6 +402,7 @@ export default {
   padding: 20px 0;
   box-sizing: border-box;
   position: relative;
+
   // 表格样式
   .table-box {
     width: 96%;
@@ -482,7 +493,7 @@ export default {
           height: 38px;
         }
         .defectSum {
-          height: 45px;
+          height: 20px;
           background-color: #f3f7fe;
         }
         .highlight {

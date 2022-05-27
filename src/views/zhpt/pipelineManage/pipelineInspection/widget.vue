@@ -256,6 +256,169 @@
     <transition name="el-fade-in-linear">
       <delete-dialog @sendBool="getBool" v-show="checkdialogFormVisible" :checkParam="id"></delete-dialog>
     </transition>
+
+    <!-- 当前列缺陷信息弹出框 -->
+    <transition name="el-fade-in-linear">
+      <div id="popupCard" class="defectPipeData" v-show="currentInfoCard">
+        <div
+          class="detailsCrad"
+          style="top: 10%; left: 20%; right: 62%; font-size: 14px; color: red"
+          v-if="currentInfoCard"
+        >
+          <el-card class="box-card" style="width: 300px">
+            <div class="table-content" style="padding: 15px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  height: 30px;
+                  box-sizing: border-box;
+                "
+              >
+                <span style="font-weight: bold"
+                  >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
+                </span>
+                <a
+                  style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                  @click="openDetailsDialog(DetailsForm.stateId)"
+                  >详情</a
+                >
+              </div>
+              <div style="padding: 3px 0">{{ DetailsForm.expNo + DetailsForm.pipeType }}</div>
+              <div class="content-info" style="font-size: 12px">
+                <div class="left">
+                  <div style="padding: 3px 0">检测日期&emsp; {{ DetailsForm.sampleTime }}</div>
+                  <div style="display: flex; padding: 3px 0">
+                    <span style="flex: 1">距离:&emsp;{{ DetailsForm.distanceStartPoint }}</span
+                    ><span style="flex: 1">等级:&emsp;{{ DetailsForm.defectLevel }}</span>
+                  </div>
+                  <div style="display: flex; padding: 3px 0">
+                    <span style="width: 40px">评价:</span>
+                    <span style="line-height: 16px; padding-left: 10px">{{ DetailsForm.pipeNote }}</span>
+                  </div>
+                </div>
+                <div class="right">
+                  <el-tabs v-model="activeName">
+                    <el-tab-pane :label="`照片`" name="picnum">
+                      <div class="container" v-if="getDefectImgUrl">
+                        <el-image
+                          style="width: 100%; height: 90%; -webkit-user-drag: none"
+                          :src="getDefectImgUrl"
+                          :preview-src-list="[getDefectImgUrl]"
+                        >
+                        </el-image>
+                      </div>
+                      <div v-show="!getDefectImgUrl" style="text-align: center; margin-top: 20px">暂无照片</div>
+                    </el-tab-pane>
+                    <el-tab-pane :label="`视频`" name="viedoNum">
+                      <div style="width: 100%; height: 100%" v-if="DetailsForm.videopath">
+                        <video controls="controls" width="100%" height="83%">
+                          <source :src="getDefectVideoUrl" type="video/mp4" />
+                        </video>
+                      </div>
+                      <div v-show="!DetailsForm.videopath" style="text-align: center; margin-top: 20px">暂无视频</div>
+                    </el-tab-pane>
+                  </el-tabs>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 管道评估结果 -->
+    <transition name="el-fade-in-linear">
+      <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
+        <div class="detailsCrad" v-if="currentInfoCard2">
+          <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
+            <div class="table-content">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  height: 30px;
+                  font-size: 14px;
+                  box-sizing: border-box;
+                "
+              >
+                <span style="font-weight: bold; user-select: none"
+                  >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
+                  <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
+                  {{ currentFormEV.length ? currentIndexEV + 1 : 0 }}/{{ currentFormEV.length }}
+                  <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+                </span>
+                <a
+                  style="font-size: 12px; color: #2d74e7; text-decoration: underline"
+                  @click="openDetailsDialog(getCurrentForm.id)"
+                  >详情</a
+                >
+              </div>
+              <div style="margin-top: 10px; font-size: 12px">
+                管径：{{ getCurrentForm.diameter }}mm 材质：{{ getCurrentForm.material }}
+              </div>
+              <div class="content-info" style="justify-content: space-between; display: flex; font-size: 12px">
+                <div class="left" style="width: 200px">
+                  <div class="detailsTitle" style="margin-top: 5px">检测日期 {{ getCurrentForm.sampleTime }}</div>
+                  <!-- <p style="padding-left: 10px">无文档</p> -->
+                  <div class="text-space" style="margin: 10px 0">
+                    <el-link
+                      style="font-size: 12px; margin-left: 10px"
+                      v-if="getCurrentForm.wordFilePath"
+                      type="primary"
+                      @click.stop="downloadDocx"
+                      ><div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
+                        {{ getCurrentForm.wordInfoName + 'docx' }}
+                      </div></el-link
+                    >
+                  </div>
+                  <div class="detailsTitle">结构性缺陷 等级:{{ getCurrentForm.structClass }}</div>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.structEstimate }}</p>
+                  <div class="detailsTitle">功能性缺陷 等级:{{ getCurrentForm.funcClass }}</div>
+                  <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
+                </div>
+                <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
+                  <el-tabs v-model="activeName">
+                    <el-tab-pane
+                      :label="`照片(${getCurrentForm.pipeDefects ? getCurrentForm.pipeDefects.length || 0 : 0})`"
+                      name="picnum"
+                    >
+                      <div class="container">
+                        <el-image
+                          style="width: 100%; height: 90%; -webkit-user-drag: none"
+                          :src="getImgUrlEV"
+                          :preview-src-list="getImgUrlArrEV"
+                        >
+                        </el-image>
+                        <div style="text-align: center">
+                          <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastImg"></i>
+                          {{
+                            getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length ? imgArrIndexEV + 1 : 0) : 0
+                          }}/{{ getCurrentForm.pipeDefects ? getCurrentForm.pipeDefects.length || 0 : 0 }}
+                          <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextImg"></i>
+                        </div>
+                      </div>
+                    </el-tab-pane>
+                    <el-tab-pane :label="`视频`" name="viedoNum">
+                      <div style="width: 100%; height: 100%" v-if="getCurrentForm.videoPath">
+                        <video controls="controls" width="100%" height="83%">
+                          <source :src="getVideoUrlEV" type="video/mp4" />
+                        </video>
+                      </div>
+                      <div v-show="!getCurrentForm.videoPath" style="text-align: center; margin-top: 20px">
+                        暂无视频
+                      </div>
+                    </el-tab-pane>
+                  </el-tabs>
+                </div>
+              </div>
+            </div>
+          </el-card>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -289,13 +452,18 @@ export default {
   },
   data() {
     return {
+      DetailsForm: {}, // 管道缺陷缩略框数据
+      currentInfoCard: false, // 缺陷弹出框
+      currentInfoCard2: false, // 管段弹出框
       multipleSelection: [], // 选中的表格
       id: null,
       checkdialogFormVisible: false,
       imgArrIndex: 0,
+      imgArrIndexEV:0,
       urlArr: [],
       activeName: 'first',
       currentForm: {}, // 当前详情表单
+      currentFormEV: {}, // 当前管段详情表单
       detailsTitle: {}, // 详情头部信息
       cardTableContent: [
         [
@@ -316,6 +484,7 @@ export default {
         ]
       ], // 详情表格参数
       currentIndex: 0, // 详情页数
+      currentIndexEV:0,
       cardTable: [], // 详情表格数据
       activeIndex: '1', // 详情导航索引
       dialogFormVisible: false, // 详情弹框显影
@@ -390,6 +559,44 @@ export default {
     }
   },
   computed: {
+    // <--------
+     // 管段当前信息
+    getCurrentForm() {
+      return this.currentFormEV ? this.currentFormEV[this.currentIndexEV] : {}
+    },
+     // 获取照片数组路径
+    getImgUrlArrEV() {
+      let arr = this.getCurrentForm.pipeDefects.map((v) => {
+        return baseAddress + '/psjc/file' + v.picPath
+      })
+      return arr
+    },
+    // 获取文件url
+    getImgUrlEV() {
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.pipeDefects[this.imgArrIndexEV].picPath
+      console.log('address', address)
+      return address
+    },
+    getVideoUrlEV() {
+      console.log('照片', this.getCurrentForm.pipeDefects.length)
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.videoPath
+      console.log('address', address)
+      return address
+    },
+    // ----------->
+    // <--- 管道缺陷
+    // 获取文件url
+    getDefectVideoUrl() {
+      let address = baseAddress + '/psjc/file' + this.DetailsForm.videopath
+      console.log('address', address)
+      return address
+    },
+    getDefectImgUrl() {
+      let address = baseAddress + '/psjc/file' + this.DetailsForm.picPath
+      console.log('address', address)
+      return address
+    },
+    // ------>
     // 获取文件url
     getImgUrl() {
       let address = this.urlArr[this.imgArrIndex]
@@ -787,6 +994,317 @@ export default {
   box-sizing: border-box;
   position: relative;
   font-size: 12px;
+
+  // 管道缺陷弹框样式
+  /deep/.defectPipeData {
+    // 详情卡片的样式
+    .detailsCrad {
+      position: fixed;
+      top: 100px;
+      right: 24px;
+      z-index: 9;
+      .clearfix:before,
+      .clearfix:after {
+        display: table;
+        content: '';
+      }
+      .clearfix:after {
+        clear: both;
+      }
+
+      .box-card {
+        width: 500px;
+        max-height: 80vh;
+        .el-card__header {
+          height: 48px;
+          color: #fff;
+          background-color: #2d74e7;
+        }
+        .el-card__body {
+          padding: 0 !important;
+          .el-menu-item {
+            height: 45px;
+            font-size: 16px;
+          }
+        }
+        .content {
+          height: 600px;
+          /deep/ .content-info {
+            overflow-y: scroll;
+            // max-height: 545px;
+            height: 100%;
+            padding: 10px 20px;
+            .el-textarea__inner,
+            .el-input__inner {
+              color: #666;
+            }
+            .detailsTitle {
+              position: relative;
+              font-size: 16px;
+              padding: 5px 0;
+              box-sizing: border-box;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              top: 5px;
+              left: -10px;
+              content: '';
+              width: 4px;
+              height: 65%;
+              background-color: #2d74e7;
+            }
+            /deep/ .el-form {
+              .is-disabled {
+                .el-input__inner {
+                  background-color: transparent;
+                }
+                .el-textarea__inner {
+                  background-color: transparent;
+                }
+              }
+              .el-form-item {
+                margin-bottom: 10px;
+              }
+            }
+          }
+        }
+        .table-content {
+          padding: 15px;
+          .content-info {
+            font-size: 12px;
+            display: flex;
+            // justify-content: space-between;
+            flex-direction: column;
+            align-content: center;
+            .left {
+              font-family: 'Microsoft YaHei UI', sans-serif;
+              flex: 1;
+            }
+            .right {
+              flex: 1;
+              .container {
+                height: 100%;
+                width: 100%;
+                padding: 5px;
+                box-sizing: border-box;
+              }
+
+              .is-top {
+              }
+              .el-tabs__item {
+                margin: 11px 0 0 0;
+                background: transparent;
+              }
+              .el-tabs__header {
+                border-top: 0;
+                background: #fff;
+              }
+              // .el-tabs__nav-wrap::after {
+              //   z-index: 2;
+              // }
+              // .el-tabs__active-bar
+            }
+            .detailsTitle {
+              position: relative;
+              margin: 6px 0;
+              padding-left: 10px;
+              box-sizing: border-box;
+              margin-bottom: 10px;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              left: 0;
+              content: '';
+              width: 4px;
+              height: 100%;
+              background-color: #2d74e7;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 管道评估弹框的样式
+  .PipeEvData {
+    position: fixed;
+    top: 100px;
+    right: 45px;
+    z-index: 9;
+    .detailsCrad {
+      .clearfix:before,
+      .clearfix:after {
+        display: table;
+        content: '';
+      }
+      .clearfix:after {
+        clear: both;
+      }
+
+      .box-card {
+        width: 550px;
+        min-height: 310px;
+        border: none;
+        border-radius: 5px;
+        /deep/ .el-card__header {
+          height: 48px;
+          color: #fff;
+          background-color: #2d74e7;
+        }
+        /deep/.el-card__body {
+          padding: 15px !important;
+          .el-menu-item {
+            height: 45px;
+            font-size: 16px;
+          }
+        }
+        .content {
+          .content-info {
+            overflow-y: scroll;
+            height: 600px;
+            padding: 10px 20px;
+            .info-title {
+              font-size: 14px;
+              font-weight: bold;
+              margin: 5px 0;
+            }
+            .info-box {
+              height: 100%;
+              display: flex;
+              justify-content: space-between;
+              .info-text {
+                width: 37%;
+                padding: 10px;
+                box-sizing: border-box;
+                background-color: #f3f7fe;
+                border: 1px solid #dedede;
+              }
+              .info-video {
+                width: 60%;
+                border: 1px solid #dedede;
+              }
+            }
+            /deep/.el-form {
+              .el-link--inner {
+                max-width: 416px;
+                /* 1.先强制一行内显示文本 */
+                white-space: nowrap;
+                /* 2.超出部分隐藏 */
+                overflow: hidden;
+                /* 3.文字用省略号替代超出的部分 */
+                text-overflow: ellipsis;
+              }
+              /deep/.is-disabled {
+                .el-input__inner {
+                  background-color: transparent;
+                }
+                .el-textarea__inner {
+                  background-color: transparent;
+                }
+              }
+              .el-form-item {
+                margin-bottom: 10px;
+              }
+            }
+            /deep/.el-textarea__inner,
+            .el-input__inner {
+              color: #666;
+            }
+            .detailsTitle {
+              position: relative;
+              font-size: 16px;
+              padding: 5px 0;
+              box-sizing: border-box;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              top: 5px;
+              left: -10px;
+              content: '';
+              width: 4px;
+              height: 65%;
+              background-color: #2d74e7;
+            }
+          }
+        }
+        .table-content {
+          padding: 15px;
+          .content-info {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+
+            .left {
+              flex: 1;
+              .text-space {
+                margin: 10px 0;
+                /deep/.el-link--inner {
+                  max-width: 240px;
+                  // 1.先强制一行内显示文本
+                  white-space: nowrap;
+
+                  // 2.超出部分隐藏
+                  overflow: hidden;
+                  // 3.文字用省略号替换超出的部分
+                  text-overflow: ellipsis;
+                }
+              }
+            }
+            .right {
+              flex: 1;
+
+              /deep/.is-top {
+                margin: 0 0 10px;
+              }
+              // .el-tabs__header{
+              //   border-top: none;
+              //       margin-bottom: 6px;
+              //   background-color: transparent !important;
+              // }
+              /deep/.el-tabs {
+                .container {
+                  height: 100%;
+                  width: 100%;
+                  padding-top: 5px;
+                  box-sizing: border-box;
+                }
+                .el-tabs__content {
+                  height: 150px;
+                  width: 234px;
+                }
+                .el-tabs__item {
+                  margin: 11px 0 0 0 !important;
+                  background: transparent !important;
+                }
+                .el-tabs__header {
+                  border-top: 0 !important;
+                  background: transparent !important;
+                }
+              }
+              // .el-tabs__nav-wrap::after {
+              //   z-index: 2;
+              // }
+              // .el-tabs__active-bar
+            }
+            .detailsTitle {
+              position: relative;
+              margin: 6px 0;
+              padding-left: 10px;
+              box-sizing: border-box;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              left: 0;
+              content: '';
+              width: 4px;
+              height: 100%;
+              background-color: #2d74e7;
+            }
+          }
+        }
+      }
+    }
+  }
   // 表格样式
   .table-box {
     width: 96%;
