@@ -93,7 +93,7 @@ export default {
         }),
         view: new View({
           center: initCenter,
-          zoom: initZoom,
+          zoom: 13,
           maxZoom: 20,
           minZoom: 5,
           projection: 'EPSG:4326'
@@ -146,7 +146,7 @@ export default {
             { level: '二级', img: defectImg2, index: 1 },
             { level: '三级', img: defectImg3, index: 2 },
             { level: '四级', img: defectImg4, index: 3 },
-            { level: '/', img: defectImg0, index: 4 }
+            // { level: '/', img: defectImg0, index: 4 }
           ]
           let findimg = null
 
@@ -170,18 +170,27 @@ export default {
             { level: 'Ⅲ', color: 'pink', index: 2 },
             { level: 'Ⅳ', color: 'red', index: 3 }
           ]
-          let findColor = null
           if (item['funcClass']) {
-            findColor = colors.find((colorObj) => item['funcClass'].includes(colorObj.level))
-          }
-
-          if (findColor) {
-            feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
-            for (let i in item) {
-              i !== 'geometry' && feature.set(i, item[i])
+            let findColor = colors.find((colorObj) => item['funcClass'].includes(colorObj.level))
+            if (findColor) {
+              feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              for (let i in item) {
+                i !== 'geometry' && feature.set(i, item[i])
+              }
+              features.push(feature)
             }
-            features.push(feature)
           }
+          if (item['structClass']) {
+            let findColor = colors.find((colorObj) => item['structClass'].includes(colorObj.level))
+            if (findColor) {
+              feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              for (let i in item) {
+                i !== 'geometry' && feature.set(i, item[i])
+              }
+              features.push(feature)
+            }
+          }
+          
         }
       })
       return features
@@ -197,6 +206,7 @@ export default {
       drawer.start()
     },
     getDataInMap(data, extent) {
+      console.log('管道评估数据', data)
       let that = this
       // 无范围 默认全图
       if (!extent) {
@@ -220,10 +230,10 @@ export default {
       let colors = [
         { color: '#f00', label: '立即处理' },
         { color: '#ff0', label: '处理计划' },
-        { color: 'green', label: '修复计划' },
+        { color: '#FFCD43', label: '修复计划' },
         { color: '#008000', label: '尽快处理' },
         { color: '#00f', label: '尽快修复' },
-        { color: '#fff', label: '暂不处理' }
+        { color: '#0DBAFF', label: '暂不处理' }
       ]
       let features = []
       data.forEach((pipeData) => {
@@ -231,9 +241,11 @@ export default {
         if (pipeData.pipeDefects.length !== 0) {
           let checkSuggest = pipeData.pipeDefects[0].checkSuggest
           let colorObj = colors.find((item) => item.label === checkSuggest)
-          let feature = new Feature({ geometry })
-          feature.setStyle(comSymbol.getLineStyle(5, colorObj.color))
-          features.push(feature)
+          if (colorObj) {
+            let feature = new Feature({ geometry })
+            feature.setStyle(comSymbol.getLineStyle(5, colorObj.color))
+            features.push(feature)
+          }
         }
       })
       this.vectorLayer.getSource().addFeatures(features)
@@ -241,13 +253,15 @@ export default {
       data.forEach((pipeData) => {
         let len = pipeData.pipeLength
         let defectData = pipeData.pipeDefects
-        defectData.forEach((defect) => {
-          if (!resData.has(defect.checkSuggest)) {
+        defectData.forEach(defect => {
+          if (defect.checkSuggest) {
+            if (!resData.has(defect.checkSuggest)) {
             resData.set(defect.checkSuggest, { num: 1, len })
           } else {
             let data = resData.get(defect.checkSuggest)
             data.num += 1
             data.len += len
+          }
           }
         })
       })
@@ -295,6 +309,7 @@ export default {
     },
     //
     getDefectDataInMap(data, extent) {
+      console.log('管道分析数据', data)
       let that = this
       // 无范围 默认全图
       if (!extent) {
