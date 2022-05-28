@@ -274,9 +274,9 @@ export interface IStandardParam extends ICreator {
   /** 监测体系id 关联表 tf_ywpn_device_indecate */
   indicateId?: string
   /** 是否推送报警 0 false 1是 */
-  isPush?: true
+  isPush?: boolean
   /** 0 否 1是 */
-  isUse?: true
+  isUse?: boolean
   /** 关联字典表 优质、轻度、中度、严重 */
   level?: number
   /** 上限 */
@@ -287,6 +287,7 @@ export interface IStandardParam extends ICreator {
   upperTolerance?: number
   /** 下限容差 */
   lowerTolerance?: number
+  delFlag?: string
 }
 
 /** 导出 */
@@ -379,19 +380,19 @@ export const deleteStandardBatch = (ids: string) =>
 
 // 指标标准参数配置
 export const addStandardParam = (data: Omit<IStandardParam, 'id'>) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.standards.base, method: 'post', data })
+  axios.request<IRes<boolean>>({ url: uris.settings.standards.params.base, method: 'post', data })
 
 export const deleteStandardParam = (id: string) =>
-  axios.request<IRes<boolean>>({ url: `${uris.settings.standards.base}/${id}`, method: 'delete' })
+  axios.request<IRes<boolean>>({ url: `${uris.settings.standards.params.base}/${id}`, method: 'delete' })
 
 export const updateStandardParam = (data: IStandardParam) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.standards.base, method: 'put', data })
+  axios.request<IRes<boolean>>({ url: uris.settings.standards.params.base, method: 'put', data })
 
 export const getStandardParam = (id: string) =>
-  axios.request<IRes<IStandardParam>>({ url: `${uris.settings.standards.base}/${id}`, method: 'get' })
+  axios.request<IRes<IStandardParam>>({ url: `${uris.settings.standards.params.base}/${id}`, method: 'get' })
 
 export const standardParamsPage = (params: IStandardParam & IQueryCommon) =>
-  axios.request<IRes<IStandardParam[]>>({ url: uris.settings.standards.page, method: 'get', params })
+  axios.request<IRes<IStandardParam[]>>({ url: uris.settings.standards.params.page, method: 'get', params })
 
-export const deleteParamBatch = (ids: string) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.standards.del, method: 'delete', params: { ids } })
+export const deleteStandardParamBatch = (ids: string) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.standards.params.del, method: 'delete', params: { ids } })

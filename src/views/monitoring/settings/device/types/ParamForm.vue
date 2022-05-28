@@ -60,16 +60,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
 import { ITypeParam } from '@/views/monitoring/api'
-const getDefalutNumberProp = () => ({
-  min: 0,
-  max: 9999999,
-  size: 'small',
-  precision: 0,
-  stepStrictly: true,
-  style: { width: '100%', textAlign: 'left' },
-  class: 'input-number',
-  clearable: true
-})
+import { getDefalutNumberProp } from '@/views/monitoring/utils'
 
 const getDefaultData = () => ({ isDisplay: false, sort: 0 })
 

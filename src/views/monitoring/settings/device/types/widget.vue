@@ -106,7 +106,9 @@ import {
   deleteTypeBatch,
   updateTypeParam,
   addTypeParam,
-  deleteParamBatch
+  deleteTypeParamBatch,
+  IType,
+  ITypeParam
 } from '@/views/monitoring/api'
 
 const getDefaultPagination = () => ({ current: 1, size: 30 })
@@ -126,22 +128,16 @@ export default class DeviceTypes extends Vue {
     paramSubmitting: false
   }
 
-  current: {
-    type: { id?: string; [x: string]: string }
-    param: { id?: string; [x: string]: string }
-    [x: string]: any
-  } = {
-    type: {},
-    param: {}
-  }
+  current: { type: IType; param: ITypeParam } = { type: {}, param: {} }
 
-  selected = { type: [], param: [] }
+  selected: { type: IType[]; param: ITypeParam[] } = { type: [], param: [] }
+
   pagination: { type: IPagination; param: IPagination } = {
     type: getDefaultPagination(),
     param: getDefaultPagination()
   }
-  types = []
-  params = []
+  types: IType[] = []
+  params: ITypeParam[] = []
 
   onTypeAdd() {
     this.current = { ...this.current, type: {} }
@@ -257,7 +253,7 @@ export default class DeviceTypes extends Vue {
     })
     this.loading.paramDeleting = true
     try {
-      const { result } = await deleteParamBatch(this.selected.param.map(({ id }) => id).join())
+      const { result } = await deleteTypeParamBatch(this.selected.param.map(({ id }) => id).join())
       this.$message[result ? 'success' : 'error'](`删除设备参数${result ? '成功!' : '失败!'}`)
       result && this.onParamQuery()
     } catch (error) {

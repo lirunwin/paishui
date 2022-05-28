@@ -1,5 +1,5 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
-import { ITypeParam } from './api'
+import { IStandardParam, ITypeParam } from './api'
 
 interface ColItem extends Partial<ElTableColumn> {
   _slot?: boolean
@@ -67,23 +67,36 @@ export const settingArchiveCols: ColItem[] = [
 /**指标标准被指 */
 export const settingStandardCols: ColItem[] = [
   { type: 'selection', width: '50px' },
-  { type: 'index', label: '序号' },
-  { prop: 'name', label: '监测体系名称' },
-  { prop: 'name1', label: '设备类型' }
+  { type: 'index', label: '序号', width: '60px' },
+  { prop: 'name', label: '监测体系名称', minWidth: '120px', ...alignLeft },
+  { prop: 'typeName', label: '设备类型', minWidth: '120px', ...alignLeft }
 ]
 /**指标标准被指 -参数*/
 export const settingStandardParamCols: ColItem[] = [
   { type: 'selection', width: '50px' },
-  { type: 'index', label: '序号' },
-  { prop: 'name1', label: '参数名称' },
-  { prop: 'name2', label: '单位' },
-  { prop: 'name3', label: '监测值判定' },
-  { prop: 'name4', label: '阈值下限' },
-  { prop: 'name5', label: '下限容差' },
-  { prop: 'name6', label: '阈值上限' },
-  { prop: 'name7', label: '上限容差' },
-  { prop: 'name8', label: '有效时段' },
-  { prop: 'name9', label: '是否推送消息' }
+  { type: 'index', label: '序号', width: '60px' },
+  { prop: 'deviceTypeParaId', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'level', label: '判定', width: '100px' },
+  {
+    prop: 'lower-upper',
+    label: '监测阈值',
+    width: '100px',
+    formatter: ({ lower, upper }: IStandardParam) => (!lower && !upper ? '-' : `${lower || 0} ~ ${upper || '∞'}`)
+  },
+  {
+    prop: 'lowerTolerance-upperTolerance',
+    label: '监测容差',
+    width: '100px',
+    formatter: ({ lowerTolerance, upperTolerance }: IStandardParam) =>
+      !lowerTolerance && !upperTolerance ? '-' : `${lowerTolerance || 0} ~ ${upperTolerance || '∞'}`
+  },
+  {
+    prop: 'start-end',
+    label: '有效时段',
+    width: '120px',
+    formatter: ({ start, end }: IStandardParam) => (!start && !end ? '-' : `${start || 0} ~ ${end || '∞'}`)
+  },
+  { prop: 'isPush', label: '是否推送', width: '80px', _slot: true }
 ]
 
 /**监测点管理 */
@@ -269,3 +282,13 @@ export const monitorWarningReportCols: ColItem[] = [
   { prop: 'name', label: '阈值上限容差' },
   { prop: 'name', label: '操作' }
 ]
+export const getDefalutNumberProp = () => ({
+  min: 0,
+  max: 9999999,
+  size: 'small',
+  precision: 0,
+  stepStrictly: true,
+  style: { width: '100%', textAlign: 'left' },
+  class: 'input-number',
+  clearable: true
+})
