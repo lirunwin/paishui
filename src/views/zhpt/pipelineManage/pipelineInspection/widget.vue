@@ -153,7 +153,7 @@
                         <span v-if="tableForm.funcClass"> 功能性缺陷（{{ tableForm.funcClass }}）</span>
                         <span v-else> 结构性缺陷（{{ tableForm.structClass }}）</span>
                       </div>
-                      <el-link type="primary" @click="openCheck">详情</el-link>
+                      <el-link type="primary" @click="openCheck(tableForm.id)">详情</el-link>
                     </div>
                     <!-- 内容 -->
                     <div style="margin-top: 20px; height: 200px">
@@ -275,13 +275,13 @@
               >
                 <span style="font-weight: bold; user-select: none"
                   >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
-                  <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPage"></i>
-                  {{ currentForm.length ? currentIndex + 1 : 0 }}/{{ currentForm.length }}
-                  <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPage"></i>
+                  <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPageEv"></i>
+                  {{ currentForm2.length ? currentIndex + 1 : 0 }}/{{ currentForm2.length }}
+                  <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPageEv"></i>
                 </span>
                 <a
                   style="font-size: 12px; color: #2d74e7; text-decoration: underline"
-                  @click="openDetailsDialog(getCurrentForm.id)"
+                  @click="openCheck(getCurrentForm.id)"
                   >详情</a
                 >
               </div>
@@ -297,7 +297,7 @@
                       style="font-size: 12px; margin-left: 10px"
                       v-if="getCurrentForm.wordFilePath"
                       type="primary"
-                      @click.stop="downloadDocx"
+                      @click.stop="downloadDocx2"
                       ><div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">
                         {{ getCurrentForm.wordInfoName + 'docx' }}
                       </div></el-link
@@ -309,7 +309,7 @@
                   <p style="padding-left: 10px">评价: {{ getCurrentForm.funcEstimate }}</p>
                 </div>
                 <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
-                  <el-tabs v-model="activeName">
+                  <el-tabs v-model="activeName2">
                     <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum">
                       <div class="container">
                         <el-image
@@ -385,6 +385,7 @@ export default {
       imgArrIndex: 0,
       urlArr: [],
       activeName: 'first',
+      activeName2: "picnum",
       currentForm: {}, // 当前详情表单
       detailsTitle: {}, // 详情头部信息
       cardTableContent: [
@@ -452,7 +453,12 @@ export default {
       clickEvent: null,
       projUtil: null, // 坐标系工具
       currentDataProjName: 'proj43', // 当前坐标系
+
+      currentInfoCard2: false,
+      currentForm2: [],
+      currentIndex2: 0,
       popup: null,
+
     }
   },
   created() {
@@ -482,6 +488,18 @@ export default {
   },
   computed: {
     // 获取文件url
+    getImgUrlEV() {
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.pipeDefects[this.imgArrIndex].picPath
+      console.log('address', address)
+      return address
+    },
+    getVideoUrlEV() {
+      console.log('照片', this.getCurrentForm.pipeDefects.length)
+      let address = baseAddress + '/psjc/file' + this.getCurrentForm.videoPath
+      console.log('address', address)
+      return address
+    },
+    // 获取文件url
     getImgUrl() {
       let address = this.urlArr[this.imgArrIndex]
       console.log('address', address)
@@ -495,14 +513,55 @@ export default {
     tableForm() {
       // console.log("当前详情页数",this.cardTable[this.currentIndex]);
       return this.cardTable[this.currentIndex] || {}
+    },
+    getCurrentForm () {
+      return this.currentForm2 ? this.currentForm2[this.currentIndex2] : {}
+    },
+    getImgUrlArrEV() {
+      let arr = this.getCurrentForm.pipeDefects.map((v) => {
+        return baseAddress + '/psjc/file' + v.picPath
+      })
+      return arr
     }
   },
   methods: {
+    lastImg() {
+      console.log('上一张照片', this.getCurrentForm.pipeDefects)
+
+      if (this.imgArrIndex <= 0) {
+        this.imgArrIndex = 0
+        return
+      }
+      this.imgArrIndex--
+    },
+    nextImg() {
+      if (this.imgArrIndex + 1 >= this.getCurrentForm.pipeDefects.length) {
+        this.imgArrIndex = this.getCurrentForm.pipeDefects.length - 1
+        return
+      }
+      this.imgArrIndex++
+    },
     // 下载文档
     downloadDocx() {
       this.$message('正在加载文档地址...')
       let url = baseAddress + '/psjc/file' + this.tableForm.wordFilePath
       let label = this.tableForm.wordInfoName + '.docx'
+      axios
+        .get(url, { responseType: 'blob' })
+        .then((response) => {
+          const blob = new Blob([response.data])
+          const link = document.createElement('a')
+          link.href = URL.createObjectURL(blob)
+          link.download = label
+          link.click()
+          URL.revokeObjectURL(link.href)
+        })
+        .catch(console.error)
+    },
+    downloadDocx2() {
+      this.$message('正在加载文档地址...')
+      let url = baseAddress + '/psjc/file' + this.getCurrentForm.wordFilePath
+      let label = this.getCurrentForm.wordInfoName + '.docx'
       axios
         .get(url, { responseType: 'blob' })
         .then((response) => {
@@ -530,8 +589,9 @@ export default {
       console.log('盒子位置', $scrollWrapper.scrollLeft)
     },
     // 打开管道详情
-    openCheck() {
-      this.id = this.tableForm.id
+    openCheck(id) {
+      // this.id = this.tableForm.id
+      this.id = id
       // console.log("打开详情",this.tableForm.id);
       this.checkdialogFormVisible = true
     },
@@ -578,9 +638,9 @@ export default {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
           let expNo = feas[0].get('expNo')
-          this.setPositionByPipeId(feas[0].get('id'))
           this.openPromptBox({ expNo })
         } else {
+          this.currentInfoCard2 = false
           this.dialogFormVisible = false
           this.lightLayer.getSource().clear()
         }
@@ -591,6 +651,7 @@ export default {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
+      this.popup && this.map.removeOverlay(this.popup)
     },
     // 获取缺陷数据
     getPipeDefectData() {
@@ -606,7 +667,7 @@ export default {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
-              view.animate({ zoom: 14 })
+              view.animate({ zoom: 13 })
               this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
           }
@@ -721,18 +782,6 @@ export default {
         return rotation
       }
     },
-    setPositionByPipeId(id) {
-      let features = this.vectorLayer.getSource().getFeatures()
-      let filterFea = features.find((fea) => fea.get('id') === id)
-      if (filterFea) {
-        let feature = new Feature({ geometry: filterFea.getGeometry().clone() })
-        this.lightLayer.getSource().clear()
-        this.lightLayer.getSource().addFeature(feature)
-        let center = new mapUtil().getCenter(feature)
-        this.map.getView().setCenter(center)
-        this.map.getView().setZoom(20)
-      }
-    },
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
@@ -745,7 +794,8 @@ export default {
       }
     },
 
-    openPromptBox(row) {
+    async openPromptBox(row) {
+      console.log('打开弹窗')
       // 点击行勾选数据
       let length = this.multipleSelection.length
       let expNo = this.multipleSelection.length == 1 ? this.multipleSelection[0].expNo : null
@@ -760,6 +810,31 @@ export default {
           this.$refs.multipleTable.toggleRowSelection(row)
         }
       }
+      // 
+      let fea = this.vectorLayer.getSource().getFeatures().find(fea => fea.get('expNo') === row.expNo)
+      let center = mapUtil.getCenter(fea)
+      if (fea) {
+        let resEV = await histroyPipeData({ expNo: row.expNo })
+        this.currentIndex2 = 0
+        this.currentForm2 = resEV.result
+        this.currentInfoCard2 = true
+        this.popup = new Overlay({
+          element: document.getElementById('popupCardEV'),
+          //当前窗口可见
+          autoPan: true,
+          positioning: 'bottom-center',
+          stopEvent: true,
+          offset: [18, -25],
+          autoPanAnimation: { duration: 250 }
+        })
+        this.map.addOverlay(this.popup)
+        this.popup.setPosition(center)
+
+        this.lightLayer.getSource().addFeature(new Feature({ geometry: fea.getGeometry().clone() }))
+        let view = this.map.getView()
+        view.setCenter(center)
+        view.setZoom(18)
+      } else this.$message.error('该管线无位置信息!')
     },
     // 上一页
     lastPage() {
@@ -777,6 +852,24 @@ export default {
         return
       }
       this.currentIndex++
+      // this.openDetails(this.isPromptBox)
+    },
+    // 上一页
+    lastPageEv() {
+      if (this.currentIndex2 <= 0) {
+        this.currentIndex2 = 0
+        return
+      }
+      this.currentIndex2--
+      // this.openDetails(this.isPromptBox)
+    },
+    // 下一页
+    nextPageEv() {
+      if (this.currentIndex2 + 1 >= this.currentForm2.length) {
+        this.currentIndex2 = this.currentForm2.length - 1
+        return
+      }
+      this.currentIndex2++
       // this.openDetails(this.isPromptBox)
     },
     // 详情导航选择事件
@@ -801,27 +894,7 @@ export default {
       this.urlArr = this.tableForm.pipeDefects.map((v) => {
         return baseAddress + '/psjc/file' + v.picPath
       })
-
-      // if (1) {
-      //   let fea = this.vectorLayer.getSource().getFeatures().find(fea => fea.get('expNo') === row.expNo)
-      //   let position = mapUtil.getCenter(fea)
-      //   this.popup = new Overlay({
-      //     element: document.getElementById('popupCard'),
-      //     //当前窗口可见
-      //     autoPan: true,
-      //     positioning: 'bottom-center',
-      //     stopEvent: true,
-      //     offset: [18, -25],
-      //     autoPanAnimation: { duration: 250 }
-      //   })
-      //   this.map.addOverlay(this.popup)
-      //   this.popup.setPosition(position)
-      // }
-
-      // console.log("this.tableForm.pipeDefects",this.tableForm.pipeDefects);
       this.dialogFormVisible = true
-
-      
     },
     // 重置
     async resetBtn() {
@@ -1165,11 +1238,190 @@ export default {
       }
     }
   }
+  .PipeEvData {
+    position: fixed;
+    top: 100px;
+    right: 45px;
+    z-index: 9;
+    .detailsCrad {
+      .clearfix:before,
+      .clearfix:after {
+        display: table;
+        content: '';
+      }
+      .clearfix:after {
+        clear: both;
+      }
+
+      .box-card {
+        width: 550px;
+        min-height: 310px;
+        border: none;
+        border-radius: 5px;
+        /deep/ .el-card__header {
+          height: 48px;
+          color: #fff;
+          background-color: #2d74e7;
+        }
+        /deep/.el-card__body {
+          padding: 15px !important;
+          .el-menu-item {
+            height: 45px;
+            font-size: 16px;
+          }
+        }
+        .content {
+          .content-info {
+            overflow-y: scroll;
+            height: 600px;
+            padding: 10px 20px;
+            .info-title {
+              font-size: 14px;
+              font-weight: bold;
+              margin: 5px 0;
+            }
+            .info-box {
+              height: 100%;
+              display: flex;
+              justify-content: space-between;
+              .info-text {
+                width: 37%;
+                padding: 10px;
+                box-sizing: border-box;
+                background-color: #f3f7fe;
+                border: 1px solid #dedede;
+              }
+              .info-video {
+                width: 60%;
+                border: 1px solid #dedede;
+              }
+            }
+            /deep/.el-form {
+              .el-link--inner {
+                max-width: 416px;
+                /* 1.先强制一行内显示文本 */
+                white-space: nowrap;
+                /* 2.超出部分隐藏 */
+                overflow: hidden;
+                /* 3.文字用省略号替代超出的部分 */
+                text-overflow: ellipsis;
+              }
+              /deep/.is-disabled {
+                .el-input__inner {
+                  background-color: transparent;
+                }
+                .el-textarea__inner {
+                  background-color: transparent;
+                }
+              }
+              .el-form-item {
+                margin-bottom: 10px;
+              }
+            }
+            /deep/.el-textarea__inner,
+            .el-input__inner {
+              color: #666;
+            }
+            .detailsTitle {
+              position: relative;
+              font-size: 16px;
+              padding: 5px 0;
+              box-sizing: border-box;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              top: 5px;
+              left: -10px;
+              content: '';
+              width: 4px;
+              height: 65%;
+              background-color: #2d74e7;
+            }
+          }
+        }
+        .table-content {
+          padding: 15px;
+          .content-info {
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+
+            .left {
+              flex: 1;
+              .text-space {
+                margin: 10px 0;
+                /deep/.el-link--inner {
+                  max-width: 240px;
+                  // 1.先强制一行内显示文本
+                  white-space: nowrap;
+
+                  // 2.超出部分隐藏
+                  overflow: hidden;
+                  // 3.文字用省略号替换超出的部分
+                  text-overflow: ellipsis;
+                }
+              }
+            }
+            .right {
+              flex: 1;
+
+              /deep/.is-top {
+                margin: 0 0 10px;
+              }
+              // .el-tabs__header{
+              //   border-top: none;
+              //       margin-bottom: 6px;
+              //   background-color: transparent !important;
+              // }
+              /deep/.el-tabs {
+                .container {
+                  height: 100%;
+                  width: 100%;
+                  padding-top: 5px;
+                  box-sizing: border-box;
+                }
+                .el-tabs__content {
+                  height: 150px;
+                  width: 234px;
+                }
+                .el-tabs__item {
+                  margin: 11px 0 0 0 !important;
+                  background: transparent !important;
+                }
+                .el-tabs__header {
+                  border-top: 0 !important;
+                  background: transparent !important;
+                }
+              }
+              // .el-tabs__nav-wrap::after {
+              //   z-index: 2;
+              // }
+              // .el-tabs__active-bar
+            }
+            .detailsTitle {
+              position: relative;
+              margin: 6px 0;
+              padding-left: 10px;
+              box-sizing: border-box;
+            }
+            .detailsTitle::after {
+              position: absolute;
+              left: 0;
+              content: '';
+              width: 4px;
+              height: 100%;
+              background-color: #2d74e7;
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 
 
-#popupCard {
+#popupCardEV {
   &::after {
     content: '';
     display: block;

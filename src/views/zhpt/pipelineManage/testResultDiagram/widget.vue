@@ -470,13 +470,18 @@ export default {
   },
   methods: {
     sDateChange (t) {
-      if (!this.endDate) {
-        this.endDate = t
+      if (!this.form.endDate) {
+        console.log('时间变化')
+        this.$nextTick(() => {
+          this.form.endDate = this.form.startDate
+        })
       }
     },
     eDateChange (t) {
-      if (!this.startDate) {
-        this.startDate = t
+      if (!this.form.startDate) {
+        this.$nextTick(() => {
+          this.form.startDate = this.form.endDate
+        })
       }
     },
     init () {
