@@ -33,6 +33,7 @@ declare module 'axios' {
 // export const IP = 'http://192.168.2.238:8080'
 // export const IP = 'http://192.168.2.238:3306'
 // export const IP = 'http://192.168.2.235:1118'  // 开发2
+export const IP = 'http://221.182.8.141:1118' // 开发2
 // export const IP = 'http://221.182.8.141:1118' // 开发2
 // export const IP = 'http://117.174.10.73:1116'  // 开发1
 // export const IP = 'http://192.168.2.235:1118'
