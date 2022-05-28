@@ -201,8 +201,8 @@ export default class DeviceTypes extends Vue {
   }
 
   async onTypeSubmit(data) {
+    this.loading.typeSubmitting = true
     try {
-      this.loading.typeSubmitting = true
       const { result } = await (data.id ? updateType(data) : addType(data))
       this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}设备类型${result ? '成功!' : '失败!'}`)
       if (result) {

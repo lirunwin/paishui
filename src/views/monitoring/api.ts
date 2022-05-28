@@ -185,7 +185,7 @@ interface IQueryCommon extends IPagination {
   searchCount?: boolean
 }
 
-interface IType extends ICreator {
+export interface IType extends ICreator {
   /** 数据归集时间（分钟） */
   collectTime?: string
   /** 设备类型名称 */
@@ -224,61 +224,69 @@ export interface ITypeParam extends ICreator {
   lrangeUp?: string
 }
 
-interface ITypeArchive extends ICreator {
+export interface ITypeArchive extends ICreator {
   /** 厂商名称 */
-  companyName: string
+  companyName?: string
   /** 厂商电话 */
-  companyPhone: string
+  companyPhone?: string
   /** 厂商联系人 */
-  companyUser: string
+  companyUser?: string
   /** 文件id */
-  fileids: string
-  id: number
+  fileids?: string
+  id?: number
   /** 型号 */
-  model: string
+  model?: string
   /** 名称 */
-  name: string
+  name?: string
+  /** 设备编号 新增时后台自动生成 */
+  no?: string
   /** 采购时间 */
-  purchaseTime: string
+  purchaseTime?: string
   /** sn编码 */
-  sn: string
+  sn?: string
   /** 设备类型 关联tf_ywpn_device_type */
-  type: number
+  type?: number | string
+  /** 设备类型名称 */
+  typeName?: string
+  delFlag?: string
+  note?: string
+  /** 设备状态 */
+  status?: string
 }
 
-interface IStandard extends ICreator {
-  id: string
+export interface IStandard extends ICreator {
+  id?: string
   /** 指标名称 */
-  name: string
+  name?: string
   /** 设备类型id */
-  type: string
+  type?: string
 }
 
-interface IStandardParam extends ICreator {
-  departmentId: string
+export interface IStandardParam extends ICreator {
+  departmentId?: string
   /** 设备类型参数id tf_ywpn_device_type_para */
-  deviceTypeParaId: string
+  deviceTypeParaId?: string
   /** 有效时间开始 */
-  start: string
+  start?: string
   /** 有效时间结束 */
-  end: string
-  id: string
+  end?: string
+  id?: string
   /** 监测体系id 关联表 tf_ywpn_device_indecate */
-  indicateId: string
+  indicateId?: string
   /** 是否推送报警 0 false 1是 */
-  isPush: true
+  isPush?: true
   /** 0 否 1是 */
-  isUse: true
+  isUse?: true
   /** 关联字典表 优质、轻度、中度、严重 */
-  level: number
+  level?: number
   /** 上限 */
-  upper: number
+  upper?: number
   /** 下限 */
-  lower: number
+  lower?: number
   /** 上限容差 */
-  upperTolerance: number
+  upperTolerance?: number
   /** 下限容差 */
-  lowerTolerance: number
+  lowerTolerance?: number
 }
 
 /** 导出 */
@@ -344,7 +352,7 @@ export const updateTypeArchive = (data: ITypeArchive) =>
 export const getTypeArchive = (id: string) =>
   axios.request<IRes<ITypeArchive>>({ url: `${uris.settings.device.archives.base}/${id}`, method: 'get' })
 
-export const typeArchivePage = (params: ITypeArchive & IQueryCommon) =>
+export const typeArchivesPage = (params: ITypeArchive & IQueryCommon) =>
   axios.request<IRes<ITypeArchive[]>>({ url: uris.settings.device.archives.page, method: 'get', params })
 
 export const deleteTypeArchiveBatch = (ids: string) =>

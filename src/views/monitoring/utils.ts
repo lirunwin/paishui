@@ -6,12 +6,14 @@ interface ColItem extends Partial<ElTableColumn> {
   _interval?: boolean
 }
 
+const alignLeft: Pick<ElTableColumn, 'align' | 'headerAlign'> = { align: 'left', headerAlign: 'left' }
+
 /**设备类型配置 - 类型 */
 export const settingDeviceTypeCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'name', label: '设备类型名称', minWidth: '150px', align: 'left', headerAlign: 'left' },
-  { prop: 'typeCode', label: '设备类型代码', minWidth: '110px', align: 'left', headerAlign: 'left' },
+  { prop: 'name', label: '设备类型名称', minWidth: '150px', ...alignLeft },
+  { prop: 'typeCode', label: '设备类型代码', minWidth: '110px', ...alignLeft },
   { prop: 'collectTime', label: '数据归集时间（分钟）', width: '160px' }
 ]
 
@@ -19,9 +21,9 @@ export const settingDeviceTypeCols: ColItem[] = [
 export const settingDeviceTypeParamCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'name', label: '参数名称', width: '100px', align: 'left', headerAlign: 'left' },
-  { prop: 'code', label: '参数代码', width: '100px', align: 'left', headerAlign: 'left' },
-  { prop: 'codeAbridge', label: '参数缩写', width: '100px', align: 'left', headerAlign: 'left' },
+  { prop: 'name', label: '参数名称', width: '100px', ...alignLeft },
+  { prop: 'code', label: '参数代码', width: '100px', ...alignLeft },
+  { prop: 'codeAbridge', label: '参数缩写', width: '100px', ...alignLeft },
   { prop: 'unit', label: '参数单位', width: '90px' },
   {
     prop: 'lrange',
@@ -31,7 +33,7 @@ export const settingDeviceTypeParamCols: ColItem[] = [
       if (!lrangeLow && !lrangeUp) {
         return '-'
       } else {
-        return `${lrangeLow || 0} - ${lrangeUp || '∞'}`
+        return `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
       }
     }
   },
@@ -40,26 +42,26 @@ export const settingDeviceTypeParamCols: ColItem[] = [
     label: '是否显示',
     width: '80px',
     // formatter: ({ isDisplay }: ITypeParam) => (isDisplay ? '是' : '否'),
-    _slot:true
+    _slot: true
   },
-  { prop: 'note', label: '备注', minWidth: '150px', align: 'left', headerAlign: 'left', showOverflowTooltip: true }
+  { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft, showOverflowTooltip: true }
 ]
 
 /**设备档案管理 */
 export const settingArchiveCols: ColItem[] = [
   { type: 'selection', width: '50px' },
-  { type: 'index', label: '序号' },
-  { prop: 'name', label: '设备编码' },
-  { prop: 'name1', label: 'SN序列号' },
-  { prop: 'name2', label: '设备类型名称' },
-  { prop: 'name3', label: '设备型号' },
-  { prop: 'name4', label: '设备名称' },
-  { prop: 'name5', label: '设备厂商' },
-  { prop: 'name6', label: '厂商联系人' },
-  { prop: 'name7', label: '联系人电话' },
-  { prop: 'name8', label: '采购时间' },
-  { prop: 'name9', label: '设备状态' },
-  { prop: 'name0', label: '备注' }
+  { type: 'index', label: '序号', width: '60px' },
+  { prop: 'no', label: '设备编码', width: '120px', ...alignLeft },
+  { prop: 'sn', label: 'SN序列号', width: '120px', ...alignLeft },
+  { prop: 'typeName', label: '设备类型', width: '100px', ...alignLeft },
+  { prop: 'model', label: '设备型号', width: '100px', ...alignLeft },
+  { prop: 'name', label: '设备名称', minWidth: '120px', ...alignLeft },
+  { prop: 'companyName', label: '设备厂商', minWidth: '120px', ...alignLeft },
+  { prop: 'companyUser', label: '厂商联系人', minWidth: '100px' },
+  { prop: 'companyPhone', label: '联系人电话', width: '100px' },
+  { prop: 'purchaseTime', label: '采购时间', width: '110px' },
+  { prop: 'status', label: '设备状态', width: '100px' },
+  { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft, showOverflowTooltip: true }
 ]
 
 /**指标标准被指 */

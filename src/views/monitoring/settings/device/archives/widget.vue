@@ -3,6 +3,8 @@
     <div class="actions">
       <QueryForm
         :selected="selected"
+        :types="types"
+        :loading="loading"
         @query="onQuery"
         @add="onAdd"
         @update="onUpdate"
@@ -13,10 +15,20 @@
     <BaseTable
       :columns="settingArchiveCols"
       :data="archives"
+      :pagination="pagination"
+      v-loading="loading.query"
       @row-dblclick="onDblClick"
       @selection-change="onSelectionChange"
+      @page-change="onPageChange"
     />
-    <DeviceForm :visible.sync="visible" :title="`${current.id ? '修改' : '新增'}采集设备`" :data="current" />
+    <DeviceForm
+      :visible.sync="visible"
+      :title="`${current.id ? '修改' : '新增'}采集设备`"
+      :data="current"
+      :types="types"
+      @submit="onSubmit"
+      :loading="loading.add || loading.update"
+    />
   </div>
 </template>
 
@@ -26,12 +38,18 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingArchiveCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
+import {
+  ITypeArchive,
+  IPagination,
+  IType,
+  typeArchivesPage,
+  updateTypeArchive,
+  addTypeArchive,
+  deleteTypeArchiveBatch,
+  typesPage
+} from '@/views/monitoring/api'
 
-// import {
-//   // getJournalList,
-//   // getFiles,
-//   // getCountLogType
-// } from '@/api/base'
+const getDefaultPagination = () => ({ current: 1, size: 30 })
 
 @Component({ name: 'DeviceArchives', components: { BaseTable, QueryForm, DeviceForm } })
 export default class DeviceArchives extends Vue {
@@ -39,32 +57,84 @@ export default class DeviceArchives extends Vue {
 
   visible = false
 
-  current: {
-    [x: string]: string
-  } = {}
+  current: ITypeArchive = {}
 
-  selected = []
+  selected: ITypeArchive[] = []
 
-  archives = [
-    { id: '1', name: '测试', code: '1231', time: ['00:00', '23:59'] },
-    { id: '2', name: '测试1', code: '1232', time: ['00:00', '23:59'] },
-    { id: '3', name: '测试2', code: '1233', time: ['00:00', '23:59'] }
-  ]
+  types: IType[] = []
+
+  archives: ITypeArchive[] = []
+
+  loading = { query: false, add: false, update: false, del: false, export: false }
+
+  pagination: IPagination = getDefaultPagination()
+
+  query: { sn?: string; name?: string; type?: string | number } = {}
 
   onQuery(query) {
-    console.log(query)
+    this.query = { ...query }
+    this.doQuery(getDefaultPagination())
+  }
+
+  async doQuery(query = {}) {
+    this.loading.query = true
+    try {
+      const {
+        result: { records, size, total, current }
+      } = await typeArchivesPage({ ...this.pagination, ...this.query, ...query })
+      this.pagination = { current, size, total }
+      this.archives = records || []
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading.query = false
+  }
+
+  onPageChange(pagination) {
+    this.pagination = { ...this.pagination, ...pagination }
+    this.doQuery()
+  }
+
+  async onSubmit(data: ITypeArchive) {
+    this.loading[data.id ? 'update' : 'add'] = true
+    try {
+      const { result } = await (data.id ? updateTypeArchive(data) : addTypeArchive(data))
+      this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}设备档案${result ? '成功!' : '失败!'}`)
+      if (result) {
+        this.visible = false
+        this.doQuery()
+      }
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading[data.id ? 'update' : 'add'] = false
   }
 
   onAdd() {
-    this.visible = true
     this.current = {}
-  }
-  onUpdate(id) {
-    console.log(id)
+    this.visible = true
   }
 
-  onDel(ids) {
-    console.log(ids)
+  onUpdate(row) {
+    this.current = { ...row }
+    this.visible = true
+  }
+
+  async onDel(ids) {
+    await this.$confirm('是否确认删除设备档案？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    this.loading.del = true
+    try {
+      const { result } = await deleteTypeArchiveBatch(ids)
+      this.$message[result ? 'success' : 'error'](`删除设备档案${result ? '成功!' : '失败!'}`)
+      result && this.doQuery()
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading.del = false
   }
 
   onExport(ids) {
@@ -79,18 +149,22 @@ export default class DeviceArchives extends Vue {
   onSelectionChange(selections) {
     this.selected = [...selections]
   }
+
+  /** 没有查询全部类型的接口, 暂用分页接口 */
+  async getAllTypes() {
+    try {
+      const {
+        result: { records }
+      } = await typesPage({ current: 1, size: 9999 })
+      this.types = records || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  mounted() {
+    this.doQuery()
+    this.getAllTypes()
+  }
 }
 </script>
-
-<style scoped>
-.actions {
-  padding: 22px 15px 0;
-  margin-bottom: 15px;
-  background: #fff;
-}
-
-.table-container {
-  padding: 15px;
-  background-color: #fff;
-}
-</style>

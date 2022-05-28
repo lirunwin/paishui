@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="876px" top="7vh">
+  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" width="876px" top="7vh">
     <BaseTitle>设备基本信息</BaseTitle>
     <el-row :gutter="20">
       <el-col :span="12">
@@ -11,18 +11,44 @@
           :rules="rules"
         >
           <el-form-item
-            v-for="{ name, label, type, required = true, disabled } of formItems"
+            v-for="{ name, label, type, required, options, onChange, disabled, ...rest } of formItems"
             :key="name"
             :required="required"
             :label="label"
             :prop="name"
           >
-            <el-input
-              :type="type || 'text'"
+            <el-date-picker
+              v-if="type === 'date'"
               v-model="formData[name]"
+              value-format="yyyy-MM-dd"
+              format="yyyy-MM-dd"
+              :disabled="disabled"
+              :placeholder="`请选择${label}`"
+              clearable
+              size="small"
+              v-bind="rest"
+            />
+            <el-select
+              v-else-if="type === 'select'"
+              v-model="formData[name]"
+              filterable
+              :placeholder="`请选择${label}`"
+              size="small"
+              clearable
+              v-bind="rest"
+              @change="onChange"
+            >
+              <el-option v-for="item in options" :key="item.id" :label="item.name" :value="item.id" />
+            </el-select>
+            <el-input
+              v-else
+              v-model="formData[name]"
+              :type="type || 'text'"
               :disabled="disabled"
               :placeholder="`请输入${label}`"
+              size="small"
               clearable
+              v-bind="rest"
             />
           </el-form-item>
         </el-form>
@@ -53,130 +79,157 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
+import { IType, typeParamsPage } from '@/views/monitoring/api'
+import { ElForm } from 'element-ui/types/form'
 
 @Component({ name: 'TypeForm', components: { BaseDialog, BaseTitle } })
 export default class TypeForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
+  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  $refs!: { form: ElForm }
   dialogVisible = false
   dialogImageUrl = ''
   formData: { [x: string]: string } = {}
-  formItems: {
-    label: string
-    name: string
-    type?: string
-    required?: boolean
-    disabled?: boolean
-  }[] = [
-    {
-      /** ①	设备编码: 系统维护。编码规则: 项目编号 + JCSB_+ 4位流水号，如: HN01JCSB0004。（JCSB表示监测设备） */
-      label: '设备编码',
-      name: 'no'
-    },
-    {
-      /** ②	设备出厂唯一编号: 必填，自定义录入文本，要求与设备上的信息一致。 */
-      label: '设备SN码',
-      name: 'no1'
-    },
-    {
-      /** ③	设备型号: 必填，自定义录入文本。 */
-      label: '设备型号',
-      name: 'mode'
-    },
-    {
-      /** ④	设备类型: 必填，下拉框，在【设备类型配置】中配置的设备类型。 */
-      label: '设备类型',
-      name: 'type',
-      type: 'select'
-    },
-    {
-      /** ⑤	监测参数: 系统自动显示，根据设备类型关联显示该设备监测参数。 */
-      label: '监测参数',
-      name: 'param',
-      type: 'textarea',
-      required: false,
-      disabled: true
-    },
-    {
-      /** ⑥	设备厂商: 必填，自定义录入文本。 */
-      label: '设备厂商',
-      name: 'factor'
-    },
-    {
-      /** ⑦	厂家联系人: 必填，自定义录入文本。 */
-      label: '厂家联系人',
-      name: 'name'
-    },
-    {
-      /** ⑧	联系方式: 必填，自定义录入文本。 */
-      label: '联系方式',
-      name: 'tel'
-    },
-    {
-      /** ⑨	采购时间: 必填，自定义录入文本。 */
-      label: '采购时间',
-      name: 'date'
-    },
-    {
-      label: '备注',
-      name: 'note',
-      type: 'textarea',
-      required: false
-    }
-    // {
-    //   /** ⑩	设备照片: 选填，最多上传9张，格式支持jpg、jpeg、png，单个图片大小不超过10M，上传后照片压缩不超过1M，同时生成一套缩略图，用于前端展示。 */
-    //   label: '设备照片',
-    //   name: 'photo',
-    //   type: 'textarea'
-    // }
-  ]
-  rules = {
-    /** ①	设备编码: 系统维护。编码规则: 项目编号 + JCSB_+ 4位流水号，如: HN01JCSB0004。（JCSB表示监测设备） */
-    no: [
-      { required: true, message: '设备编码不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '设备编码不能超过50个字符' }
-    ],
-    /** ②	设备出厂唯一编号: 必填，自定义录入文本，要求与设备上的信息一致。 */
-    no1: [
-      { required: true, message: '设备SN码不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '设备SN码不能超过50个字符' }
-    ],
-    /** ③	设备型号: 必填，自定义录入文本。 */
-    mode: [
-      { required: true, message: '设备型号不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '设备型号不能超过50个字符' }
-    ],
-    /** ④	设备类型: 必填，下拉框，在【设备类型配置】中配置的设备类型。 */
-    type: [{ required: true, message: '请选择设备类型', trigger: 'blur' }],
-    /** ⑤	监测参数: 系统自动显示，根据设备类型关联显示该设备监测参数。 */
-    param: [],
-    /** ⑥	设备厂商: 必填，自定义录入文本。 */
-    factor: [
-      { required: true, message: '设备厂商不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '设备厂商不能超过50个字符' }
-    ],
-    /** ⑦	厂家联系人: 必填，自定义录入文本。 */
-    name: [
-      { required: true, message: '厂家联系人不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '厂家联系人不能超过50个字符' }
-    ],
-    /** ⑧	联系方式: 必填，自定义录入文本。 */
-    tel: [
-      { required: true, message: '联系方式不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '联系方式不能超过50个字符' }
-    ],
-    /** ⑨	采购时间: 必填，自定义录入文本。 */
-    date: [
-      { required: true, message: '采购时间不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '采购时间不能超过50个字符' }
-    ],
-    note: [{ type: 'string', required: false, max: 255, message: '备注不能超过255个字符' }]
+
+  get listeners() {
+    const { submit, ...rest } = this.$listeners
+    return rest
   }
+
+  get formItems() {
+    return [
+      {
+        label: '设备名称',
+        name: 'name',
+        required: true,
+        maxlength: 50
+      },
+      {
+        /** ①	设备编码: 系统维护。编码规则: 项目编号 + JCSB_+ 4位流水号，如: HN01JCSB0004。（JCSB表示监测设备） */
+        label: '设备编码',
+        name: 'no',
+        disabled: true,
+        maxlength: 64
+      },
+      {
+        /** ②	设备出厂唯一编号: 必填，自定义录入文本，要求与设备上的信息一致。 */
+        label: '设备SN码',
+        name: 'sn',
+        maxlength: 64
+      },
+      {
+        /** ③	设备型号: 必填，自定义录入文本。 */
+        label: '设备型号',
+        name: 'model',
+        maxlength: 50
+      },
+      {
+        /** ④	设备类型: 必填，下拉框，在【设备类型配置】中配置的设备类型。 */
+        label: '设备类型',
+        name: 'type',
+        type: 'select',
+        required: true,
+        options: this.types,
+        onChange: this.getAllTypeParams
+      },
+      {
+        /** ⑤	监测参数: 系统自动显示，根据设备类型关联显示该设备监测参数。 */
+        label: '监测参数',
+        name: 'param',
+        type: 'textarea',
+        rows: 3,
+        disabled: true
+      },
+      {
+        /** ⑥	设备厂商: 必填，自定义录入文本。 */
+        label: '设备厂商',
+        name: 'companyName',
+        maxlength: 50
+      },
+      {
+        /** ⑦	厂家联系人: 必填，自定义录入文本。 */
+        label: '厂家联系人',
+        name: 'companyUser',
+        maxlength: 50
+      },
+      {
+        /** ⑧	联系方式: 必填，自定义录入文本。 */
+        label: '联系方式',
+        name: 'companyPhone',
+        maxlength: 50
+      },
+      {
+        /** ⑨	采购时间: 必填，自定义录入文本。 */
+        label: '采购时间',
+        name: 'purchaseTime',
+        type: 'date',
+        style: 'width:100%'
+      },
+      {
+        label: '备注',
+        name: 'note',
+        type: 'textarea',
+        maxlength: 256
+      }
+      // {
+      //   /** ⑩	设备照片: 选填，最多上传9张，格式支持jpg、jpeg、png，单个图片大小不超过10M，上传后照片压缩不超过1M，同时生成一套缩略图，用于前端展示。 */
+      //   label: '设备照片',
+      //   name: 'photo',
+      //   type: 'textarea'
+      // }
+    ]
+  }
+
+  rules = {
+    name: [
+      { required: true, message: '设备名称不能为空！', trigger: 'blur' },
+      { max: 50, message: '设备名称不超过50个字符' },
+      { pattern: /^[\u4e00-\u9fa5\w -]+$/, message: '允许输入汉字、英文、数字', trigger: 'blur' }
+    ],
+    /** ①	设备编码: 系统维护。编码规则: 项目编号 + JCSB_+ 4位流水号，如: HN01JCSB0004。（JCSB表示监测设备） */
+    // no: [
+    //   { type: 'string', max: 128, message: '设备编码不能超过128个字符' }
+    // ],
+    // /** ②	设备出厂唯一编号: 必填，自定义录入文本，要求与设备上的信息一致。 */
+    // sn: [
+    //   { type: 'string', max: 128, message: '设备SN码不能超过128个字符' }
+    // ],
+    // /** ③	设备型号: 必填，自定义录入文本。 */
+    // model: [
+    //   { type: 'string', max: 128, message: '设备型号不能超过128个字符' }
+    // ],
+    /** ④	设备类型: 必填，下拉框，在【设备类型配置】中配置的设备类型。 */
+    type: [{ required: true, message: '请选择设备类型', trigger: 'blur' }]
+    /** ⑤	监测参数: 系统自动显示，根据设备类型关联显示该设备监测参数。 */
+    // param: []
+    /** ⑥	设备厂商: 必填，自定义录入文本。 */
+    // companyName: [{ type: 'string', max: 50, message: '设备厂商不能超过50个字符' }],
+    /** ⑦	厂家联系人: 必填，自定义录入文本。 */
+    // companyUser: [{ type: 'string', max: 50, message: '厂家联系人不能超过50个字符' }],
+    /** ⑧	联系方式: 必填，自定义录入文本。 */
+    // companyPhone: [{ type: 'string', max: 50, message: '联系方式不能超过50个字符' }],
+    /** ⑨	采购时间: 必填，自定义录入文本。 */
+    // purchaseTime: [{ type: 'string', max: 10, message: '采购时间不能超过10个字符' }],
+    // note: [{ type: 'string', required: false, max: 255, message: '备注不能超过255个字符' }]
+  }
+
+  /** 没有查询全部类型参数的接口, 暂用分页接口 */
+  async getAllTypeParams(typeId: string) {
+    try {
+      const {
+        result: { records }
+      } = await typeParamsPage({ typeId, current: 1, size: 9999 })
+      this.formData = { ...this.formData, param: records.length ? records.map((item) => item.name).join(', ') : '无' }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   onSubmit() {
-    console.log('submit')
-    const form = this.$refs['form'] as any
-    form.validate((valid) => {
+    this.$refs.form.validate((valid) => {
       if (valid) {
-        console.log('valid')
+        const { param, ...rest } = this.formData
+        this.$emit('submit', rest)
       }
     })
   }
@@ -184,13 +237,16 @@ export default class TypeForm extends Vue {
   handleRemove(file, fileList) {
     console.log(file, fileList)
   }
+
   handlePictureCardPreview(file) {
     this.dialogImageUrl = file.url
     this.dialogVisible = true
   }
+
   @Watch('data', { immediate: true })
   setDefaultData(val) {
-    this.formData = val || {}
+    this.formData = val.id ? { ...val } : {}
+    if (val.type) this.getAllTypeParams(val.type)
   }
 }
 </script>

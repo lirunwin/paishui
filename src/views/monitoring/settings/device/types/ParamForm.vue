@@ -46,7 +46,9 @@
           v-bind="rest"
           clearable
         >
-          <template slot="suffix" v-if="name === 'rate'"> 分钟 </template>
+          <template slot="suffix" v-if="name === 'rate'">
+            分钟
+          </template>
         </el-input>
       </el-form-item>
     </el-form>
@@ -84,7 +86,7 @@ export default class ParamForm extends Vue {
   }
 
   validatelrangeLow(_, value, callback) {
-    if (value >= (+this.formData.lrangeUp || 0)) {
+    if (this.formData.lrangeUp && value >= +this.formData.lrangeUp) {
       callback(new Error('下限需小于上限'))
     } else {
       if (this.formData.lrangeUp !== '') {
@@ -94,7 +96,7 @@ export default class ParamForm extends Vue {
     }
   }
   validatelrangeUp(_, value, callback) {
-    if (value <= (+this.formData.lrangeLow || 0)) {
+    if (this.formData.lrangeLow && value <= +this.formData.lrangeLow) {
       callback(new Error('上限需大于下限'))
     } else {
       if (this.formData.lrangeLow !== '') {
@@ -117,7 +119,7 @@ export default class ParamForm extends Vue {
         label: '参数名称',
         name: 'name',
         rules: [
-          { required: true, message: '参数名称不能为空！', trigger: 'blur' },
+          { required: true, message: '参数名称不能为空！' },
           { max: 20, message: '参数名称不超过20个字符' },
           { pattern: /^[\u4e00-\u9fa5\w -]+$/, message: '允许输入汉字、英文、数字', trigger: 'blur' }
         ],
@@ -207,7 +209,7 @@ export default class ParamForm extends Vue {
         rules: [{ required: false, max: 255, message: '备注不能超过255个字符' }],
         type: 'textarea',
         rows: 4,
-        size: 'small',
+        size: 'small'
       }
     ]
   }
@@ -220,8 +222,11 @@ export default class ParamForm extends Vue {
   }
 
   @Watch('data', { immediate: true })
-  setDefaultData(val) {
-    this.formData = val.id ? { ...val } : getDefaultData()
+  setDefaultData({ lrangeLow, lrangeUp, id, ...rest }) {
+    const temp = { lrangeLow, lrangeUp, id, ...rest }
+    if (lrangeLow === null) temp.lrangeLow = undefined
+    if (lrangeUp === null) temp.lrangeUp = undefined
+    this.formData = id ? temp : getDefaultData()
   }
 }
 </script>
