@@ -2,7 +2,19 @@ import axios from '@/utils/request'
 
 const base = '/tofly-psjc-monitor'
 
+export const monitorStandardLevelKey = { codeKey: 'monitor_indicate_level', codeRemark: '体系指标判定' }
+
+/** 体系默认levels */
+export const defaultValuesForMonitorStandardLevel = [
+  { codeValue: '0', notes: '优质', sort: 0 },
+  { codeValue: '1', notes: '轻度', sort: 1 },
+  { codeValue: '2', notes: '中度', sort: 2 },
+  { codeValue: '3', notes: '严重', sort: 3 }
+]
+
 const uris = {
+  addDictionary: '/base/code',
+  dictionary: '/base/code/getByKeys',
   common: {
     /** 导出数据  get*/
     export: `${base}/commonFile/download`,
@@ -15,75 +27,77 @@ const uris = {
     device: {
       /** 设备类型配置 */
       types: {
-        /** POST, DELETE ,PUT, GET, */
+        /** method: POST, DELETE ,PUT, GET, */
         base: `${base}/devicetype`,
-        /** DELETE */
+        /** method: DELETE */
         del: `${base}/devicetype/deleteByIds`,
-        /** GET */
+        /** method: GET */
         page: `${base}/devicetype/page`,
         /** 设备类型参数 */
         params: {
-          /** POST, DELETE ,PUT, GET, */
+          /** method: POST, DELETE ,PUT, GET, */
           base: `${base}/devicepara`,
-          /** DELETE */
+          /** method: DELETE */
           del: `${base}/devicepara/deleteByIds`,
-          /** GET */
+          /** method: GET */
           page: `${base}/devicepara/page`
         }
       },
       /** 设备档案管理 */
       archives: {
-        /** POST, DELETE ,PUT, GET, */
+        /** method: POST, DELETE ,PUT, GET, */
         base: `${base}/device`,
-        /** DELETE */
+        /** method: DELETE */
         del: `${base}/device/deleteByIds`,
-        /** GET */
+        /** method: GET */
         page: `${base}/device/page`
       }
     },
     /** 监测点管理 */
     points: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/monitorsite`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/monitorsite/deleteByIds`,
-      /** GET */
-      page: `${base}/monitorsite/page`
+      /** method: GET */
+      page: `${base}/monitorsite/page`,
+      /** method: POST */
+      setting: `${base}/monitorsite/setting`
     },
     /** 监测站管理 */
     sites: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/monitorsite`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/monitorsite/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/monitorsite/page`
     },
     /** 指标标准配置 */
     standards: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/deviceindicate`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/deviceindicate/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/deviceindicate/page`,
       /** 指标标准参数 */
       params: {
-        /** POST, DELETE ,PUT, GET, */
+        /** method: POST, DELETE ,PUT, GET, */
         base: `${base}/indicatepara`,
-        /** DELETE */
+        /** method: DELETE */
         del: `${base}/indicatepara/deleteByIds`,
-        /** GET */
+        /** method: GET */
         page: `${base}/indicatepara/page`
       }
     },
     /** 图标管理 */
     icons: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/placeholder/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/placeholder/page`
     }
   },
@@ -91,38 +105,38 @@ const uris = {
   report: {
     /** 监测详情查看 */
     detail: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/placeholder/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/placeholder/page`
     },
     /** 指标监测台账 */
     points: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/placeholder/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/placeholder/page`
     },
     /** 站点监测台账 */
     sites: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/placeholder/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/placeholder/page`
     },
     /** 监测报警台账 */
     warnings: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/placeholder/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/placeholder/page`
     }
   },
@@ -130,29 +144,29 @@ const uris = {
   monitor: {
     /** 监控台 */
     index: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/placeholder/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/placeholder/page`
     },
     /** 站点实时监控 */
     sites: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/placeholder/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/placeholder/page`
     },
     /** 指标实时监控 */
     points: {
-      /** POST, DELETE ,PUT, GET, */
+      /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
-      /** DELETE */
+      /** method: DELETE */
       del: `${base}/placeholder/deleteByIds`,
-      /** GET */
+      /** method: GET */
       page: `${base}/placeholder/page`
     }
   }
@@ -264,6 +278,8 @@ export interface IStandard extends ICreator {
 
 export interface IStandardParam extends ICreator {
   departmentId?: string
+  /** 参数名称 */
+  name?: string
   /** 设备类型参数id tf_ywpn_device_type_para */
   deviceTypeParaId?: string
   /** 有效时间开始 */
@@ -289,6 +305,60 @@ export interface IStandardParam extends ICreator {
   lowerTolerance?: number
   delFlag?: string
 }
+
+export interface IPoint extends ICreator {
+  /** 数据归集时间（分钟） */
+  collectTime?: string
+  /** 设备类型名称 */
+  name?: string
+  /** 设备类型代码 */
+  typeCode?: string
+  id?: string
+  sort?: number | string
+  status?: string
+}
+
+export interface IPointSetting {
+  /** 数据归集时间（分钟） */
+  collectTime?: string
+  /** 设备类型名称 */
+  name?: string
+  /** 设备类型代码 */
+  typeCode?: string
+  id?: string
+  sort?: number | string
+  status?: string
+}
+
+export interface IDictionary {
+  codeKey?: string
+  codeRemark?: string
+  codeValue?: string
+  createTime?: string
+  createUser?: string | number
+  id?: string | number
+  notes?: string
+  sort?: string | number
+  ulevel?: string | number
+}
+
+/** 获取字典值 */
+export const getDictKeys = async (keys: string = monitorStandardLevelKey.codeKey) => {
+  const { result } = await axios.request<{ result: { [x: string]: IDictionary[] } }>({
+    url: uris.dictionary,
+    method: 'get',
+    params: { keys }
+  })
+  if (!monitorStandardLevelKey.codeKey.includes(',')) {
+    const { [monitorStandardLevelKey.codeKey]: values } = result
+    return values || []
+  }
+  return result || {}
+}
+
+/** 保存字典值 */
+export const addDictionary = (data: IDictionary & { creater?: string }) =>
+  axios.request({ url: uris.addDictionary, method: 'post', data })
 
 /** 导出 */
 export const download = (fileName: string) =>
@@ -396,3 +466,25 @@ export const standardParamsPage = (params: IStandardParam & IQueryCommon) =>
 
 export const deleteStandardParamBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.standards.params.del, method: 'delete', params: { ids } })
+
+// 检测点管理
+export const addPoint = (data: Omit<IPoint, 'id'>) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.base, method: 'post', data })
+
+export const deletePoint = (id: string) =>
+  axios.request<IRes<boolean>>({ url: `${uris.settings.points.base}/${id}`, method: 'delete' })
+
+export const updatePoint = (data: IPoint) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.base, method: 'put', data })
+
+export const getPoint = (id: string) =>
+  axios.request<IRes<IPoint>>({ url: `${uris.settings.points.base}/${id}`, method: 'get' })
+
+export const pointsPage = (params: IPoint & IQueryCommon) =>
+  axios.request<IRes<IPoint[]>>({ url: uris.settings.points.page, method: 'get', params })
+
+export const deletePointBatch = (ids: string) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.del, method: 'delete', params: { ids } })
+
+export const addPointSetting = (data: IPointSetting) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.setting, method: 'post', data })

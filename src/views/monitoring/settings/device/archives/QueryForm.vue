@@ -70,12 +70,18 @@
 import { Vue, Component, Prop } from 'vue-property-decorator'
 import { IType, ITypeArchive } from '@/views/monitoring/api'
 
-interface ILoading {
+export interface ILoading {
   query?: boolean
   add?: boolean
   update?: boolean
   del?: boolean
   export?: boolean
+}
+
+export interface IQuery {
+  sn?:string
+  name?:string
+  type?:string | number
 }
 
 @Component({ name: 'QueryForm', components: {} })
@@ -84,7 +90,7 @@ export default class QueryForm extends Vue {
   @Prop({ type: Array, default: () => [] }) selected!: ITypeArchive[]
   @Prop({ type: Array, default: () => [] }) types!: IType[]
 
-  formData: { [x: string]: string } = {}
+  formData: IQuery = {}
 
   get ids() {
     return this.selected.map((item) => item.id).join()

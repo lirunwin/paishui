@@ -23,7 +23,7 @@
     />
     <DeviceForm
       :visible.sync="visible"
-      :title="`${current.id ? '修改' : '新增'}采集设备`"
+      :title="`${current.id ? '修改' : '新增'}设备档案`"
       :data="current"
       :types="types"
       @submit="onSubmit"
@@ -36,7 +36,7 @@
 import { Vue, Component } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingArchiveCols } from '@/views/monitoring/utils'
-import QueryForm from './QueryForm.vue'
+import QueryForm, { ILoading, IQuery } from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
 import {
   ITypeArchive,
@@ -65,11 +65,11 @@ export default class DeviceArchives extends Vue {
 
   archives: ITypeArchive[] = []
 
-  loading = { query: false, add: false, update: false, del: false, export: false }
+  loading: ILoading = {}
 
   pagination: IPagination = getDefaultPagination()
 
-  query: { sn?: string; name?: string; type?: string | number } = {}
+  query: IQuery = {}
 
   onQuery(query) {
     this.query = { ...query }

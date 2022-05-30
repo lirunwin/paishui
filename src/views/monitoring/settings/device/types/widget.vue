@@ -6,7 +6,7 @@
           新增设备类型
         </el-button>
         <el-button
-          type="primary"
+          type="danger"
           size="small"
           :disabled="!selected.type.length"
           :loading="loading.typeDeleting"
@@ -25,7 +25,7 @@
           >新增参数</el-button
         >
         <el-button
-          type="primary"
+          type="danger"
           size="small"
           :disabled="!selected.param.length"
           :loading="loading.paramDeleting"

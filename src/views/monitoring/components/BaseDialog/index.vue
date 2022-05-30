@@ -80,6 +80,7 @@ export default class BaseDialog extends Vue {
   border-radius: $radius;
   /deep/ .el-dialog {
     background-color: transparent;
+    max-width: 1024px;
     &__header {
       background-color: $bg-color;
       color: $font-color;

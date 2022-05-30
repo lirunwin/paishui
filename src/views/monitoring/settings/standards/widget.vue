@@ -6,7 +6,7 @@
           >新增指标标准</el-button
         >
         <el-button
-          type="primary"
+          type="danger"
           size="small"
           :disabled="!selected.standard.length"
           :loading="loading.standardDeleting"
@@ -24,7 +24,7 @@
           >新增指标参数</el-button
         >
         <el-button
-          type="primary"
+          type="danger"
           size="small"
           :disabled="!selected.param.length"
           :loading="loading.paramDeleting"
