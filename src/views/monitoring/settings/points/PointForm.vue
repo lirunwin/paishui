@@ -1,16 +1,16 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="876px" top="7vh">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'small' }" :model="formData" :rules="rules">
+  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" width="876px" top="7vh">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" :rules="rules">
       <template v-for="{ name: sectionName, title, items } of formItems">
-        <template
-          ><BaseTitle :key="`${sectionName}-title`">{{ title }}</BaseTitle></template
-        >
-        <el-row v-if="sectionName === 'device'" :key="`${sectionName}-items`" :gutter="20">
+        <template>
+          <BaseTitle :key="`${sectionName}-title`">{{ title }}</BaseTitle>
+        </template>
+        <el-row v-if="sectionName === 'siteFacility'" :key="`${sectionName}-items`" :gutter="20">
           <el-col :span="12">
             <el-row type="flex" :gutter="10">
               <el-col>
-                <el-form-item label="关联设施" prop="device-note">
-                  <el-input v-model="formData['connect-deivce']" placeholder="请选择排水设施" size="small" />
+                <el-form-item label="关联设施" :prop="`${sectionName}.facility`">
+                  <el-input v-model="formData[sectionName]['facility']" placeholder="请选择排水设施" size="small" />
                 </el-form-item>
               </el-col>
               <el-col style="flex:0 0 5em;text-align:center">
@@ -25,32 +25,59 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="备注" prop="device-note">
-              <el-input type="textarea" v-model="formData['device-note']" placeholder="请输入备注" :rows="3" />
+            <el-form-item label="备注" :prop="`${sectionName}.facilityNote`">
+              <el-input
+                type="textarea"
+                v-model="formData[sectionName]['facilityNote']"
+                placeholder="请输入备注"
+                :rows="3"
+              />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row v-else :gutter="20" :key="`else-${sectionName}-items`">
           <el-col :span="12">
             <el-form-item
-              v-for="{ name, label, type = 'text', required = true, disabled = false } of items"
+              v-for="{
+                name,
+                label,
+                required = false,
+                type = 'text',
+                disabled = false,
+                options,
+                onChange,
+                formatter
+              } of items"
               :key="name"
-              :required="required"
               :label="label"
-              :prop="name"
+              :prop="name !== 'coordinate' ? `${sectionName}.${name}` : ''"
+              :required="required"
               :show-message="name !== 'coordinate'"
+              :style="name === 'coordinate' ? 'margin-bottom:0' : ''"
             >
               <template v-if="name === 'coordinate'">
                 <el-row type="flex" justify="space-between" :gutter="10">
                   <el-col>
-                    <el-form-item prop="longitude">
-                      <el-input v-model="formData.longitude" placeholder="经度" clearable />
+                    <el-form-item :prop="`${sectionName}.coordiateX`">
+                      <el-input-number
+                        v-model="formData[sectionName].coordiateX"
+                        placeholder="经度"
+                        v-bind="getDefalutNumberProp()"
+                        :precision="3"
+                        :controls="false"
+                      />
                     </el-form-item>
                   </el-col>
                   <el-col style="flex:0 0 1em;text-align:center"> ~ </el-col>
                   <el-col>
-                    <el-form-item prop="latitude">
-                      <el-input v-model="formData.latitude" placeholder="纬度" clearable />
+                    <el-form-item :prop="`${sectionName}.coordiateY`">
+                      <el-input-number
+                        v-model="formData[sectionName].coordiateY"
+                        placeholder="纬度"
+                        v-bind="getDefalutNumberProp()"
+                        :precision="3"
+                        :controls="false"
+                      />
                     </el-form-item>
                   </el-col>
                   <el-col style="flex:0 0 5em;text-align:center">
@@ -60,28 +87,34 @@
               </template>
               <template v-else-if="type === 'select'">
                 <el-select
-                  v-model="formData[name]"
-                  :placeholder="`请输入${label}`"
-                  :disabled="disabled"
-                  size="small"
+                  v-model="formData[sectionName][name]"
+                  :placeholder="`请选择${label}`"
                   clearable
+                  v-on="onChange ? { change: onChange } : {}"
                 >
-                  <el-option value="" label="全部" />
+                  <el-option
+                    v-for="item of options"
+                    :key="item.id"
+                    :value="item.id"
+                    :label="formatter ? formatter(item) : item.name"
+                  >
+                  </el-option>
                 </el-select>
               </template>
               <template v-else-if="type === 'date'">
                 <el-date-picker
-                  v-model="formData[name]"
+                  v-model="formData[sectionName][name]"
                   :placeholder="`请选择${label}`"
                   :disabled="disabled"
                   size="small"
                   style="width:100%"
+                  value-format="yyyy-MM-dd"
                   clearable
                 />
               </template>
               <template v-else>
                 <el-input
-                  v-model="formData[name]"
+                  v-model="formData[sectionName][name]"
                   :type="type || 'text'"
                   :disabled="disabled"
                   :placeholder="`请输入${label}`"
@@ -91,7 +124,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <template v-if="sectionName === 'install'">
+            <template v-if="sectionName === 'bindDevice'">
               设备照片
               <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
               <div style="margin-top:20px" class="upload">
@@ -111,61 +144,6 @@
           </el-col>
         </el-row>
       </template>
-      <BaseTitle style="margin-top: 20px">监测参数基本设置</BaseTitle>
-      <el-row type="flex" style="align-items:center; margin-bottom: 20px">
-        监测体系
-        <el-select
-          v-model="formData['systemId']"
-          placeholder="请输入监测体系"
-          size="small"
-          style="margin-left:10px; width: 200px"
-          @change="onSystemChange"
-        >
-          <el-option :value="item.id" :label="item.name" :key="item.id" v-for="item of systems" />
-        </el-select>
-      </el-row>
-      <BaseTable :columns="settingPointBasisCols" :data="monitorSystems" border>
-        <template v-for="(item, index) of monitorSystems" v-slot:[`index-${index}`]="{ row }">
-          <el-form-item
-            :key="`index-${item.id}`"
-            :prop="`system[${index}].index`"
-            label-width="0"
-            style="margin-bottom: 0"
-          >
-            <el-input v-model="formData.system[index].index" :placeholder="row.name" />
-          </el-form-item>
-        </template>
-        <template v-for="(item, index) of monitorSystems" v-slot:[`paramCode-${index}`]="{ row }">
-          <el-form-item
-            :key="`paramCode-${item.id}`"
-            :prop="`system[${index}].paramCode`"
-            label-width="0"
-            style="margin-bottom: 0"
-          >
-            <el-input v-model="formData.system[index].paramCode" :placeholder="row.name" />
-          </el-form-item>
-        </template>
-        <template v-for="(item, index) of monitorSystems" v-slot:[`display-${index}`]="{ row }">
-          <el-form-item
-            :key="`display-${item.id}`"
-            :prop="`system[${index}].display`"
-            label-width="0"
-            style="margin-bottom: 0"
-          >
-            <el-switch v-model="formData.system[index].display" :placeholder="row.name" />
-          </el-form-item>
-        </template>
-        <template v-for="(item, index) of monitorSystems" v-slot:[`note-${index}`]="{ row }">
-          <el-form-item
-            :key="`note-${item.id}`"
-            :prop="`system[${index}].note`"
-            label-width="0"
-            style="margin-bottom: 0"
-          >
-            <el-input v-model="formData.system[index].note" :placeholder="row.name" />
-          </el-form-item>
-        </template>
-      </BaseTable>
       <el-dialog :visible.sync="dialogVisible" title="" append-to-body class="preview">
         <img width="100%" :src="dialogImageUrl" alt="" />
       </el-dialog>
@@ -178,196 +156,136 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
-import { settingPointBasisCols, settingPointParamCols } from '@/views/monitoring/utils'
+import { IPointConnectDevice, IType, ITypeArchive, typeArchivesPage } from '@/views/monitoring/api'
+import { ElForm } from 'element-ui/types/form'
+import { getDefalutNumberProp } from '@/views/monitoring/utils'
 
 interface FormItem {
-  label: string
-  name: string
-  type?: string
-  required?: boolean
-  disabled?: boolean
+  name?: string
+  title?: string
+  items?: {
+    label?: string
+    name?: string
+    type?: string
+    disabled?: boolean
+    required?: boolean
+    options?: any[]
+    onChange?: (val: any) => void
+    formatter?: (row: { [x: string]: any }) => string
+  }[]
 }
 
-interface FormData {
-  system?: { [x: string]: string }[]
-  param?: { [x: string]: string }[]
-  [x: string]: any
-}
+const defaultFormData = { basis: {}, siteFacility: {}, bindDevice: {} }
 
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
+  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  $refs!: { form: ElForm }
+  getDefalutNumberProp = getDefalutNumberProp
+  get listeners() {
+    const { submit, ...rest } = this.$listeners
+    return rest
+  }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: FormData = {}
-  settingPointBasisCols = settingPointBasisCols
-  settingPointParamCols = settingPointParamCols
+  formData: IPointConnectDevice & { basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'> } = {
+    ...defaultFormData
+  }
 
-  formItems: {
-    name: string
-    title: string
-    items: {
-      label: string
-      name: string
-      required?: boolean
-      disabled?: boolean
-      type?: 'txt' | 'date' | 'textarea' | 'select'
-    }[]
-  }[] = [
-    {
-      name: 'basis',
-      title: '监测站点基本信息',
-      items: [
-        {
-          /**①	监测站点编号: 系统维护，编码规则: 项目编号 +JCZD_+ 4位流水号，如: HN01JCZD0004（JCZD代表监测站点）。 */
-          label: '监测站点编号',
-          name: 'no',
-          required: false
-        },
-        {
-          /**②	监测点名称: 必填，自定义录入。 */
-          label: '监测点名称',
-          name: 'name'
-        },
-        {
-          /**③	监测点编码: 必填，自定义录入，可用于与其他系统对接。 */
-          label: '监测点编码',
-          name: 'pointNo'
-        },
-        {
-          /**④	地址: 必填，自定义录入。 */
-          label: '地址',
-          name: 'address'
-        },
-        {
-          /**⑤	坐标: 必填，支持录入，同时支持点击【图上选点】，在地图上点击一个点位获取坐标信息。 */
-          label: '坐标',
-          name: 'coordinate'
-        }
-      ]
-    },
-    {
-      name: 'device',
-      title: '关联排水设施信息',
-      items: [
-        { label: '关联设施', name: 'connect-deivce' },
-        { label: '设施编码', name: 'connect-no', type: 'txt' },
-        { label: '设施类型', name: 'connect-type', type: 'txt' },
-        { label: '道路名称', name: 'connect-road', type: 'txt' },
-        { label: '备注', name: 'connect-note', type: 'textarea' }
-      ]
-    },
-    {
-      name: 'install',
-      title: '设备安装信息',
-      items: [
-        { label: '设备类型', name: 'device-type', type: 'select', required: false },
-        { label: '设备SN序列', name: 'device-sn', type: 'select', required: false },
-        { label: '安装负责人', name: 'device-director' },
-        { label: '联系方式', name: 'device-contact' },
-        { label: '安装时间', name: 'device-time', type: 'date' }
-      ]
-    }
-  ]
+  archives: ITypeArchive[] = []
+
+  get formItems(): FormItem[] {
+    return [
+      {
+        name: 'basis',
+        title: '监测站点基本信息',
+        items: [
+          { label: '监测点编号', name: 'no', disabled: true },
+          { label: '监测点名称', name: 'name', required: true },
+          { label: '监测点编码', name: 'code' },
+          { label: '排水分区', name: 'psArea' },
+          { label: '监测分组', name: 'siteGroup' },
+          { label: '地址', name: 'address' },
+          { label: '坐标', name: 'coordinate', required: true },
+          { label: '备注', name: 'note', type: 'textarea' }
+        ]
+      },
+      {
+        name: 'siteFacility',
+        title: '关联排水设施信息',
+        items: [
+          { label: '关联设施', name: 'facility' },
+          { label: '设施编码', name: 'facilityCode', type: 'txt' },
+          { label: '设施类型', name: 'facilityType', type: 'txt' },
+          { label: '道路名称', name: 'facilityRoadName', type: 'txt' },
+          { label: '备注', name: 'facilityNote', type: 'textarea' }
+        ]
+      },
+      {
+        name: 'bindDevice',
+        title: '设备安装信息',
+        items: [
+          { label: '设备类型', name: 'typeId', type: 'select', options: this.types, onChange: this.onTypeChange },
+          {
+            label: '设备SN序列',
+            name: 'deviceId',
+            type: 'select',
+            options: this.archives,
+            formatter: ({ sn, name }) => (sn ? `${sn} | ${name}` : name || '')
+          },
+          { label: '安装负责人', name: 'installUser' },
+          { label: '联系方式', name: 'installPhone' },
+          { label: '安装时间', name: 'installTime', type: 'date' }
+        ]
+      }
+    ]
+  }
 
   rules = {
-    name: [
+    'basis.name': [
       { required: true, message: '监测点名称不能为空！', trigger: 'blur' },
       { type: 'string', max: 50, message: '监测点名称不能超过50个字符' }
     ],
-    pointNo: [
-      { required: true, message: '监测点编码不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '监测点编码不能超过50个字符' }
-    ],
-    address: [
-      { required: true, message: '地址不能为空！', trigger: 'blur' },
-      { type: 'string', max: 100, message: '地址不能超过100个字符' }
-    ],
-    longitude: [
-      { required: true, message: '经度不能为空！', trigger: 'blur' },
-      { type: 'number', message: '请输入数字', transform: (val) => +val }
-    ],
-    latitude: [
-      { required: true, message: '纬度不能为空！', trigger: 'blur' },
-      { type: 'number', message: '请输入数字', transform: (val) => +val }
-    ],
-    'device-director': [
-      { required: true, message: '安装负责人不能为空！', trigger: 'blur' },
+    'basis.code': [{ type: 'string', max: 128, message: '监测点编码不能超过128个字符' }],
+    'basis.address': [{ type: 'string', max: 128, message: '地址不能超过128个字符' }],
+    'basis.coordiateX': [{ required: true, message: '经度不能为空', trigger: 'blur' }],
+    'basis.coordiateY': [{ required: true, message: '纬度不能为空', trigger: 'blur' }],
+    'bindDevice.typeId': [{ required: true, message: '请选择设备类型', trigger: 'blur' }],
+    'bindDevice.deviceId': [{ required: true, message: '请选择设备sn码', trigger: 'blur' }],
+    'bindDevice.installUser': [
+      { required: true, message: '安装负责人不能为空', trigger: 'blur' },
       { type: 'string', max: 50, message: '安装负责人不能超过50个字符' }
     ],
-    'device-contact': [
+    'bindDevice.installPhone': [
       { required: true, message: '联系方式不能为空！', trigger: 'blur' },
-      { type: 'string', max: 100, message: '联系方式不能超过100个字符' }
+      { type: 'string', max: 11, message: '联系方式不能超过11个字符' },
+      { pattern: /^1[1-9][0-9]{9}$/, message: '请输入手机号', trigger: 'blur' }
     ],
-    'device-time': [{ required: true, message: '请选择安装时间' }],
-    note: [{ type: 'string', required: false, max: 255, message: '备注不能超过255个字符' }]
+    'bindDevice.installTime': [{ required: true, message: '请选择安装时间' }],
+    'basis.note': [{ type: 'string', required: false, max: 255, message: '备注不能超过255个字符' }]
   }
 
-  monitorSystems = []
-
-  monitorSystemParams = []
-
-  systems = [{ id: '1', name: '第一系统' }, { id: '2', name: '第二系统' }, { id: '3', name: '第三系统' }]
+  async onTypeChange(id, reset: boolean = true) {
+    try {
+      reset && (this.formData.bindDevice.deviceId = '')
+      const {
+        result: { records }
+      } = await typeArchivesPage({ type: id, current: 1, size: 999999 })
+      this.archives = records || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   onSubmit() {
-    console.log('submit')
     const form = this.$refs['form'] as any
     form.validate((valid) => {
       if (valid) {
-        console.log('valid')
+        const { bindDevice = {}, siteFacility = {}, basis = {} } = this.formData
+        this.$emit('submit', { ...basis, bindDevice, siteFacility })
       }
     })
-  }
-
-  getDefaultParam() {
-    return settingPointParamCols
-      .filter((item) => item._interval)
-      .reduce(
-        (data, current = {}) => {
-          const temp = { ...data }
-          temp[current.prop] = []
-          return temp
-        },
-        {} as { [x: string]: any }
-      )
-  }
-
-  onSystemChange(id) {
-    // 根据id 找到对应的 参数s  需要把id写入formData.sysytem 和 formData.param
-    const countParams = +id * 2
-    this.formData = {
-      ...this.formData,
-      system: Array(countParams)
-        .fill('')
-        .map((_) => ({})),
-      param: Array(countParams)
-        .fill('')
-        .map((_) => {
-          return this.getDefaultParam()
-        })
-    }
-
-    this.monitorSystems = Array(countParams)
-      .fill('')
-      .map((_, index) => ({ id: String(index), name: `参数${index}` }))
-
-    this.monitorSystemParams = Array(countParams)
-      .fill('')
-      .map((_, index) => ({ id: String(index), name: `参数${index}` }))
-  }
-
-  onParamAdd() {
-    this.formData = {
-      ...this.formData,
-      param: [...this.formData.param, this.getDefaultParam()]
-    }
-    setTimeout(() => {
-      this.monitorSystemParams = [...this.monitorSystemParams, { id: `__new__${+new Date()}`, name: '' }]
-    }, 0)
-  }
-
-  onParamDel({ id }) {
-    this.monitorSystemParams = this.monitorSystemParams.filter((item) => item.id !== id)
   }
 
   handleRemovePic(file, fileList) {
@@ -380,14 +298,32 @@ export default class PointForm extends Vue {
   }
 
   @Watch('data', { immediate: true })
-  setDefaultData(val) {
-    const defaultFormData = { system: [] }
-    this.formData = { ...defaultFormData, ...val }
+  setDefaultData(val: IPointConnectDevice) {
+    const { id, siteFacility = {}, bindDevice = {}, ...rest } = val || {}
+    const { type: typeId, id: deviceId } = (bindDevice || {}).deviceVo || {}
+    typeId && this.onTypeChange(typeId, false)
+    this.formData = val.id
+      ? {
+          basis: { id, ...rest },
+          siteFacility: siteFacility || {},
+          bindDevice: { ...(bindDevice || {}), typeId, deviceId }
+        }
+      : { ...defaultFormData }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+.form {
+  >>> .el-input-number {
+    width: 100%;
+    .el-input__inner {
+      text-align: left;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+  }
+}
 .upload {
   /deep/ .el-upload-list--picture-card .el-upload-list__item,
   /deep/ .el-upload--picture-card {
