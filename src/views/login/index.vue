@@ -98,6 +98,7 @@ import { regPassword } from '@/utils/reg'
 import { ElForm } from 'element-ui/types/form'
 const sha1Hex = require('sha1-hex')
 const defaultPwd = '000000'
+
 @Component
 export default class Login extends Vue {
   name = 'Login'
@@ -195,7 +196,7 @@ export default class Login extends Vue {
         this.$store
           .dispatch('user/login', this.loginForm)
           .then((res) => {
-            const { id } = res.result
+          const { id } = res.result
             // 判断是否首次登录或者重置过密码
             userFirstLogin(id)
               .then((res) => {
@@ -221,7 +222,7 @@ export default class Login extends Vue {
                   return
                 }
                 // 是首次登录 打开弹窗 修改密码
-                if (res.result.firstlog === '1' || res.result.firstlog === null || !res.result.loginTime) {
+                if (res.result.firstlog === '1' && this.loginForm.password === defaultPwd) {
                   this.userId = id
                   this.passwordDialog = true
                   // 清除掉用户id 防止用户没有修改密码刷新进入页面
@@ -264,9 +265,8 @@ export default class Login extends Vue {
     } else {
       ;(this.$refs.changePwdForm as ElForm).validate((valid) => {
         if (valid) {
-          const originalPassword = '000000'
           const data = {
-            originalPassword: sha1Hex(originalPassword),
+            originalPassword: sha1Hex(defaultPwd),
             id: this.userId,
             firstlog: 0,
             password: sha1Hex(this.changePwd.checkPass)
