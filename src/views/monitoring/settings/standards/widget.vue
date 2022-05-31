@@ -79,6 +79,7 @@
       :types="types"
       :loading="loading.standardSubmitting"
       @submit="onStandardSubmit"
+      @closed="onRecoverLastCurrentStandard"
     />
     <ParamForm
       :visible.sync="visible.param"
@@ -129,7 +130,7 @@ export default class MonitoringStandards extends Vue {
     paramSubmitting: false
   }
 
-  current: { standard: IStandard; param: IStandardParam } = { standard: {}, param: {} }
+  current: { standard: IStandard; param: IStandardParam; lastStandard: IStandard } = { standard: {}, param: {}, lastStandard: {} }
 
   selected: { standard: IStandard[]; param: IStandardParam[] } = { standard: [], param: [] }
 
@@ -143,13 +144,17 @@ export default class MonitoringStandards extends Vue {
   types: IType[] = []
 
   onStandardAdd() {
+    this.current = { ...this.current, lastStandard: this.current.standard, standard: {} }
     this.visible.standard = true
-    this.current = { ...this.current, standard: {} }
+  }
+
+  onRecoverLastCurrentStandard () {
+    this.current = { ...this.current, standard: this.current.lastStandard }
   }
 
   onParamAdd() {
-    this.visible.param = true
     this.current = { ...this.current, param: {} }
+    this.visible.param = true
   }
 
   onStandardRowDblClick(row) {

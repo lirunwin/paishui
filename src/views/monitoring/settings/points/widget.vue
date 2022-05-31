@@ -83,7 +83,7 @@ export default class MonitoringPoints extends Vue {
 
   types: IType[] = []
 
-  points: IPoint[] = [{ id: '1', name: '测试' }, { id: '2', name: '测试1' }, { id: '3', name: '测试2' }]
+  points: IPoint[] = []
 
   loading: ILoading = {}
 
@@ -117,21 +117,6 @@ export default class MonitoringPoints extends Vue {
     this.pagination = { ...this.pagination, ...pagination }
     this.doQuery()
   }
-
-  // async onUpdatePoint(data: IPoint) {
-  //   this.loading[data.id ? 'update' : 'add'] = true
-  //   try {
-  //     const { result } = await (data.id ? updatePoint(data) : addPoint(data))
-  //     this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}监测点${result ? '成功!' : '失败!'}`)
-  //     if (result) {
-  //       this.visible.base = false
-  //       this.doQuery()
-  //     }
-  //   } catch (error) {
-  //     console.log(error)
-  //   }
-  //   this.loading[data.id ? 'update' : 'add'] = false
-  // }
 
   async onSubmit(data: IPointConnectDevice, bind: boolean = true) {
     this.loading[data.id ? 'update' : 'add'] = true

@@ -80,6 +80,7 @@
       :data="current.type"
       :loading="loading.typeSubmitting"
       @submit="onTypeSubmit"
+      @closed="onRecoverLastCurrentType"
     />
     <ParamForm
       :visible.sync="visible.param"
@@ -128,7 +129,7 @@ export default class DeviceTypes extends Vue {
     paramSubmitting: false
   }
 
-  current: { type: IType; param: ITypeParam } = { type: {}, param: {} }
+  current: { type: IType; param: ITypeParam, lastType: IType } = { type: {}, param: {}, lastType: {} }
 
   selected: { type: IType[]; param: ITypeParam[] } = { type: [], param: [] }
 
@@ -139,9 +140,15 @@ export default class DeviceTypes extends Vue {
   types: IType[] = []
   params: ITypeParam[] = []
 
+
+
   onTypeAdd() {
-    this.current = { ...this.current, type: {} }
+    this.current = { ...this.current, lastType: this.current.type, type: {} }
     this.visible.type = true
+  }
+
+  onRecoverLastCurrentType() {
+    this.current = { ...this.current, type: this.current.lastType }
   }
 
   onParamAdd() {
@@ -212,8 +219,8 @@ export default class DeviceTypes extends Vue {
   }
 
   async onParamSubmit(data) {
+    this.loading.paramSubmitting = true
     try {
-      this.loading.paramSubmitting = true
       const { result } = await (data.id
         ? updateTypeParam(data)
         : addTypeParam({ ...data, typeId: this.current.type.id }))

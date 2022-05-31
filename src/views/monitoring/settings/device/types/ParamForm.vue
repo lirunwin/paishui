@@ -99,14 +99,6 @@ export default class ParamForm extends Vue {
   get formItems() {
     return [
       {
-        label: '显示顺序',
-        name: 'sort',
-        type: 'number',
-        rules: [{ type: 'integer', min: -1, message: '显示顺序为数字' }],
-        size: 'small',
-        ...getDefalutNumberProp()
-      },
-      {
         label: '参数名称',
         name: 'name',
         rules: [
@@ -193,6 +185,14 @@ export default class ParamForm extends Vue {
         type: 'switch',
         rules: [{ required: true, message: '请选择是否显示', trigger: 'blur' }],
         size: 'small'
+      },
+      {
+        label: '显示顺序',
+        name: 'sort',
+        type: 'number',
+        rules: [{ type: 'integer', min: -1, message: '显示顺序为数字' }],
+        size: 'small',
+        ...getDefalutNumberProp()
       },
       {
         label: '备注',

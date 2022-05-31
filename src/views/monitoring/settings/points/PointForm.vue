@@ -13,7 +13,7 @@
                   <el-input v-model="formData[sectionName]['facility']" placeholder="请选择排水设施" size="small" />
                 </el-form-item>
               </el-col>
-              <el-col style="flex:0 0 5em;text-align:center">
+              <el-col style="flex: 0 0 5em; text-align: center">
                 <el-button type="primary" size="small">图上选点</el-button>
               </el-col>
             </el-row>
@@ -63,24 +63,24 @@
                         v-model="formData[sectionName].coordiateX"
                         placeholder="经度"
                         v-bind="getDefalutNumberProp()"
-                        :precision="3"
+                        :precision="7"
                         :controls="false"
                       />
                     </el-form-item>
                   </el-col>
-                  <el-col style="flex:0 0 1em;text-align:center"> ~ </el-col>
+                  <el-col style="flex: 0 0 1em; text-align: center"> ~ </el-col>
                   <el-col>
                     <el-form-item :prop="`${sectionName}.coordiateY`">
                       <el-input-number
                         v-model="formData[sectionName].coordiateY"
                         placeholder="纬度"
                         v-bind="getDefalutNumberProp()"
-                        :precision="3"
+                        :precision="7"
                         :controls="false"
                       />
                     </el-form-item>
                   </el-col>
-                  <el-col style="flex:0 0 5em;text-align:center">
+                  <el-col style="flex: 0 0 5em; text-align: center">
                     <el-button type="primary" size="small">图上选点</el-button>
                   </el-col>
                 </el-row>
@@ -107,7 +107,7 @@
                   :placeholder="`请选择${label}`"
                   :disabled="disabled"
                   size="small"
-                  style="width:100%"
+                  style="width: 100%"
                   value-format="yyyy-MM-dd"
                   clearable
                 />
@@ -126,8 +126,8 @@
           <el-col :span="12">
             <template v-if="sectionName === 'bindDevice'">
               设备照片
-              <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
-              <div style="margin-top:20px" class="upload">
+              <span style="margin-left: 5px; color: #ccc">(最多上传9张)</span>
+              <div style="margin-top: 20px" class="upload">
                 <el-upload
                   action="https://jsonplaceholder.typicode.com/posts/"
                   list-type="picture-card"
@@ -175,7 +175,11 @@ interface FormItem {
   }[]
 }
 
-const defaultFormData = { basis: {}, siteFacility: {}, bindDevice: {} }
+const defaultFormData =  () =>({
+  basis: { coordiateX: undefined, coordiateY: undefined, name: '', code: '', psArea: '', siteGroup: '', address: '', note: '' },
+  bindDevice: { deviceId: '', typeId: '', installUser: '', installPhone: '', installTime: '' },
+  siteFacility: { facility: '', facilityNote: '' }
+})
 
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
@@ -190,7 +194,7 @@ export default class PointForm extends Vue {
   dialogVisible = false
   dialogImageUrl = ''
   formData: IPointConnectDevice & { basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'> } = {
-    ...defaultFormData
+    ...defaultFormData()
   }
 
   archives: ITypeArchive[] = []
@@ -308,7 +312,7 @@ export default class PointForm extends Vue {
           siteFacility: siteFacility || {},
           bindDevice: { ...(bindDevice || {}), typeId, deviceId }
         }
-      : { ...defaultFormData }
+      : { ...defaultFormData() }
   }
 }
 </script>
