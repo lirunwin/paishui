@@ -1,5 +1,5 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
-import { IStandardParam, ITypeParam } from './api'
+import { IPointConnectDevice, IStandardParam, ITypeParam } from './api'
 
 interface ColItem extends Partial<ElTableColumn> {
   _slot?: boolean
@@ -102,23 +102,20 @@ export const settingStandardParamCols: ColItem[] = [
 /**监测点管理 */
 export const settingPointCols: ColItem[] = [
   { type: 'selection', width: '50px' },
-  { type: 'index', label: '序号' },
-  { prop: 'name', label: '监测点编号' },
-  { prop: 'name1', label: '监测点编码' },
-  { prop: 'name2', label: '监测点名称' },
-  { prop: 'name3', label: '设备类型' },
-  { prop: 'name4', label: '设备名称' },
-  { prop: 'name5', label: '设备出厂唯一编码' },
-  { prop: 'name6', label: '负责人' },
-  { prop: 'name7', label: '联系方式' },
-  { prop: 'name8', label: '安装地址' },
-  { prop: 'name9', label: '安装时间' },
-  { prop: 'name0', label: '监测站点' },
-  { prop: 'name11', label: '排水分区' },
-  { prop: 'name12', label: '监测分组' },
-  { prop: 'name13', label: '监测点状态' },
-  { prop: 'name14', label: '数据首次采集时间' },
-  { prop: 'name15', label: '数据最近采集时间' }
+  { type: 'index', label: '序号', width: '60px' },
+  { prop: 'psArea', label: '排水分区', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'siteGroup', label: '监测分组', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'no', label: '监测点编号', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'code', label: '监测点编码', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'name', label: '监测点名称', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.deviceVo.sn', label: '设备SN', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.deviceVo.typeName', label: '设备类型', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.deviceVo.name', label: '设备名称', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.installUser', label: '负责人', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.installPhone', label: '联系方式', width: '120px', showOverflowTooltip: true },
+  { prop: 'address', label: '安装地址', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.installTime', label: '安装时间', width: '120px', showOverflowTooltip: true },
+  { prop: 'status', label: '监测点状态', width: '90px', _slot: true }
 ]
 
 /**监测站点管理 */

@@ -1,6 +1,6 @@
 import axios from '@/utils/request'
 
-const base = '/tofly-psjc-monitor'
+const base = '/monitor'
 
 export const monitorStandardLevelKey = { codeKey: 'monitor_indicate_level', codeRemark: '体系指标判定' }
 
@@ -62,7 +62,11 @@ const uris = {
       /** method: GET */
       page: `${base}/monitorsite/page`,
       /** method: POST */
-      setting: `${base}/monitorsite/setting`
+      setting: `${base}/monitorsite/saveAndBind`,
+      /** method: GET */
+      groups: `${base}/monitorsite/group`,
+      /** method: GET */
+      sections: `${base}/monitorsite/psArea`
     },
     /** 监测站管理 */
     sites: {
@@ -176,6 +180,12 @@ type IRes<T = any> = Promise<{
   code: number
   message: string
   result: IQueryCommon & { records: T }
+}>
+
+type IResult<T = any> = Promise<{
+  code: number
+  message: string
+  result: T
 }>
 
 export interface IPagination {
@@ -307,15 +317,90 @@ export interface IStandardParam extends ICreator {
 }
 
 export interface IPoint extends ICreator {
-  /** 数据归集时间（分钟） */
-  collectTime?: string
-  /** 设备类型名称 */
+  /** 地址 */
+  address?: string
+  /** 编码 */
+  code?: string
+  /** 坐标 */
+  coordiate?: string
+  /** coordiateX */
+  coordiateX?: string | number
+  /** coordiateY */
+  coordiateY?: string | number
+  delFlag?: string
+  /** 分组 */
+  siteGroup?: string
+  /** 分区 */
+  psArea?: string
+  id?: string | number
+  /** 名称 */
   name?: string
-  /** 设备类型代码 */
-  typeCode?: string
-  id?: string
-  sort?: number | string
+  /** 编号 */
+  no?: string
+  /** 1 启用 2停用 */
   status?: string
+  note?: string
+}
+
+export interface IPointConnectDevice extends IPoint {
+  /** 绑定的设施信息 */
+  siteFacility?: {
+    /** 0正常 1删除 */
+    delFlag?: string
+    facility?: string
+    /** 设施编码 */
+    facilityCode?: string
+    /** 设施位置json */
+    facilityGeometry?: string
+    /** 关联设施名称 */
+    facilityName?: string
+    /** 设施备注 */
+    facilityNote?: string
+    /** 关联设施道路名称 */
+    facilityRoadName?: string
+    /** 关联设施类型 */
+    facilityType?: string
+    id?: string | number
+    /** 是否最新 */
+    isNew?: boolean
+    /** 监测点id */
+    siteId?: string | number
+    /** 更新时间 */
+    updateTime?: string
+    /** 更新人 */
+    updateUser?: string | number
+  } & ICreator
+  /** 绑定的设备安装信息 */
+  bindDevice?: {
+    /** 0正常 1删除 */
+    delFlag?: string
+    /** 设备id */
+    deviceId?: string | number
+    id?: string | number
+    /** 安装图片id */
+    installFileIds?: string
+    /** 安装人员联系方式 */
+    installPhone?: string
+    /** 安装图片id */
+    installSmallfileIds?: string
+    /** 安装时间 */
+    installTime?: string
+    /** 安装人员名称 */
+    installUser?: string
+    /** 是否最新 */
+    isNew?: boolean
+    /** 监测点id */
+    monitorSiteId?: string | number
+    typeId?: string | number
+    /** 设备信息 */
+    deviceVo?: {
+      id?: string | number
+      sn?: string
+      type?: string | number
+      typeName?: string
+      name?: string
+    }
+  } & ICreator
 }
 
 export interface IPointSetting {
@@ -480,11 +565,17 @@ export const updatePoint = (data: IPoint) =>
 export const getPoint = (id: string) =>
   axios.request<IRes<IPoint>>({ url: `${uris.settings.points.base}/${id}`, method: 'get' })
 
-export const pointsPage = (params: IPoint & IQueryCommon) =>
-  axios.request<IRes<IPoint[]>>({ url: uris.settings.points.page, method: 'get', params })
+export const pointsPage = (params: IPointConnectDevice & IQueryCommon) =>
+  axios.request<IRes<IPointConnectDevice[]>>({ url: uris.settings.points.page, method: 'get', params })
 
 export const deletePointBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.points.del, method: 'delete', params: { ids } })
 
-export const addPointSetting = (data: IPointSetting) =>
+export const addPointSetting = (data: IPointConnectDevice) =>
   axios.request<IRes<boolean>>({ url: uris.settings.points.setting, method: 'post', data })
+
+export const groups = (name?: string) =>
+  axios.request<IResult<string[]>>({ url: uris.settings.points.groups, method: 'get', params: { name } })
+
+export const sections = (name?: string) =>
+  axios.request<IResult<string[]>>({ url: uris.settings.points.sections, method: 'get', params: { name } })

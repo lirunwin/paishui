@@ -258,7 +258,7 @@ export default class PointForm extends Vue {
     }[key]
       .filter((item) => item._interval)
       .reduce(
-        (data, current = {}) => {
+        (data, current) => {
           const temp = { ...data }
           temp[current.prop] = []
           return temp
@@ -286,11 +286,11 @@ export default class PointForm extends Vue {
       } = await standardParamsPage({ indicateId, current: 1, size: 999999 })
       this.formData = {
         ...this.formData,
-        param: records.map(({ id, name, code, unit, upper, lower }) => ({
+        param: records.map(({ id, name, upper, lower }) => ({ // code, unit,
           id,
           name,
-          code,
-          unit,
+          // code,
+          // unit,
           upper,
           lower,
           ...this.getDefaultParam('param')

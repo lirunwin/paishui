@@ -14,14 +14,14 @@
         <el-option v-for="item in types" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
     </el-form-item>
-    <el-form-item label="排水分区" prop="section">
-      <el-select v-model="formData.section" placeholder="请选择排水分区" size="small" clearable>
-        <el-option value="" label="全部" />
+    <el-form-item label="排水分区" prop="psArea">
+      <el-select v-model="formData.psArea" placeholder="请选择排水分区" size="small" filterable clearable>
+        <el-option :key="item" :value="item" :label="item" v-for="item of sections" />
       </el-select>
     </el-form-item>
     <el-form-item label="监测分组" prop="team">
-      <el-select v-model="formData.team" placeholder="请选择监测分组" size="small" clearable>
-        <el-option value="" label="全部" />
+      <el-select v-model="formData.siteGroup" placeholder="请选择监测分组" size="small" filterable clearable>
+        <el-option :key="item" :value="item" :label="item" v-for="item of groups" />
       </el-select>
     </el-form-item>
     <el-form-item>
@@ -35,7 +35,14 @@
       >
         查询
       </el-button>
-      <el-button type="primary" size="small" :loading="loading.add" :disabled="loading.add" @click="$emit('add')" icon="el-icon-plus">
+      <el-button
+        type="primary"
+        size="small"
+        :loading="loading.add"
+        :disabled="loading.add"
+        @click="$emit('add')"
+        icon="el-icon-plus"
+      >
         新增
       </el-button>
       <el-button
@@ -112,7 +119,7 @@ export interface ILoading {
   del?: boolean
   enable?: boolean
   dismantle?: boolean
-  export?: boolean,
+  export?: boolean
   setting?: boolean
 }
 
@@ -121,8 +128,8 @@ export interface IQuery {
   address?: string
   sn?: string
   type?: string
-  section?: string
-  team?: string
+  psArea?: string
+  siteGroup?: string
 }
 
 @Component({ name: 'QueryForm', components: {} })
@@ -130,10 +137,11 @@ export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) loading!: ILoading
   @Prop({ type: Array, default: () => [] }) selected!: IPoint[]
   @Prop({ type: Array, default: () => [] }) types!: IType[]
-
+  @Prop({ type: Array, default: () => [] }) groups!: string[]
+  @Prop({ type: Array, default: () => [] }) sections!: string[]
 
   get on() {
-    return this.selected.some(item => item.status !== '1')
+    return this.selected.some((item) => item.status !== '1')
   }
 
   formData: IQuery = {}

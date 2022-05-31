@@ -4,6 +4,8 @@
       <QueryForm
         :selected="selected"
         :types="types"
+        :sections="sections"
+        :groups="groups"
         @query="onQuery"
         @add="onAdd"
         @update="onUpdate"
@@ -21,10 +23,23 @@
       @row-dblclick="onDblClick"
       @selection-change="onSelectionChange"
       @page-change="onPageChange"
-    />
+    >
+      <template v-for="(_, index) of points" v-slot:[`status-${index}`]="{ row }">
+        <el-switch
+          :key="`${index}-${row.id}`"
+          active-value="1"
+          inactive-value="2"
+          :value="row.status"
+          size="small"
+          style="user-select:none"
+          @change="($event) => onSubmit({ ...row, status: $event }, false)"
+        />
+      </template>
+    </BaseTable>
     <PointForm
       :visible.sync="visible.base"
       :title="`${current.id ? '修改' : '新增'}监测点`"
+      :types="types"
       :data="current"
       @submit="onSubmit"
     />
@@ -48,7 +63,11 @@ import {
   typesPage,
   updatePoint,
   addPoint,
-  addPointSetting
+  addPointSetting,
+  IPointSetting,
+  groups,
+  sections,
+  IPointConnectDevice
 } from '@/views/monitoring/api'
 const getDefaultPagination = () => ({ current: 1, size: 30 })
 
@@ -71,6 +90,9 @@ export default class MonitoringPoints extends Vue {
   pagination: IPagination = getDefaultPagination()
 
   query: IQuery = {}
+
+  groups: string[] = []
+  sections: string[] = []
 
   onQuery(query) {
     this.query = { ...query }
@@ -96,11 +118,28 @@ export default class MonitoringPoints extends Vue {
     this.doQuery()
   }
 
-  async onSubmit(data: IPoint) {
+  // async onUpdatePoint(data: IPoint) {
+  //   this.loading[data.id ? 'update' : 'add'] = true
+  //   try {
+  //     const { result } = await (data.id ? updatePoint(data) : addPoint(data))
+  //     this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}监测点${result ? '成功!' : '失败!'}`)
+  //     if (result) {
+  //       this.visible.base = false
+  //       this.doQuery()
+  //     }
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
+  //   this.loading[data.id ? 'update' : 'add'] = false
+  // }
+
+  async onSubmit(data: IPointConnectDevice, bind: boolean = true) {
     this.loading[data.id ? 'update' : 'add'] = true
     try {
-      const { result } = await (data.id ? updatePoint(data) : addPoint(data))
-      this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}监测点${result ? '成功!' : '失败!'}`)
+      const { result } = await (bind ? addPointSetting(data) : data.id ? updatePoint(data) : addPoint(data))
+      this.$message[result ? 'success' : 'error'](
+        `${data.id ? '修改' : '新增'}监测点${bind ? '并绑定' : ''}${result ? '成功!' : '失败!'}`
+      )
       if (result) {
         this.visible.base = false
         this.doQuery()
@@ -111,7 +150,7 @@ export default class MonitoringPoints extends Vue {
     this.loading[data.id ? 'update' : 'add'] = false
   }
 
-  async onSettingSubmit(data: IPoint) {
+  async onSettingSubmit(data: IPointSetting) {
     this.loading.setting = true
     try {
       const { result } = await addPointSetting(data)
@@ -130,7 +169,7 @@ export default class MonitoringPoints extends Vue {
     this.visible.base = true
     this.current = {}
   }
-  
+
   onUpdate(row) {
     this.current = { ...row }
     this.visible.base = true
@@ -179,11 +218,32 @@ export default class MonitoringPoints extends Vue {
     try {
       const {
         result: { records }
-      } = await typesPage({ current: 1, size: 9999 })
+      } = await typesPage({ current: 1, size: 999999 })
       this.types = records || []
     } catch (error) {
       console.log(error)
     }
+  }
+
+  async getGroupsAndSections() {
+    try {
+      const { result } = await groups()
+      this.groups = result || []
+    } catch (error) {
+      console.log(error)
+    }
+    try {
+      const { result } = await sections()
+      this.sections = result || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  mounted() {
+    this.doQuery()
+    this.getAllTypes()
+    this.getGroupsAndSections()
   }
 }
 </script>

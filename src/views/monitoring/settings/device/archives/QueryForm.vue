@@ -79,9 +79,9 @@ export interface ILoading {
 }
 
 export interface IQuery {
-  sn?:string
-  name?:string
-  type?:string | number
+  sn?: string
+  name?: string
+  type?: string | number
 }
 
 @Component({ name: 'QueryForm', components: {} })

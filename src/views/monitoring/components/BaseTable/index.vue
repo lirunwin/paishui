@@ -24,7 +24,7 @@
       </template>
     </el-table>
     <el-pagination
-      v-if="pagination"
+      v-if="pagination && pagination.total > 0"
       class="pagination"
       :current-page="pagination.current"
       :page-sizes="[10, 20, 30, 50, 100, 1000]"
