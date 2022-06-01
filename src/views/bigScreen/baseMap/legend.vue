@@ -4,9 +4,9 @@
     name="animate__animated animate__move"
     enter-active-class="animate__flipInX"
     leave-active-class="animate__flipOutX">
-        <div class="widget-MapLegend" v-if="show">
+        <div class="widget-MapLegend" ref="widget-MapLegend">
             <div class="wrap">
-                <div class="icon" @click="showLegendBoard()" title="地图图例"><div class="img"></div></div>
+                <div class="icon" @click="legendBoardShow=!legendBoardShow" title="地图图例"><div class="img"></div></div>
                 <div class="legendBoard" v-if="legendBoardShow">
                     <div class="title">地图图例</div>
                     <div class="legendItem">
@@ -58,13 +58,25 @@ export default {
             ]
         }
     },
-    mounted(){
+    watch:{
+        show:{
+            handler(n,o){
+                if(n){
+                    this.$nextTick(()=>{
+                        this.$refs['widget-MapLegend'].style.setProperty('--bottom', '1.546875rem') // 给变量赋值
+                    })
+                }else{
+                    this.$nextTick(()=>{
+                        this.$refs['widget-MapLegend'].style.setProperty('--bottom', '.052083rem') // 给变量赋值
+                    })
 
+                }
+            },
+            immediate:true
+        }
     },
     methods:{
-        showLegendBoard(){
-            this.legendBoardShow=!this.legendBoardShow
-        }
+
     }
 }
 </script>
@@ -79,7 +91,7 @@ export default {
     $size20:.104167rem /* 20/192 */;
     z-index: 2;
     //position
-    bottom: 1.546875rem /* 297/192 */;
+    bottom: var(--bottom);
     margin-left: 2.34375rem /* 450/192 */;
     position: absolute;
     //size
