@@ -53,7 +53,7 @@ export default class TypeForm extends Vue {
         rules: [
           { required: true, message: '设备类型名称不能为空！', trigger: 'blur' },
           { max: 50, message: '设备类型名称不超过50个字符' },
-          { pattern: /^[\u4e00-\u9fa5\w-]+$/, message: '允许输入汉字、英文、数字', trigger: 'blur' }
+          { pattern: /^[\u4e00-\u9fa5\w -]+$/, message: '允许输入汉字、英文、数字', trigger: 'blur' }
         ],
         size: 'small'
       },
@@ -119,6 +119,7 @@ export default class TypeForm extends Vue {
   onSubmit() {
     this.$refs.form.validate((valid) => valid && this.$emit('submit', this.formData))
   }
+  
   @Watch('data', { immediate: true })
   setDefaultData(val: any) {
     this.formData = val.id ? { ...val } : getDefaultValue()

@@ -2,12 +2,12 @@
   <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData">
       <el-form-item
+        v-for="{ name, label, type, required = false, rules, items, ...rest } of formItems"
         :key="name"
         :required="required"
         :label="label"
         :rules="rules"
-        v-for="{ name, label, type, required = false, rules, items, ...rest } of formItems"
-        :prop="name !== 'range' ? name : ''"
+        :prop="name"
       >
         <el-row v-if="name === 'range'" type="flex" justify="space-between">
           <el-col>
@@ -19,7 +19,7 @@
               />
             </el-form-item>
           </el-col>
-          <el-col style="flex:0 0 2em;text-align:center">至</el-col>
+          <el-col style="flex: 0 0 2em; text-align: center">至</el-col>
           <el-col>
             <el-form-item :rules="items[1].rules" :prop="items[1].name">
               <el-input-number
@@ -59,16 +59,8 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
-const getDefalutNumberProp = () => ({
-  min: 0,
-  max: 9999999,
-  size: 'small',
-  precision: 0,
-  stepStrictly: true,
-  style: { width: '100%', textAlign: 'left' },
-  class: 'input-number',
-  clearable: true
-})
+import { ITypeParam } from '@/views/monitoring/api'
+import { getDefalutNumberProp } from '@/views/monitoring/utils'
 
 const getDefaultData = () => ({ isDisplay: false, sort: 0 })
 
@@ -76,15 +68,33 @@ const getDefaultData = () => ({ isDisplay: false, sort: 0 })
 export default class ParamForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Boolean, default: false }) loading!: boolean
-  @Watch('data', { immediate: true })
-  setDefaultData(val) {
-    this.formData = val.id ? { ...val } : getDefaultData()
-  }
   $refs!: { form: ElForm }
-  formData: { [x: string]: any } = {}
+  formData: ITypeParam = {}
+
   get listeners() {
     const { submit, ...rest } = this.$listeners
     return rest
+  }
+
+  validatelrangeLow(_, value, callback) {
+    if (this.formData.lrangeUp && value >= +this.formData.lrangeUp) {
+      callback(new Error('下限需小于上限'))
+    } else {
+      if (this.formData.lrangeUp !== '') {
+        this.$refs.form.clearValidate('lrangeUp')
+      }
+      callback()
+    }
+  }
+  validatelrangeUp(_, value, callback) {
+    if (this.formData.lrangeLow && value <= +this.formData.lrangeLow) {
+      callback(new Error('上限需大于下限'))
+    } else {
+      if (this.formData.lrangeLow !== '') {
+        this.$refs.form.validateField('lrangeLow')
+      }
+      callback()
+    }
   }
   get formItems() {
     return [
@@ -100,9 +110,9 @@ export default class ParamForm extends Vue {
         label: '参数名称',
         name: 'name',
         rules: [
-          { required: true, message: '参数名称不能为空！', trigger: 'blur' },
+          { required: true, message: '参数名称不能为空！' },
           { max: 20, message: '参数名称不超过20个字符' },
-          { pattern: /^[\u4e00-\u9fa5\w-]+$/, message: '允许输入汉字、英文、数字', trigger: 'blur' }
+          { pattern: /^[\u4e00-\u9fa5\w -]+$/, message: '允许输入汉字、英文、数字', trigger: 'blur' }
         ],
         size: 'small',
         required: true
@@ -143,32 +153,27 @@ export default class ParamForm extends Vue {
         items: [
           {
             label: '量程下限',
-            name: 'LRangeLow',
+            name: 'lrangeLow',
             type: 'number',
             rest: {
               ...getDefalutNumberProp(),
               precision: 2,
-              max: this.formData.LRangeUp || 9999999,
+              max: this.formData.lrangeUp || 9999999,
               controls: false
-            }
+            },
+            rules: [{ validator: this.validatelrangeLow, trigger: 'blur' }]
           },
           {
             label: '量程上限',
-            name: 'LRangeUp',
+            name: 'lrangeUp',
             type: 'number',
             rest: {
               ...getDefalutNumberProp(),
               precision: 2,
-              min: this.formData.LRangeLow || 0,
+              min: this.formData.lrangeLow || 0,
               controls: false
             },
-            rules: [
-              {
-                validator: (_, value, callback) => {
-                  if (value <= (+this.formData.LRangeLow || 0)) callback('上限需大于下限')
-                }
-              }
-            ]
+            rules: [{ validator: this.validatelrangeUp, trigger: 'blur' }]
           }
         ]
       },
@@ -178,11 +183,6 @@ export default class ParamForm extends Vue {
         type: 'number',
         rules: [
           { required: true, message: '数据采集频率不能为空！', trigger: 'blur' },
-          {
-            type: 'number',
-            message: '数据采集频率须为数字 ',
-            transform: (val) => (Number.isNaN(Number(val)) ? val : +val || -1)
-          },
           { type: 'integer', min: -1, max: 60 * 24 * 30, message: `数据采集频率须大于0小于${60 * 24 * 30}` }
         ],
         ...getDefalutNumberProp()
@@ -205,13 +205,19 @@ export default class ParamForm extends Vue {
     ]
   }
   onSubmit() {
-    console.log('submit')
-    this.$refs.form.validate((valid) => {
-      console.log(valid, this.formData)
-      if (valid) {
-        this.$emit('submit', this.formData)
-      }
-    })
+    this.$refs.form.validate(
+      (valid) =>
+        valid &&
+        this.$emit('submit', { ...this.formData, codeAbridge: this.formData.codeAbridge || this.formData.code })
+    )
+  }
+
+  @Watch('data', { immediate: true })
+  setDefaultData({ lrangeLow, lrangeUp, id, ...rest }) {
+    const temp = { lrangeLow, lrangeUp, id, ...rest }
+    if (lrangeLow === null) temp.lrangeLow = undefined
+    if (lrangeUp === null) temp.lrangeUp = undefined
+    this.formData = id ? temp : getDefaultData()
   }
 }
 </script>

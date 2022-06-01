@@ -14,9 +14,9 @@
     </div>
     <slot />
     <span slot="footer">
-      <el-button type="primary" size="small" @click="$emit('submit')" :loading="loading" :disabled="disabled"
-        >提 交</el-button
-      >
+      <el-button type="primary" size="small" @click="$emit('submit')" :loading="loading" :disabled="disabled">
+        提 交
+      </el-button>
       <el-button size="small" @click="dialogVisible = false">取 消</el-button>
     </span>
   </el-dialog>
@@ -80,6 +80,7 @@ export default class BaseDialog extends Vue {
   border-radius: $radius;
   /deep/ .el-dialog {
     background-color: transparent;
+    max-width: 1024px;
     &__header {
       background-color: $bg-color;
       color: $font-color;

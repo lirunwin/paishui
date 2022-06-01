@@ -1,0 +1,304 @@
+<template>
+  <BaseDialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="876px" top="7vh">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'small' }" :model="formData" :rules="rules">
+      <template v-for="{ name: sectionName, title, items } of formItems">
+        <template>
+          <BaseTitle :key="`${sectionName}-title`">{{ title }}</BaseTitle>
+        </template>
+        <el-row v-if="sectionName === 'siteFacility'" :key="`${sectionName}-items`" :gutter="20">
+          <el-col :span="12">
+            <el-row type="flex" :gutter="10">
+              <el-col>
+                <el-form-item label="关联设施" prop="siteFacility-note">
+                  <el-input
+                    v-model="formData[sectionName]['connect-deivce']"
+                    placeholder="请选择排水设施"
+                    size="small"
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col style="flex:0 0 5em;text-align:center">
+                <el-button type="primary" size="small">图上选点</el-button>
+              </el-col>
+            </el-row>
+          </el-col>
+          <el-col :span="24" />
+          <el-col v-for="{ name, label } of items.filter((item) => item.type === 'txt')" :key="name" :span="8">
+            <el-form-item :label="label" :prop="name">
+              <span>asdsa</span>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="备注" prop="siteFacility-note">
+              <el-input
+                type="textarea"
+                v-model="formData[sectionName]['bindDevice-note']"
+                placeholder="请输入备注"
+                :rows="3"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-else :gutter="20" :key="`else-${sectionName}-items`">
+          <el-col :span="12">
+            <el-form-item
+              v-for="{
+                name,
+                label,
+                required = false,
+                type = 'text',
+                disabled = false,
+                options,
+                onChange,
+                formatter
+              } of items"
+              :key="name"
+              :label="label"
+              :prop="name"
+              :required="required"
+              :show-message="name !== 'coordinate'"
+              :style="name === 'coordinate' ? 'margin-bottom:0' : ''"
+            >
+              <template v-if="name === 'coordinate'">
+                <el-row type="flex" justify="space-between" :gutter="10">
+                  <el-col>
+                    <el-form-item prop="coordiateX">
+                      <el-input v-model="formData.coordiateX" placeholder="经度" clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col style="flex:0 0 1em;text-align:center"> ~ </el-col>
+                  <el-col>
+                    <el-form-item prop="coordiateY">
+                      <el-input v-model="formData.coordiateY" placeholder="纬度" clearable />
+                    </el-form-item>
+                  </el-col>
+                  <el-col style="flex:0 0 5em;text-align:center">
+                    <el-button type="primary" size="small">图上选点</el-button>
+                  </el-col>
+                </el-row>
+              </template>
+              <template v-else-if="type === 'select'">
+                <el-select
+                  v-model="formData[sectionName][name]"
+                  :placeholder="`请选择${label}`"
+                  clearable
+                  v-on="onChange ? { change: onChange } : {}"
+                >
+                  <el-option
+                    v-for="item of options"
+                    :key="item.id"
+                    :value="item.id"
+                    :label="formatter ? formatter(item) : item.name"
+                  >
+                  </el-option>
+                </el-select>
+              </template>
+              <template v-else-if="type === 'date'">
+                <el-date-picker
+                  v-model="formData[sectionName][name]"
+                  :placeholder="`请选择${label}`"
+                  :disabled="disabled"
+                  size="small"
+                  style="width:100%"
+                  clearable
+                />
+              </template>
+              <template v-else>
+                <el-input
+                  v-model="formData[sectionName][name]"
+                  :type="type || 'text'"
+                  :disabled="disabled"
+                  :placeholder="`请输入${label}`"
+                  clearable
+                />
+              </template>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <template v-if="sectionName === 'bindDevice'">
+              设备照片
+              <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
+              <div style="margin-top:20px" class="upload">
+                <el-upload
+                  action="https://jsonplaceholder.typicode.com/posts/"
+                  list-type="picture-card"
+                  :on-preview="handlePictureCardPreview"
+                  :on-remove="handleRemovePic"
+                >
+                  <i class="el-icon-plus"></i>
+                </el-upload>
+              </div>
+            </template>
+            <template v-else>
+              <div>this is a map</div>
+            </template>
+          </el-col>
+        </el-row>
+      </template>
+      <el-dialog :visible.sync="dialogVisible" title="" append-to-body class="preview">
+        <img width="100%" :src="dialogImageUrl" alt="" />
+      </el-dialog>
+    </el-form>
+  </BaseDialog>
+</template>
+
+<script lang="ts">
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
+import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
+import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
+import { IPointConnectDevice, IType, ITypeArchive, typeArchivesPage } from '@/views/monitoring/api'
+
+interface FormItem {
+  [x: string]: any
+}
+
+@Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
+export default class PointForm extends Vue {
+  @Prop({ type: Object, default: () => ({}) }) data!: object
+  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  dialogVisible = false
+  dialogImageUrl = ''
+  formData: IPointConnectDevice & { basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'> } = {
+    basis: {},
+    siteFacility: {},
+    bindDevice: {}
+  }
+
+  archives: ITypeArchive[] = []
+
+  get formItems(): FormItem[] {
+    return [
+      {
+        name: 'basis',
+        title: '监测站点基本信息',
+        items: [
+          { label: '监测站点编号', name: 'no', disabled: true },
+          { label: '监测点名称', name: 'name', required: true },
+          { label: '监测点编码', name: 'code' },
+          { label: '排水分区', name: 'psArea' },
+          { label: '监测分组', name: 'group' },
+          { label: '地址', name: 'address' },
+          { label: '坐标', name: 'coordinate', required: true },
+          { label: '备注', name: 'note', type: 'textarea' }
+        ]
+      },
+      {
+        name: 'siteFacility',
+        title: '关联排水设施信息',
+        items: [
+          { label: '关联设施', name: 'facility' },
+          { label: '设施编码', name: 'facilityCode', type: 'txt' },
+          { label: '设施类型', name: 'facilityType', type: 'txt' },
+          { label: '道路名称', name: 'facilityRoadName', type: 'txt' },
+          { label: '备注', name: 'facilityNote', type: 'textarea' }
+        ]
+      },
+      {
+        name: 'bindDevice',
+        title: '设备安装信息',
+        items: [
+          { label: '设备类型', name: 'typeId', type: 'select', options: this.types, onChange: this.onTypeChange },
+          { label: '设备SN序列', name: 'deviceId', type: 'select', options: this.archives },
+          { label: '安装负责人', name: 'installUser' },
+          { label: '联系方式', name: 'installPhone' },
+          { label: '安装时间', name: 'installTime', type: 'date' }
+        ]
+      }
+    ]
+  }
+
+  rules = {
+    name: [
+      { required: true, message: '监测点名称不能为空！', trigger: 'blur' },
+      { type: 'string', max: 50, message: '监测点名称不能超过50个字符' }
+    ],
+    code: [{ type: 'string', max: 128, message: '监测点编码不能超过128个字符' }],
+    address: [{ type: 'string', max: 128, message: '地址不能超过128个字符' }],
+    coordiateX: [
+      { required: true, message: '经度不能为空！', trigger: 'blur' },
+      { type: 'number', message: '请输入数字', transform: (val) => +val }
+    ],
+    coordiateY: [
+      { required: true, message: '纬度不能为空！', trigger: 'blur' },
+      { type: 'number', message: '请输入数字', transform: (val) => +val }
+    ],
+    typeId: [{ required: true, message: '请选择设备类型', trigger: 'blur' }],
+    deviceId: [{ required: true, message: '请选择设备sn码', trigger: 'blur' }],
+    installUser: [
+      { required: true, message: '安装负责人不能为空！', trigger: 'blur' },
+      { type: 'string', max: 50, message: '安装负责人不能超过50个字符' }
+    ],
+    installPhone: [
+      { required: true, message: '联系方式不能为空！', trigger: 'blur' },
+      { type: 'string', max: 100, message: '联系方式不能超过100个字符' }
+    ],
+    installTime: [{ required: true, message: '请选择安装时间' }],
+    note: [{ type: 'string', required: false, max: 255, message: '备注不能超过255个字符' }]
+  }
+
+  async onTypeChange(id) {
+    try {
+      this.formData.bindDevice.deviceId = ''
+      const {
+        result: { records }
+      } = await typeArchivesPage({ type: id, current: 1, size: 999999 })
+      this.archives = records || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  monitorSystems = []
+
+  monitorSystemParams = []
+
+  systems = [{ id: '1', name: '第一系统' }, { id: '2', name: '第二系统' }, { id: '3', name: '第三系统' }]
+
+  onSubmit() {
+    console.log('submit')
+    const form = this.$refs['form'] as any
+    form.validate((valid) => {
+      if (valid) {
+        console.log('valid')
+      }
+    })
+  }
+
+  handleRemovePic(file, fileList) {
+    console.log(file, fileList)
+  }
+
+  handlePictureCardPreview(file) {
+    this.dialogImageUrl = file.url
+    this.dialogVisible = true
+  }
+
+  @Watch('data', { immediate: true })
+  setDefaultData(val) {
+    const defaultFormData = { system: [] }
+    this.formData = { ...defaultFormData, ...val }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.upload {
+  /deep/ .el-upload-list--picture-card .el-upload-list__item,
+  /deep/ .el-upload--picture-card {
+    width: 128px;
+    height: 128px;
+  }
+  /deep/ .el-upload--picture-card {
+    line-height: normal;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+.preview {
+  /deep/ .el-dialog .el-dialog__header {
+    border-bottom: 0;
+  }
+}
+</style>
