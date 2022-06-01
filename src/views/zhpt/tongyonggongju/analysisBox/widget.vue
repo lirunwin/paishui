@@ -26,6 +26,8 @@ import TileLayer from 'ol/layer/Tile';
 import { Vector as VectorSource, XYZ } from "ol/source";
 import { Vector as VectorLayer } from "ol/layer";
 import { TileSuperMapRest } from '@supermap/iclient-ol'
+import { TF_Layer } from '../../common/mapUtil/layer';
+import { Feature } from 'ol';
 
 export default {
   name: 'AnalysisBox',
@@ -90,25 +92,16 @@ export default {
       function clone (layer) {
         if (layer instanceof TileLayer) {
           if (layer.get("name") === "影像底图") return null
-          return layer.get("parentname") !== "底图" ? 
-          new TileLayer({
-            source: new TileSuperMapRest({
-              url: layer.getSource()['_url'],
-              crossOrigin: 'anonymous', // 是否请求跨域操作
-              wrapX: true
-            }),
-            properties: {
-              projection: 'EPSG:4326'
-            }
-          }) :
-          new TileLayer({ source: new XYZ({ url: layer.getSource()['urls'][0] }) })
+          return layer.get("parentname") !== "底图" 
+          ? new TF_Layer(true).createLayer({ type: 'smlayer', url: layer.getSource()['_url'] })  
+          : new TF_Layer(true).createLayer({ type: 'wmtslayer', url: layer.getSource()['urls'][0] })
         } else if (layer instanceof VectorLayer) {
           let clonelayer = new VectorLayer({
             source: new VectorSource(),
             style: layer.getStyle()
           })
           let features = layer.getSource().getFeatures()
-          features.forEach(fea => clonelayer.getSource().addFeature(fea.clone()))
+          features.forEach(fea => clonelayer.getSource().addFeature(new Feature({ geometry: fea.getGeometry().clone() })))
           return clonelayer
         }
       }

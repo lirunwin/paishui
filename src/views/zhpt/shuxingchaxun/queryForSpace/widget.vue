@@ -163,9 +163,9 @@ export default {
   },
   methods: {
     init () {
-      this.queryLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#0ff') })
+      this.queryLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
       this.data.mapView.addLayer(this.queryLayer)
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, "#ff0", 7, 'rgba(255, 255, 0, 0.8)') })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
       this.data.mapView.addLayer(this.lightLayer)
     },
     // 显示详情
@@ -176,7 +176,13 @@ export default {
         return { ...fea.properties, geometry: fea.geometry, tableName }
       })
       mapUtil.getFilds(tableName).then(res => {
-        let cols = res.splice(2, 5)
+        console.log('字段', res)
+        let cols = res.filter(i => {
+          return i.name.includes('唯一编号') 
+          || i.name.includes('类型')
+          || i.name.includes('类别')
+          || i.name.includes('地址')
+        })
         this.columns = cols.map(item => {
           return { label: item.name, prop: item.field,  }
         })

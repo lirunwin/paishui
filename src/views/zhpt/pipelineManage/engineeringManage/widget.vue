@@ -205,20 +205,13 @@
                 <el-button size="small" type="primary" slot="trigger">选择文件</el-button>
                 <span class="btns">
                   <el-button size="small" @click.stop="dialogFormVisible = false" v-if="!isDetails">取 消</el-button>
-                  <el-button size="small" type="primary" @click.stop="addTable('form')" v-if="!isDetails"
-                    >确 定</el-button
-                  >
+                  <el-button size="small" type="primary" @click.stop="addTable('form')" v-if="!isDetails" >确 定</el-button>
                   <el-button size="small" @click.stop="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
                 </span>
               </div>
               <div slot="tip" class="el-upload__tip">
                 <p style="line-height: 10px; margin: 10px 0">只能上传docx/doc文件</p>
-                <p
-                  v-show="isEdit"
-                  style="height: 20px; font-size: 12px; border-bottom: 1px solid #dedede; margin: 0; line-height: 20px"
-                >
-                  需要上传的文件列表
-                </p>
+                <p v-show="isEdit" style="height: 20px; font-size: 12px; border-bottom: 1px solid #dedede; margin: 0; line-height: 20px"></p>
                 <!-- <p>只能上传docx/doc文件</p> -->
               </div>
             </el-upload>

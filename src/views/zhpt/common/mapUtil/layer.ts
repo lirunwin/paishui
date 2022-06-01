@@ -13,12 +13,15 @@ export class TF_Layer {
 
     projection = 'EPSG:4326'
 
-    constructor(projection = 'EPSG:4326') {
-        this.projection = projection
+    hasKey = false
+
+    constructor(hasKey = false) {
+        this.hasKey = hasKey
     }
 
     createLayer({ properties = {}, type, visible = true, url }) {
         let layer = null
+        // 加入 key
         switch (type) {
             case "smlayer": layer = this.SM_Layer_old(url)
                 break
@@ -71,7 +74,7 @@ export class TF_Layer {
         return Promise.all(promises)
     }
     // 超图切片图层
-    // 这里 server 发布图层整体发布，设置临时图层
+    // 设置临时图层
     SM_Layer(url = "", sublayers, visible = true, properties = {}) {
         if (!url) return null
         let layerinfo = new LayerInfoService(url)
@@ -110,10 +113,11 @@ export class TF_Layer {
     // 天地图 瓦片
     TDT_Layer(url = "") {
         if (!url) return null
+        if (!this.hasKey) { url += appconfig.tianMapKey };
         return new TileLayer({
             source: new XYZ({
                 crossOrigin: 'anonymous',
-                url: url + appconfig.tianMapKey,
+                url: url,
                 wrapX: true
             }),
         })
@@ -141,10 +145,11 @@ export class TF_Layer {
 
         // 匹配坐标系、图层类型
         let type = url.match(new RegExp(/\/(.{3})_(c|w)\//))
+        if (!this.hasKey) { url += appconfig.tianMapKey };
         return new TileLayer({
             source: new WMTS({
                 crossOrigin: "anonymous",
-                url: url + appconfig.tianMapKey,
+                url: url,
                 layer: type[1],
                 matrixSet: type[2],
                 format: 'tiles',

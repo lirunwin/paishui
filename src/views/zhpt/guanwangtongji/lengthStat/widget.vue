@@ -5,7 +5,7 @@
         <div style="float: left; width: 50%; height: 100%; overflow: hidden auto; border: 1px solid #ddd; border-radius: 3px;">
           <el-checkbox-group v-model="layerSelectList">
             <div v-for="(item, index) in layerList" :key="index" style="margin: 4px 3px; border-bottom: 1px solid #ddd">
-              <el-checkbox @change='setSubLayer(item.name)' :label="item">{{item.name}}</el-checkbox>
+              <el-checkbox @change='setSubLayer' :label="item">{{item.title}}</el-checkbox>
             </div>
           </el-checkbox-group>
         </div>
@@ -143,6 +143,7 @@ export default {
 
       // add
       attList: [
+        { name: '管段编号', field: 'LNO' },
         { name: "管线材质", field: "MATERIAL" },
         { name: "管径", field: "PSIZE" },
         { name: "所属工程名称", field: "ENAME" },
@@ -151,7 +152,7 @@ export default {
         { name: "位置", field: "POINTPOSITION" }
       ],
       limitFeature: null,
-      layerList: [ { name: "排水管线", open: false }],
+      layerList: [ { title: "排水管道", open: false, name: 'TF_PSPS_PIPE_B' }],
     }
   },
   computed: { 
@@ -207,18 +208,11 @@ export default {
     },
   },
   methods: {
-    setSubLayer (layerName) {
-      let layer = this.layerList.find(layer => layer.name === layerName)
-      layer.open = !layer.open
-      if (!layer.open) {
-        this.layers = []
-      } else {
-        let layers = mapUtil.getAllSubLayerNames('排水管线')
-        // 设置图层
-        this.layers = layers.map(layer => {
-          return { label: layer.title, value: layer.name }
-        })
-      }
+    setSubLayer () {
+      // 设置图层
+      this.layers = this.layerSelectList.map(layer => {
+        return { label: layer.title, value: layer.name }
+      })
     },
     removeAll () {
       this.layers = []
@@ -242,15 +236,22 @@ export default {
     },
 
     analysis () {
-      if (!this.layerId) return this.$message.error('请选择查询图层名称')
-      if (this.layerSelectList.length === 0) return this.$message.error('请选择管网统计的类型')
-      if (this.attSelectList.length === 0) return this.$message.error('请选择管网统计的属性')
+      console.log('分析')
+      // if (!this.layerId) return this.$message.error('请选择查询图层名称')
+      if (this.layerSelectList.length === 0) return this.$message.error('请选择统计类型')
+      // if (this.attSelectList.length === 0) return this.$message.error('请选择管网统计的属性')
 
-      let layerInfo = this.layers.find(layer => layer.value === this.layerId)
-      let dataSetInfo = [{ label: layerInfo.label, name: layerInfo.value }]
+      let feas = {} // 统计数据
+      let dataSetInfo = this.layerSelectList.map(layer => {
+        feas[layer.title] = []
+        return { label: layer.title, name: layer.name }
+      })
       
       let queryTask = new iQuery({ dataSetInfo })
-      queryTask.sqlQuery(this.queText).then(resArr => {
+      let queText = this.queText || '1=1'
+      this.analysisDisable = true
+
+      queryTask.sqlQuery(queText).then(resArr => {
         if (!resArr) return this.$message.error("服务器请求失败!")
 
         let featruesData = resArr.filter(item => {
@@ -259,7 +260,6 @@ export default {
         
         // 绘制图层
         if (featruesData.length !== 0) {
-
           featruesData.forEach(featrueObj => {
             let features = featrueObj.result.features.features
             let queryFeatures = features.map(feature => new GeoJSON().readFeature(feature))
@@ -279,39 +279,49 @@ export default {
               })
             }
             //
-            this.addResData(queryFeatures)
+            feas[layerName] = queryFeatures
           })
         } else return this.$message.error("无符合过滤条件数据")
+
+        this.addResData(feas)
+        this.analysisDisable = false
       })
     },
 
     // TODO 多种类型 选择过滤
-    addResData (features) {
-      console.log("查询")
+    addResData (featuresObj) {
+      // console.log("查询")
       const lengthField = 'SMLENGTH'
-      console.log(this.attSelectList, this.layerSelectList)
-      let sumLength = features.map(fea => (fea.values_[lengthField] || 0)).reduce((p, n) => Number(p) + Number(n), 0)
-      // 表格信息
-      let tableData = [], columns = [], tableRows = [];
-      columns = this.attSelectList.map(att => {
-        return { name: att.name, value: att.field }
-      })
-      tableRows = features.map(fea => {
-        let length = Number(fea.values_[lengthField])
-        fea.values_[lengthField] = length.toFixed(3)
-        return fea.values_
-      })
-      // 添加合计数据
-      let total = { "SMLENGTH": sumLength.toFixed(3) }
-      columns.forEach((item, index) => {
-        total[item.value] = index === 0 ? "合计" : "-"
-      })
-      tableData = this.layerSelectList.map(layer => {
-        return { name: layer.name, columns: [...columns, { name: '长度/m', value: lengthField }], rows: [total, ...tableRows] }
-      })
 
-      // echart
-      let chartData = this.layerSelectList.map(layer => { 
+      // 表格信息
+      let tableData = [], chartData = []
+
+      for (let layerName in featuresObj) {
+        let columns = [], tableRows = [];
+        // 表格信息
+        let features = featuresObj[layerName]
+        // 总长
+        let sumLength = features.map(fea => (fea.values_[lengthField] || 0)).reduce((p, n) => Number(p) + Number(n), 0)
+        columns = this.attSelectList.map(att => {
+          return { name: att.name, value: att.field }
+        })
+        tableRows = features.map(fea => {
+          let length = Number(fea.values_[lengthField])
+          fea.values_[lengthField] = length.toFixed(3)
+          return fea.values_
+        })
+        // 添加合计数据
+        let total = { "SMLENGTH": sumLength.toFixed(3) }
+        columns.forEach((item, index) => {
+          total[item.value] = index === 0 ? "合计" : "-"
+        })
+        let rows =  [total]
+        if (columns.length !== 0) {
+          rows =  [...rows, ...tableRows]
+        }
+        tableData.push({ name: layerName, columns: [...columns, { name: '长度/m', value: lengthField }], rows })
+
+        // echart
         let dataX = [], dataY = [];
         let dataBox = new Map() // 以选择的属性的值为 x 轴
         features.forEach(fea => {
@@ -331,8 +341,8 @@ export default {
           dataX.push(key)
           dataY.push(value.toFixed(3))
         })
-        return {
-          name: layer.name,
+        chartData.push({
+          name: layerName,
           option: {
             title: { text: '长度统计', 
             subtext: this.attSelectList.map(e => e.name).join('、'), left: 'center' },
@@ -342,8 +352,8 @@ export default {
             toolbox: { feature: { saveAsImage: {} } },
             series: [{ data: dataY, type: 'bar', label: { show: true, position: 'top' }}]
           }
-        }
-      })
+        })
+      }
 
       this.$store.dispatch('map/changeMethod', {
         pathId: 'analysisBox',

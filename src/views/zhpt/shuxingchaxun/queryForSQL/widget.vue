@@ -86,7 +86,8 @@ import * as turf from '@turf/turf';
 import { fieldDoc } from '@/views/zhpt/common/doc'
 import { getThemLayer, addThemLayer, deleteThemLayer } from '@/api/mainMap/themMap'
 import { SuperMap, FieldService, FeatureService, FieldParameters } from '@supermap/iclient-ol';
-import { mapUtil } from '../../common/mapUtil/common';
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common';
+import { Feature } from 'ol';
 
 export default {
   name: "queryForSQL",
@@ -276,7 +277,7 @@ export default {
       function createThemLayer () {
         return new VectorLayer({
           source: new VectorSource(),
-          style: comSymbol.getAllStyle(3, "#f00", 5, "#0ff")
+          style: mapUtil.getCommonStyle()
         })
       }
     },
@@ -306,18 +307,21 @@ export default {
         pathId: 'queryResultMore',
         widgetid: 'HalfPanel',
         label: '更多信息',
-        param: { data: rowData, colsData }
+        param: { rootPage: this, data: rowData, colsData }
       })
     },
     gotoGeometry (geometry) {
       if (!this.lightLayer) {
-        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#FFFFB6') })
+        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
         this.lightLayer.setZIndex(999)
         this.data.mapView.addLayer(this.lightLayer)
       }
       this.lightLayer.getSource().clear()
       this.lightFeature = new Feature({ geometry })
       this.lightLayer.getSource().addFeature(this.lightFeature)
+      let view = this.mapView.getView()
+      let center = mapUtil.getCenter(this.lightFeature)
+      new mapUtil(this.mapView).setZoomAndCenter(20, center)
     }
   },
   destroyed() {

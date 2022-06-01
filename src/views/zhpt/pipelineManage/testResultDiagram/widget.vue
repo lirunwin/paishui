@@ -155,7 +155,7 @@
       </div>
     </div>
     
-    <!-- 管道评估结果 -->
+    <!-- 管道弹窗 -->
     <transition name="el-fade-in-linear">
       <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
         <div class="detailsCrad" v-if="currentInfoCard2">
@@ -243,6 +243,7 @@
         </div>
       </div>
     </transition>
+    <!-- 详情 -->
     <transition name="el-fade-in-linear">
       <check-details @close="dialogClose" @sendBool='dialogFormVisible=false' v-show="dialogFormVisible" :checkParam="pipeId"></check-details>
     </transition>

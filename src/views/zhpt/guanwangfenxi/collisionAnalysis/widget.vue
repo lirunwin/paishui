@@ -37,10 +37,10 @@
     <div class="op-box">
       <div class="item-head">分析结果</div>
       <div class="result-total">
-        <div class="panel-item" :style="'background-color:'+ bgc">
+        <div v-if="resResult"  class="panel-item" :style="'background-color:'+ bgc">
           <div>{{ isCollsion }}</div>
         </div>
-        <div class="panel-item">
+        <div v-if="resResult" class="panel-item">
           <div>{{ resResult }}</div>
           <div v-cloak>{{standard}}</div>
         </div>
@@ -114,6 +114,7 @@ export default {
         style: comSymbol.getLineStyle(5, '#00ffff')
       })
       this.map.addLayer(this.vectorLayer)
+      this.data.that.setPopupSwitch(false)
     },
     // 选择管线
     select () {
@@ -220,6 +221,7 @@ export default {
       this.map.removeLayer(this.vectorLayer)
       this.drawer && this.drawer.end()
       this.drawer = this.vectorLayer = null
+      this.data.that.setPopupSwitch(true)
     }
   }
 }
