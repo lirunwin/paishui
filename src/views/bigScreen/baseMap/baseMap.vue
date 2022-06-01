@@ -19,7 +19,7 @@ export default {
     },
     mounted(){
         this.$nextTick(()=>{
-            this.initMap()
+            // this.initMap()
         })
     },
     methods:{
@@ -59,9 +59,9 @@ export default {
     position: absolute;
     top: 0;
     left: 0;
-    // background: #000;
-    filter: invert(100%) hue-rotate(180deg);//实现天地图从白色变成暗黑模式的地图服务
-    -webkit-filter: invert(100%) hue-rotate(180deg);
+    background: #000;
+    // filter: invert(100%) hue-rotate(180deg);//实现天地图从白色变成暗黑模式的地图服务
+    // -webkit-filter: invert(100%) hue-rotate(180deg);
     .mapView{
         height: 100%;
         width: 100%;

@@ -77,9 +77,7 @@ export default {
         }
     },
     mounted(){
-        this.$nextTick(()=>{
-            this.showIndicatorChart()
-        })
+
     },
     methods:{
         //生成指标图表
@@ -338,7 +336,7 @@ export default {
     margin-left: $size20 /* 20/192 */;
     position: absolute;
     //size
-    height: calc(100% - .505208rem /* 97/192 */);
+    height: calc(100% - .557292rem /* 107/192 */);
     width: 2.083333rem /* 400/192 */;
     //background
     background-color: rgba(20, 24, 47, 0.5);
@@ -363,6 +361,7 @@ export default {
                 background-size: 100% 100%;
             }
             span{
+                flex: 1;
                 font-weight: bold;
                 font-size: .083333rem /* 16/192 */;
                 color: #ffffff;
@@ -370,10 +369,9 @@ export default {
                 padding: .041667rem /* 8/192 */;
             }
             .el-select{
-                width: .572917rem /* 110/192 */;
-                position: absolute;
-                right: 0;
+                flex: 0.4;
                 /deep/ input{
+                    padding: 0;
                     background: transparent;
                     border: none;
                     font-size: .072917rem /* 14/192 */;
