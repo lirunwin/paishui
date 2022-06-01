@@ -8,22 +8,46 @@
             <div class="head">
                 <div class="title">
                     <div class="icon"></div>
-                    <span class="site-info">易涝点视频监测</span>
+                    <span class="site-info">易漏点视频监测</span>
 
                 </div>
             </div>
             <div class="content-info">
-
+                <div class="content-item">
+                    <div class="title">
+                        <div class="siteInfo">
+                            <div class="icon"></div>
+                            <span class="site-name">{{value}}</span>
+                            <div class="siteIcon"></div>
+                        </div>
+                        <div class="waterLevel">
+                            <div class="liquidFill">
+                                <liquidFillChart isNormal/>
+                            </div>
+                            <div class="currentLevel">当前水位：<div class="value">42.3m</div></div>
+                        </div>
+                    </div>
+                    <div class="content"></div>
+                </div>
             </div>
         </div>
     </transition>
 </template>
 
 <script>
+import liquidFillChart from '../overviewData/components/liquidFillChart.vue'
 export default {
     name:"ELPVmonitoring",//易漏点视频监测
+    components:{
+        liquidFillChart
+    },
     props:{
         show:{},
+    },
+    data(){
+        return{
+            value:"易漏点（1）"
+        }
     },
 }
 </script>
@@ -80,7 +104,65 @@ export default {
         height: calc(100% - .166667rem);
         display: flex;
         flex-flow: row wrap;
-        padding: 2px;
+        .content-item{
+            width: 100%;
+            height: 33%;
+            display: flex;
+            flex-flow: column;
+            .title{
+                width: 100%;
+                display:flex;
+                padding: .145833rem 0 .104167rem 0;
+                justify-content: space-between;
+                align-items: center;
+                .siteInfo{
+                    display: flex;
+                }
+                .icon{
+                    height: .072917rem /* 14/192 */;
+                    width: .052083rem /* 10/192 */;
+                    margin-right: .046875rem /* 9/192 */;
+                    background: url("./images/三角.png") no-repeat center center;
+                    background-size: 100% 100%;
+                }
+                .site-name{
+                    color: #FFFFFF;
+                    font-size: .072917rem /* 14/192 */;
+                    font-weight: 500;
+                }
+                .siteIcon{
+                    background: url("./images/定位.png") no-repeat center center;
+                    background-size: 100% 100%;
+                    width: 13px;
+                    height: 16px;
+                    margin-left: .0625rem /* 12/192 */;
+                }
+                .waterLevel{
+                    display: flex;
+                    align-items: center;
+                    .liquidFill{
+                        height: .114583rem /* 22/192 */;
+                        width: .114583rem /* 22/192 */;
+                    }
+                    .currentLevel{
+                        font-size: .0625rem /* 12/192 */;
+                        font-weight: 500;
+                        color: #FFFFFF;
+                        display: flex;
+                        align-items: baseline;
+                        .value{
+                            font-size: .072917rem /* 14/192 */;
+                            font-weight: bold;
+                            color: #2BA7FF;
+                        }
+                    }
+                }
+            }
+            .content{
+                height:calc(100% - .072917rem);
+                width: 100%;
+            } 
+        }
     }
 }
 </style>

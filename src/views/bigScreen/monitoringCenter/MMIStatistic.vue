@@ -90,6 +90,7 @@ export default {
                     text-align: center;
                     font-size: .0625rem /* 12/192 */;
                     font-weight: bold;
+                    white-space: nowrap;
                     color: rgb(43, 167, 255);
                     text-shadow: 0 0 10px rgba(43, 167, 255,0.3),0 0 20px rgba(43, 167, 255,0.3),0 0 30px rgba(43, 167, 255,0.3),0 0 40px rgba(43, 167, 255,0.3);  
                 }
@@ -123,6 +124,7 @@ export default {
                     align-items: center;
                 }
                 .status{
+                    white-space: nowrap;
                     font-size: .072917rem /* 14/192 */;
                     font-weight: bold;
                     color: #FEFFFF;
@@ -132,12 +134,14 @@ export default {
                     text-shadow: 0 0 10px rgba(155, 210, 250,0.3),0 0 20px rgba(155, 210, 250,0.3),0 0 30px rgba(155, 210, 250,0.3),0 0 40px rgba(155, 210, 250,0.3); 
                 }
                 .normal{
+                    white-space: nowrap;
                     font-size: .09375rem /* 18/192 */;
                     font-weight: bold;
                     color: #2BA7FF;
                     text-shadow: 0 0 10px rgba(43, 167, 255,0.3),0 0 20px rgba(43, 167, 255,0.3),0 0 30px rgba(43, 167, 255,0.3),0 0 40px rgba(43, 167, 255,0.3); 
                 }
                 .error{
+                    white-space: nowrap;
                     font-size: .09375rem /* 18/192 */;
                     font-weight: bold;
                     color: #FE4545;

@@ -2,6 +2,7 @@
   <div class="widget-bigScreen" >
     <!--背景地图模块-->
     <BaseMap />
+    <MapLegend :show="showMonitoringCenter"/>
     <!--头部菜单模块-->
     <Header/>
     <!--监测中心模块-->
@@ -21,8 +22,10 @@
 
 <script>
 import './flexible.js';
-import BaseMap from './baseMap/baseMap.vue';
 import Header from './header/header.vue';
+//地图模块
+import BaseMap from './baseMap/baseMap.vue';
+import MapLegend from './baseMap/legend.vue'
 //监测中心模块
 import ELPWLMStatistic from './monitoringCenter/ELPWLMStatistic.vue'
 import PNLLMonitoring from './monitoringCenter/PNLLMonitoring.vue'
@@ -38,7 +41,7 @@ import MIDStatistic from './overviewData/MIDStatistic.vue'
 export default {
   name:'bigScreen',//项目大屏
   components:{
-    BaseMap,Header,
+    Header,MapLegend,BaseMap,
     ELPWLMStatistic,PNLLMonitoring,ELPVmonitoring,MMIStatistic,
     PNIARStatistic,WFStatistic,DPNLStatistic,EMDStatistic,WPSVMStatistic,MIDStatistic
   },

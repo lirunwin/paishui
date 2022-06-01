@@ -12,7 +12,11 @@
                 </div>
             </div>
             <div class="content-info" id="content-info">
-                <specificTable :column="column" :tableData="tableData" isScroll/>
+                <specificTable 
+                :column="column" 
+                :tableData="tableData" 
+                :cellStyle="cellStyle"
+                isScroll/>
             </div>
         </div>
     </transition>
@@ -36,8 +40,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"在线",
+                    "monitorStatus":"正常",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -46,8 +50,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"离线",
+                    "monitorStatus":"正常",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -56,8 +60,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"离线",
+                    "monitorStatus":"报警",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -66,8 +70,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"在线",
+                    "monitorStatus":"正常",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -77,8 +81,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"在线",
+                    "monitorStatus":"报警",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -86,8 +90,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"在线",
+                    "monitorStatus":"正常",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -96,8 +100,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"在线",
+                    "monitorStatus":"正常",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -106,8 +110,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"在线",
+                    "monitorStatus":"正常",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -116,8 +120,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"在线",
+                    "monitorStatus":"正常",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -126,8 +130,8 @@ export default {
                     "expNo":"213124324",
                     "outfalltype":"管井监测设备1",
                     "outfallshape":"管井监测站",
-                    "sewagesystemId":"在线",
-                    "stormsystemId":"正常",
+                    "deviceStatus":"在线",
+                    "monitorStatus":"正常",
                     "receivewater":"0",
                     "address":"0",
                     "datasource":"2021-6-10  12:2:34",
@@ -146,6 +150,21 @@ export default {
         this.column=this.config.PNLLMColumn
     },
     methods:{
+        cellStyle({ row, column, rowIndex, columnIndex }) {
+            let color='';
+            if(columnIndex==4){
+                if(row.deviceStatus=='离线') color='#FF3F40'
+            }
+            if(columnIndex==5){
+                if(row.monitorStatus=='报警') color='#FF3F40'
+            }
+            return {
+                color:color,
+                fontSize:'.067708rem',
+                textAlign: 'center',
+                'border-bottom':'1px solid rgba(236, 236, 236, 0.3)'
+            }
+        },
     }
 }
 </script>
@@ -157,7 +176,7 @@ export default {
 }
 .widget-PNLLMonitoring{
     z-index: 2;
-    margin-left: 2.34375rem;
+    margin-left: 2.34375rem /* 450/192 */;
     bottom: .052083rem /* 10/192 */;
     height:  1.390625rem /* 267/192 */;
     width: 5.302083rem /* 1018/192 */;

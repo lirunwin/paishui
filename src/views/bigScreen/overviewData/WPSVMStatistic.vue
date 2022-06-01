@@ -28,7 +28,9 @@
                             <div class="siteIcon"></div>
                         </div>
                         <div class="waterLevel">
-                            <div class="liquidFill" ref="liquidFill"></div>
+                            <div class="liquidFill">
+                                <liquidFillChart isNormal/>
+                            </div>
                             <div class="currentLevel">当前水位：<div class="value">42.3m</div></div>
                         </div>
                     </div>
@@ -40,99 +42,32 @@
 </template>
 
 <script>
-import echarts from 'echarts'
-import 'echarts-liquidfill'
+import liquidFillChart from './components/liquidFillChart.vue'
 export default {
     name:"WPSVMStatistic",//易涝点视频监测统计
+    components:{
+        liquidFillChart
+    },
     props:{
         show:{},
     },
     data(){
         return{
             options: [{
-                value: '选项1',
+                value: '易涝点（1）',
                 label: '易涝点（1）'
             }, {
-                value: '选项2',
+                value: '易涝点（2）',
                 label: '易涝点（2）'
             }],
             value: '易涝点（1）',
         }
     },
     watch:{
-        show:{
-            handler(n,o){
-                if(n){
-                    this.$nextTick(()=>{
-                        this.showIndicatorChart()
-                    })
-                }
-            }
-        }
+
     },
     methods:{
-        //生成指标图表
-        showIndicatorChart(){
-            let ref=this.$refs.liquidFill
-            var value = 0.45;
-            var option = {
-                series: [
-                    {
-                        type: 'liquidFill',
-                        radius: '80%',
-                        color: [
-                            {
-                                type: 'linear',
-                                x: 0,
-                                y: 0,
-                                x2: 0,
-                                y2: 1,
-                                colorStops: [
-                                    {
-                                        offset: 0,
-                                        color: '#446bf5',
-                                    },
-                                    {
-                                        offset: 1,
-                                        color: '#2ca3e2',
-                                    },
-                                ],
-                                globalCoord: false,
-                            },
-                        ],
-                        data: [value, value], // data个数代表波浪数
-                        backgroundStyle: {
-                            borderWidth: 1,
-                            color: 'RGBA(51, 66, 127, 0.7)',
-                        },
-                        label: {
-                            show: false
-                        },
-                        outline: {
-                            // show: false
-                            borderDistance: 0,
-                            itemStyle: {
-                                borderWidth: 2,
-                                borderColor: '#112165',
-                            },
-                        },
-                    },
 
-                ],
-            };
-            this.creatChart(option,ref)
-        },
-        creatChart(option,ref){
-            let chart = echarts.init(ref);//this.$refs.chart
-            chart.resize();
-            chart.setOption(option,{
-                notMerge: true,
-            });
-            //图表大小自适应
-            window.addEventListener("resize", ()=>{
-                chart.resize()
-            })
-        }
     }
 }
 </script>
@@ -258,7 +193,7 @@ export default {
                         font-weight: 500;
                         color: #FFFFFF;
                         display: flex;
-                        align-items: center;
+                        align-items: baseline;
                         .value{
                             font-size: .072917rem /* 14/192 */;
                             font-weight: bold;
