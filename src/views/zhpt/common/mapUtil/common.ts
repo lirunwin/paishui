@@ -131,6 +131,19 @@ export class mapUtil {
         }
     }
 
+    static getCenterFromFeatures (features) {
+        let pointsArr = features.map(fea => this.getCenter(fea))
+        let xmin, xmax, ymin, ymax
+        pointsArr.forEach(point => {
+            let [x, y] = point
+            xmin = xmin ? Math.min.call(null, x, xmin) : x
+            xmax = xmax ? Math.max.call(null, x, xmax) : x
+            ymin = ymin ? Math.min.call(null, y, ymin) : y
+            ymax = ymax ? Math.max.call(null, y, ymax) : y
+        })
+        return [(xmin + xmax) / 2, (ymin + ymax) / 2]
+    }
+
     // 当前范围内空间查询
     queryForExtent(extent, layer) {
         let [xmin, ymin, xmax, ymax] = extent

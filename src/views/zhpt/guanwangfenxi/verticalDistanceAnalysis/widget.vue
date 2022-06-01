@@ -6,7 +6,7 @@
         <el-radio v-model="drawType" label="point">缓冲</el-radio>
         <el-radio v-model="drawType" label="circle">圆域</el-radio>
         <el-radio v-model="drawType" label="polygon">多边形</el-radio>
-      </div>
+      </div> 
     <div class="op-box" v-show="drawType === 'point'">
       <el-button type="primary" size="small" style="width:100%" @click="select">选择分析管线</el-button>
     </div>
@@ -82,6 +82,7 @@ import iDraw from '@/views/zhpt/common/mapUtil/draw';
 import iQuery from '@/views/zhpt/common/mapUtil/query';
 import DisAnalysisTool from '@/views/zhpt/common/mapUtil/disAnalysis';
 import { DisStandard } from '@/views/zhpt/common/standard'
+import { mapUtil } from '../../common/mapUtil/common';
 
 export default {
   props: ["data"],
@@ -139,12 +140,12 @@ export default {
     init () {
       this.vectorLayer = new VectorLayer({
         source: new VectorSource(),
-        style: comSymbol.getAllStyle(2, "f00", 5, '#00FFFF', 'rgba(255,255,255,0.3)')
+        style: mapUtil.getCommonStyle()
       })
       this.map.addLayer(this.vectorLayer)
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
-        style: comSymbol.getLineStyle(5, "#f00")
+        style: mapUtil.getCommonStyle(true)
       })
       this.map.addLayer(this.lightLayer)
     },
