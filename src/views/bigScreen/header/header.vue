@@ -38,7 +38,7 @@ export default {
         return{
             title:null,//标题
             menuList:[],//菜单栏配置
-            currentActive:'监测中心',//当前激活模块
+            currentActive:'数据总览',//当前激活模块
             specificTime:null,//系统当前时间
         }
     },
@@ -68,7 +68,7 @@ export default {
         //当前激活模块
         activeModule(module){
             this.$parent.showMonitoringCenter=module=='监测中心'?true:false
-            this.$parent.showOverViewData=module=='数据总览'?true:false
+            this.$parent.showOverviewData=module=='数据总览'?true:false
         },
         showCurrentTime(){
             this.specificTime=getnow();

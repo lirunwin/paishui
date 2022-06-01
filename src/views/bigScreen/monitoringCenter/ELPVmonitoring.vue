@@ -40,10 +40,10 @@ export default {
     //position
     bottom: $size10/* 10/192 */;
     margin-right: $size20 /* 20/192 */;
-    right: 0rem /* 0/192 */;
+    right: 0;
     position: absolute;
     //size
-    height: calc(100% - .505208rem /* 97/192 */);
+    height: calc(100% - .557292rem /* 107/192 */);
     width: 2.083333rem /* 400/192 */;
     //background
     background-color: rgba(20, 24, 47, 0.5);

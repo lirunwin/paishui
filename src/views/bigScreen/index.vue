@@ -10,7 +10,12 @@
     <ELPVmonitoring :show="showMonitoringCenter" />
     <MMIStatistic :show="showMonitoringCenter" />
     <!--数据总览模块-->
-    <!-- <PNIARStatistic :show="showOverviewData"/> -->
+    <PNIARStatistic :show="showOverviewData" :fontSize="fontSize"/>
+    <WFStatistic :show="showOverviewData" />
+    <DPNLStatistic :show="showOverviewData" :fontSize="fontSize"/>
+    <EMDStatistic :show="showOverviewData" />
+    <WPSVMStatistic :show="showOverviewData" />
+    <MIDStatistic :show="showOverviewData" />
   </div>
 </template>
 
@@ -25,12 +30,17 @@ import ELPVmonitoring from './monitoringCenter/ELPVmonitoring.vue'
 import MMIStatistic from './monitoringCenter/MMIStatistic.vue'
 //数据总览模块
 import PNIARStatistic from './overviewData/PNIARStatistic.vue'
+import WFStatistic from './overviewData/WFStatistic.vue'
+import DPNLStatistic from './overviewData/DPNLStatistic.vue'
+import EMDStatistic from './overviewData/EMDStatistic.vue'
+import WPSVMStatistic from './overviewData/WPSVMStatistic.vue'
+import MIDStatistic from './overviewData/MIDStatistic.vue'
 export default {
   name:'bigScreen',//项目大屏
   components:{
     BaseMap,Header,
     ELPWLMStatistic,PNLLMonitoring,ELPVmonitoring,MMIStatistic,
-    PNIARStatistic
+    PNIARStatistic,WFStatistic,DPNLStatistic,EMDStatistic,WPSVMStatistic,MIDStatistic
   },
   data(){
     return{
