@@ -175,7 +175,7 @@ export default {
       this.featureData = features.map(fea => {
         return { ...fea.properties, geometry: fea.geometry, tableName }
       })
-      mapUtil.getFilds(tableName).then(res => {
+      mapUtil.getFields(tableName).then(res => {
         console.log('字段', res)
         let cols = res.filter(i => {
           return i.name.includes('唯一编号') 
@@ -278,7 +278,7 @@ export default {
       view.setCenter(center)
       view.setZoom(20)
       // 
-      mapUtil.getFilds(row.tableName).then(res => {
+      mapUtil.getFields(row.tableName).then(res => {
         this.attData = res.map(item => {
           return { value: row[item.field], att: item.name }
         })

@@ -199,7 +199,7 @@ export default {
     },
 
     addTableData (data) {
-      let promises = data.map(obj => mapUtil.getFilds(obj.tableName))
+      let promises = data.map(obj => mapUtil.getFields(obj.tableName))
       Promise.all(promises).then(resArr => {
         this.resultData = resArr.map((res, index) => {
           let fields = {}
@@ -235,7 +235,7 @@ export default {
     showQueryResultData(row) {
       let { data, tableName } = row
       if (data.length === 0) return
-      mapUtil.getFilds(tableName).then(res => {
+      mapUtil.getFields(tableName).then(res => {
         let colsData = []
         res.forEach(({ field, name }) => {
           colsData.push({ prop: field, label: name})

@@ -4,18 +4,57 @@
     <div class="op-box">
       <div class="item-head" style="margin-top:0">预警图层</div>
       <el-form label-width="70px">
-        <el-form-item label="选取图层" style="margin:0">
-          <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small"
-                     @change="selectLayerChange">
-            <el-option v-for="item in datasetOptions" :key="item.name" :label="item.label" :value="item"> </el-option>
+        <el-form-item label="图层名称" style="margin:0">
+          <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small">
+            <el-option v-for="item in datasetOptions" :key="item.name" :label="item.label" :value="item.name"> </el-option>
           </el-select>
         </el-form-item>
       </el-form>
     </div>
     <div class="op-box">
       <div class="item-head" style="margin-top:0">预警设置</div>
-      <el-form label-width="70px">
-        <el-form-item label="埋设日期" style="margin:0">
+      <el-form label-width="33%" label-position='left'>
+        <el-form-item label="服务年限" style="margin:0">
+          <el-row>
+            <el-col :span="9" style="padding-right:5px">
+              <el-select size="small"  v-model="queryForm.completionDate.calc">
+                <el-option v-for="(item,index) in calcOptions" :key="index" :label="item.label" :value="item.value"></el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="13">
+              <el-input size="small" type="number" v-model="queryForm.completionDate.MDATE"></el-input>
+            </el-col>
+            <el-col :span='2'>&nbsp;&nbsp;&nbsp;月</el-col>
+          </el-row>
+        </el-form-item>
+        <el-row>
+        <!-- 动态添加的条件 -->
+        <div v-for="(item,i) in filterArr" :key="i">
+          <el-row style="height:40px;line-height: 40px;">
+            <el-col :span="8" style="padding-right:5px">
+              <el-select  size="small"  v-model="filterArr[i].field" placeholder="字段名" @change="fieldChange(i,filterArr[i].field)">
+                <el-option v-for="(item,index) in fieldKeys" :key="index" :label="item.label" :value="item.value"></el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="6" style="padding-right:5px">
+              <el-select  size="small"  v-model="filterArr[i].operator" placeholder="" >
+                <el-option v-for="(item,index) in calcOptions" :key="index" :label="item.label" :value="item.value"></el-option>
+                <el-option label="like" value="like"></el-option>
+                <el-option label="= (字符)" value="=="></el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="9">
+              <el-select  size="small"  v-model="filterArr[i].val" placeholder="字段值" >
+                <el-option v-for="(item, index) in filterArr[i].OnlyVals" :key="index" :label="item" :value="item"></el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="1" style="padding-left:5px">
+              <span class="el-icon-circle-close item-close" style="vertical-align:middle;" title="移除条件" @click="deleteParamItem(i)"></span>
+            </el-col>
+          </el-row>
+        </div>
+        </el-row>
+        <!-- <el-form-item label="埋设日期" style="margin:0">
           <el-row>
             <el-col :span="6" style="padding-right:5px">
               <el-select v-model="queryForm.completionDate.calc" placeholder="" size="small">
@@ -56,7 +95,7 @@
               </el-date-picker>
             </el-col>
           </el-row>
-        </el-form-item>
+        </el-form-item> -->
         <!-- <el-form-item label="维护次数" style="margin:0">
           <el-row>
             <el-col :span="6" style="padding-right:5px">
@@ -70,35 +109,43 @@
             </el-col>
           </el-row>
         </el-form-item> -->
-        <!-- 动态添加的条件 -->
-        <!-- <div v-for="(item,i) in filterArr" :key="i">
-          <el-row style="height:40px;line-height: 40px;">
-            <el-col :span="7" style="padding-right:5px">
-              <el-select v-model="filterArr[i].field" placeholder="字段名" size="small" @change="fieldChange(i,filterArr[i].field)">
-                <el-option v-for="(item,index) in fieldKeys" :key="index" :label="item.pipelineVal" :value="item.pipelineKey"></el-option>
-              </el-select>
-            </el-col>
-            <el-col :span="7" style="padding-right:5px">
-              <el-select v-model="filterArr[i].operator" placeholder="" size="small">
-                <el-option v-for="(item,index) in calcOptions" :key="index" :label="item.label" :value="item.value"></el-option>
-                <el-option label="like" value="like"></el-option>
-                <el-option label="= (字符)" value="=="></el-option>
-              </el-select>
-            </el-col>
-            <el-col :span="9">
-              <el-select v-model="filterArr[i].val" placeholder="字段值" size="small">
-                <el-option v-for="(item,index) in filterArr[i].OnlyVals" :key="index" :label="item" :value="item"></el-option>
-              </el-select>
-            </el-col>
-            <el-col :span="1" style="padding-left:5px">
-              <span class="el-icon-circle-close item-close" style="vertical-align:middle;" title="移除条件" @click="deleteParamItem(i)"></span>
-            </el-col>
-          </el-row>
-        </div> -->
-
       </el-form>
-      <!-- <el-button type="primary" size="small" style="width:100%;margin-top:10px" @click="addNewParam">新增条件</el-button> -->
+      <el-button type="primary" size="small" style="width:100%;margin-top:10px" @click="addNewParam">新增条件</el-button>
     </div>
+
+        <!-- <tf-legend class="legend_dept" style="margin-left:4px;"  label="筛选条件" isopen="false" title="选择将要查询的字段。">
+            <ul class="sqlQueryUl" style="height: 150px; margin-bottom: 5px" v-loading="attLoading">
+              <li v-for="(item, id) in analysisAtt" :key="id" @click="addText(item.value + ' ', item.value.length + 1, true)" >{{ item.label }}</li>
+              <span style="color: #C0C4CC;letter-spacing: 1px;margin-left: 5px;" v-if="!analysisAtt.length">{{selectLayer ? '图层无字段' : '请选择图层查询字段'}}</span>
+            </ul>
+            <div style="width: 100%; margin-bottom:10px;">
+              <div style="width: 130px; float: left"> 
+                <div style="margin-bottom: 3px">
+                  <el-button size="mini" type="primary" plain @click="addText('=', 2)" style="width:56px">＝</el-button>
+                  <el-button size="mini" type="primary" plain @click="addText('like \'%%\'', 7)" style="width:56px">模糊</el-button>
+                </div>
+                <div style="margin-bottom: 3px">
+                  <el-button size="mini" type="primary" plain @click="addText('<>', 3)" style="width:56px">≠</el-button>
+                  <el-button size="mini" type="primary" plain @click="addText('and ', 4)" style="width:56px">与</el-button>
+                </div>
+                <div style="margin-bottom: 3px">
+                  <el-button size="mini" type="primary" plain @click="addText('>', 2)" style="width:56px">＞</el-button>
+                  <el-button size="mini" type="primary" plain @click="addText('<', 2)" style="width:56px">＜</el-button>
+                </div>
+                <div>
+                  <el-button size="mini" type="primary" plain @click="addText('or ', 3)" style="width:56px">或</el-button>
+                  <el-button size="mini" type="primary" plain @click="addText('% ', 2)" style="width:56px">占位</el-button>
+                </div>
+              </div>
+              <div style="width: calc(100% - 130px); float: right;margin-bottom:10px;">
+                <ul class="sqlQueryUl" style="height: 120px" v-loading="fixLoading">
+                  <li v-for="(item, id) in layerFix" :key="id" @click="addText('\'' + item + '\' ', item.length + 3)">{{ item }}</li>
+                  <span style="color: #C0C4CC;letter-spacing: 1px;margin-left: 5px;" v-if="!layerFix.length">请选择字段</span>
+                </ul>
+              </div>
+              <div style="clear:both; color:#499CD6; font-size:12px;">{{ queText }}</div>
+            </div>
+          </tf-legend> -->
     <div class="op-box">
       <div class="item-head">预警范围</div>
       <el-radio v-model="warningExtent" label="1">全图分析</el-radio>
@@ -121,9 +168,8 @@
           <el-table-column prop="num" label="数量" align="center" show-overflow-tooltip></el-table-column>
           <el-table-column label="操作" align="center">
             <template slot-scope="scope">
-              <el-button type="text" @click="viewDetails(scope.row.data)">查看</el-button>
-              <download-excel style="display: inline-block;" :data="scope.row.data" :fields="scope.row.fields" type="xls"
-                              :name="scope.row.name">
+              <el-button type="text" @click="viewDetails(scope.row)">查看</el-button>
+              <download-excel style="display: inline-block;" :data="scope.row.data" :fields="scope.row.fields" type="xls" :name="scope.row.name">
                 <el-button type="text">导出</el-button>
               </download-excel>
             </template>
@@ -149,12 +195,14 @@ import { comSymbol } from '@/utils/comSymbol';
 import iDraw from '@/views/zhpt/common/mapUtil/draw';
 import iQuery from '../../common/mapUtil/query';
 import { Point, LineString } from 'ol/geom';
-import { fieldDoc } from '@/views/zhpt/common/doc'
 import * as turf from '@turf/turf'
 import Feature from 'ol/Feature'
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common';
+import tfLegend from "@/views/zhpt/common/Legend";
 
 export default {
   props: ["data"],
+  components: { tfLegend },
   data() {
     return {
       loading: false,
@@ -163,15 +211,18 @@ export default {
       draw: null,
 
       datasetOptions: [],
-      filterArr: [],
-      fieldKeys: [],
+
       features: [],
       queryForm: {
-        completionDate: {},
+        completionDate: {
+          calc: ">",
+          MDATE: '24'
+        },
         changeDate: {},
         expiredDate: {},
         maintainNum: { REPAIRNUM: 0 }
       },
+      inputMonth: 24,
       calcOptions: [
         { label: '=', value: '=' },
         { label: '>', value: '>' },
@@ -186,7 +237,16 @@ export default {
       drawer: null,
       limitFeature: null,
       vectorLayer: null,
-      lightLayer: null
+      lightLayer: null,
+      //
+      attLoading: false,
+      analysisAtt: [],
+      fixLoading: false,
+      layerFix: [],
+
+      filterArr: [],
+      fieldKeys: [],
+
     }
   },
   watch: {
@@ -206,7 +266,23 @@ export default {
     '$store.state.map.P_editableTabsValue': function (val, oldVal) {
       if (val !== 'warningAnalysis') this.removeAll()
       else this.init()
-    }
+    },
+    selectLayer (n, o) {
+      this.fieldKeys = []
+      this.filterArr = []
+      // MDATE 埋设日期是固定字段
+      mapUtil.getFields(n).then(fieldArr => {
+        // .filter(field => field.field !== 'MDATE')
+        this.fieldKeys = fieldArr.map(obj => {
+          return { value: obj.field, label: obj.name }
+        })
+      })
+    },
+  },
+  computed: {
+      queText () {
+        return '111'
+      }
   },
   mounted() {
     this.init()
@@ -215,8 +291,11 @@ export default {
     this.removeAll()
   },
   methods: {
+    addText () {
+
+    },
     removeAll () {
-      this.drawer.end()
+      this.drawer && this.drawer.end()
       this.mapView.removeLayer(this.vectorLayer)
       this.mapView.removeLayer(this.lightLayer)
       this.closeHalfPanel()
@@ -225,32 +304,22 @@ export default {
     init() {
       // 初始化显示图层
       this.mapView = this.data.mapView
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, "#f00", 5, "#f00") })
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, "#f00", 5, "#0ff") })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
       this.mapView.addLayer(this.vectorLayer)
       this.mapView.addLayer(this.lightLayer)
       
-      this.dataService = appconfig.gisResource['iserver_resource'].dataService
-      let { dataSetInfo } = this.dataService
-      this.datasetOptions = dataSetInfo.filter(item => item.type === 'line')
-      // 
-      this.drawer = new iDraw(this.mapView, 'polygon', {
-        endDrawCallBack: this.drawFunc,
-        showCloser: false
+      let sublayers = mapUtil.getAllSubLayerNames('排水管线')
+      this.datasetOptions = sublayers.map(layer => {
+        return { name: layer.name, label: layer.title }
       })
     },
     // 绘制完成
     drawFunc (feature) {
       this.limitFeature = feature
       this.drawer.remove()
-      console.log("绘制的图形")
     },
-    /**选择分析图层 */
-    selectLayerChange() {
-      // if (this.selectLayer.type == 'line') this.fieldKeys = this.$store.state.common.PipeLineFields
-      // else this.fieldKeys = this.$store.state.common.PipePointFields
-      // console.log('999', this.fieldKeys)
-    },
+
     /**新增条件 */
     addNewParam() {
       this.filterArr.push({})
@@ -258,137 +327,41 @@ export default {
     deleteParamItem(index) {
       this.filterArr.splice(index, 1)
     },
-    /**
-     * 获取字段唯一值
-     * @param {String} field 字段名称
-     */
-    async getOnlyValue(field) {
-      //指定SQL查询处理
-      var url = mapConfig.iServerUrl.pipelineDataServer.url
-      //指定SQL查询服务参数
-      let sqlParam = new SuperMap.GetFeaturesBySQLParameters({
-        toIndex: -1,
-        maxFeatures: 10000000,
-        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.name],
-        queryParameter: {
-          attributeFilter: "",
-          fields: [field],
-          groupBy: field
-        }
-      });
-      return new Promise((resolve) => {
-        //向服务器发送请求，并对返回的结果进行处理
-        new FeatureService(url).getFeaturesBySQL(sqlParam, serviceResult => {
-          if (serviceResult.type == "processFailed") {
-            this.$message.error(`获取唯一值失败，${serviceResult.error.errorMsg}!`);
-            return
-          }
-          //获取返回的features数据
-          let features = serviceResult.result.features.features
-          // 拿到唯一值
-          // console.log("唯一值：", features)
-          let fieldOnlyValue = features.map(item => {
-            return item.properties[field]
-          })
-          resolve(fieldOnlyValue);
-        })
-      });
-    },
+
     /** 获取对应的唯一值*/
     async fieldChange(index, field) {
-      await this.getOnlyValue(field).then(res => {
-        this.filterArr[index]["OnlyVals"] = res
-        this.$forceUpdate();
-        // console.log('输出this.filterArr：', this.filterArr)
+      mapUtil.getUniqueValue(this.selectLayer, field).then(res => {
+        res = res.filter(res => res)
+        this.$set(this.filterArr[index], 'OnlyVals', res)
       })
     },
-    /**
-     * iserver几何查询
-     */
-    geoQuery() {
-      let geoQueryParam = new SuperMap.GetFeaturesByGeometryParameters({
-        toIndex: -1,
-        maxFeatures: 10000000,
-        geometry: this.queryExtent,
-        attributeFilter: this.checkQueryParams(),
-        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.name],
-        spatialQueryMode: "INTERSECT" // 相交空间查询模式
-      })
-      const url = mapConfig.iServerUrl.pipelineDataServer.url
-      new FeatureService(url).getFeaturesByGeometry(geoQueryParam, serviceResult => {
-        // console.log('输出几何查询结果：', serviceResult)
-        if (serviceResult.type == "processFailed") {
-          this.$message.error(`获取结果失败，${serviceResult.error.errorMsg}!`);
-          this.loading = false // 关闭执行状态
-          return
-        }
-        let features = serviceResult.result.features.features
-        if (features && features.length >= 0) {
-          this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(serviceResult.result.features))
-          this.features = features.map(item => {
-            item.properties['geometry'] = item.geometry;
-            return item.properties
-          })
-          this.totalResultTable = [{
-            name: this.selectLayer.label,
-            num: this.features.length + '个',
-            data: this.features,
-            fields: this.getFields(this.selectLayer.type)
-          }]
-          this.loading = false
-        }
-      })
-    },
-    /**
-     * iserver属性查询
-     */
-    attributeQuery() {
-      let sqlQueryParam = new SuperMap.GetFeaturesBySQLParameters({
-        toIndex: -1,
-        maxFeatures: 10000000,
-        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.name],
-        queryParameter: { attributeFilter: this.checkQueryParams() }
-      })
-      const url = mapConfig.iServerUrl.pipelineDataServer.url
-      new FeatureService(url).getFeaturesBySQL(sqlQueryParam, serviceResult => {
-        // console.log('输出属性查询结果：', serviceResult)
-        if (serviceResult.type == "processFailed") {
-          this.$message.error(`获取结果失败，${serviceResult.error.errorMsg}!`);
-          this.loading = false // 关闭执行状态
-          return
-        }
-        let features = serviceResult.result.features.features
-        if (features && features.length >= 0) {
-          this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(serviceResult.result.features))
-          this.features = features.map(item => {
-            item.properties['geometry'] = item.geometry;
-            return item.properties
-          })
-          this.totalResultTable = [{
-            name: this.selectLayer.label,
-            num: this.features.length + '个',
-            data: this.features,
-            fields: this.getFields(this.selectLayer.type)
-          }]
-          this.loading = false
-        }
-      })
-    },
+
     // 获取过滤条件
     checkQueryParams() {
-      console.log("过滤条件")
       let sqlStr = ''
       // 拼接固定字段
       for (const key in this.queryForm) {
-        if (Object.keys(this.queryForm[key]).length == 2) {
+        let queryType = this.queryForm[key]
+        if (Object.keys(queryType).length == 2) {
           let operator, field, val = null
-          for (const k in this.queryForm[key]) {
-            if (k == 'calc') operator = this.queryForm[key][k]
-            else { val = this.queryForm[key][k]; field = k }
+          for (const k in queryType) {
+            let queryParmas = queryType[k]
+            if (k == 'calc') operator = queryParmas
+            else { val = queryParmas; field = k }
           }
           if (field && operator && val) {
-            if (field == 'REPAIRNUM') sqlStr += field + " " + operator + " " + val + " AND "
-            else sqlStr += field + " " + operator + " '" + val + "' AND "
+            if (field == 'REPAIRNUM') {
+              sqlStr += field + " " + operator + " " + val + " AND "
+            } else if (field === 'MDATE') {
+              // 这里把服务年限转化成 埋设日期的比较
+              let dateArr = new Date().toLocaleDateString().split('/')
+              let month = val % 12, year = (val - val % 12) / 12
+              dateArr[0] -= year
+              dateArr[1] -= month
+              // val = new Date([...dateArr]).toLocaleDateString().replace(/\//g, '-') + " 00:00:00"
+              val = new Date([...dateArr]).toLocaleDateString()
+              sqlStr += field + " " + operator + " " + val + " AND "
+            } else sqlStr += field + " " + operator + " '" + val + "' AND "
           }
         }
       }
@@ -411,12 +384,19 @@ export default {
     // 分析
     execute() {
       if (this.warningExtent === "2" && !this.limitFeature) return this.$message.error("请先绘制查询范围")
-        if (!this.selectLayer) return this.$message.error("请选择查询图层")
-      let dataSetInfo = [{ name: this.selectLayer.name }]
+      if (!this.selectLayer) return this.$message.error("请选择查询图层")
+
+      let dataSetInfo = this.datasetOptions.filter(layer => layer.name === this.selectLayer).map(layer => {
+        return { name: layer.name, label: layer.label }
+      })
+      this.loading = true
+
       let sqlStr = this.checkQueryParams()
       new iQuery({ dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
+        this.loading = false
           let featuresObj = resArr.find(item => item && item.result.featureCount !== 0)
           if (featuresObj) {
+            let tableName = featuresObj.tableName
             let featuresJson = featuresObj.result.features
             let features = new GeoJSON().readFeatures(featuresJson)
             if (this.limitFeature) {
@@ -431,37 +411,25 @@ export default {
                 return turf.booleanContains(limitGeometry, inGeometry)
               })
             }
+            //
+            let center = mapUtil.getCenterFromFeatures(features)
+            new mapUtil(this.mapView).setZoomAndCenter(17, center)
 
             this.vectorLayer.getSource().addFeatures(features)
             //
-            let data = features.map(fea => fea.values_)
-            let keys = Object.keys(fieldDoc)
-            keys.length = 15
             let fields = {}
-            keys.forEach(key => {
-              fields[fieldDoc[key]] = key
+            let data = features.map(fea => fea.values_)
+            mapUtil.getFields(tableName).then(fieldArr => {
+              fieldArr.forEach(fieldObj => {
+                fields[fieldObj.name] = fieldObj.field
+                this.totalResultTable = [
+                  { name: featuresObj.layerName, num: features.length, features, fields, data, tableName }
+                ]
+              })
             })
-            this.totalResultTable = [
-              { name: featuresObj.layerName, num: features.length, features, fields, data }
-            ]
+            
           }
       })
-    },
-    /**
-     * 获取字段，Excel导出时使用
-     */
-    getFields(type) {
-      let fields = {}
-      if (type == 'line')
-        this.$store.state.common.PipeLineFields.forEach(item => {
-          fields[item.pipelineVal] = item.pipelineKey
-        });
-      else {
-        this.$store.state.common.PipePointFields.forEach(item => {
-          fields[item.pipelineVal] = item.pipelineKey
-        });
-      }
-      return fields
     },
     /**清除结果 */
     clearReasult() {
@@ -469,31 +437,36 @@ export default {
       this.lightLayer.getSource().clear()
       this.selectLayer = ""
       this.queryForm = {
-        completionDate: {},
+        completionDate: {
+          calc: ">",
+          MDATE: '24'
+        },
         changeDate: {},
         expiredDate: {},
         maintainNum: { REPAIRNUM: 0 }
       }
       this.totalResultTable = []
       this.drawer && this.drawer.clear()
-      this.warningExtent = ""
+      this.warningExtent = "1"
       this.closeHalfPanel()
     },
     /**查看详情 */
-    viewDetails(data) {
-      if (data.length === 0) return 
-      let colsData = []
-      for (let key in fieldDoc) {
-        colsData.push({ prop: key, label: fieldDoc[key]})
-      }
-      colsData.length = 15
-      this.closeHalfPanel()
-      this.$store.dispatch('map/changeMethod', {
-        pathId: 'queryResultMore',
-        widgetid: 'HalfPanel',
-        label: '详细信息',
-        param: { data, colsData, rootPage: this }
+    viewDetails(row) {
+      let { data, tableName } = row
+      if (data.length === 0) return
+      mapUtil.getFields(tableName).then(res => {
+        let colsData = res.map(obj => {
+          return { prop: obj.field, label: obj.name }
+        })
+        this.closeHalfPanel()
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'queryResultMore',
+          widgetid: 'HalfPanel',
+          label: '详细信息',
+          param: { data, colsData, rootPage: this }
+        })
       })
+
     },
     gotoGeometry (geometry) {
       if (!this.lightLayer) {

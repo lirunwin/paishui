@@ -178,7 +178,7 @@ export class mapUtil {
     }
 
     // 获取字段
-    static getFilds(layerName) {
+    static getFields(layerName) {
         return new Promise(resolve => {
             getFieldByLayerName({ dataSetName: layerName }).then(res => {
                 if (res.code === 1) {

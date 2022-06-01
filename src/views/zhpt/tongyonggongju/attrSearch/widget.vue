@@ -105,7 +105,7 @@ export default {
   watch:{
     layerName(n, o) {
       let tableName = this.layersAtt.find(item => item.label === n)
-      mapUtil.getFilds(tableName.name).then(res => {
+      mapUtil.getFields(tableName.name).then(res => {
         if (res) {
           this.attDatas = res
           this.attDatas.forEach(row => this.$refs.attTable.toggleRowSelection(row, true))
@@ -197,7 +197,7 @@ export default {
       view.setCenter(center)
       view.setZoom(20)
       // 要素详细信息
-      mapUtil.getFilds(tableName).then(res => {
+      mapUtil.getFields(tableName).then(res => {
         let data = []
         if (res) {
           for(let key in properties) {

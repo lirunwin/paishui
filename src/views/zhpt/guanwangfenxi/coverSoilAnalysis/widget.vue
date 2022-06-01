@@ -17,7 +17,7 @@
     </div>
         <el-table @row-click="showRes" :data="layerData" v-loading="queryStatus" size='small'
         :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" 
-        style="width: 100%; height:200px; overflow: auto">
+        style="width: 100%; height:260px; overflow: auto">
           <template slot="empty">
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>

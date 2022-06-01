@@ -126,7 +126,7 @@ export default {
   watch: {
     layerId(e) {
       if(!e) return
-      mapUtil.getFilds(e).then(res => {
+      mapUtil.getFields(e).then(res => {
         if (res) {
           this.analysisAtt = res.map(field => {
             return { label: field.name, value: field.field }
