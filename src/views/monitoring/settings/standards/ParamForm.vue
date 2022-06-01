@@ -2,39 +2,14 @@
   <BaseDialog width="450px" v-bind="$attrs" v-on="listeners" @submit="onSubmit" @open="onOpen" top="8vh">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '10em', size: 'medium' }" :model="formData">
       <el-form-item
-        v-for="{ name, label, type, required = true, disabled, rules, names, on = {}, options, ...rest } of formItems"
+        v-for="{ name, label, type, required = true, disabled, rules, on = {}, options, ...rest } of formItems"
         :key="name"
         :required="required"
         :label="label"
         :rules="rules"
+        :prop="name"
       >
-        <el-row v-if="name === 'time'" type="flex" justify="space-between">
-          <el-col>
-            <el-form-item :rules="rules[0]" :prop="names[0]">
-              <el-time-select
-                v-model="formData[names[0]]"
-                placeholder="开始时间"
-                size="small"
-                style="width: 100%"
-                clearable
-                v-on="on"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col style="flex:0 0 2em;text-align:center"> ~ </el-col>
-          <el-col>
-            <el-form-item :rules="rules[1]" :prop="names[1]">
-              <el-time-select
-                v-model="formData[names[1]]"
-                placeholder="结束时间"
-                size="small"
-                style="width: 100%"
-                clearable
-                v-on="on"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <el-time-picker v-if="type === 'timePicker'" v-model="formData[name]" v-bind="rest" v-on="on" />
         <el-select
           v-else-if="type === 'select'"
           v-model="formData[name]"
@@ -79,8 +54,24 @@ import { getDefalutNumberProp, settingDeviceTypeParamCols } from '@/views/monito
 import { ElForm } from 'element-ui/types/form'
 import { IDictionary, IStandardParam, ITypeParam, typeParamsPage } from '@/views/monitoring/api'
 import { TableColumn } from 'element-ui/types/table-column'
+import moment from 'moment'
 
-const getDefaultFormData = () => ({ idPush: 1, isUse: 1 })
+const format = 'HH:mm'
+
+interface IFormData extends IStandardParam {
+  unit?: string
+  range?: string
+  timeRange?: (string | Date)[]
+}
+
+const getDefaultFormData = (): IFormData => ({
+  isPush: 1,
+  isUse: 1,
+  isSpecial: 0,
+  timeRange: [moment('00:00', format).toDate(), moment('23:59', format).toDate()]
+})
+
+const getTime = (time: string | Date) => moment(time, format).format(format)
 
 @Component({ name: 'ParamForm', components: { BaseDialog } })
 export default class ParamForm extends Vue {
@@ -96,7 +87,7 @@ export default class ParamForm extends Vue {
     return rest
   }
 
-  formData: IStandardParam & { unit?: string; range?: string } = {}
+  formData: IFormData = getDefaultFormData()
 
   typeParams: ITypeParam[] = []
 
@@ -132,17 +123,20 @@ export default class ParamForm extends Vue {
       {
         label: '是否特定阈值',
         name: 'isSpecial',
-        type: 'checkbox',
-        rules: [{ required: true, message: '请输入特定阈值' }],
+        type: 'switch',
+        rules: [{ required: true, message: '特定阈值不能为空' }],
         size: 'small',
-        trueLabel: 1,
-        falseLabel: 0,
+        // trueLabel: 1,
+        // falseLabel: 0,
+        activeValue: 1,
+        inactiveValue: 0,
         on: { change: this.onIsSpecialChange }
       },
       {
         label: '特定阀值',
         name: 'specialVal',
         type: 'number',
+        rules: [{ required: true, message: '下限不能为空' }],
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2
@@ -151,7 +145,7 @@ export default class ParamForm extends Vue {
         label: '下限',
         name: 'lower',
         type: 'number',
-        rules: [{ required: true, message: '下限不能为空！', trigger: 'blur' }],
+        rules: [{ required: true, message: '下限不能为空' }],
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2
@@ -170,7 +164,7 @@ export default class ParamForm extends Vue {
         label: '上限',
         name: 'upper',
         type: 'number',
-        rules: [{ required: true, message: '上限不能为空！', trigger: 'blur' }],
+        rules: [{ required: true, message: '上限不能为空' }],
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2
@@ -189,26 +183,23 @@ export default class ParamForm extends Vue {
         label: '报警级别',
         name: 'level',
         type: 'select',
-        rules: [{ required: true, message: '报警级别不能为空！' }],
+        rules: [{ required: true, message: '报警级别不能为空' }],
         options: this.levels.map(({ codeValue: value, notes: label }) => ({ value, label })),
         size: 'small'
       },
       {
         label: '有效时间',
-        name: 'time',
-        names: ['start', 'end'],
-        rules: [
-          [{ required: true, message: '请选择开始时间' }],
-          [
-            { required: true, message: '请选择结束时间' }
-            // {
-            //   validator: (rule, value, callback) => {
-            //     if (value <= (+this.formData.time[0] || 0)) callback('上限需大于下限')
-            //   }
-            // }
-          ]
-        ],
-        size: 'small'
+        name: 'timeRange',
+        type: 'timePicker',
+        size: 'small',
+        allowControl: true,
+        isRange: true,
+        style: 'width: 100%',
+        clearable: true,
+        startPlaceholder: '开始时间',
+        endPlaceholder: '结束时间',
+        valueFormat: format,
+        format
       },
       {
         label: '是否启用',
@@ -253,14 +244,20 @@ export default class ParamForm extends Vue {
         },
         col as TableColumn
       )
-    // !lrangeLow && !lrangeUp ? '∞' : `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
   }
 
   onSubmit() {
     const form = this.$refs['form'] as any
     form.validate((valid) => {
       if (valid) {
-        this.$emit('submit', { ...this.formData })
+        console.log(JSON.stringify(this.formData, null, 2))
+        const {
+          timeRange: [start, end],
+          unit,
+          range,
+          ...rest
+        } = this.formData
+        this.$emit('submit', { start: getTime(start), end: getTime(end), ...rest })
       }
     })
   }
@@ -280,8 +277,8 @@ export default class ParamForm extends Vue {
   }
 
   @Watch('data', { immediate: true })
-  setDefaultData(val) {
-    const { id, isSpecial, isPush, isUse, level, ...rest } = val || {}
+  setDefaultData(val: IStandardParam) {
+    const { id, isSpecial, isPush, isUse, level, lower, upper, start, end, ...rest } = val || {}
     this.formData = id
       ? {
           id,
@@ -289,6 +286,12 @@ export default class ParamForm extends Vue {
           isPush: Number(isPush),
           isSpecial: Number(isSpecial),
           isUse: Number(isUse),
+          lower: lower || undefined,
+          upper: upper || undefined,
+          timeRange: [
+            start ? moment(start, format).toDate() : undefined,
+            end ? moment(end, format).toDate() : undefined
+          ],
           ...rest
         }
       : getDefaultFormData()

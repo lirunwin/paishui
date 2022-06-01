@@ -124,7 +124,9 @@ import { getDefaultPagination } from '@/utils/constant'
 @Component({ name: 'MonitoringStandards', components: { BaseTable, StandardForm, ParamForm } })
 export default class MonitoringStandards extends Vue {
   settingStandardCols = settingStandardCols
-  settingStandardParamCols = settingStandardParamCols
+get  settingStandardParamCols() {
+  return settingStandardParamCols(this.levels || [])
+}
 
   visible = { standard: false, param: false }
 

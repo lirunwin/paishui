@@ -13,3 +13,18 @@ export const defaultValuesForMonitorStandardLevel = [
 ]
 
 export const monitorStandardLevelKey = { codeKey: 'monitor_indicate_level', codeRemark: '体系指标判定' }
+
+export const getIntervalValue = (start: string | number, end: string | number) =>
+  !start && !end ? '∞' : `${start || 0} ~ ${end || '∞'}`
+
+export const translate = ({
+  arr = [],
+  key,
+  value,
+  label = 'label'
+}: {
+  arr: any[]
+  key: string
+  value: string | number
+  label: string
+}) => (arr.find((item) => item[key] === String(value)) || {})[label] || value

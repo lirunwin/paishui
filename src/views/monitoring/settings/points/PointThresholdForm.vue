@@ -27,51 +27,59 @@
       <el-form-item prop="pointId" label="监测点">
         <el-col :span="12">
           <el-select v-model="formData.pointId" placeholder="请选择监测点" size="small" filterable clearable multiple>
-            <el-option v-for="item in points" :key="item.id" :label="item.name" :value="item.id" />
+            <el-option v-for="item in points" :key="item.id" :label="item.name" :value="item.id"
+              >{{ item.name }} | {{ item.no }}</el-option
+            >
           </el-select>
         </el-col>
       </el-form-item>
 
       <BaseTitle style="margin-top: 20px">监测参数基本设置</BaseTitle>
-      <BaseTable :columns="settingPointBasisCols" :data="formData.system" border>
-        <template v-for="(item, index) of formData.system" v-slot:[`index-${index}`]="{ row }">
+      <BaseTable :columns="settingPointBasisCols" :data="formData.param" border>
+        <template v-for="(item, index) of formData.param" v-slot:[`sort-${index}`]="{ row }">
           <el-form-item
-            :key="`index-${item.id}`"
-            :prop="`system[${index}].index`"
+            :key="`sort-${item.id}`"
+            :prop="`param[${index}].sort`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-input v-model="formData.system[index].index" :placeholder="row.name" />
+            <el-input v-model="formData.param[index].sort" size="small" />
           </el-form-item>
         </template>
-        <template v-for="(item, index) of formData.system" v-slot:[`paramCode-${index}`]="{ row }">
+        <template v-for="(item, index) of formData.param" v-slot:[`siteCode-${index}`]="{ row }">
           <el-form-item
-            :key="`paramCode-${item.id}`"
-            :prop="`system[${index}].paramCode`"
+            :key="`siteCode-${item.id}`"
+            :prop="`param[${index}].siteCode`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-input v-model="formData.system[index].paramCode" :placeholder="row.name" />
+            <el-input-number
+              v-model="formData.param[index].siteCode"
+              size="small"
+              :controls="false"
+              :min="0"
+              :precision="0"
+            />
           </el-form-item>
         </template>
-        <template v-for="(item, index) of formData.system" v-slot:[`display-${index}`]="{ row }">
+        <template v-for="(item, index) of formData.param" v-slot:[`isDisplay-${index}`]="{ row }">
           <el-form-item
-            :key="`display-${item.id}`"
-            :prop="`system[${index}].display`"
+            :key="`isDisplay-${item.id}`"
+            :prop="`param[${index}].isDisplay`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-switch v-model="formData.system[index].display" :placeholder="row.name" />
+            <el-switch v-model="formData.param[index].isDisplay" size="small" />
           </el-form-item>
         </template>
-        <template v-for="(item, index) of formData.system" v-slot:[`note-${index}`]="{ row }">
+        <template v-for="(item, index) of formData.param" v-slot:[`note-${index}`]="{ row }">
           <el-form-item
             :key="`note-${item.id}`"
-            :prop="`system[${index}].note`"
+            :prop="`param[${index}].note`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-input v-model="formData.system[index].note" :placeholder="row.name" />
+            <el-input v-model="formData.param[index].note" size="small" />
           </el-form-item>
         </template>
       </BaseTable>
@@ -87,17 +95,22 @@
           >添加</el-button
         >
       </BaseTitle>
-      <BaseTable :columns="settingPointParamCols" :data="formData.param" border>
-        <template v-for="(item, index) of formData.param" v-slot:[`name-${index}`]="{ row }">
-          <template v-if="row.id.startsWith('__new__')">
+      <BaseTable :columns="settingPointParamCols" :data="formData.threshold" border>
+        <template v-for="(item, index) of formData.threshold" v-slot:[`name-${index}`]="{ row }">
+          <template v-if="String(row.id).startsWith('__new__')">
             <el-form-item
               :key="`name-${item.id}`"
-              :prop="`param[${index}].id`"
+              :prop="`threshold[${index}].id`"
               label-width="0"
               style="margin-bottom: 0"
             >
-              <el-select v-model="formData.param[index].id" :placeholder="`请选择${row.name}`">
-                <el-option v-for="sys of standards" :label="sys.name" :value="sys.id" :key="sys.id" />
+              <el-select v-model="formData.threshold[index].id" :placeholder="`请选择${row.name}`">
+                <el-option
+                  v-for="standard of standards"
+                  :label="standard.name"
+                  :value="standard.id"
+                  :key="standard.id"
+                />
               </el-select>
             </el-form-item>
           </template>
@@ -106,82 +119,102 @@
           </template>
         </template>
 
-        <template v-for="(item, index) of formData.param" v-slot:[`value-${index}`]="{ row }">
+        <template v-for="(item, index) of formData.threshold" v-slot:[`level-${index}`]="{ row }">
           <el-form-item
-            :key="`value-${item.id}`"
-            :prop="`param[${index}].value`"
+            :key="`level-${item.id}`"
+            :prop="`threshold[${index}].level`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-select v-model="formData.param[index].value" :placeholder="`请选择${row.name}`">
+            <el-select v-model="formData.threshold[index].level" placeholder="请选择监测值判定">
               <el-option v-for="level of levels" :label="level.notes" :value="level.id" :key="level.id" />
             </el-select>
           </el-form-item>
         </template>
 
-        <template v-for="(item, index) of formData.param" v-slot:[`interval-${index}`]="{ row }">
-          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`interval-${item.id}`">
+        <template v-for="(item, index) of formData.threshold" v-slot:[`threshold-${index}`]="{ row }">
+          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`threshold-${item.id}`">
             <el-col>
-              <el-form-item :prop="`param[${index}].interval[0]`" label-width="0" style="margin-bottom: 0">
-                <el-input v-model="formData.param[index].interval[0]" :placeholder="row.name" />
+              <el-form-item :prop="`threshold[${index}].lower`" label-width="0" style="margin-bottom: 0">
+                <el-input-number
+                  :controls="false"
+                  :min="0"
+                  v-model="formData.threshold[index].lower"
+                  size="small"
+                  style="width: 70px"
+                />
               </el-form-item>
             </el-col>
             <el-col style="flex: 0 0 1em">~</el-col>
             <el-col>
-              <el-form-item :prop="`param[${index}].interval[1]`" label-width="0" style="margin-bottom: 0">
-                <el-input v-model="formData.param[index].interval[1]" :placeholder="row.name" />
+              <el-form-item :prop="`threshold[${index}].upper`" label-width="0" style="margin-bottom: 0">
+                <el-input-number
+                  :controls="false"
+                  :min="0"
+                  v-model="formData.threshold[index].upper"
+                  size="small"
+                  style="width: 70px"
+                />
               </el-form-item>
             </el-col>
           </el-row>
         </template>
 
-        <template v-for="(item, index) of formData.param" v-slot:[`interval1-${index}`]="{ row }">
-          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`interval1-${item.id}`">
+        <template v-for="(item, index) of formData.threshold" v-slot:[`allowance-${index}`]="{ row }">
+          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`allowance-${item.id}`">
             <el-col>
-              <el-form-item :prop="`param[${index}].interval1[0]`" label-width="0" style="margin-bottom: 0">
-                <el-input v-model="formData.param[index].interval1[0]" :placeholder="row.name" />
+              <el-form-item :prop="`threshold[${index}].lowerTolerance`" label-width="0" style="margin-bottom: 0">
+                <el-input-number
+                  :controls="false"
+                  :min="0"
+                  v-model="formData.threshold[index].lowerTolerance"
+                  size="small"
+                  style="width: 70px"
+                />
               </el-form-item>
             </el-col>
             <el-col style="flex: 0 0 1em">~</el-col>
             <el-col>
-              <el-form-item
-                :key="`interval1-${item.id}`"
-                :prop="`param[${index}].interval1[1]`"
-                label-width="0"
-                style="margin-bottom: 0"
-              >
-                <el-input v-model="formData.param[index].interval1[1]" :placeholder="row.name" />
+              <el-form-item :prop="`threshold[${index}].upperTolerance`" label-width="0" style="margin-bottom: 0">
+                <el-input-number
+                  :controls="false"
+                  :min="0"
+                  v-model="formData.threshold[index].upperTolerance"
+                  size="small"
+                  style="width: 70px"
+                />
               </el-form-item>
             </el-col>
           </el-row>
         </template>
 
-        <template v-for="(item, index) of formData.param" v-slot:[`time-${index}`]="{ row }">
+        <template v-for="(item, index) of formData.threshold" v-slot:[`time-${index}`]="{ row }">
           <el-time-picker
-            v-model="formData.param[index].time"
+            v-model="formData.threshold[index].timeRange"
             is-range
             range-separator="~"
             :key="`time-${item.id}`"
-            :placeholder="row.name"
-            style="width:100%"
+            style="width: 100%"
             format="HH:mm"
             value-format="HH:mm"
             size="small"
+            prefix-icon=""
+            :clearable="false"
           />
         </template>
 
-        <template v-for="(item, index) of formData.param" v-slot:[`msgPush-${index}`]>
+        <template v-for="(item, index) of formData.threshold" v-slot:[`isPush-${index}`]>
           <el-form-item
-            :key="`msgPush-${item.id}`"
-            :prop="`param[${index}].msgPush`"
+            :key="`isPush-${item.id}`"
+            :prop="`threshold[${index}].isPush`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-switch v-model="formData.param[index].msgPush" />
+            <el-switch v-model="formData.threshold[index].isPush" size="small" />
           </el-form-item>
         </template>
-        <template v-for="(item, index) of formData.param" v-slot:[`action-${index}`]="{ row }">
-          <el-button :key="`action-${item.id}`" type="text" @click="() => onParamDel(row)">删除</el-button>
+        <template v-for="(item, index) of formData.threshold" v-slot:[`action-${index}`]="{ row }">
+          <el-button :key="`action-${item.id}`" type="text" @click="() => onParamDel(row)" size="small">删除</el-button>
         </template>
       </BaseTable>
     </el-form>
@@ -194,24 +227,48 @@ import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingPointBasisCols, settingPointParamCols } from '@/views/monitoring/utils'
+import { ElForm } from 'element-ui/types/form'
+import moment from 'moment'
+const format = 'HH:mm'
+
 import {
-  addDictionary,
   getDictKeys,
   IDictionary,
   IPoint,
+  IPointParam,
+  IPointThreshold,
   IStandard,
   IStandardParam,
   pointsPage,
   standardParamsPage,
   standardsPage
 } from '@/views/monitoring/api'
-import { ElForm } from 'element-ui/types/form'
-
-interface FormData {
-  threshold?: { [x: string]: string }[]
-  param?: { [x: string]: string | number }[]
-  [x: string]: any
+interface IThreshold extends IPointThreshold {
+  timeRange?: (string | Date)[]
 }
+
+interface IFormData {
+  threshold?: IThreshold[]
+  param?: IPointParam[]
+  indicateId?: string
+  pointId?: string
+}
+
+const getDefaultThresholdValue = (index?: string | number): IThreshold => ({
+  id: index,
+  //  name
+  // paraId   // 监测指标参数id 关联 设备基础配置信息id
+  level: '',
+  lower: undefined, // threshold
+  upper: undefined, // threshold
+  lowerTolerance: undefined, // allowance
+  upperTolerance: undefined, // allowance
+  start: undefined, // time
+  end: undefined, // time
+  specialVal: undefined,
+  isPush: 1,
+  timeRange: [moment('00:00', format).toDate(), moment('23:59', format).toDate()]
+})
 
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
@@ -219,7 +276,7 @@ export default class PointForm extends Vue {
   $listeners!: { open?: () => void; submit?: () => void; closed: () => void }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: FormData = { system: [], param: [] }
+  formData: IFormData = { threshold: [], param: [] }
   settingPointBasisCols = settingPointBasisCols
   settingPointParamCols = settingPointParamCols
 
@@ -244,26 +301,26 @@ export default class PointForm extends Vue {
   onSubmit() {
     this.$refs.form.validate((valid) => {
       if (valid) {
-        console.log('valid')
+        console.log(JSON.stringify(this.formData, null, 2))
       }
     })
   }
 
-  getDefaultParam(key: string = 'threshold') {
-    return {
-      param: settingPointBasisCols,
-      threshold: settingPointParamCols
-    }[key]
-      .filter((item) => item._interval)
-      .reduce(
-        (data, current) => {
-          const temp = { ...data }
-          temp[current.prop] = []
-          return temp
-        },
-        {} as { [x: string]: any }
-      )
-  }
+  // getDefaultParam(key: string = 'threshold') {
+  //   return {
+  //     param: settingPointBasisCols,
+  //     threshold: settingPointParamCols
+  //   }[key]
+  //     .filter((item) => item._slot)
+  //     .reduce(
+  //       (data, current) => {
+  //         const temp = { ...data }
+  //         temp[current.prop] = []
+  //         return temp
+  //       },
+  //       {} as { [x: string]: any }
+  //     )
+  // }
 
   async onStandardQuery() {
     try {
@@ -274,7 +331,6 @@ export default class PointForm extends Vue {
     } catch (error) {
       console.log(error)
     }
-    this.standards = [{ id: '1', name: '第一系统' }, { id: '2', name: '第二系统' }, { id: '3', name: '第三系统' }]
   }
 
   async onStandardChange(indicateId) {
@@ -284,17 +340,17 @@ export default class PointForm extends Vue {
       } = await standardParamsPage({ indicateId, current: 1, size: 999999 })
       this.formData = {
         ...this.formData,
-        param: records.map(({ id, name, upper, lower }) => ({
-          // code, unit,
-          id,
-          name,
-          // code,
-          // unit,
-          upper,
-          lower,
-          ...this.getDefaultParam('param')
+        // 缺deviceId 设备id 但有deviceTypeParaId， indicateId 监测体系id
+        param: records.map<IPointParam>(({ id, upper, lower }, index) => ({
+          //name, code, unit,    deviceTypeParaId
+          id: 'temp-' + id,
+          lrangeUp: upper, // 体系参数叫upper 存的时候叫  lrangeUp
+          lrangeLow: lower, // 体系参数叫lower 存的时候叫  lrangeLow
+          sort: index + 1,
+          siteCode: '', //  后台是 number
+          isDisplay: 1
         })),
-        threshold: records.map(({ id }) => ({ id, ...this.getDefaultParam() }))
+        threshold: records.map<IPointThreshold>((_, index) => getDefaultThresholdValue(index))
       }
     } catch (error) {
       console.log(error)
@@ -325,10 +381,7 @@ export default class PointForm extends Vue {
   onParamAdd() {
     this.formData = {
       ...this.formData,
-      threshold: [
-        ...this.formData.threshold,
-        Object.defineProperty(this.getDefaultParam(), 'id', { enumerable: false, value: '__new__' + new Date() })
-      ]
+      threshold: [...this.formData.threshold, getDefaultThresholdValue('__new__' + new Date())]
     }
   }
 
@@ -351,22 +404,17 @@ export default class PointForm extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.upload {
-  /deep/ .el-upload-list--picture-card .el-upload-list__item,
-  /deep/ .el-upload--picture-card {
-    width: 128px;
-    height: 128px;
+.form {
+  >>> .el-input-number {
+    .el-input__inner {
+      padding-left: 3px;
+      padding-right: 3px;
+    }
   }
-  /deep/ .el-upload--picture-card {
-    line-height: normal;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-.preview {
-  /deep/ .el-dialog .el-dialog__header {
-    border-bottom: 0;
+  >>> .el-date-editor--timerange {
+    .el-input__icon {
+      display: none;
+    }
   }
 }
 </style>

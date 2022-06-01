@@ -90,7 +90,6 @@ import {
   updatePoint,
   addPoint,
   addPointSetting,
-  IPointSetting,
   groups,
   sections,
   IPointConnectDevice,
@@ -176,7 +175,7 @@ export default class MonitoringPoints extends Vue {
     this.loading[data.id ? 'update' : 'add'] = false
   }
 
-  async onSettingSubmit(data: IPointSetting) {
+  async onSettingSubmit(data) {
     this.loading.setting = true
     try {
       const { result } = await addPointSetting(data)

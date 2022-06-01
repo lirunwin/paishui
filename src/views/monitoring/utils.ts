@@ -1,5 +1,6 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
-import { IPointConnectDevice, IStandardParam, ITypeParam } from './api'
+import { IDictionary, IPointParam, IStandardParam, ITypeParam } from './api'
+import { defaultValuesForMonitorStandardLevel, getIntervalValue, translate } from '@/utils/constant'
 
 interface ColItem extends Partial<ElTableColumn> {
   _slot?: boolean
@@ -47,7 +48,7 @@ export const settingArchiveCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
   { prop: 'no', label: '设备编码', width: '120px', ...alignLeft },
-  { prop: 'sn', label: 'SN序列号', width: '120px', ...alignLeft },
+  { prop: 'sn', label: '出厂编号', width: '120px', ...alignLeft },
   { prop: 'typeName', label: '设备类型', width: '100px', ...alignLeft },
   { prop: 'model', label: '设备型号', width: '100px', ...alignLeft },
   { prop: 'name', label: '设备名称', minWidth: '120px', ...alignLeft },
@@ -63,34 +64,44 @@ export const settingArchiveCols: ColItem[] = [
 export const settingStandardCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { type: 'index', label: '序号', width: '60px' },
   { prop: 'name', label: '监测体系名称', minWidth: '120px', ...alignLeft },
   { prop: 'typeName', label: '设备类型', minWidth: '120px', ...alignLeft }
 ]
 /**指标标准被指 -参数*/
-export const settingStandardParamCols: ColItem[] = [
+export const settingStandardParamCols = (levels: IDictionary[]): ColItem[] => [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
   { prop: 'deviceTypeParaName', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'level', label: '判定', width: '100px', formatter },
+  {
+    prop: 'level',
+    label: '判定',
+    width: '100px',
+    formatter: ({ level }: IStandardParam) => translate({ arr: levels, key: 'codeValue', value: level, label: 'notes' })
+  },
   {
     prop: 'lower-upper',
     label: '监测阈值',
     width: '100px',
-    formatter: ({ lower, upper }: IStandardParam) => (!lower && !upper ? '-' : `${lower || 0} ~ ${upper || '∞'}`)
+    formatter: ({ lower, upper, isSpecial }: IStandardParam) => (isSpecial ? '-' : getIntervalValue(lower, upper))
   },
   {
     prop: 'lowerTolerance-upperTolerance',
     label: '监测容差',
     width: '100px',
-    formatter: ({ lowerTolerance, upperTolerance }: IStandardParam) =>
-      !lowerTolerance && !upperTolerance ? '∞' : `${lowerTolerance || 0} ~ ${upperTolerance || '∞'}`
+    formatter: ({ lowerTolerance, upperTolerance, isSpecial }: IStandardParam) =>
+      isSpecial ? '-' : getIntervalValue(lowerTolerance, upperTolerance)
+  },
+  {
+    prop: 'specialVal',
+    label: '特定阈值',
+    width: '100px',
+    formatter: ({ isSpecial, specialVal }: IStandardParam) => (isSpecial ? specialVal : '-')
   },
   {
     prop: 'start-end',
     label: '有效时段',
     width: '120px',
-    formatter: ({ start, end }: IStandardParam) => (!start && !end ? '∞' : `${start || 0} ~ ${end || '∞'}`)
+    formatter: ({ start, end }: IStandardParam) => getIntervalValue(start, end)
   },
   { prop: 'isPush', label: '是否推送', width: '80px', _slot: true }
 ]
@@ -154,24 +165,29 @@ export const settingMonitorCols: ColItem[] = [
 
 /**监测点管理 - 监测参数基本设置 */
 export const settingPointBasisCols: ColItem[] = [
-  { prop: 'name', label: '参数名称' },
-  { prop: 'code', label: '参数代码' },
-  { prop: 'unit', label: '参数单位' },
-  { prop: 'distance', label: '量程' },
-  { prop: 'index', label: '序号', _slot: true },
-  { prop: 'paramCode', label: '站点参数代码', _slot: true },
-  { prop: 'display', label: '是否显示', _slot: true },
-  { prop: 'note', label: '备注', _slot: true }
+  { prop: 'name', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'code', label: '参数代码', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'unit', label: '参数单位', width: '80px' },
+  {
+    prop: 'lower-upper',
+    label: '量程',
+    width: '100px',
+    formatter: ({ lrangeLow, lrangeUp }: IPointParam) => getIntervalValue(lrangeLow, lrangeUp)
+  },
+  { prop: 'sort', label: '序号', _slot: true, width: '80px' },
+  { prop: 'siteCode', label: '站点参数代码', _slot: true, width: '120px' },
+  { prop: 'isDisplay', label: '是否显示', _slot: true, width: '80px' },
+  { prop: 'note', label: '备注', _slot: true, minWidth: '120px' }
 ]
 
 /**监测点管理 - 监测参数阈值设置 */
 export const settingPointParamCols: ColItem[] = [
-  { prop: 'name', label: '参数名称', _slot: true, width: '150px' },
-  { prop: 'value', label: '监测值判定', _slot: true, width: '120px' },
-  { prop: 'interval', label: '监测阈值', _slot: true, _interval: true, width: '200px' },
-  { prop: 'interval1', label: '阈值容差', _slot: true, _interval: true, width: '200px' },
+  { prop: 'name', label: '参数名称', _slot: true, minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'level', label: '监测值判定', _slot: true, width: '110px' },
+  { prop: 'threshold', label: '监测阈值', _slot: true, _interval: true, width: '200px' },
+  { prop: 'allowance', label: '阈值容差', _slot: true, _interval: true, width: '200px' },
   { prop: 'time', label: '有效时段', _slot: true, width: '160px' },
-  { prop: 'msgPush', label: '消息推送', _slot: true, width: '80px' },
+  { prop: 'isPush', label: '消息推送', _slot: true, width: '80px' },
   { prop: 'action', label: '操作', _slot: true }
 ]
 

@@ -282,8 +282,6 @@ export interface IStandard extends ICreator {
 
 export interface IStandardParam extends ICreator {
   departmentId?: string
-  /** 参数名称 */
-  name?: string
   /** 设备类型参数id tf_ywpn_device_type_para */
   deviceTypeParaId?: string
   /** 有效时间开始 */
@@ -294,11 +292,11 @@ export interface IStandardParam extends ICreator {
   /** 监测体系id 关联表 tf_ywpn_device_indecate */
   indicateId?: string
   /** 是否推送报警 0 false 1是 */
-  isPush?: boolean | 1 | 0
+  isPush?: boolean | number
   /** 0 否 1是 */
-  isUse?: boolean | 1 | 0
+  isUse?: boolean | number
   /** 关联字典表 优质、轻度、中度、严重 */
-  level?: number
+  level?: number | string
   /** 上限 */
   upper?: number
   /** 下限 */
@@ -309,7 +307,7 @@ export interface IStandardParam extends ICreator {
   lowerTolerance?: number
   delFlag?: string
   /** 是否特定阈值 */
-  isSpecial?: boolean | 1 | 0
+  isSpecial?: boolean | number
   /** 特定阀值 */
   specialVal?: number
 }
@@ -401,16 +399,58 @@ export interface IPointConnectDevice extends IPoint {
   } & ICreator
 }
 
-export interface IPointSetting {
-  /** 数据归集时间（分钟） */
-  collectTime?: string
-  /** 设备类型名称 */
-  name?: string
-  /** 设备类型代码 */
-  typeCode?: string
-  id?: string
-  sort?: number | string
-  status?: string
+export interface IPointParam {
+  /** 参数代码 */
+  code?: number
+  delFlag?: number
+  /** 设备id */
+  deviceId?: string | number
+  id?: string | number
+  /** 监测体系id */
+  indicateId?: string | number
+  /** 监测体系指标id */
+  indicateParaId?: string | number
+  /** 是否展示 false true */
+  isDisplay?: boolean | number
+  /** 量程下限 */
+  lrangeLow?: number
+  /** 量程上限 */
+  lrangeUp?: number
+  /** 参数名称 */
+  name?: number
+  /** 备注 */
+  note?: number
+  /** 站点参数代码 */
+  siteCode?: string
+  /** 序号 */
+  sort?: number
+}
+
+export interface IPointThreshold extends ICreator {
+  delFlag?: string
+  /** 有效时间结束 */
+  end?: string
+  id?: string | number
+  /** 是否推送 0 false 1是 */
+  isPush?: boolean | number
+  /** 是否特殊值 默认false */
+  isSpecial?: boolean | number
+  /** 关联字典表 优质、轻度、中度、严重 */
+  level?: string | number
+  /** 下限 */
+  lower?: number
+  /** 下限容差 */
+  lowerTolerance?: number
+  /** 监测指标参数id 关联 设备基础配置信息id */
+  paraId?: string | number
+  /** 特殊阈值 */
+  specialVal?: string
+  /** 有效时间开始 */
+  start?: string
+  /** 上限 */
+  upper?: number
+  /** 上限容差 */
+  upperTolerance?: number
 }
 
 export interface IDictionary {

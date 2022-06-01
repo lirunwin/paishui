@@ -46,9 +46,7 @@
           v-bind="rest"
           clearable
         >
-          <template slot="suffix" v-if="name === 'rate'">
-            分钟
-          </template>
+          <template slot="suffix" v-if="name === 'rate'"> 分钟 </template>
         </el-input>
       </el-form-item>
     </el-form>
@@ -150,7 +148,7 @@ export default class ParamForm extends Vue {
             rest: {
               ...getDefalutNumberProp(),
               precision: 2,
-              max: this.formData.lrangeUp || 9999999,
+              max: Number(this.formData.lrangeUp) || 9999999,
               controls: false
             },
             rules: [{ validator: this.validatelrangeLow, trigger: 'blur' }]
@@ -162,7 +160,7 @@ export default class ParamForm extends Vue {
             rest: {
               ...getDefalutNumberProp(),
               precision: 2,
-              min: this.formData.lrangeLow || 0,
+              min: Number(this.formData.lrangeLow) || 0,
               controls: false
             },
             rules: [{ validator: this.validatelrangeUp, trigger: 'blur' }]
