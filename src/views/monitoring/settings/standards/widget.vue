@@ -2,17 +2,18 @@
   <div class="page-container">
     <div class="actions">
       <div>
-        <el-button type="primary" size="small" :loading="loading.standardSubmitting" @click="onStandardAdd"
-          >新增指标标准</el-button
-        >
+        <el-button type="primary" size="small" :loading="loading.standardSubmitting" @click="onStandardAdd">
+          新增指标标准
+        </el-button>
         <el-button
           type="danger"
           size="small"
           :disabled="!selected.standard.length"
           :loading="loading.standardDeleting"
           @click="onStandardDelete"
-          >删除设备类型</el-button
         >
+          删除设备类型
+        </el-button>
       </div>
       <div>
         <el-button
@@ -21,16 +22,18 @@
           :loading="loading.paramSubmitting"
           :disabled="!current.standard.id"
           @click="onParamAdd"
-          >新增指标参数</el-button
         >
+          新增指标参数
+        </el-button>
         <el-button
           type="danger"
           size="small"
           :disabled="!selected.param.length"
           :loading="loading.paramDeleting"
           @click="onParamDelete"
-          >删除指标参数</el-button
         >
+          删除指标参数
+        </el-button>
       </div>
     </div>
     <el-row :gutter="15">
@@ -85,6 +88,8 @@
       :visible.sync="visible.param"
       :title="`${current.param.id ? '修改' : '新增'}指标参数`"
       :data="current.param"
+      :typeId="current.standard.type"
+      :levels="levels"
       :loading="loading.paramSubmitting"
       @submit="onParamSubmit"
     />
@@ -102,6 +107,8 @@ import {
   addStandardParam,
   deleteStandardBatch,
   deleteStandardParamBatch,
+  getDictKeys,
+  IDictionary,
   IPagination,
   IStandard,
   IStandardParam,
@@ -112,7 +119,7 @@ import {
   updateStandard,
   updateStandardParam
 } from '../../api'
-const getDefaultPagination = () => ({ current: 1, size: 30 })
+import { getDefaultPagination } from '@/utils/constant'
 
 @Component({ name: 'MonitoringStandards', components: { BaseTable, StandardForm, ParamForm } })
 export default class MonitoringStandards extends Vue {
@@ -130,9 +137,15 @@ export default class MonitoringStandards extends Vue {
     paramSubmitting: false
   }
 
-  current: { standard: IStandard; param: IStandardParam; lastStandard: IStandard } = { standard: {}, param: {}, lastStandard: {} }
+  current: { standard: IStandard; param: IStandardParam; lastStandard: IStandard } = {
+    standard: {},
+    param: {},
+    lastStandard: {}
+  }
 
   selected: { standard: IStandard[]; param: IStandardParam[] } = { standard: [], param: [] }
+
+  levels: IDictionary[] = []
 
   pagination: { standard: IPagination; param: IPagination } = {
     standard: getDefaultPagination(),
@@ -148,7 +161,7 @@ export default class MonitoringStandards extends Vue {
     this.visible.standard = true
   }
 
-  onRecoverLastCurrentStandard () {
+  onRecoverLastCurrentStandard() {
     this.current = { ...this.current, standard: this.current.lastStandard }
   }
 
@@ -238,7 +251,7 @@ export default class MonitoringStandards extends Vue {
   }
 
   async onStandardDelete() {
-    await this.$confirm('是否确认删除设备？', '提示', {
+    await this.$confirm(`是否确认删除这${this.selected.standard.length}项设备？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
@@ -255,7 +268,7 @@ export default class MonitoringStandards extends Vue {
   }
 
   async onParamDelete() {
-    await this.$confirm('是否确认删除设备参数？', '提示', {
+    await this.$confirm(`是否确认删除这${this.selected.param.length}项设备参数？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
@@ -289,9 +302,19 @@ export default class MonitoringStandards extends Vue {
     }
   }
 
+  async getLevels() {
+    try {
+      const values = await getDictKeys()
+      this.levels = (values as IDictionary[]) || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   mounted() {
     this.onStandardQuery()
     this.getAllTypes()
+    this.getLevels()
   }
 }
 </script>

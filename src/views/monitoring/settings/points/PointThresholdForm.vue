@@ -189,20 +189,18 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { Vue, Component } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingPointBasisCols, settingPointParamCols } from '@/views/monitoring/utils'
 import {
   addDictionary,
-  defaultValuesForMonitorStandardLevel,
   getDictKeys,
   IDictionary,
   IPoint,
   IStandard,
   IStandardParam,
-  monitorStandardLevelKey,
   pointsPage,
   standardParamsPage,
   standardsPage
@@ -286,7 +284,8 @@ export default class PointForm extends Vue {
       } = await standardParamsPage({ indicateId, current: 1, size: 999999 })
       this.formData = {
         ...this.formData,
-        param: records.map(({ id, name, upper, lower }) => ({ // code, unit,
+        param: records.map(({ id, name, upper, lower }) => ({
+          // code, unit,
           id,
           name,
           // code,
@@ -318,18 +317,6 @@ export default class PointForm extends Vue {
     try {
       const values = await getDictKeys()
       this.levels = (values as IDictionary[]) || []
-      // 如果没有， 添加默认值
-      if (values.length === 0) {
-        const { username: creater = '' }: { username: string } = this.$store.state.user || {}
-        await Promise.all([
-          addDictionary({ ...monitorStandardLevelKey, ulevel: 1, creater }),
-          ...defaultValuesForMonitorStandardLevel.map((item) =>
-            addDictionary({ ulevel: 2, ...monitorStandardLevelKey, creater, ...item })
-          )
-        ])
-        // 完成后，再次获取判定值
-        this.getLevels()
-      }
     } catch (error) {
       console.log(error)
     }

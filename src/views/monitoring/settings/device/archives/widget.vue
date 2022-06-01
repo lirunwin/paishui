@@ -49,7 +49,7 @@ import {
   typesPage
 } from '@/views/monitoring/api'
 
-const getDefaultPagination = () => ({ current: 1, size: 30 })
+import { getDefaultPagination } from '@/utils/constant'
 
 @Component({ name: 'DeviceArchives', components: { BaseTable, QueryForm, DeviceForm } })
 export default class DeviceArchives extends Vue {
@@ -65,7 +65,7 @@ export default class DeviceArchives extends Vue {
 
   archives: ITypeArchive[] = []
 
-  loading: ILoading = {}
+  loading: ILoading = { query: false, add: false, update: false, del: false, export: false }
 
   pagination: IPagination = getDefaultPagination()
 
@@ -73,7 +73,7 @@ export default class DeviceArchives extends Vue {
 
   onQuery(query) {
     this.query = { ...query }
-    this.doQuery(getDefaultPagination())
+    this.doQuery({ current: 1 })
   }
 
   async doQuery(query = {}) {
@@ -121,7 +121,7 @@ export default class DeviceArchives extends Vue {
   }
 
   async onDel(ids) {
-    await this.$confirm('是否确认删除设备档案？', '提示', {
+    await this.$confirm(`是否确认删除这${this.selected.length}项设备档案？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'

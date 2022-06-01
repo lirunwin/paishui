@@ -1,21 +1,30 @@
 <template>
   <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData" :rules="rules">
-      <el-form-item required label="设备类型" prop="type">
-        <el-select
-          v-model="formData.type"
-          filterable
-          placeholder="请选择设备类型"
-          size="small"
-          :disabled="formData.id"
-          clearable
-        >
-          <el-option v-for="item in types" :key="item.id" :label="item.name" :value="item.id" />
-        </el-select>
-      </el-form-item>
+    <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" :rules="rules">
+      <el-tooltip :content="no" placement="top">
+        <el-form-item required label="监测点编号" prop="monitorSiteIds">
+          <el-input v-model="no" disabled clearable />
+        </el-form-item>
+      </el-tooltip>
 
-      <el-form-item required label="指标标准名称" prop="name">
-        <el-input v-model="formData.name" placeholder="请输入指标标准名称" clearable />
+      <el-form-item required label="修改人" prop="operateUserName">
+        <el-input v-model="formData.operateUserName" placeholder="请输入修改人" clearable />
+      </el-form-item>
+      <el-form-item required label="修改时间" prop="operateTime">
+        <el-date-picker
+          type="datetime"
+          v-model="formData.operateTime"
+          placeholder="请选择修改时间"
+          clearable
+          value-format="yyyy-MM-dd HH:mm:ss"
+          style="width:100%"
+        />
+      </el-form-item>
+      <el-form-item required label="站点状态" prop="type">
+        <el-switch v-model="formData.type" active-value="start" inactive-value="stop" />
+      </el-form-item>
+      <el-form-item label="说明" prop="note">
+        <el-input v-model="formData.note" type="textarea" :rows="4" clearable />
       </el-form-item>
     </el-form>
   </BaseDialog>
@@ -25,16 +34,17 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
-import { IType } from '@/views/monitoring/api'
+import { IPointConnectDevice, IPointEnableParams } from '@/views/monitoring/api'
 
-@Component({ name: 'TypeForm', components: { BaseDialog } })
-export default class TypeForm extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) data!: object
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
-  @Prop({ type: Boolean, default: false }) loading!: boolean
+@Component({ name: 'EnableForm', components: { BaseDialog } })
+export default class EnableForm extends Vue {
+  @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
+  @Prop({ type: Object, default: () => ({}) }) data!: IPointConnectDevice
+  @Prop({ type: Boolean, default: () => false }) loading!: boolean
   $refs!: { form: ElForm }
+  formData: IPointEnableParams = { monitorSiteIds: '', operateUserName: '', operateTime: '', type: 'stop', note: '' }
 
-  formData: { [x: string]: string } = {}
+  no: string = ''
 
   get listeners() {
     const { submit, ...rest } = this.$listeners
@@ -42,8 +52,10 @@ export default class TypeForm extends Vue {
   }
 
   rules = {
-    type: [{ required: true, message: '请选择设备类型' }],
-    name: [{ required: true, message: '指标标准名称不能为空！' }, { max: 50, message: '指标标准名称不超过50个字符' }]
+    operateUserName: [{ required: true, message: '请输入操作人姓名' }],
+    operateTime: [{ required: true, message: '请选择修改时间' }],
+    type: [{ required: true, message: '请选择站点状态' }],
+    note: [{ required: false, max: 255, message: '说明最长为255个字符' }]
   }
 
   onSubmit() {
@@ -53,9 +65,30 @@ export default class TypeForm extends Vue {
       }
     })
   }
+
   @Watch('data', { immediate: true })
-  setDefaultData(val) {
-    this.formData = val.id ? { ...val } : {}
+  setDefaultValue(val: IPointConnectDevice) {
+    const { realName: operateUserName = '' } = this.$store.state.user || {}
+
+    const disabledPoints = !val.id
+      ? this.selected.filter((item) => item.status !== '1')
+      : val.status === '1'
+      ? []
+      : [val]
+
+    this.formData = {
+      monitorSiteIds: val.id
+        ? String(val.id)
+        : (disabledPoints.length ? disabledPoints : this.selected).map((item) => item.id).join(),
+      operateUserName,
+      operateTime: this.$moment().format('YYYY-MM-DD HH:mm:ss'),
+      type: val.id ? (val.status === '1' ? 'stop' : 'start') : disabledPoints.length ? 'start' : 'stop',
+      note: ''
+    }
+
+    this.no = val.id
+      ? val.no
+      : (disabledPoints.length ? disabledPoints : this.selected).map((item) => item.no).join(', ')
   }
 }
 </script>

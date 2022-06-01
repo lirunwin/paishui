@@ -112,7 +112,7 @@ import {
   ITypeParam
 } from '@/views/monitoring/api'
 
-const getDefaultPagination = () => ({ current: 1, size: 30 })
+import { getDefaultPagination } from '@/utils/constant'
 
 @Component({ name: 'DeviceTypes', components: { BaseTable, TypeForm, ParamForm } })
 export default class DeviceTypes extends Vue {
@@ -129,7 +129,7 @@ export default class DeviceTypes extends Vue {
     paramSubmitting: false
   }
 
-  current: { type: IType; param: ITypeParam, lastType: IType } = { type: {}, param: {}, lastType: {} }
+  current: { type: IType; param: ITypeParam; lastType: IType } = { type: {}, param: {}, lastType: {} }
 
   selected: { type: IType[]; param: ITypeParam[] } = { type: [], param: [] }
 
@@ -137,10 +137,9 @@ export default class DeviceTypes extends Vue {
     type: getDefaultPagination(),
     param: getDefaultPagination()
   }
+
   types: IType[] = []
   params: ITypeParam[] = []
-
-
 
   onTypeAdd() {
     this.current = { ...this.current, lastType: this.current.type, type: {} }
@@ -236,7 +235,7 @@ export default class DeviceTypes extends Vue {
   }
 
   async onTypeDelete() {
-    await this.$confirm('是否确认删除设备？', '提示', {
+    await this.$confirm(`是否确认删除这${this.selected.type.length}项设备类型？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
@@ -253,7 +252,7 @@ export default class DeviceTypes extends Vue {
   }
 
   async onParamDelete() {
-    await this.$confirm('是否确认删除设备参数？', '提示', {
+    await this.$confirm(`是否确认删除这${this.selected.param.length}项设备参数？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'

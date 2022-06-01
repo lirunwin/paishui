@@ -1,21 +1,24 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData" :rules="rules">
-      <el-form-item required label="设备类型" prop="type">
-        <el-select
-          v-model="formData.type"
-          filterable
-          placeholder="请选择设备类型"
-          size="small"
-          :disabled="formData.id"
-          clearable
-        >
-          <el-option v-for="item in types" :key="item.id" :label="item.name" :value="item.id" />
-        </el-select>
+  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" @open="onOpen" :loading="loading">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" :rules="rules">
+      <el-form-item required label="拆除人" prop="operateUserName">
+        <el-input v-model="formData.operateUserName" placeholder="请输入修改人" clearable />
       </el-form-item>
-
-      <el-form-item required label="指标标准名称" prop="name">
-        <el-input v-model="formData.name" placeholder="请输入指标标准名称" clearable />
+      <el-form-item required label="拆除人电话" prop="operateUserPhone">
+        <el-input v-model="formData.operateUserPhone" placeholder="请输入拆除人电话" clearable type="tel" />
+      </el-form-item>
+      <el-form-item required label="拆除时间" prop="operateTime">
+        <el-date-picker
+          type="datetime"
+          v-model="formData.operateTime"
+          placeholder="请选择拆除时间"
+          clearable
+          value-format="yyyy-MM-dd HH:mm:ss"
+          style="width:100%"
+        />
+      </el-form-item>
+      <el-form-item label="拆除原因" prop="note">
+        <el-input v-model="formData.note" type="textarea" :rows="4" clearable />
       </el-form-item>
     </el-form>
   </BaseDialog>
@@ -25,25 +28,33 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
-import { IType } from '@/views/monitoring/api'
+import { IPointConnectDevice, IPointDismountParams } from '@/views/monitoring/api'
 
-@Component({ name: 'TypeForm', components: { BaseDialog } })
-export default class TypeForm extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) data!: object
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
-  @Prop({ type: Boolean, default: false }) loading!: boolean
+@Component({ name: 'DismountForm', components: { BaseDialog } })
+export default class DismountForm extends Vue {
+  @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
+  @Prop({ type: Boolean, default: () => false }) loading!: boolean
   $refs!: { form: ElForm }
-
-  formData: { [x: string]: string } = {}
+  $listeners!: { open: Function; submit: Function }
+  formData: IPointDismountParams = {
+    monitorSiteIds: '',
+    operateUserName: '',
+    operateUserPhone: '',
+    operateTime: '',
+    type: 'del',
+    note: ''
+  }
 
   get listeners() {
-    const { submit, ...rest } = this.$listeners
+    const { submit, open, ...rest } = this.$listeners
     return rest
   }
 
   rules = {
-    type: [{ required: true, message: '请选择设备类型' }],
-    name: [{ required: true, message: '指标标准名称不能为空！' }, { max: 50, message: '指标标准名称不超过50个字符' }]
+    operateUserName: [{ required: true, message: '请输入拆除人姓名' }],
+    operateUserPhone: [{ required: true, message: '请输入拆除人电话' }],
+    operateTime: [{ required: true, message: '请选择修改时间' }],
+    note: [{ required: false, max: 255, message: '拆除原因最长为255个字符' }]
   }
 
   onSubmit() {
@@ -53,9 +64,20 @@ export default class TypeForm extends Vue {
       }
     })
   }
-  @Watch('data', { immediate: true })
-  setDefaultData(val) {
-    this.formData = val.id ? { ...val } : {}
+
+  onOpen() {
+    this.setDefaultValue()
+    this.$listeners.open && this.$listeners.open()
+  }
+  setDefaultValue() {
+    const { realName: operateUserName = '' } = this.$store.state.user || {}
+    const { id } = this.selected[0] || {}
+    this.formData = {
+      ...this.formData,
+      monitorSiteIds: String(id),
+      operateUserName,
+      operateTime: this.$moment().format('YYYY-MM-DD HH:mm:ss')
+    }
   }
 }
 </script>

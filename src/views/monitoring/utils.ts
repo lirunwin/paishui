@@ -21,21 +21,16 @@ export const settingDeviceTypeCols: ColItem[] = [
 export const settingDeviceTypeParamCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'name', label: '参数名称', width: '100px', ...alignLeft },
-  { prop: 'code', label: '参数代码', width: '100px', ...alignLeft },
-  { prop: 'codeAbridge', label: '参数缩写', width: '100px', ...alignLeft },
+  { prop: 'name', label: '参数名称', minWidth: '100px', ...alignLeft },
+  { prop: 'code', label: '参数代码', minWidth: '100px', ...alignLeft },
+  { prop: 'codeAbridge', label: '参数缩写', width: '90px', ...alignLeft },
   { prop: 'unit', label: '参数单位', width: '90px' },
   {
     prop: 'lrange',
     label: '量程',
-    width: '120px',
-    formatter: ({ lrangeUp, lrangeLow }: ITypeParam) => {
-      if (!lrangeLow && !lrangeUp) {
-        return '-'
-      } else {
-        return `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
-      }
-    }
+    width: '110px',
+    formatter: ({ lrangeUp, lrangeLow }: ITypeParam) =>
+      !lrangeLow && !lrangeUp ? '∞' : `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
   },
   {
     prop: 'isDisplay',
@@ -68,6 +63,7 @@ export const settingArchiveCols: ColItem[] = [
 export const settingStandardCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
+  { type: 'index', label: '序号', width: '60px' },
   { prop: 'name', label: '监测体系名称', minWidth: '120px', ...alignLeft },
   { prop: 'typeName', label: '设备类型', minWidth: '120px', ...alignLeft }
 ]
@@ -75,8 +71,8 @@ export const settingStandardCols: ColItem[] = [
 export const settingStandardParamCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'deviceTypeParaId', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'level', label: '判定', width: '100px' },
+  { prop: 'deviceTypeParaName', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'level', label: '判定', width: '100px', formatter },
   {
     prop: 'lower-upper',
     label: '监测阈值',
@@ -88,13 +84,13 @@ export const settingStandardParamCols: ColItem[] = [
     label: '监测容差',
     width: '100px',
     formatter: ({ lowerTolerance, upperTolerance }: IStandardParam) =>
-      !lowerTolerance && !upperTolerance ? '-' : `${lowerTolerance || 0} ~ ${upperTolerance || '∞'}`
+      !lowerTolerance && !upperTolerance ? '∞' : `${lowerTolerance || 0} ~ ${upperTolerance || '∞'}`
   },
   {
     prop: 'start-end',
     label: '有效时段',
     width: '120px',
-    formatter: ({ start, end }: IStandardParam) => (!start && !end ? '-' : `${start || 0} ~ ${end || '∞'}`)
+    formatter: ({ start, end }: IStandardParam) => (!start && !end ? '∞' : `${start || 0} ~ ${end || '∞'}`)
   },
   { prop: 'isPush', label: '是否推送', width: '80px', _slot: true }
 ]

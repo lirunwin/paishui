@@ -170,7 +170,7 @@ import { getNotifications, markAsRead } from '@/api/dashboard'
 import { notificationInterval } from 'staticPub/config'
 import { regPassword } from '@/utils/reg'
 import UserInfoEdit from './UserInfoEdit.vue'
-import gisNames from '@/utils/gisNames'
+import { gisNames } from '@/utils/constant'
 
 const sha1Hex = require('sha1-hex')
 @Component({

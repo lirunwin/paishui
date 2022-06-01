@@ -1,8 +1,8 @@
 <template>
-  <BaseDialog width="450px" v-bind="$attrs" v-on="listeners" @submit="onSubmit" top="8vh">
+  <BaseDialog width="450px" v-bind="$attrs" v-on="listeners" @submit="onSubmit" @open="onOpen" top="8vh">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '10em', size: 'medium' }" :model="formData">
       <el-form-item
-        v-for="{ name, label, type, required = true, disabled, rules, names, onChange, options, ...rest } of formItems"
+        v-for="{ name, label, type, required = true, disabled, rules, names, on = {}, options, ...rest } of formItems"
         :key="name"
         :required="required"
         :label="label"
@@ -17,6 +17,7 @@
                 size="small"
                 style="width: 100%"
                 clearable
+                v-on="on"
               />
             </el-form-item>
           </el-col>
@@ -29,6 +30,7 @@
                 size="small"
                 style="width: 100%"
                 clearable
+                v-on="on"
               />
             </el-form-item>
           </el-col>
@@ -39,20 +41,22 @@
           :placeholder="`请选择${label}`"
           clearable
           v-bind="rest"
+          v-on="on"
         >
-          <el-option v-for="item of options" :key="item.id || item.value" :value="item.value" :label="item.label" />
+          <el-option v-for="item of options" :key="item.value" :value="item.value" :label="item.label" />
         </el-select>
-        <el-switch v-else-if="type === 'switch'" v-model="formData[name]" v-bind="rest" />
+        <el-switch v-else-if="type === 'switch'" v-model="formData[name]" v-bind="rest" v-on="on" />
         <el-input-number
           v-else-if="type === 'number'"
           v-model="formData[name]"
           controls-position="right"
           :placeholder="`请输入${label}`"
           v-bind="rest"
+          v-on="on"
         />
-        <el-checkbox v-else-if="type === 'checkbox'" v-model="formData[name]" @change="onChange" v-bind="rest">{{
-          label
-        }}</el-checkbox>
+        <el-checkbox v-else-if="type === 'checkbox'" v-model="formData[name]" v-bind="rest" v-on="on">
+          {{ label }}
+        </el-checkbox>
         <el-input
           v-else
           v-model="formData[name]"
@@ -61,6 +65,7 @@
           :disabled="disabled"
           clearable
           v-bind="rest"
+          v-on="on"
         />
       </el-form-item>
     </el-form>
@@ -70,44 +75,58 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import { getDefalutNumberProp } from '@/views/monitoring/utils'
+import { getDefalutNumberProp, settingDeviceTypeParamCols } from '@/views/monitoring/utils'
+import { ElForm } from 'element-ui/types/form'
+import { IDictionary, IStandardParam, ITypeParam, typeParamsPage } from '@/views/monitoring/api'
+import { TableColumn } from 'element-ui/types/table-column'
+
+const getDefaultFormData = () => ({ idPush: 1, isUse: 1 })
 
 @Component({ name: 'ParamForm', components: { BaseDialog } })
 export default class ParamForm extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) data!: object
+  @Prop({ type: Object, default: () => ({}) }) data!: IStandardParam
+  @Prop({ type: Array, default: () => [] }) levels!: IDictionary[]
+  @Prop({ type: [String, Number], default: '' }) typeId!: string | number
 
-  @Watch('data', { immediate: true })
-  setDefaultData(val) {
-    const { time = [], display = '1', msg = '1', ...rest } = val || {}
-    this.formData = { ...rest, time, display, msg }
-  }
+  $refs!: { form: ElForm }
+  $listeners: { submit: Function; open: Function }
 
   get listeners() {
-    const { submit, ...rest } = this.$listeners
+    const { submit, open, ...rest } = this.$listeners
     return rest
   }
 
-  formData: { [x: string]: string } = {}
+  formData: IStandardParam & { unit?: string; range?: string } = {}
 
-  levels = []
+  typeParams: ITypeParam[] = []
+
   get keys() {
     return !this.formData.isSpecial ? ['specialVal'] : ['lower', 'lowerTolerance', 'upper', 'upperTolerance']
   }
+
   get formItems() {
     return [
       {
         label: '参数名称',
-        name: 'name',
+        name: 'deviceTypeParaId',
         type: 'select',
         rules: [{ required: true, message: '请选择参数名称', trigger: 'blur' }],
-        size: 'small'
+        size: 'small',
+        options: this.typeParams.map(({ id: value, name, code }) => ({ value, label: `${name} | ${code}` })),
+        on: { change: this.onTypeParamChange }
       },
       {
         label: '单位',
         name: 'unit',
         required: false,
         disabled: true,
-        rules: [{ type: 'string', max: 10, message: '单位不能超过10个字符' }],
+        size: 'small'
+      },
+      {
+        label: '量程',
+        name: 'range',
+        required: false,
+        disabled: true,
         size: 'small'
       },
       {
@@ -116,15 +135,17 @@ export default class ParamForm extends Vue {
         type: 'checkbox',
         rules: [{ required: true, message: '请输入特定阈值' }],
         size: 'small',
-        trueLabel: true,
-        falseLabel: false,
-        onChange: this.onIsSpecialChange
+        trueLabel: 1,
+        falseLabel: 0,
+        on: { change: this.onIsSpecialChange }
       },
       {
         label: '特定阀值',
         name: 'specialVal',
-        rules: [{ required: true, message: '请输入特定阈值' }],
-        size: 'small'
+        type: 'number',
+        ...getDefalutNumberProp(),
+        controls: false,
+        precision: 2
       },
       {
         label: '下限',
@@ -143,7 +164,7 @@ export default class ParamForm extends Vue {
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2,
-        onChange: () => this.onWarningChange('upperTolerance')
+        on: { change: () => this.onWarningChange('upperTolerance') }
       },
       {
         label: '上限',
@@ -162,14 +183,14 @@ export default class ParamForm extends Vue {
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2,
-        onChange: () => this.onWarningChange('lowerTolerance')
+        on: { change: () => this.onWarningChange('lowerTolerance') }
       },
       {
         label: '报警级别',
         name: 'level',
         type: 'select',
         rules: [{ required: true, message: '报警级别不能为空！' }],
-        options: this.levels,
+        options: this.levels.map(({ codeValue: value, notes: label }) => ({ value, label })),
         size: 'small'
       },
       {
@@ -191,39 +212,86 @@ export default class ParamForm extends Vue {
       },
       {
         label: '是否启用',
-        name: 'display',
+        name: 'isUse',
         type: 'switch',
-        rules: [{ required: true, message: '请选择是否启用' }],
-        activeValue: 'true',
-        inactiveValue: 'false',
+        activeValue: 1,
+        inactiveValue: 0,
         size: 'small'
       },
       {
         label: '是否发送警报消息',
-        name: 'msg',
+        name: 'isPush',
         type: 'switch',
-        rules: [{ required: true, message: '请选择是否发送警报消息' }],
-        activeValue: 'true',
-        inactiveValue: 'false',
+        activeValue: 1,
+        inactiveValue: 0,
         size: 'small'
       }
     ].filter(({ name }) => !this.keys.includes(name))
   }
 
-  onWarningChange(key: string) {
-    this.formData[key] = ''
+  onWarningChange(key: 'upperTolerance' | 'lowerTolerance') {
+    this.formData[key] = undefined
   }
+
   onIsSpecialChange() {
-    this.keys.forEach((key) => this.formData[key] === '')
+    this.keys.forEach((key) => {
+      this.formData[key] = undefined
+    })
   }
+
+  onTypeParamChange(id) {
+    if (!id) return
+    const { unit, lrangeLow, lrangeUp } = this.typeParams.find((item) => item.id === id) || {}
+    this.formData.unit = unit
+    const col = settingDeviceTypeParamCols.find((item) => item.prop === 'lrange') || {}
+    this.formData.range =
+      col.formatter &&
+      col.formatter(
+        {
+          lrangeLow,
+          lrangeUp
+        },
+        col as TableColumn
+      )
+    // !lrangeLow && !lrangeUp ? '∞' : `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
+  }
+
   onSubmit() {
-    console.log('submit')
     const form = this.$refs['form'] as any
     form.validate((valid) => {
       if (valid) {
-        console.log(JSON.stringify(this.formData, null, 2))
+        this.$emit('submit', { ...this.formData })
       }
     })
+  }
+
+  async onOpen(typeId = '') {
+    if (!this.typeId) return
+    try {
+      const {
+        result: { records }
+      } = await typeParamsPage({ typeId, current: 1, size: 9999999 })
+      this.typeParams = records || []
+      const { deviceTypeParaId } = this.data
+      deviceTypeParaId && this.onTypeParamChange(deviceTypeParaId)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  @Watch('data', { immediate: true })
+  setDefaultData(val) {
+    const { id, isSpecial, isPush, isUse, level, ...rest } = val || {}
+    this.formData = id
+      ? {
+          id,
+          level: String(level),
+          isPush: Number(isPush),
+          isSpecial: Number(isSpecial),
+          isUse: Number(isUse),
+          ...rest
+        }
+      : getDefaultFormData()
   }
 }
 </script>

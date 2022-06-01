@@ -6,13 +6,15 @@
         :types="types"
         :sections="sections"
         :groups="groups"
+        :loading="loading"
         @query="onQuery"
         @add="onAdd"
         @update="onUpdate"
-        @del="onDel"
+        @delete="onDel"
         @export="onExport"
         @setting="onSetting"
         @enable="onEnable"
+        @dismount="onDismount"
       />
     </div>
     <BaseTable
@@ -32,18 +34,38 @@
           :value="row.status"
           size="small"
           style="user-select:none"
-          @change="($event) => onSubmit({ ...row, status: $event }, false)"
+          @change="() => onEnableSwitch(row)"
         />
       </template>
     </BaseTable>
     <PointForm
-      :visible.sync="visible.base"
       :title="`${current.id ? '修改' : '新增'}监测点`"
+      :visible.sync="visible.base"
       :types="types"
       :data="current"
       @submit="onSubmit"
     />
-    <PointThresholdForm :visible.sync="visible.setting" title="阈值设置" @submit="onSettingSubmit" />
+    <EnableForm
+      title="监测点状态"
+      :visible.sync="visible.enable"
+      :loading="loading.enable"
+      :selected="selected"
+      :data="current"
+      @submit="onEnableSubmit"
+    />
+    <DismountForm
+      title="监测点拆除"
+      :visible.sync="visible.dismount"
+      :loading="loading.dismount"
+      :selected="selected"
+      @submit="onDismountSubmit"
+    />
+    <PointThresholdForm
+      title="阈值设置"
+      :visible.sync="visible.setting"
+      :loading="loading.setting"
+      @submit="onSettingSubmit"
+    />
   </div>
 </template>
 
@@ -54,6 +76,10 @@ import { settingPointCols as cols } from '@/views/monitoring/utils'
 import QueryForm, { ILoading, IQuery } from './QueryForm.vue'
 import PointForm from './PointForm.vue'
 import PointThresholdForm from './PointThresholdForm.vue'
+import DismountForm from './DismountForm.vue'
+import EnableForm from './EnableForm.vue'
+import { getDefaultPagination } from '@/utils/constant'
+
 import {
   deletePointBatch,
   IType,
@@ -67,15 +93,21 @@ import {
   IPointSetting,
   groups,
   sections,
-  IPointConnectDevice
+  IPointConnectDevice,
+  IPointEnableParams,
+  pointEnable,
+  pointDismount,
+  IPointDismountParams
 } from '@/views/monitoring/api'
-const getDefaultPagination = () => ({ current: 1, size: 30 })
 
-@Component({ name: 'MonitoringPoints', components: { BaseTable, QueryForm, PointForm, PointThresholdForm } })
+@Component({
+  name: 'MonitoringPoints',
+  components: { BaseTable, QueryForm, PointForm, PointThresholdForm, EnableForm, DismountForm }
+})
 export default class MonitoringPoints extends Vue {
   cols = cols
 
-  visible = { base: false, setting: false }
+  visible = { base: false, setting: false, enable: false, dismount: false }
 
   current: IPoint = {}
 
@@ -85,7 +117,16 @@ export default class MonitoringPoints extends Vue {
 
   points: IPoint[] = []
 
-  loading: ILoading = {}
+  loading: ILoading = {
+    query: false,
+    add: false,
+    update: false,
+    delete: false,
+    enable: false,
+    dismount: false,
+    export: false,
+    setting: false
+  }
 
   pagination: IPagination = getDefaultPagination()
 
@@ -96,7 +137,7 @@ export default class MonitoringPoints extends Vue {
 
   onQuery(query) {
     this.query = { ...query }
-    this.doQuery(getDefaultPagination())
+    this.doQuery({ current: 1 })
   }
 
   async doQuery(query = {}) {
@@ -151,8 +192,8 @@ export default class MonitoringPoints extends Vue {
   }
 
   onAdd() {
-    this.visible.base = true
     this.current = {}
+    this.visible.base = true
   }
 
   onUpdate(row) {
@@ -161,12 +202,12 @@ export default class MonitoringPoints extends Vue {
   }
 
   async onDel(ids) {
-    await this.$confirm('是否确认删除监测点？', '提示', {
+    await this.$confirm(`是否确认删除这${this.selected.length}项监测点？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
-    this.loading.del = true
+    this.loading.delete = true
     try {
       const { result } = await deletePointBatch(ids)
       this.$message[result ? 'success' : 'error'](`删除监测点${result ? '成功!' : '失败!'}`)
@@ -174,15 +215,49 @@ export default class MonitoringPoints extends Vue {
     } catch (error) {
       console.log(error)
     }
-    this.loading.del = false
+    this.loading.delete = false
+  }
+
+  async onEnableSubmit(data: IPointEnableParams) {
+    this.loading.enable = true
+    try {
+      const { result } = await pointEnable(data)
+      this.$message[result ? 'success' : 'error'](
+        `监测点${{ start: '开启', stop: '关闭' }[data.type]}${result ? '成功!' : '失败!'}`
+      )
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading.enable = false
+  }
+
+  async onDismountSubmit(data: IPointDismountParams) {
+    this.loading.dismount = true
+    try {
+      const { result } = await pointDismount(data)
+      this.$message[result ? 'success' : 'error'](`监测点拆卸${result ? '成功!' : '失败!'}`)
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading.dismount = false
   }
 
   onExport(ids) {
     console.log(ids)
   }
 
-  onEnable(ids) {
-    console.log(ids)
+  onEnable() {
+    this.current = {}
+    this.visible.enable = true
+  }
+
+  onEnableSwitch(row) {
+    this.current = { ...row }
+    this.visible.enable = true
+  }
+
+  onDismount() {
+    this.visible.dismount = true
   }
 
   onSetting() {

@@ -1,16 +1,8 @@
 import axios from '@/utils/request'
+import store from '@/store'
+import { defaultValuesForMonitorStandardLevel, monitorStandardLevelKey } from '@/utils/constant'
 
 const base = '/monitor'
-
-export const monitorStandardLevelKey = { codeKey: 'monitor_indicate_level', codeRemark: '体系指标判定' }
-
-/** 体系默认levels */
-export const defaultValuesForMonitorStandardLevel = [
-  { codeValue: '0', notes: '优质', sort: 0 },
-  { codeValue: '1', notes: '轻度', sort: 1 },
-  { codeValue: '2', notes: '中度', sort: 2 },
-  { codeValue: '3', notes: '严重', sort: 3 }
-]
 
 const uris = {
   addDictionary: '/base/code',
@@ -62,7 +54,9 @@ const uris = {
       /** method: GET */
       page: `${base}/monitorsite/page`,
       /** method: POST */
-      setting: `${base}/monitorsite/saveAndBind`,
+      saveAndBind: `${base}/monitorsite/saveAndBind`,
+      /** method: POST */
+      operate: `${base}/monitorsite/operate`,
       /** method: GET */
       groups: `${base}/monitorsite/group`,
       /** method: GET */
@@ -300,9 +294,9 @@ export interface IStandardParam extends ICreator {
   /** 监测体系id 关联表 tf_ywpn_device_indecate */
   indicateId?: string
   /** 是否推送报警 0 false 1是 */
-  isPush?: boolean
+  isPush?: boolean | 1 | 0
   /** 0 否 1是 */
-  isUse?: boolean
+  isUse?: boolean | 1 | 0
   /** 关联字典表 优质、轻度、中度、严重 */
   level?: number
   /** 上限 */
@@ -314,6 +308,10 @@ export interface IStandardParam extends ICreator {
   /** 下限容差 */
   lowerTolerance?: number
   delFlag?: string
+  /** 是否特定阈值 */
+  isSpecial?: boolean | 1 | 0
+  /** 特定阀值 */
+  specialVal?: number
 }
 
 export interface IPoint extends ICreator {
@@ -427,6 +425,31 @@ export interface IDictionary {
   ulevel?: string | number
 }
 
+export interface IPointEnableParams {
+  /** 监测点id，多个以,号分割 */
+  monitorSiteIds: string
+  /** 操作人 */
+  operateUserName: string
+  /** 操作时间 */
+  operateTime: string
+  /** 状态 */
+  type: 'start' | 'stop'
+  /** note */
+  note?: string
+}
+export interface IPointDismountParams {
+  /** 监测点id，只能一个*/
+  monitorSiteIds: string
+  /** 操作人 */
+  operateUserName: string
+  /** 操作人人电话号码 */
+  operateUserPhone: string
+  /** 操作时间 */
+  operateTime: string
+  /** 状态 */
+  type: 'del'
+  note?: string
+}
 /** 获取字典值 */
 export const getDictKeys = async (keys: string = monitorStandardLevelKey.codeKey) => {
   const { result } = await axios.request<{ result: { [x: string]: IDictionary[] } }>({
@@ -434,8 +457,20 @@ export const getDictKeys = async (keys: string = monitorStandardLevelKey.codeKey
     method: 'get',
     params: { keys }
   })
-  if (!monitorStandardLevelKey.codeKey.includes(',')) {
-    const { [monitorStandardLevelKey.codeKey]: values } = result
+
+  if (!keys.includes(',')) {
+    const { [keys]: values } = result
+    if (values.length === 0) {
+      const { username: creater = '' }: { username: string } = store.state.user || {}
+      await Promise.all([
+        addDictionary({ ...monitorStandardLevelKey, ulevel: 1, creater }),
+        ...defaultValuesForMonitorStandardLevel.map((item) =>
+          addDictionary({ ulevel: 2, ...monitorStandardLevelKey, creater, ...item })
+        )
+      ])
+      const temp = (await getDictKeys(keys)) as IDictionary[]
+      return temp
+    }
     return values || []
   }
   return result || {}
@@ -572,10 +607,16 @@ export const deletePointBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.points.del, method: 'delete', params: { ids } })
 
 export const addPointSetting = (data: IPointConnectDevice) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.points.setting, method: 'post', data })
+  axios.request<IRes<boolean>>({ url: uris.settings.points.saveAndBind, method: 'post', data })
 
 export const groups = (name?: string) =>
   axios.request<IResult<string[]>>({ url: uris.settings.points.groups, method: 'get', params: { name } })
 
 export const sections = (name?: string) =>
   axios.request<IResult<string[]>>({ url: uris.settings.points.sections, method: 'get', params: { name } })
+
+export const pointEnable = (data: IPointEnableParams) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.operate, method: 'post', data })
+
+export const pointDismount = (data: IPointDismountParams) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.operate, method: 'post', data })

@@ -25,7 +25,7 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
-import { IType } from '@/views/monitoring/api'
+import { IType, typeParamsPage } from '@/views/monitoring/api'
 
 @Component({ name: 'TypeForm', components: { BaseDialog } })
 export default class TypeForm extends Vue {

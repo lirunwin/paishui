@@ -54,7 +54,7 @@
 import { Vue, Component, Prop } from 'vue-property-decorator'
 import { getNotifications, markAsRead } from '@/api/dashboard'
 import MoreInfos from '@/views/currentSystem/dashboard/components/Layout/MoreInfos.vue'
-import gisNames from '@/utils/gisNames'
+import { gisNames } from '@/utils/constant'
 
 const columns = [
   {
