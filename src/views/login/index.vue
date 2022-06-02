@@ -98,6 +98,7 @@ import { regPassword } from '@/utils/reg'
 import { ElForm } from 'element-ui/types/form'
 const sha1Hex = require('sha1-hex')
 const defaultPwd = '000000'
+import { getUserMenu } from '@/api/user'
 @Component
 export default class Login extends Vue {
   name = 'Login'
@@ -229,9 +230,19 @@ export default class Login extends Vue {
                   this.$store.state.user.userId = undefined
                 } else {
                   this.loading = false
-                  setTimeout(() => {
-                    this.$router.push({ path: '/' })
-                  }, 0)
+                  // setTimeout(() => {
+                  //   this.$router.push({ path: '/' })
+                  // }, 0)
+                  const userId = sessionStorage.getItem('userId') || this.$store.state.user.userId
+                  getUserMenu(userId).then(res=>{
+                    if (res.result.some((item) => item.type === 'bigScreen')){
+                      this.$router.push({ path: '/bigScreen' })
+                    }else{
+                      this.$router.push({ path: '/' })
+                    }
+                  }).catch(err=>{
+                    console.log(err)
+                  })
                 }
               })
               .catch(() => {
