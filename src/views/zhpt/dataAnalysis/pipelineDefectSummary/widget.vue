@@ -60,8 +60,16 @@
             >
             </el-option>
           </el-select>
-          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
-          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">导出</el-button>
+          <el-button size="small"  style="margin-right: 5px"  icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
+          <download-excel
+            :fields="exportFields"
+            :data="exportData"
+            :before-finish="afterExport"
+            name="管道缺陷汇总表.xls"
+            type="xls"
+          >
+           <el-button size="small" icon="el-icon-search" type="primary">导出</el-button>
+          </download-excel>
         </div>
         <div class="right-btn"></div>
       </div>
@@ -160,15 +168,46 @@ export default {
       // 日期选择器规则
       pickerOptions0: '',
       pickerOptions1: '',
-      multipleSelection: [] // 选择的列表
+      multipleSelection: [], // 选择的列表
+      //
+      exportFields: {},
+      exportData: [],
+
     }
   },
   computed: {},
   created() {
-    this.getDate()
+    this.updateTable()
     this.getParamsId()
+    //
+    this.setFields() // 设置导出字段
+    this.setData()
   },
   methods: {
+    setFields () {
+      this.tableContent.forEach(item => {
+        this.exportFields[item.label] = item.name
+      })
+    },
+
+    setData () {
+      let data = { current: 1, size: 1e4 }
+      data.wordInfoState = 1
+      data.startPoint = ''
+      data.endPoint = ''
+      data.jcStartDate = ''
+      data.jcEndDate = ''
+      data.fixSuggest = ''
+      queryPageDefectInfo(data).then((res) => {
+        if (res.code === 1) {
+          this.exportData = res.result.records
+        } else this.$message.error('请求数据失败')
+      })
+    },
+
+    afterExport () {
+      this.$message.success('导出数据成功')
+    },
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
@@ -238,22 +277,20 @@ export default {
     searchApi() {
       this.pagination.current =1
 
-      this.getDate(this.searchValue)
+      this.updateTable(this.searchValue)
     },
 
     // 分页触发的事件
-    async handleSizeChange(val) {
+    handleSizeChange(val) {
       this.pagination.size = val
-      await this.getDate()
-      console.log(`每页 ${val} 条`)
+      this.updateTable()
     },
-    async handleCurrentChange(val) {
+    handleCurrentChange(val) {
       this.pagination.current = val
-      await this.getDate()
-      console.log(`当前页: ${val}`)
+      this.updateTable()
     },
     // 查询数据
-    async getDate(params) {
+    updateTable(params) {
       let data = {
         current: this.pagination.current,
         size: this.pagination.size
@@ -266,7 +303,7 @@ export default {
         data.jcEndDate = this.searchValue.finishDate
         data.fixSuggest = this.searchValue.fixSuggest
       }
-      await queryPageDefectInfo(data).then((res) => {
+      queryPageDefectInfo(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
         this.paginationTotal = res.result.total

@@ -451,7 +451,7 @@ export default {
       let self = this
       if (self.multipleSelection.length == 0) {
         self.$message({
-          message: '警告，请勾选数据',
+          message: '请勾选数据',
           type: 'warning'
         })
       }
@@ -459,7 +459,7 @@ export default {
     finishDownload() {
       let self = this
       self.$message({
-        message: '恭喜，数据导出成功',
+        message: '数据导出成功',
         type: 'success'
       })
     },
@@ -511,7 +511,7 @@ export default {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
-      this.popup && this.map.removeOverlay(this.popup)
+      this.currentInfoCard = false
     },
     init() {
       this.vectorLayer = new VectorLayer({ source: new VectorSource() })
@@ -735,6 +735,7 @@ export default {
         })
         this.map.addOverlay(this.popup)
         this.popup.setPosition(position)
+
       }
 
       // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)

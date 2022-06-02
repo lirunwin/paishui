@@ -36,12 +36,10 @@ export const appconfig = {
       'name': '打印地址',
       'url': 'http://117.174.10.73:8090/iserver/services/webprinting/rest/webprinting/v1'
     },
-    'legend': [
-      {
+    'legend': {
         'name': '图例',
-        'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer'
-      }
-    ],
+        'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/psmap/layers/'
+    },
     // add iserverResource
     "iserver_resource": {
       'netAnalysisService': {
@@ -141,7 +139,6 @@ export const appconfig = {
                 name: "TF_PSPS_POINT_B",
                 visible: true,
                 type: 'point'
-                // 字段备注到这儿
               },
               {
                 title: "检查井",

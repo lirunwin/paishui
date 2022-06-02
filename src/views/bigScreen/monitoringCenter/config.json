@@ -13,11 +13,11 @@
             "label":"安装地址"
         },
         {
-            "prop":"sewagesystemId",
+            "prop":"deviceStatus",
             "label":"设备状态"
         },
         {
-            "prop":"stormsystemId",
+            "prop":"monitorStatus",
             "label":"监测状态"
         },
         {

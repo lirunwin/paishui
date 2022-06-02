@@ -81,17 +81,17 @@
     <el-tab-pane label="图层列表" name="listShow" style="height:calc(100% - 40px);">
       <div style="width: 100%; height: 100%; padding: 5px">
         <tf-legend class="legend_dept" label="专题地图图层" isopen="true" title="当前为你创建的专题图。">
-          <el-table @row-click='jump' ref="multipleTable" :data="themLayerData" tooltip-effect="dark" max-height="400px" style="width: 100%" @select="selectChange" @select-all="selectChange">
+          <el-table @select='addLayer' @select-all="addLayers" ref="multipleTable" :data="themLayerData" tooltip-effect="dark" max-height="400px" style="width: 100%" >
           <template slot="empty">
             <img src="@/assets/icon/null.png" alt="">
             <p class="empty-p">暂无数据</p>
           </template>
-            <!-- <el-table-column type="selection" width="30"> </el-table-column> -->
+            <el-table-column type="selection" width="30"> </el-table-column>
             <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
-            <el-table-column prop="mapName" label="名称" width="200" align="center"/> 
+            <el-table-column prop="mapName" label="名称" width="150" align="center"> </el-table-column>
             <el-table-column prop="size" label="操作"  align="center">
               <template slot-scope="scope">
-                <el-link type="primary" @click="deleteThemLayer(scope.row)">删除</el-link>
+                <el-link type="primary" @click="jump(scope.row)">跳转</el-link>
               </template>
             </el-table-column>
           </el-table>
@@ -102,7 +102,7 @@
               @current-change="updateThemLayerTable" @size-change="updateThemLayerTable" />
             </el-col>
           </el-row>
-          <!-- <el-button size="mini" type="primary" style="width:100%" @click="deleteSelectFeas">删除选中专题图</el-button> -->
+          <el-button size="mini" type="primary" style="margin-top:5px;width:100%" @click="deleteSelectFeas">删除选中专题图</el-button>
         </tf-legend>
       </div>
     </el-tab-pane>
@@ -158,12 +158,12 @@ export default {
       layerId: '', // 图层名
       analysisAtt: [], // 字段名
       drawer: null, // 绘制器
-      themLayer: null, // 专题图层
       limitFeature: null, // 绘制图形
 
       pageSize: 30,
       currentPage: 1,
-      total: 0
+      total: 0,
+      layerBox: new Map()
     }
   },
   computed: { 
@@ -174,14 +174,15 @@ export default {
       if (newTab !== "themMap") {
         this.drawer && this.drawer.end()
         this.drawer = null
-        this.themLayer && this.mapView.removeLayer(this.themLayer)
+        // 删除专题图
+        this.removeLayer()
       } else {
 
       }
     },
     layerId(e) {
       if(!e) return
-      mapUtil.getFilds(e).then(res => {
+      mapUtil.getFields(e).then(res => {
         if (res) {
           this.analysisAtt = res.map(field => {
             return { label: field.name, value: field.field }
@@ -194,8 +195,7 @@ export default {
     },
     space(value) {
       this.drawer && this.drawer.end()
-      this.themLayer && this.mapView.removeLayer(this.themLayer)
-      this.drawer = this.themLayer = null
+      this.drawer = null
       if (value === 'draw') {
         this.drawer = new iDraw(this.mapView, "polygon", {
           endDrawCallBack: featrue => {
@@ -216,7 +216,19 @@ export default {
     this.init().then(() => this.widgetLoading = false)
     this.updateThemLayerTable()
   },
-  methods: { 
+  methods: {
+    // 移除图层
+    removeLayer (layername) {
+      if (!layername) {
+        this.layerBox.forEach((value, key) => {
+          this.mapView.removeLayer(value.themLayer)
+          this.layerBox.delete(key)
+        })
+      } else {
+        let layer = this.layerBox.get(layername)
+        this.mapView.removeLayer(layer)
+      }
+    },
     init() {
       let layers = mapUtil.getAllSubLayerNames('排水管线')
  
@@ -299,8 +311,7 @@ export default {
         const field = this.analysisAtt.find(item => item.value === text.replace(' ',''));
         const fname = field ? field.label : text;
         this.queTextName = this.queTextName +  fname;
-      }
-      else{
+      } else {
         if(text.indexOf('=') != -1) text = '等于';
         if(text.indexOf('like') != -1) text = '中存在';
         if(text.indexOf('>') != -1) text = '大于';
@@ -311,64 +322,109 @@ export default {
         if(text.indexOf('%') != -1) text = '占位';
         this.queTextName = this.queTextName +  text;
       }
-    },    
+    },
 
     showThemLayer () {
       if (!this.themLayerName) return this.$message.error('请输入专题图名称')
       if (!this.queText) return this.$message.error('请选择专题图过滤条件')
       if (this.space === "draw" && !this.limitFeature) return this.$message.error('请先绘制范围')
 
-      this.addThemLayer(this.limitFeature, this.layerId, this.queText)
-      
+      this.analysisDisable = true
+      this.getThemLayer(this.limitFeature, this.layerId, this.queText).then(res => {
+        if (res) {
+          let { themLayer, center } = res
+          this.layerBox.set(this.themLayerName, res)
+          this.mapView.addLayer(themLayer)
+          this.mapView.getView().setCenter(center)
+          this.mapView.getView().setZoom(15)
+        }
+      })
       this.uploadThemLayer(this.limitFeature, this.queText)
     },
 
-    addThemLayer (limitFeature, layerId, sqlFilterStr) {
-      this.themLayer && this.mapView.removeLayer(this.themLayer)
-      this.themLayer = null
+    // 添加
+    addLayer (row) {
+      if (row.length !== 0) {
+        let promises = row.map(item => {
+          let { layerName, filterSql } = item
+          let limitFeature = null
+          if (item.rangeScope) {
+            limitFeature = new GeoJSON().readFeature(turf.polygon(JSON.parse(row.rangeValue)))
+          }
+          if (this.layerBox.has(layerName)) {
+            return null
+          } else {
+            return this.getThemLayer(limitFeature, layerName, filterSql)
+          }
+        })
+        Promise.all(promises).then(results => {
+          results.forEach(res=> {
+            if (res) {
+              let { themLayer, center, layerName } = res
+              this.layerBox.set(layerName, res)
+              this.mapView.addLayer(themLayer)
+            }
+          })
+        })
+      } else {
+        this.removeLayer()
+      }
 
+    },
+
+    addLayers (row) {
+
+    },
+
+    getThemLayer (limitFeature, layerName, sqlFilterStr) {
+      let themLayer = createThemLayer()
       this.data.that.loading = true
       this.data.that.loadText = "专题图显示中..."
 
-      let dataSetInfo = [{ name: layerId }]
+      let dataSetInfo = [{ name: layerName }]
       let queryTask = new iQuery({ dataSetInfo })
-      queryTask.sqlQuery(sqlFilterStr).then(resArr => {
-        this.data.that.loading = false
-        if (!resArr) return this.$message.error("服务器请求失败!")
+      return new Promise(resolve => {
+        queryTask.sqlQuery(sqlFilterStr).then(resArr => {
+          this.data.that.loading = false
+          if (!resArr) return this.$message.error("服务器请求失败!")
 
-        let featruesData = resArr.filter(item => {
-          return item.result.featureCount !== 0
-        })
-        if (featruesData.length !== 0) {
-          this.themLayer = createThemLayer()
-          this.mapView.addLayer(this.themLayer)
-
-          featruesData.forEach(featrueObj => {
-            let features = featrueObj.result.features.features
-            let themFeatures = features.map(feature => new GeoJSON().readFeature(feature))
-            // 范围限制
-            if (limitFeature) {
-              themFeatures = themFeatures.filter(feature => {
-                let limitGeometry = turf.polygon(limitFeature.getGeometry().getCoordinates())
-                let geomtry = feature.getGeometry(), inGeometry
-                if (geomtry instanceof Point) {
-                  inGeometry = turf.point(geomtry.getCoordinates())
-                } else if (geomtry instanceof LineString) {
-                  inGeometry = turf.lineString(geomtry.getCoordinates())
-                } else return false
-                return turf.booleanContains(limitGeometry, inGeometry)
-              })
-            }
-            //
-            this.themLayer.getSource().addFeatures(themFeatures)
+          let featruesData = resArr.filter(item => {
+            return item.result.featureCount !== 0
           })
-        } else return this.$message.error("无符合过滤条件数据")
+          if (featruesData.length !== 0) {
+            featruesData.forEach(featrueObj => {
+              let features = featrueObj.result.features.features
+              let themFeatures = features.map(feature => new GeoJSON().readFeature(feature))
+              // 范围限制
+              if (limitFeature) {
+                themFeatures = themFeatures.filter(feature => {
+                  let limitGeometry = turf.polygon(limitFeature.getGeometry().getCoordinates())
+                  let geomtry = feature.getGeometry(), inGeometry
+                  if (geomtry instanceof Point) {
+                    inGeometry = turf.point(geomtry.getCoordinates())
+                  } else if (geomtry instanceof LineString) {
+                    inGeometry = turf.lineString(geomtry.getCoordinates())
+                  } else return false
+                  return turf.booleanContains(limitGeometry, inGeometry)
+                })
+              }
+              //
+              themLayer.getSource().addFeatures(themFeatures)
+              let center = new mapUtil().getCenterFromFeatures(themFeatures)
+              resolve({ themLayer, center, layerName })
+            })
+          } else {
+            this.$message.success("无符合条件数据, 请检查查询语句是否正确")
+            resolve(null)
+          }
+        })
       })
+
 
       function createThemLayer () {
         return new VectorLayer({
           source: new VectorSource(),
-          style: comSymbol.getAllStyle(3, "#f40", 5, "#00FFFF")
+          style: comSymbol.getAllStyle(3, "#f40", 3, "red")
         })
       }
     },
@@ -378,19 +434,23 @@ export default {
       let range = limitFeature ? limitFeature.getGeometry().getCoordinates() : appconfig.initCenter
       let params = {
         rangeValue: limitFeature ? JSON.stringify(range) : "",
-        range: limitFeature ? 1 : 0,
+        rangeScope: limitFeature ? 1 : 0,
         filterSql: sqlFilterStr,
         mapName: this.themLayerName,
         layerName: this.layerId,
         userId: this.$store.state.user.userId
       }
       addThemLayer(params).then(res => {
-        this.updateThemLayerTable()
-        this.$message.success('添加专题图：' + this.themLayerName + ' 成功!')
+        this.analysisDisable = false
+        if (res.code === 1) {
+          this.updateThemLayerTable()
+          this.$message.success('添加专题图：' + this.themLayerName + ' 成功!')
+        } else {
+          this.$message.success('保存专题图：' + this.themLayerName + ' 失败!')
+        }
       })
     },
 
-    // TODO 更新专题图表格
     updateThemLayerTable () {
       let  params = { size: this.pageSize, current: this.currentPage }
       getThemLayer(params).then(res => {
@@ -404,7 +464,6 @@ export default {
     deleteThemLayer (row) {
       this.$confirm('确定删除"' + row.mapName + '"图层信息', '提示',
         { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }).then(_ => {
-          this.themLayer && this.themLayer.getSource().clear()
           this.drawer && this.drawer.end()
           deleteThemLayer(row.id).then(res => {
             if (res.code == 1) {
@@ -415,114 +474,36 @@ export default {
       })
     },
 
-    // TODO 删除专题图
-    deleteThemLayers (row) {
-      let selects = this.$refs.multipleTable.selection
-      if (selects.length == 0) return this.$message('请选中至少一个专题图')
-
-      let params = {}
-      if(row.id && row.id > -1) {
-       
-      }
-    },
-
-
-    uploadThemMap(options, callback) {
-      var extent = options.extent
-      if(extent.length > 3500) {
-        var needLong = Math.ceil(extent.length / 4000)
-        extent = JSON.parse(options.extent)[0]
-        var finalExtent = []
-        for(var i=0,ii=extent.length;i<ii;i+=needLong) {
-          var dextent = [0,0], length = 0
-          for(var j=0;j<needLong;j++) {
-            if(extent[i]) {
-              var de = extent[i]
-              dextent[0] += de[0]
-              dextent[1] += de[1]
-              length += 1
-            }
-          }
-          if(dextent[0] != 0) {
-            finalExtent.push([dextent[0] / length, dextent[1] / length])
-          }
-        }
-        extent = JSON.stringify([finalExtent])
-      }
-      request({ 
-        url: 'gis/themelayer/save', 
-        method: 'post',
-        data: {
-          name: options.name,
-          extent: extent,
-          comCondition: options.comCondition,
-          layerName: options.layerName,
-        } }).then(res => {
-          this.analysisDisable = false
-          if(res.code == 1) {
-            this.$message.success('添加标识：' + options.name + ' 成功')
-            callback(res)  
-          }
-      })
-    }, 
-    selectChange(select, row) {
-      
-    },
-    deleteFeas(row, index) {
-      if(row.id && row.id > -1) {
-        this.$confirm('确定删除"' + row.name + '"图层信息', '提示',
-        { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }).then(_ => {
-          request({ 
-            url: 'gis/themelayer/deleteByIds?ids=' + row.id, 
-            method: 'delete',
-            }).then(res => {
-            if(res.code == 1) {
-              this.mapView.map.remove(row.layer)
-              this.themLayerData.splice(index, 1)
-            }
-          })
-        })
-      }
-    },
     deleteSelectFeas() {
       var selects = this.$refs.multipleTable.selection
       if(selects.length == 0) return this.$message('请选中至少一个专题图')
       var view = this.mapView
-      const names = selects.map(item=> item.name).toString();;
       this.$confirm('确定删除选中的 ' + selects.length + '个图层信息', '提示',
         { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }).then(_ => {
-        request({ url: 'gis/themelayer/deleteByIds?ids=' + selects.map(e => e.id), method: 'delete', }).then(res => {
-          if(res.code == 1) {
-            for(var i=0,il=this.themLayerData,ii=il.length;i<ii;i++) {
-              var di = il[i]
-              if(di.select) {
-                view.map.remove(di.layer)
-                il.splice(i--, 1)
-                ii -= 1
-              }
+        deleteThemLayer(selects[0].id).then(res => {
+            console.log('删除')
+            if (res.code == 1) {
+              this.$message.success(`已删除 ${row.mapName} 专题图`)
+              this.updateThemLayerTable()
             }
-            this.$message.success('删除成功！')
-          } else this.$message.success('删除失败：' + res.message)
-        })
+          })
+
       })
     },
+    // 跳转
     jump(row) {
-      let limitFeature = null
-      this.drawer && this.drawer.clear()
-      if (row.range) {
-        limitFeature = new GeoJSON().readFeature(turf.polygon(JSON.parse(row.rangeValue)))
-      } else {
-        this.mapView.getView().setZoom(15)
-      }
       let { layerName, filterSql } = row
-      this.addThemLayer(limitFeature, layerName, filterSql)
+      //
+      if (this.layerBox.has(layerName)) {
+        let { themLayer, center } = this.layerBox.get(layerName)
+        this.mapView.getView().setCenter(center)
+        this.mapView.getView().setZoom(15)
+      } else this.$message.warning('请先添加该图层')
     }
   },
   destroyed() {
     this.drawer && this.drawer.end()
     this.drawer = null
-    this.themLayer && this.mapView.removeLayer(this.themLayer)
-    this.themLayer = null
   }
 }
 </script>

@@ -4,10 +4,8 @@
     <el-table
       :data="tableData"
       border
-      show-summary
       style="width: 100%; margin-top: 20px"
       stripe
-      :summary-method="getSummaries"
     >
       <el-table-column type="index" label="序号" width="80" align="center" header-align="center" fixed="left">
       </el-table-column>
@@ -19,7 +17,6 @@
         show-overflow-tooltip
         v-for="(v, i) in tableContent"
         :key="i"
-        :show-overflow-tooltip="true"
       >
       </el-table-column>
     </el-table>

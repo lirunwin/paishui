@@ -265,7 +265,7 @@
 
     <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
-      <delete-dialog @sendBool="getBool" v-show="dialogFormVisible" :checkParam="id"></delete-dialog>
+      <check-dialog @sendBool="getBool" v-if="dialogFormVisible" :checkParam="id"></check-dialog>
     </transition>
   </div>
 </template>
@@ -297,13 +297,13 @@ import { baseAddress } from '@/utils/request.ts'
 import axios from 'axios'
 
 // 引入管道检测组件
-import deleteDialog from '../components/checkDetails.vue'
+import checkDialog from '../components/checkDetails.vue'
 import { mapUtil } from '../../common/mapUtil/common'
 
 export default {
   props: ['data'],
   components: {
-    deleteDialog,
+    checkDialog,
     'download-excel': JsonExcel
   },
   data() {
@@ -598,7 +598,6 @@ export default {
       this.map.addLayer(this.lightLayer)
       this.clickEvent = this.map.on('click', (evt) => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
-        console.log('点击管线')
         if (feas.length !== 0) {
           this.openPromptBox(feas[0].values_)
         } else {
@@ -612,7 +611,7 @@ export default {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
-      this.popup && this.map.removeOverlay(this.popup)
+      this.currentInfoCard = false
     },
     // 获取缺陷数据
     getPipeDefectData() {
@@ -788,7 +787,7 @@ export default {
         this.lightLayer.getSource().addFeature(feature)
         let center = new mapUtil().getCenterFromFeatures(feature)
         this.map.getView().setCenter(center)
-        this.map.getView().setZoom(18)
+        this.map.getView().setZoom(19)
         return center
       }
     },
@@ -848,8 +847,8 @@ export default {
 
     // 详情
     async openDetails(row) {
+      console.log('详情')
       this.id = row.id
-
       this.dialogFormVisible = true
     },
     // 重置

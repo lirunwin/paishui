@@ -84,14 +84,14 @@
           <div class="box1" v-show="activeIndex == '2'">
             <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
               <div class="detailsTitle">功能性缺陷评价（等级：{{ DetailsForm.funcClass }}）</div>
-              <el-row v-for="v in funcArr" :key="v[0].label">
+              <el-row v-for="(v) in funcArr" :key="v[0].label">
                 <el-col :span="12" style="padding-right: 15px">
                   <el-form-item :label="v[0].label">
                     <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12" style="padding-right: 15px"
-                  ><el-form-item :label="[v[1].label]">
+                  ><el-form-item :label="v[1].label">
                     <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
                   </el-form-item>
                 </el-col>
@@ -147,7 +147,7 @@
           <div class="box1" v-show="activeIndex == '3'">
             <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
               <div class="detailsTitle">结构性缺陷评价（等级：{{ DetailsForm.structClass }}）</div>
-              <el-row v-for="(v, i) in structArr" :key="i">
+              <el-row v-for="v in structArr" :key="v[0].label">
                 <el-col :span="12" style="padding-right: 15px">
                   <el-form-item :label="v[0].label">
                     <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
@@ -331,6 +331,9 @@ export default {
       DetailsForm: {} // 详情表单
     }
   },
+  created () {
+    console.log('初始化界面详情', this.checkParam)
+  },
   async mounted() {
     // this.checkDialogFormVisible = this.checkParam.bool
     await this.openDetails()
@@ -379,7 +382,7 @@ export default {
         // console.log('走了有id的方法')
         let res = await assessmentDetails(this.checkParam)
         if (!res.result) {
-          this.$message.error('管道详情数据为空~!')
+          this.$message.error('管道详情数据为空!')
           this.closeDialog()
           return false
         }
@@ -442,6 +445,17 @@ export default {
           this.renderEcharts()
         })
       }
+    },
+    format (obj) {
+      let res = {}
+      for (let key in obj) {
+        if (obj[key] === 0) {
+          res[key] = obj[key].toString()
+        } else {
+          res[key] = obj[key]
+        }
+      }
+      return res
     },
     // 详情导航选择事件
     handleSelect(key, keyPath) {

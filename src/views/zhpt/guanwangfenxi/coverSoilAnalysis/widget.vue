@@ -2,7 +2,10 @@
   <div class="panel-container i-scrollbar">
     <!-- 纵剖面分析 -->
     <div class="op-box">
-      <el-button type="primary" size="small" style="width:100%" :loading="loading" @click="selectPipe">选择分析的管线</el-button>
+      <div class="item-head" style="margin-top:0">选择管线</div>
+      <el-radio v-model="drawType" label="point">点</el-radio>
+      <el-radio v-model="drawType" label="circle">圆</el-radio>
+      <el-radio v-model="drawType" label="rect">框</el-radio>
     </div>
     <!-- 分析结果 -->
     <div class="result-box">
@@ -11,35 +14,33 @@
           <span class="el-icon-info" style="float: unset; font-weight: normal;"></span>
         </el-tooltip>
       </div>
-      <div class="result-description">
+    </div>
+        <el-table @row-click="showRes" :data="layerData" v-loading="queryStatus" size='small'
+        :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" 
+        style="width: 100%; height:260px; overflow: auto">
+          <template slot="empty">
+            <img src="@/assets/icon/null.png" alt="">
+            <p class="empty-p">暂无数据</p>
+          </template>
+          <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+          <el-table-column prop="id" align="center"  width="120" label="编号"></el-table-column>
+          <el-table-column prop="start" width="65" align="center" label="起点">
+            <template slot-scope="scope"> <p :style="{ color: !scope.row.start ? 'red': 'black' } ">{{ scope.row.start ? '合格' : '不合格' }} </p></template>
+          </el-table-column>
+          <el-table-column prop="end" width="65" align="center" label="终点">
+            <template slot-scope="scope"> <p :style="{ color: !scope.row.end ? 'red': 'black' } ">{{ scope.row.end ? '合格' : '不合格' }} </p></template>
+          </el-table-column>
+        </el-table>
+    <!-- 图表 -->
+    <div class="table-chart">   
+      <div class="item-head">管线详情</div>
+      <div v-show="showChart" class="result-description">
         <div class="result-title" v-cloak>{{result.pipeName}}</div>
         <div v-cloak>{{result.buryType}}</div>
         <div v-cloak>{{result.depth}}</div>
         <div class="result-title" v-cloak>{{result.standard}}</div>
       </div>
-    </div>
-    <div class="result-total">
-      <div v-if="result.result[0]" class="panel-item">
-        <div>起点</div>
-        <div v-cloak>合规</div>
-      </div>
-      <div v-else class="panel-item" style="background-color:#f40">
-        <div>起点</div>
-        <div v-cloak>不合格</div>
-      </div>
-      <div v-if="result.result[1]" class="panel-item">
-        <div>终点</div>
-        <div v-cloak>合规</div>
-      </div>
-      <div v-else class="panel-item" style="background-color:#f40">
-        <div>终点</div>
-        <div v-cloak>不合格</div>
-      </div>
-    </div>
-    <!-- 图表 -->
-    <div class="table-chart">
-      <div class="item-head">管线分布</div>
-      <div class="chart-container" id="main"></div>
+      <div v-show="showChart" class="chart-container" id="main"></div>
     </div>
     <div class="op-box" style="padding-bottom:40px">
       <el-button type="danger" size="small" style="width:100%" @click="clearResult">清除结果</el-button>
@@ -66,13 +67,14 @@ import iQuery from '@/views/zhpt/common/mapUtil/query'
 import { appconfig } from 'staticPub/config';
 import { comSymbol } from '@/utils/comSymbol';
 import { CoverSoilStandard } from '@/views/zhpt/common/standard'
+import iDraw from '../../common/mapUtil/draw';
+import { mapUtil } from '../../common/mapUtil/common';
 
 export default {
   props: ['data'],
   data() {
     return {
       selectFlag: false,
-      doLoading: false,
       result: {
         pipeName: '',
         buryType: '',
@@ -80,12 +82,19 @@ export default {
         standard: '',
         result: [true, true]
       },
-      loading: false,
+
       //
       rootPage: null,
-      mapClickEvent: null,
       mapView: null,
-      vectorLayer: null
+      vectorLayer: null,
+      lightLayer: null,
+
+      layerData: [],
+      queryStatus: false,
+      showChart: false,
+      drawer: null,
+      drawFea: null,
+      drawType: ''
     }
   },
   computed: {
@@ -95,9 +104,12 @@ export default {
       if (val !== "coverSoilAnalysis") this.removeAll()
       else this.init()
     },
+    drawType (n) {
+      if (!n) return
+      this.selectPipe()
+    },
   },
   mounted() {
-    this.loadChart()
     this.rootPage = this.data.that
     this.mapView = this.data.mapView
     this.init()
@@ -107,50 +119,78 @@ export default {
   },
   methods: {
     init () {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f40', 5, '#00FFFF') })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
       this.mapView.addLayer(this.vectorLayer)
+      this.mapView.addLayer(this.lightLayer)
+      this.data.that.setPopupSwitch(false)
     },
     removeAll () {
       this.rootPage.$refs.popupWindow.closePopup() // 清除地图视图点击选择的要素,关闭弹窗
-      this.mapClickEvent && unByKey(this.mapClickEvent)
       this.mapView.removeLayer(this.vectorLayer)
-      this.mapClickEvent = this.vectorLayer = null
+      this.vectorLayer = null
+      this.data.that.setPopupSwitch(true)
     },
     // 选择管线
     selectPipe() {
-      this.clearResult()
-      this.setCursor('crosshair')
-      this.selectFlag = true
-      this.mapClickEvent && this.mapView.removeInteraction(this.mapClickEvent)
+      if(!this.drawType) return this.$message.warning('请选择类型')
       this.vectorLayer.getSource().clear()
-
-      this.mapClickEvent = this.mapView.on("click", evt => {
-        let { coordinate } = evt
-        let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
-        const tolerateDis = 0.3 // 模糊距离
-        let geometryJson = turf.buffer(turf.point(coordinate), tolerateDis / 1000, { units: 'kilometers' })
-        new iQuery({ dataSetInfo }).spaceQuery(new GeoJSON().readFeature(geometryJson)).then(resArr => {
-          let featureObj = resArr.find(res => res.result.featureCount !== 0)
-          if (featureObj) {
-            this.mapView.removeInteraction(this.mapClickEvent)
-            this.setCursor()
-            let features = featureObj.result.features
-            this.vectorLayer.getSource().addFeature(new GeoJSON().readFeature(features.features[0]))
-            this.rootPage.$refs.popupWindow.showPopup(coordinate, features.features[0])
-            this.getPipeSoilDepth(features.features[0])
-          } else this.$message.warning("该位置无管线")
-        })
-        // 
+      this.drawer && this.drawer.end()
+      this.drawer = new iDraw(this.mapView, this.drawType, {
+        showCloser: false,
+        endDrawCallBack: fea => {
+          this.drawer.remove()
+          this.drawFea = fea
+          let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
+          if (this.drawType === 'point') {
+            const tolerateDis = 0.3 // 模糊距离
+            let geometryJson = turf.buffer(turf.point(fea.getGeometry().getCoordinates()), tolerateDis / 1000, { units: 'kilometers' })
+            fea = new GeoJSON().readFeature(geometryJson)
+          }
+          this.queryStatus = true
+          new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
+            this.queryStatus = false
+            let featureObj = resArr.find(res => res.result.featureCount !== 0)
+            if (featureObj) {
+              let features = featureObj.result.features
+              this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(features))
+              this.layerData = features.features.map(fea => {
+                let { descrip, eChartData } = this.getPipeSoilDepth(fea)
+                return { id: fea.properties.LNO, start: descrip.result[0], end: descrip.result[1], eChartData, descrip }
+              })
+              console.log('覆土分析', features.features[0])
+            } else this.$message.warning("该位置无管线")
+          })
+        }
       })
+      this.drawer.start()
     },
     setCursor (cursorStyle) {
       if (this.mapView) {
         this.mapView.getTargetElement().style.cursor = cursorStyle || 'auto'
       }
     },
+    // 详情
+    showRes (row) {
+      console.log('详细信息', row)
+      let { eChartData, descrip } = row
+      this.result = descrip
+      this.showChart = true
+      this.$nextTick(() => {
+        this.loadChart(eChartData)
+      })
+      // 定位
+      let feature = this.vectorLayer.getSource().getFeatures().find(fea => ( fea.get("LNO") && fea.get('LNO') === row.id))
+      if (feature) {
+        this.lightLayer.getSource().clear()
+        this.lightLayer.getSource().addFeature(feature)
+        let center = mapUtil.getCenter(feature)
+        new mapUtil(this.mapView).setZoomAndCenter(20, center)
+      }
+    },
 
     /**图表 */
-    loadChart(xAxis, groundHeightArray, nodeHeightArray, standardValArry) {
+    loadChart({ xAxis, groundHeightArray, nodeHeightArray, standardValArry } = {}) {
       let chartDom = document.getElementById('main');
       this.myChart = echarts.init(chartDom);
       let option = {
@@ -227,26 +267,26 @@ export default {
       //     this.vectorLayer.getSource().removeFeature(this.vectorLayer.getSource().getFeatureById("pipe_point"))
       // })
     },
-
+    // 覆土深度结果
     getPipeSoilDepth(feature) {
-      // 字段名
-      let START_HEIGHT = 'IN_ELEV',
-          END_HEIGHT = 'OUT_ELEV',
-          START_DEPTH = 'S_DEEP',
-          END_DEPTH = 'E_DEEP',
-          BURYTYPE = 'EMBED'
+      let START_HEIGHT = 'IN_ELEV', // 起点高程
+          END_HEIGHT = 'OUT_ELEV', // 终点高程
+          START_DEPTH = 'S_DEEP', // 起点埋深
+          END_DEPTH = 'E_DEEP', // 终点埋深
+          BURYTYPE = 'EMBED', // 埋设方式
+          TYPE = 'TYPE', // 类型
+          LNO = 'LNO' // 管段编号
 
-      console.log('覆土分析')
       let feaType;
-      let typeName = feature.properties.TYPE || '排水管'
+      let typeName = feature.properties[TYPE] || '排水管'
       if (typeName == '移动线缆' || typeName == '电信线缆' || typeName == '广电线缆')
         feaType = '电信线缆'
       else {
         feaType = typeName
       }
-      const buryType = feature.properties[BURYTYPE] // 埋设方式
-      const startDepth = feature.properties[START_DEPTH] // 起点埋深
-      const endDepth = feature.properties[END_DEPTH] // 终点埋深
+      const buryType = feature.properties[BURYTYPE]
+      const startDepth = feature.properties[START_DEPTH]
+      const endDepth = feature.properties[END_DEPTH]
 
       
       let result = []
@@ -259,7 +299,7 @@ export default {
         return
       }
       if (buryType == '直埋') {
-        standardDescrip = '直埋标准：' + standard.direct
+        standardDescrip = `直埋标准：${standard.direct}`
         standardVal = standard.direct
         result[0] = Number(startDepth) > standard.direct
         result[1] = Number(endDepth) > standard.direct
@@ -269,13 +309,14 @@ export default {
         result[0] = Number(startDepth) > standard.ditch
         result[1] = Number(endDepth) > standard.ditch
       }
-      this.result = {
-        pipeName: feature.properties.TYPE + '-' + feature.properties.LNO,
-        buryType: "埋设方式：" + buryType,
-        depth: '起止深度：' + startDepth + 'm / ' + endDepth + 'm',
-        standard: standardDescrip,
+      let descrip = {
+        pipeName: feature.properties[TYPE] + '-' + feature.properties[LNO],
+        buryType: `埋深方式：${buryType}`,
+        depth: `起止深度：${startDepth}m / ${endDepth}m`,
+        standard: `${standardDescrip}m`,
         result: result
       }
+
       let startGroundHeight = parseFloat(feature.properties[START_HEIGHT]) + parseFloat(feature.properties[START_DEPTH])
       let endGroundHeight = parseFloat(feature.properties[END_HEIGHT]) + parseFloat(feature.properties[END_DEPTH])
       let groundHeightArray = [startGroundHeight.toFixed(2), endGroundHeight.toFixed(2)]
@@ -283,23 +324,18 @@ export default {
       let proj = this.mapView.getView().getProjection()
       let xAxis = [0, getLength(new GeoJSON().readFeature(feature).getGeometry(), { "projection": proj, "radius": 6378137 }).toFixed(2)]
       let standardValArry = [(startGroundHeight - standardVal).toFixed(2), (endGroundHeight - standardVal).toFixed(2)]
-      this.loadChart(xAxis, groundHeightArray, nodeHeightArray, standardValArry)
-      this.doLoading = false // 执行状态
+      return { eChartData: { xAxis, groundHeightArray, nodeHeightArray, standardValArry }, descrip }
     },
     /**
      * 清除结果
      */
     clearResult() {
-      this.loadChart()
-      this.result = {
-        pipeName: '',
-        buryType: '',
-        depth: '',
-        standard: '',
-        result: [true, true]
-      }
-      this.rootPage.$refs.popupWindow.closePopup()// 清除地图视图点击选择的要素,关闭弹窗
+      this.drawType = ''
+      this.drawer && this.drawer.end()
+      this.layerData = []
+      this.showChart = false
       this.vectorLayer && this.vectorLayer.getSource().clear()
+      this.lightLayer && this.lightLayer.getSource().clear()
       this.selectFlag = false
     }
   }

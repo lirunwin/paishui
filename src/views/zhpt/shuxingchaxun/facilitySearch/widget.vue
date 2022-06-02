@@ -4,7 +4,7 @@
       <div class="item-head" style="margin-top:0">查询图层</div>
       <el-form label-width="70px">
         <el-form-item label="选取图层" style="margin:0">
-          <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small" >
+          <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small" multiple clearable>
             <el-option v-for="item in datasetOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
           </el-select>
         </el-form-item>
@@ -35,7 +35,7 @@
             <el-table-column prop="number" align="center" label="数量(个)"></el-table-column>
             <el-table-column align="center" label="操作">
               <template slot-scope="scope">
-                <el-button type="text" @click="showQueryResultData(scope.row.data)">查看</el-button>
+                <el-button type="text" @click="showQueryResultData(scope.row)">详细</el-button>
                 <download-excel class="export-btn" :data="scope.row.data" :fields="scope.row.fields" type="xls" :name="scope.row.layer"
                                 style="display: inline;">
                   <el-button type="text" @click="beforeExport(scope.row.data)">导出</el-button>
@@ -80,7 +80,7 @@ export default {
       queryStatus: false,
 
       // 
-      drawType: '',
+      drawType: 'full',
       drawer: null,
       vectorLayer: null,
       drawFeature: null,
@@ -135,8 +135,8 @@ export default {
       this.datasetOptions = layers.map(layer => {
         return { label: layer.title, value: layer.name }
       })
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(3, '#f00', 5, '#409EFF') })
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#00FFFF') })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
       this.mapView.addLayer(this.vectorLayer)
       this.mapView.addLayer(this.lightLayer)
     },
@@ -157,58 +157,64 @@ export default {
     },
 
     doQuery () {
-        if (!this.selectLayer) return this.$message.error('请先选择要分析的图层!')
-        if (this.drawType === "") return this.$message.error('请选择查询范围')
+        console.log('开始查询')
+        if (this.selectLayer.length === 0) return this.$message.error('请先选择要分析的图层!')
         if (this.drawType === 'extent' && !this.drawFeature) return this.$message.error('请先绘制查询范围!')
 
-        let findLayer = this.datasetOptions.find(layer => layer.value === this.selectLayer)
-        let dataSetInfo = [{ name: findLayer.value, label: findLayer.label }]
+        let findLayers = this.datasetOptions.filter(layer => this.selectLayer.includes(layer.value))
+        let dataSetInfo = findLayers.map(layer => {
+          return { name: layer.value, label: layer.label }
+        })
         
         let queryTask = new iQuery({ dataSetInfo })
         this.queryStatus = true
         queryTask.sqlQuery("1=1").then(resArr => {
             let resFeaturesObj = resArr.filter(res => res && res.result.featureCount !== 0)
             let tableData = []
-            resFeaturesObj.forEach(obj => {
-                let features = new GeoJSON().readFeatures(obj.result.features)
-                // 查询图形，相交处理
-                if (this.drawFeature) {
-                    features  = features.filter(feature => {
-                        let limitGeometry = turf.polygon(this.drawFeature.getGeometry().getCoordinates())
-                        let geomtry = feature.getGeometry(), inGeometry
-                        if (geomtry instanceof Point) {
-                            inGeometry = turf.point(geomtry.getCoordinates())
-                        } else if (geomtry instanceof LineString) {
-                            inGeometry = turf.lineString(geomtry.getCoordinates())
-                        } else return false
-                        return turf.booleanContains(limitGeometry, inGeometry)
-                    })
-                }
-                this.queryStatus = false
-                this.vectorLayer.getSource().addFeatures(features)
-                tableData.push({ name: obj.layerName, tableName: obj.tableName, data: features.map(fea => fea.values_) })
-            })
-            this.addTableData(tableData)
+            if (resFeaturesObj.length === 0) {
+              this.$message.warning('查询无数据')
+            } else {
+              resFeaturesObj.forEach(obj => {
+                  let features = new GeoJSON().readFeatures(obj.result.features)
+                  // 查询图形，相交处理
+                  if (this.drawFeature) {
+                      features  = features.filter(feature => {
+                          let limitGeometry = turf.polygon(this.drawFeature.getGeometry().getCoordinates())
+                          let geomtry = feature.getGeometry(), inGeometry
+                          if (geomtry instanceof Point) {
+                              inGeometry = turf.point(geomtry.getCoordinates())
+                          } else if (geomtry instanceof LineString) {
+                              inGeometry = turf.lineString(geomtry.getCoordinates())
+                          } else return false
+                          return turf.booleanContains(limitGeometry, inGeometry)
+                      })
+                  }
+                  this.vectorLayer.getSource().addFeatures(features)
+                  tableData.push({ name: obj.layerName, tableName: obj.tableName, data: features.map(fea => fea.values_) })
+              })
+              this.addTableData(tableData)
+            }
+            this.queryStatus = false
         })
     },
 
     addTableData (data) {
-      console.log('添加表格数据')
-        mapUtil.getFilds(data[0].tableName).then(res => {
+      let promises = data.map(obj => mapUtil.getFields(obj.tableName))
+      Promise.all(promises).then(resArr => {
+        this.resultData = resArr.map((res, index) => {
           let fields = {}
           res.forEach(field => {
             fields[field.name] = field.field
           })
-          this.resultData = data.map(item => {
-            return { 
-                layer: item.name, 
-                number: item.data.length,
-                data: item.data,
-                fields
-            }
-          })
+          return {
+            layer: data[index].name,
+            tableName: data[index].tableName,
+            number: data[index].data.length,
+            data: data[index].data,
+            fields
+          }
         })
-        
+      })
     },
 
     beforeExport(data) {
@@ -217,7 +223,7 @@ export default {
     clearResult() {
       this.drawFeature = null
       this.resultData = []
-      this.drawType = ''
+      this.drawType = 'full'
       this.selectLayer = ""
       this.drawer && this.drawer.end()
       this.vectorLayer.getSource().clear()
@@ -226,20 +232,22 @@ export default {
     /**
      *  展示查询结果
      */
-    showQueryResultData(data) {
-      if (data.length === 0) return 
-      let doc = this.selectLayer.type === "point" ? pointFieldDoc : fieldDoc
-      let colsData = []
-      for (let key in doc) {
-        colsData.push({ prop: key, label: doc[key]})
-      }
-      colsData.length = 15
-      this.$store.dispatch('map/changeMethod', {
-        pathId: 'queryResultMore',
-        widgetid: 'HalfPanel',
-        label: '详细信息',
-        param: { data, colsData, rootPage: this }
+    showQueryResultData(row) {
+      let { data, tableName } = row
+      if (data.length === 0) return
+      mapUtil.getFields(tableName).then(res => {
+        let colsData = []
+        res.forEach(({ field, name }) => {
+          colsData.push({ prop: field, label: name})
+        })
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'queryResultMore',
+          widgetid: 'HalfPanel',
+          label: '详细信息',
+          param: { data, colsData, rootPage: this }
+        })
       })
+
     },
     gotoGeometry (geometry) {
       console.log("定位")

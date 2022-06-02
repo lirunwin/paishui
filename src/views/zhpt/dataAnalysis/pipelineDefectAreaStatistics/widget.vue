@@ -62,7 +62,8 @@
             <div class="operation-box">
               <div class="serch-engineering">
                 <el-button class="serch-btn" type="primary"> 查询 </el-button>
-                <el-button class="serch-btn" type="primary"> 导出 </el-button>
+                <el-button class="serch-btn" type="primary" @click="getPdf('管道评估统计')"> 导出 </el-button>
+                <!-- <el-button class="serch-btn" type="primary" > 导出 </el-button> -->
                 <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制范围 </el-button>
                 <el-button class="serch-btn" type="primary"> 清除绘制 </el-button>
               </div>
@@ -80,11 +81,13 @@
               <el-checkbox v-model="checkDefectName">类型名称</el-checkbox>
               <el-checkbox v-model="checkDefectLevel">缺陷等级</el-checkbox>
             </div>
-            <h2 style="text-align: center">管道评估统计图</h2>
-            <div id="mainPDAS" style="height: 330px"></div>
-            <!-- 表格 -->
-            <div class="detailsTitle">管道缺陷数量统计表</div>
-            <summary-form :tabelData="returnTabel"></summary-form>
+            <div id="pdfDom" style="padding: 10px">
+              <h2 style="text-align: center">管道评估统计图</h2>
+              <div id="mainPDAS" style="height: 330px"></div>
+              <!-- 表格 -->
+              <div class="detailsTitle">管道缺陷数量统计表</div>
+              <summary-form :tabelData="returnTabel"></summary-form>
+            </div>
           </div>
         </div>
       </div>

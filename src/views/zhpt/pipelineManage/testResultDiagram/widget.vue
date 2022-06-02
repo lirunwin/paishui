@@ -155,7 +155,7 @@
       </div>
     </div>
     
-    <!-- 管道评估结果 -->
+    <!-- 管道弹窗 -->
     <transition name="el-fade-in-linear">
       <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
         <div class="detailsCrad" v-if="currentInfoCard2">
@@ -243,6 +243,7 @@
         </div>
       </div>
     </transition>
+    <!-- 详情 -->
     <transition name="el-fade-in-linear">
       <check-details @close="dialogClose" @sendBool='dialogFormVisible=false' v-show="dialogFormVisible" :checkParam="pipeId"></check-details>
     </transition>
@@ -515,7 +516,8 @@ export default {
       this.pipeFuncLayer && this.mapView.removeLayer(this.pipeFuncLayer)
       this.lightLayer && this.mapView.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
-      this.popup && this.mapView.removeOverlay(this.popup)
+      this.currentInfoCard = false
+      this.currentInfoCard2 = false
     },
     setProjectData() {
       getProject({ current: 1, size: 1e5 }).then((res) => {

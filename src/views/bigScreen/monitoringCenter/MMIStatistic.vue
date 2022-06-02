@@ -67,9 +67,10 @@ export default {
 }
 .widget-MMIStatistic{
     top: .505208rem /* 97/192 */;
-    margin-left: 2.34375rem;
+    left:50%;
+    margin-left:-1.822917rem /* 350/192 */;
     height: .416667rem /* 80/192 */;
-    width: 5.302083rem /* 1018/192 */;
+    width: 3.645833rem /* 700/192 */;
     overflow: hidden;
     position: absolute;
     font-family: Source Han Sans CN;
@@ -79,7 +80,7 @@ export default {
         display: flex;
         justify-content: center;
         .statisticitem{
-            width: 20%;
+            width: 25%;
             height: 100%;
             display: flex;
             .itemName{
@@ -90,6 +91,7 @@ export default {
                     text-align: center;
                     font-size: .0625rem /* 12/192 */;
                     font-weight: bold;
+                    white-space: nowrap;
                     color: rgb(43, 167, 255);
                     text-shadow: 0 0 10px rgba(43, 167, 255,0.3),0 0 20px rgba(43, 167, 255,0.3),0 0 30px rgba(43, 167, 255,0.3),0 0 40px rgba(43, 167, 255,0.3);  
                 }
@@ -123,6 +125,7 @@ export default {
                     align-items: center;
                 }
                 .status{
+                    white-space: nowrap;
                     font-size: .072917rem /* 14/192 */;
                     font-weight: bold;
                     color: #FEFFFF;
@@ -132,12 +135,14 @@ export default {
                     text-shadow: 0 0 10px rgba(155, 210, 250,0.3),0 0 20px rgba(155, 210, 250,0.3),0 0 30px rgba(155, 210, 250,0.3),0 0 40px rgba(155, 210, 250,0.3); 
                 }
                 .normal{
+                    white-space: nowrap;
                     font-size: .09375rem /* 18/192 */;
                     font-weight: bold;
                     color: #2BA7FF;
                     text-shadow: 0 0 10px rgba(43, 167, 255,0.3),0 0 20px rgba(43, 167, 255,0.3),0 0 30px rgba(43, 167, 255,0.3),0 0 40px rgba(43, 167, 255,0.3); 
                 }
                 .error{
+                    white-space: nowrap;
                     font-size: .09375rem /* 18/192 */;
                     font-weight: bold;
                     color: #FE4545;

@@ -148,7 +148,7 @@ export default {
   watch: {
     layerName(n, o) {
       if (!n) return
-      mapUtil.getFilds(n).then(res => {
+      mapUtil.getFields(n).then(res => {
         if (res) {
           this.attList = ''
           this.attLists = res.map(item => {
@@ -296,7 +296,7 @@ export default {
     },
     showDetail (row) {
       let { layername, features, tablename } = row
-      mapUtil.getFilds(tablename).then(res => {
+      mapUtil.getFields(tablename).then(res => {
         console.log('字段选择', res)
         let rowData = [], colsData = []
         rowData = features.features.map(fea => {

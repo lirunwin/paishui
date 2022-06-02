@@ -141,9 +141,9 @@ const actions = {
 
             const addRouter = packageRouter(routes)
             commit('SET_ROUTES', addRouter)
+            if (data.some((item) => item.type === 'bigScreen')) addRouter.unshift(bigScreenRoutes)
             if (data.some((item) => item.type === 'map' || gisNames.includes(item.type))) addRouter.unshift(mapRoute)
             if (data.some((item) => item.type === 'dashboard')) addRouter.unshift(dashboardRoute)
-            if (data.some((item) => item.type === 'bigScreen')) addRouter.unshift(bigScreenRoutes)
             else if (!data.some((item) => item.type === 'dashboard')) {
               const redirectParent = state.addRoutes[0]
               noDashboardRedict.redirect =

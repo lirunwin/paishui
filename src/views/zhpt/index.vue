@@ -270,6 +270,8 @@ export default class BaseMap extends Vue {
   currTitle = ''
   showTool = true
   showMapLengend = false
+  /** 开启点击事件弹窗 */
+  openPopupSwitch = true
   //
   showLegendBox = true
   // 图例数据
@@ -454,7 +456,7 @@ export default class BaseMap extends Vue {
     })
     // 点击查询管段详情
     this.view.on('click', (evt) => {
-      if (this.activeHeaderItem !== 'map') return
+      if (this.activeHeaderItem !== 'map' || !this.openPopupSwitch) return
       this.spaceQuery(evt.coordinate)
     })
     this.vectorLayer = new VectorLayer({
@@ -481,6 +483,12 @@ export default class BaseMap extends Vue {
       this.openPopup(position, feature)
     }
   }
+
+  // 设置是否开启弹窗
+  setPopupSwitch (isopen) {
+    this.openPopupSwitch = isopen
+  }
+
   openPopup(position, feature) {
     let com = this.$refs.popupWindow as any
     com.showPopup(position, feature, afterClosePopup, true)
@@ -762,8 +770,9 @@ export default class BaseMap extends Vue {
     >>> div {
       padding: 2px;
       img {
-        width: 18px;
-        height: 18px;
+        width: 14px;
+        height: 14px;
+        margin-right: 5px;
       }
       span {
         padding-left: 3px;

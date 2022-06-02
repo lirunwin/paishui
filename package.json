@@ -18,6 +18,7 @@
     "core-js": "^2.6.11",
     "cross-env": "^7.0.3",
     "echarts": "^4.9.0",
+    "echarts-liquidfill": "^2.0.6",
     "element-ui": "^2.15.7",
     "esri-loader": "^3.4.0",
     "file-saver": "^2.0.5",

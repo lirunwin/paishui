@@ -22,7 +22,9 @@
             <div class="content-info">
                 <div class="content-item" v-for="item in siteList" :key="item.name">
                     <div class="title"><div class="icon"></div><span class="site-name">易漏点{{item.name}}水位监测</span></div>
-                    <div class="content" ref="chart"></div>
+                    <div class="content">
+                        <waterLevelChart :fontSize="fontSize"/>
+                    </div>
                 </div>
             </div>
         </div>
@@ -30,9 +32,12 @@
 </template>
 
 <script>
-import echarts from 'echarts'
+import waterLevelChart from './components/waterLevelChart.vue'
 export default {
     name:"ELPWLMStatistic",//易漏点水位监测统计
+    components:{
+        waterLevelChart
+    },
     props:{
         show:{},
         fontSize:{
@@ -70,256 +75,15 @@ export default {
             handler(n,o){
                 if(n){
                     this.$nextTick(()=>{
-                        this.showIndicatorChart()
                     })
                 }
             }
         }
     },
     mounted(){
-        this.$nextTick(()=>{
-            this.showIndicatorChart()
-        })
+
     },
     methods:{
-        //生成指标图表
-        showIndicatorChart(){
-            this.siteList.forEach((item,index)=>{
-                let ref=this.$refs.chart[index]
-                let option = {
-                    grid: {
-                        top: 35,
-                        left: 50,
-                        right: 25,
-                        bottom:'15%'
-                    },
-                    legend: {
-                        right: 0,
-                        textStyle: {
-                            color: "rgba(254, 255, 255, 0.7)",
-                            fontSize:this.fontSize(12)
-                        }
-                    },
-                    tooltip : {
-                        trigger: 'axis',
-                        backgroundColor:'rgba(50,50,50,0.7)',
-                        confine:true,
-                        borderWidth:0,
-                        axisPointer: {
-                            type: 'cross',
-                            label: {
-                                backgroundColor: '#002442'
-                            }
-                        },
-                        textStyle:{
-                            color:'#BBE1FF'
-                        },
-                    },
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
-                        splitLine: {
-                            show: false
-                        },
-                        axisLabel:{
-                            show:true,
-                            interval:0,
-                            color:'rgba(254, 255, 255, 0.7)',
-                            fontSize:this.fontSize(12),
-                            fontFamily:'Source Han Sans CN',
-                            fontWeight:400
-                        },
-                        axisLine:{
-                            show:true,
-                            lineStyle:{
-                                color:'rgba(255,255,255,0.3)'
-                            }
-                        },
-                        axisTick:{
-                            show:true,
-                            length:5,
-                            lineStyle:{
-                                color:'rgba(255,255,255,0.1)'
-                            }
-                        }
-                    },
-                    yAxis: {
-                        type: 'value',
-                        name: "单位：m",
-                        nameTextStyle:{
-                            align:'right',
-                            fontFamily: 'Source Han Sans CN',
-                            fontSize: this.fontSize(12),
-                            fontStyle: 'normal',
-                            fontWeight: '400',
-                            color: 'rgba(254, 255, 255, 0.7)'
-                        },
-                        splitLine: {
-                            show: true,
-                            lineStyle:{
-                                color:'rgba(255, 255, 255, 0.14)'
-                            }
-                        },
-                        axisLabel:{
-                            show:true,
-                            color:'rgba(254, 255, 255, 0.7)',
-                            fontSize:this.fontSize(12),
-                            fontFamily:'Source Han Sans CN',
-                            fontWeight:400
-                        },
-                        axisLine:{
-                            show:false,
-                            lineStyle:{
-                                color:'rgba(255,255,255,0.3)'
-                            }
-                        },
-                        axisTick:{
-                            show:true,
-                            length:5,
-                            lineStyle:{
-                                color:'rgba(255,255,255,0.1)'
-                            }
-                        }
-                    },
-                    series: [
-                        {
-                            name: '当前水位',
-                            type: 'line',
-                            stack: 'a',
-                            smooth: true,
-                            symbol: 'circle',
-                            symbolSize: 5,
-                            showSymbol: false,
-                            lineStyle: {
-                                normal: {
-                                    width: 1
-                                }
-                            },
-                            areaStyle: {
-                                normal: {
-                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-                                        offset: 0,
-                                        color: 'rgba(14, 167, 255, 0.8)'
-                                    },{
-                                        offset: 0.9,
-                                        color: "rgba(14, 167, 255, 0)"
-                                    }]),
-                                    shadowColor: 'rgba(0, 0, 0, 0.1)',
-                                    shadowBlur: 10
-                                }
-                            },
-                            itemStyle: {
-                                color: 'rgb(0,136,212)',
-                                borderColor: 'rgba(0,136,212,0.2)',
-                                borderWidth: 12
-                            },
-                            markPoint: {
-                                data: [
-                                    {
-                                        type: "min",
-                                        itemStyle: {
-                                            color: 'rgb(0,136,212)',
-                                            borderColor: 'rgba(0,136,212,0.5)',
-                                            borderWidth: 12
-                                        },
-                                        label: {
-                                            color: "rgba(14, 167, 255, 0.8)",
-                                            show: true,
-                                            fontSize: this.fontSize(12),
-                                            fontWeight:600,
-                                            position: "top"
-                                        }
-                                    },
-                                    {
-                                        type: "max",
-                                        itemStyle: {
-                                            color: 'rgb(234, 58, 59)',
-                                            borderColor: 'rgba(234, 58, 59,0.5)',
-                                            borderWidth: 12
-                                        },
-                                        label: {
-                                            color: "rgba(234, 58, 59, 0.8)",
-                                            show: true,
-                                            fontSize: this.fontSize(12),
-                                            fontWeight:600,
-                                            position: "top"
-                                        }
-                                    }
-                                ],
-                                symbol:'circle',
-                                symbolSize :5,
-
-                            },
-                            // markArea: {
-                            //     data : [ [ {
-                            //         xAxis:'16:00',
-                            //         yAxis : parseInt(180),//y轴坐标控制
-                            //         itemStyle : {
-                            //             color : 'rgb(234, 58, 59,0.7)'
-                            //         }
-                            //     }, {
-                            //         xAxis:'18:00',
-                            //         yAxis : parseInt(220),//y轴坐标控制
-                            //         itemStyle : {
-                            //             color : 'rgb(234, 58, 59,0.7)'
-                            //         }
-                            //     } ] ],
-                            //     silent: true,
-                            // },
-                            data: [120, 110, 125, 145,220, 210, 191]
-                        },
-                        {
-                            name: '报警水位',
-                            type: 'line',
-                            smooth: true,
-                            symbol: 'circle',
-                            symbolSize: 5,
-                            showSymbol: false,
-                            lineStyle: {
-                                width: 1,
-                                type: "dashed"
-                            },
-                            itemStyle: {
-                                color: 'rgb(234, 58, 59)',
-                                borderColor: 'rgba(234, 58, 59, 0.27)',
-                                borderWidth: 12
-                            },
-                            data: [180,180,180,180,180,180,180],
-                        }, 
-                    ],
-                    visualMap:[
-                        {
-                            seriesIndex:0,
-                            pieces:[
-                                {
-                                    gt:0,
-                                    lt:180,
-                                    color:"rgb(0,136,212)",
-                                },
-                                {
-                                    gte:180,
-                                    color:"rgb(234, 58, 59)"
-                                },
-                            ],
-                            show:false,//标签是否显示
-                        }
-                    ],
-                };
-                this.creatChart(option,ref)
-            })            
-        },
-        creatChart(option,ref){
-            let chart = echarts.init(ref);//this.$refs.chart
-            chart.resize();
-            chart.setOption(option,{
-                notMerge: true,
-            });
-            //图表大小自适应
-            window.addEventListener("resize", ()=>{
-                chart.resize()
-            })
-        }
     }
 }
 </script>
@@ -338,7 +102,7 @@ export default {
     margin-left: $size20 /* 20/192 */;
     position: absolute;
     //size
-    height: calc(100% - .505208rem /* 97/192 */);
+    height: calc(100% - .557292rem /* 107/192 */);
     width: 2.083333rem /* 400/192 */;
     //background
     background-color: rgba(20, 24, 47, 0.5);
@@ -363,6 +127,7 @@ export default {
                 background-size: 100% 100%;
             }
             span{
+                flex: 1;
                 font-weight: bold;
                 font-size: .083333rem /* 16/192 */;
                 color: #ffffff;
@@ -370,10 +135,9 @@ export default {
                 padding: .041667rem /* 8/192 */;
             }
             .el-select{
-                width: .572917rem /* 110/192 */;
-                position: absolute;
-                right: 0;
+                flex: 0.4;
                 /deep/ input{
+                    padding: 0;
                     background: transparent;
                     border: none;
                     font-size: .072917rem /* 14/192 */;
@@ -426,6 +190,7 @@ export default {
             .content{
                 height:calc(100% - .072917rem);
                 width: 100%;
+                overflow: hidden;
             } 
         }
     }

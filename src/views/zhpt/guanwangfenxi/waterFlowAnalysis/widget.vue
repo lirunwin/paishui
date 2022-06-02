@@ -111,13 +111,14 @@ export default {
       this.map.addLayer(this.vectorLayer)
       this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#00ffff") })
       this.map.addLayer(this.lightLayer)
+      this.data.that.setPopupSwitch(false)
     },
     removeAll () {
-      console.log('移除')
       this.resFeatures = []
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
       this.lightLayer && this.lightLayer.getSource().clear()
+      this.data.that.setPopupSwitch(true)
       this.$store.dispatch('map/handelClose', {
         pathId: 'queryResultMore', 
         widgetid: 'HalfPanel',

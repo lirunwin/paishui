@@ -1,7 +1,7 @@
 <template>
     <transition 
     appear               
-    name="animate__animated animate__move2"
+    name="animate__animated animate__move"
     enter-active-class="animate__slideInLeft"
     leave-active-class="animate__slideOutLeft">
         <div class="widget-PNIARStatistic" v-if="show">
@@ -20,16 +20,59 @@
                 </div>
             </div>
             <div class="content-info">
-
+                <div class="pieChartArea">
+                    <div class="pItem" v-for="item in staList" :key="item.title">
+                        <div class="pchart">
+                            <decorationChart  
+                            :color="item.color" 
+                            :data="{value:item.value,unit:item.unit}" 
+                            :fontSize="fontSize"/>
+                        </div>
+                        <div class="title">{{item.title}}</div>
+                    </div>
+                </div>
+                <div class="barChartArea">
+                    <div class="bItem" v-for="item in orderList" :key="item.title">
+                        <div class="bchart">
+                            <animateChart :img="item.img" :fontSize="fontSize"/>
+                        </div>
+                        <div class="bcomb">
+                            <div class="sta">
+                                <div class="staWrap">
+                                    <div class="staName">{{item.title}}：</div>
+                                    <div class="staValue">{{item.value}}个</div>
+                                </div>
+                                <div class="staWrap">完成率：<div class="staPercent">{{item.percent}}%</div></div>
+                            </div>
+                            <div class="cha">
+                                <batteryChart :value="item.percent" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="boardArea">
+                    <div class="boardItem" v-for="item in reportList" :key="item.title">
+                        <reportCard :reportData="item" />
+                    </div>
+                </div>
             </div>
         </div>
     </transition>
 </template>
 
 <script>
-import echarts from 'echarts'
+import decorationChart from './components/decorationChart.vue'
+import animateChart from './components/animateChart.vue'
+import batteryChart from './components/batteryChart.vue'
+import reportCard from './components/reportCard.vue'
 export default {
-    name:"PNIARStatistic",//易漏点水位监测统计
+    name:"PNIARStatistic",//管网巡检与上报统计
+    components:{
+        decorationChart,
+        animateChart,
+        batteryChart,
+        reportCard
+    },
     props:{
         show:{},
         fontSize:{
@@ -49,6 +92,84 @@ export default {
                 label: '昨年'
             }],
             value: '今年',
+            staList:[
+                {
+                    title:"巡检里程",
+                    value:100,
+                    unit:'km',
+                    color:'#05BCD7'
+                },
+                {
+                    title:"巡检任务数",
+                    value:100,
+                    unit:'个',
+                    color:'#FFB54C'
+                },
+                {
+                    title:"工单总数",
+                    value:600,
+                    unit:'个',
+                    color:'#0EA7FF'
+                }
+            ],
+            orderList:[
+                {
+                    title:"汛情工单总数",
+                    value:100,
+                    unit:'个',
+                    percent:'82',
+                    img:require('./images/汛情.png'),
+                },
+                {
+                    title:"事件工单总数",
+                    value:200,
+                    unit:'个',
+                    percent:'82',
+                    img:require('./images/事件.png'),
+                },
+                {
+                    title:"维修工单总数",
+                    value:300,
+                    unit:'个',
+                    percent:'60',
+                    img:require('./images/维修.png'),
+                }
+            ],
+            reportList:[
+                {
+                    title:"隐患上报",
+                    normal:{
+                        title:'一般',
+                        value:30,
+                    },
+                    warning:{
+                        title:'严重',
+                        value:10,
+                    }
+                },
+                {
+                    title:"汛情上报",
+                    normal:{
+                        title:'普通',
+                        value:30,
+                    },
+                    warning:{
+                        title:'警情',
+                        value:10,
+                    }
+                },
+                {
+                    title:"事件上报",
+                    normal:{
+                        title:'普通',
+                        value:30,
+                    },
+                    warning:{
+                        title:'警情',
+                        value:10,
+                    }
+                }
+            ]
         }
     },
     watch:{
@@ -59,11 +180,11 @@ export default {
 
                     })
                 }
-            }
+            },
         }
     },
     mounted(){
-
+        
     },
     methods:{
 
@@ -81,11 +202,11 @@ export default {
     $size20:.104167rem /* 20/192 */;
     z-index: 2;
     //position
-    bottom: $size10/* 10/192 */;
+    top: .505208rem /* 97/192 */;
     margin-left: $size20 /* 20/192 */;
     position: absolute;
     //size
-    height: calc(100% - .505208rem /* 97/192 */);//618-47+32
+    height: calc(100% - 2.380208rem /* 457/192 */);
     width: 2.083333rem /* 400/192 */;
     //background
     background-color: rgba(20, 24, 47, 0.5);
@@ -110,6 +231,7 @@ export default {
                 background-size: 100% 100%;
             }
             span{
+                flex: 1;
                 font-weight: bold;
                 font-size: .083333rem /* 16/192 */;
                 color: #ffffff;
@@ -117,15 +239,14 @@ export default {
                 padding: .041667rem /* 8/192 */;
             }
             .el-select{
-                width: .572917rem /* 110/192 */;
-                position: absolute;
-                right: 0;
+                flex: 0.3;
                 /deep/ input{
                     background: transparent;
                     border: none;
                     font-size: .072917rem /* 14/192 */;
                     font-weight: 500;
                     color: #2BA7FF;
+                    padding: 0;
                 }
                 /deep/ .el-icon-arrow-up:before {
                     content: '';
@@ -144,10 +265,91 @@ export default {
     .content-info{
         width: 100%;
         height: calc(100% - .166667rem);
-        overflow: auto;
-        display: flex;
-        flex-flow: row wrap;
+        overflow: hidden;
         padding: 2px;
+        .pieChartArea{
+            height: 25%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            .pItem{
+                width: 33%;
+                height: 100%;
+                display: flex;
+                flex-flow: column;
+                .pchart{
+                    flex: 1;
+                }
+                .title{
+                    flex: 0.2;
+                    text-align: center;
+                    font-size: .072917rem /* 14/192 */;
+                    font-weight: 400;
+                    color: #FFFFFF;
+                }
+            }
+        }
+        .barChartArea{
+            height: 45%;
+            width: 100%;
+            display: flex;
+            margin: .052083rem /* 10/192 */ 0;
+            flex-flow: column;
+            .bItem{
+                width: 100%;
+                height: 33%;
+                display: flex;
+                margin: 0 0 .052083rem /* 10/192 */ 0;
+                .bchart{
+                    flex: 0.2;
+                }
+                .bcomb{
+                    margin: .026042rem /* 5/192 */;
+                    flex: 1;
+                    display: flex;
+                    flex-flow: column;
+                    background: linear-gradient(-90deg, rgba(43, 167, 255,0.2) 0%, rgba(43, 167, 255, 0.05) 100%);
+                    .sta{
+                        flex: 0.5;
+                        padding: .026042rem /* 5/192 */ .104167rem /* 20/192 */;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        font-size: .072917rem /* 14/192 */;
+                        .staWrap{
+                            display: flex;
+                        }
+                        .staName{
+                            font-weight: 400;
+                            color: #0EA7FF;
+                        }
+                        .staValue{
+                            font-weight: bold;
+                        }
+                        .staPercent{
+                            font-weight: bold;
+                            color: #0EA7FF;
+                        }
+                    }
+                    .cha{
+                        flex: 0.5;
+                        padding: 5px;
+                    }
+                }
+            }
+        }
+        .boardArea{
+            height: 25%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            .boardItem{
+                width: 33%;
+                height: 100%;
+                display: flex;
+                flex-flow: column;
+            }
+        }
     }
 }
 </style>

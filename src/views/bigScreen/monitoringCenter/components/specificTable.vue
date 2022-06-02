@@ -41,6 +41,12 @@ export default {
             type: Array,
             required: true
         },
+        cellStyle: {
+            type:Function,
+            default: () => {
+                return Function
+            }
+        },
         isScroll:{
             type:Boolean,
             default:false
@@ -48,11 +54,12 @@ export default {
     },
     data(){
         return{
-            cellStyle:{
-                fontSize:'.067708rem',
-                textAlign: 'center',
-                'border-bottom':'1px solid rgba(236, 236, 236, 0.3)'
-            },
+            // cellStyle:{
+            //     color:'rgba(255,255,255,0.5)',
+            //     fontSize:'.067708rem',
+            //     textAlign: 'center',
+            //     'border-bottom':'1px solid rgba(236, 236, 236, 0.3)'
+            // },
             headerStyle:{
                 background: 'transparent',
                 color: '#0EA7FF',

@@ -1,14 +1,48 @@
 import Feature from 'ol/Feature';
-import { Polygon, LineString, Point } from 'ol/geom';
+import { Polygon, LineString, Point, Circle } from 'ol/geom';
 import iQuery from './query';
 import { appconfig } from 'staticPub/config'
 import { GeoJSON } from 'ol/format';
 import { comSymbol } from '@/utils/comSymbol';
 import { getFieldByLayerName, getUniqueValueByFiled } from '@/api/sysmap/drain'
+import { Style, Fill, Stroke } from 'ol/style';
+import CircleStyle from 'ol/style/Circle';
 
 export class mapUtil {
 
-    private projection = 'EPSG:4326'
+    static commonStyle = {
+        point: {
+            size: 4,
+            fill: '#fff',
+            outerColor: '#409EFF',
+            outerWidth: 2
+        },
+        stroke: {
+            width: 5,
+            color: '#409EFF',
+            dash: [0, 0]
+        },
+        fill: {
+            color: 'rgba(0, 0, 0, 0.3)',
+        }
+    }
+
+    static commonLightStyle = {
+        point: {
+            size: 5,
+            fill: '#fff',
+            outerColor: '#0ff',
+            outerWidth: 2
+        },
+        stroke: {
+            width: 6,
+            color: 'rgba(0, 255, 255, 0.5)',
+            dash: [0, 0]
+        },
+        fill: {
+            color: 'rgba(0, 0, 0, 0.3)',
+        }
+    }
 
     map = null
 
@@ -97,6 +131,19 @@ export class mapUtil {
         }
     }
 
+    static getCenterFromFeatures (features) {
+        let pointsArr = features.map(fea => this.getCenter(fea))
+        let xmin, xmax, ymin, ymax
+        pointsArr.forEach(point => {
+            let [x, y] = point
+            xmin = xmin ? Math.min.call(null, x, xmin) : x
+            xmax = xmax ? Math.max.call(null, x, xmax) : x
+            ymin = ymin ? Math.min.call(null, y, ymin) : y
+            ymax = ymax ? Math.max.call(null, y, ymax) : y
+        })
+        return [(xmin + xmax) / 2, (ymin + ymax) / 2]
+    }
+
     // 当前范围内空间查询
     queryForExtent(extent, layer) {
         let [xmin, ymin, xmax, ymax] = extent
@@ -131,7 +178,7 @@ export class mapUtil {
     }
 
     // 获取字段
-    static getFilds(layerName) {
+    static getFields(layerName) {
         return new Promise(resolve => {
             getFieldByLayerName({ dataSetName: layerName }).then(res => {
                 if (res.code === 1) {
@@ -140,10 +187,10 @@ export class mapUtil {
                 } else resolve(null)
             })
         })
-        function format (data) {
+        function format(data) {
             return data.filter(item => (item.smfieldcaption && item.smfieldcaption !== item.smfieldname)).map(item => {
                 let name = item.smfieldcaption.trim()
-                return { field: item.smfieldname, name}
+                return { field: item.smfieldname, name }
             })
         }
     }
@@ -160,18 +207,53 @@ export class mapUtil {
     }
 
     // 设置子图层显隐
-    setSublayerVisible (subLayerNames, visible) {
+    setSublayerVisible(subLayerNames, visible) {
 
     }
-    
+
     // 
-    static getAllSubLayerNames (parentLayerName, type) {
+    static getAllSubLayerNames(parentLayerName, type) {
         let layers = appconfig.gisResource['iserver_resource'].layerService.layers
         let showlayers = layers.filter(layer => layer.type === 'smlayer')
         let filterLayer = showlayers.find(layer => layer.name = parentLayerName)
         if (type) {
-            return filterLayer.sublayers.filter(layer => layer.type ===  type)
+            return filterLayer.sublayers.filter(layer => layer.type === type)
         }
         return filterLayer.sublayers
+    }
+
+    /**
+      * 获取公共样式
+      * @param light 是否高亮
+      */
+    static getCommonStyle(light = false) {
+        let { point, stroke, fill } = light ? mapUtil.commonLightStyle : mapUtil.commonStyle
+        return new Style({
+            fill: new Fill({
+                color: fill.color
+            }),
+            stroke: new Stroke({
+                lineDash: stroke.dash,
+                color: stroke.color,
+                width: stroke.width
+            }),
+            image: new CircleStyle({
+                radius: point.size,
+                stroke: new Stroke({
+                    color: point.outerColor,
+                    width: point.outerWidth
+                }),
+                fill: new Fill({
+                    color: point.fill
+                })
+            })
+        })
+    }
+
+    // 设置中心点， 地图级别
+    setZoomAndCenter(zoom, center) {
+        let view = this.map.getView()
+        view.setZoom(zoom)
+        view.setCenter(center)
     }
 }
