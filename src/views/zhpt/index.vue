@@ -770,8 +770,9 @@ export default class BaseMap extends Vue {
     >>> div {
       padding: 2px;
       img {
-        width: 18px;
-        height: 18px;
+        width: 14px;
+        height: 14px;
+        margin-right: 5px;
       }
       span {
         padding-left: 3px;

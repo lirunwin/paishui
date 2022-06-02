@@ -651,7 +651,7 @@ export default {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
-      this.popup && this.map.removeOverlay(this.popup)
+      this.currentInfoCard2 = false
     },
     // 获取缺陷数据
     getPipeDefectData() {

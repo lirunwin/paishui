@@ -51,9 +51,17 @@
               </el-col>
             </el-row>
           </div>
-
-          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
-          <el-button size="small" icon="el-icon-search" type="primary" @click="">导出</el-button>
+          <el-button size="small" style="margin-right: 5px" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
+          <download-excel
+            :fields="exportFields"
+            :data="exportData"
+            :before-finish="afterExport"
+            name="管道评估汇总表.xls"
+            type="xls"
+          >
+           <el-button size="small" icon="el-icon-search" type="primary">导出</el-button>
+          </download-excel>
+         
         </div>
         <div class="right-btn"></div>
       </div>
@@ -152,14 +160,37 @@ export default {
       // 日期选择器规则
       pickerOptions0: '',
       pickerOptions1: '',
-      multipleSelection: [] // 选择的列表
+      multipleSelection: [], // 选择的列表
+      exportFields: {},
+      exportData: []
     }
   },
   computed: {},
   created() {
-    this.getDate()
+    this.updateTable()
+    this.setFields() // 设置导出字段
+    this.setData()
   },
   methods: {
+    setFields () {
+      this.tableContent.forEach(item => {
+        this.exportFields[item.label] = item.name
+      })
+    },
+    setData () {
+      // 最多导出 1w 条
+      let data = { current: 1, size: 1e4 }
+      data.startPoint = ""
+      data.endPoint = ""
+      data.jcStartDate = ""
+      data.jcEndDate = ""
+      queryPageAssessment({ ...data, wordInfoState: 1 }).then(res => {
+        this.exportData = res.result.records
+      })
+    },
+    afterExport () {
+      this.$message.success('导出数据成功')
+    },
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
@@ -220,35 +251,33 @@ export default {
     // 搜索
     searchApi() {
       this.pagination.current = 1
-      this.getDate(this.searchValue)
+      this.updateTable(this.searchValue)
     },
 
     // 分页触发的事件
-    async handleSizeChange(val) {
+    handleSizeChange(val) {
       this.pagination.size = val
-      await this.getDate()
+      this.updateTable()
       console.log(`每页 ${val} 条`)
     },
-    async handleCurrentChange(val) {
+    handleCurrentChange(val) {
       this.pagination.current = val
-      await this.getDate()
+      this.updateTable()
       console.log(`当前页: ${val}`)
     },
     // 查询数据
-    async getDate(params) {
+    updateTable(params) {
       let data = {
         current: this.pagination.current,
         size: this.pagination.size
       }
-      data.wordInfoState = 1
-
       if (params) {
         data.startPoint = this.searchValue.startPoint
         data.endPoint = this.searchValue.endPoint
         data.jcStartDate = this.searchValue.startDate
         data.jcEndDate = this.searchValue.finishDate
       }
-      await queryPageAssessment(data).then((res) => {
+      queryPageAssessment({ ...data, wordInfoState: 1 }).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
         this.paginationTotal = res.result.total

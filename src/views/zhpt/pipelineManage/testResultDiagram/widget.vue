@@ -516,7 +516,8 @@ export default {
       this.pipeFuncLayer && this.mapView.removeLayer(this.pipeFuncLayer)
       this.lightLayer && this.mapView.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
-      this.popup && this.mapView.removeOverlay(this.popup)
+      this.currentInfoCard = false
+      this.currentInfoCard2 = false
     },
     setProjectData() {
       getProject({ current: 1, size: 1e5 }).then((res) => {
