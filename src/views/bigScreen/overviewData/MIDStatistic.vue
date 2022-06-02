@@ -64,9 +64,10 @@ export default {
 }
 .widget-MMIStatistic{
     top: .505208rem /* 97/192 */;
-    margin-left: 2.34375rem;
+    left:50%;
+    margin-left:-1.822917rem /* 350/192 */;
     height: .416667rem /* 80/192 */;
-    width: 5.302083rem /* 1018/192 */;
+    width: 3.645833rem /* 700/192 */;
     overflow: hidden;
     position: absolute;
     font-family: Source Han Sans CN;

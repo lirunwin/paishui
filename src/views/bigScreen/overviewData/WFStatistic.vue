@@ -25,6 +25,7 @@
                     isScroll
                     @operation="showTrack"/>
                 </div>
+                <trackPlayer :show="showTrackPlayer"/>
             </div>
         </div>
     </transition>
@@ -32,11 +33,13 @@
 
 <script>
 import specificTable from './components/statisticTable.vue'
+import trackPlayer from './components/trackPlayer.vue'
 import Config from './config.json'
 export default {
     name:"WFStatistic",//工作人员统计
     components:{
-        specificTable
+        specificTable,
+        trackPlayer
     },
     props:{
         show:{},
@@ -112,13 +115,19 @@ export default {
                 },
             ],
             column:[],
+            showTrackPlayer:false,
         }
     },
     watch:{
         show:{
             handler(n,o){
+                if(n){
+
+                }else{
+                    this.showTrackPlayer=false
+                }
             },
-        }
+        },
     },
     computed:{
         config(){
@@ -131,8 +140,9 @@ export default {
     methods:{
         showTrack(data){
             console.log(data)
-        }
-    }
+            this.showTrackPlayer=true
+        },
+    },
 }
 </script>
 
@@ -215,7 +225,7 @@ export default {
                 .value0{
                     color: #2BA7FF;
                 }
-                .value1{
+                .progressValue{
                     color: #06B062;
                 }
                 .value2{

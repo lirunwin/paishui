@@ -7,7 +7,18 @@
         <div class="widget-LayerControl" ref="widget-LayerControl">
             <div class="wrap">
                 <div class="icon" title="图层控制" @click="layerBoardShow=!layerBoardShow"><div class="img"></div></div>
-                <div class="layerBoard" v-if="layerBoardShow">图层</div>
+                <div class="layerBoard" v-if="layerBoardShow">
+                    <div class="layerItem">
+                        <div class="layerCategory">其他</div>
+                        <el-checkbox-group v-model="checkList">
+                            <el-checkbox label="巡检人员"></el-checkbox>
+                            <el-checkbox label="工程车辆"></el-checkbox>
+                            <el-checkbox label="上报隐患"></el-checkbox>
+                            <el-checkbox label="上报汛情"></el-checkbox>
+                            <el-checkbox label="上报时间"></el-checkbox>
+                        </el-checkbox-group>
+                    </div>
+                </div>
             </div>
         </div>
     </transition>
@@ -22,6 +33,7 @@ export default {
     data(){
         return{
             layerBoardShow:false,
+            checkList:[]
         }
     },
     mounted(){
@@ -42,7 +54,7 @@ export default {
                 }
             },
             immediate:true
-        }
+        },
     },
     methods:{
 
@@ -97,12 +109,41 @@ export default {
         .layerBoard{
             margin-right: .052083rem /* 10/192 */;
             width: 124px;
-            height: 144px;
+            // height: 144px;
             background: rgba(3, 109, 190,0.4);
             border-radius: 2px;
             display: flex;
             flex-flow: column;
-            padding: .052083rem /* 10/192 */;
+            padding: .026042rem /* 5/192 */;
+            .layerItem{
+                display: flex;
+                flex-flow: column;
+                .layerCategory{
+                    font-size: .072917rem /* 14/192 */;
+                    font-weight: bold;
+                    color: #2BA7FF;
+                }
+            }
+            .el-checkbox{
+                color: #fff;
+                margin: .052083rem /* 10/192 */ 0;
+            }
+            /deep/ .el-checkbox__inner{
+                background: #0A1525;
+                border-color: rgba(3, 109, 190, 1)
+            }
+            /deep/ .el-checkbox__inner::after{
+                border: 2px solid rgba(17, 156, 255, 1);
+                border-left: 0;
+                border-top: 0;
+            }
+            /deep/ .el-checkbox__input.is-checked .el-checkbox__inner{
+                background: #0A1525;
+                border-color: rgba(3, 109, 190, 1)
+            }
+            /deep/ .el-checkbox__input.is-checked+.el-checkbox__label{
+                color: #fff;
+            }
         }
     }
 
