@@ -161,6 +161,7 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { IPointConnectDevice, IType, ITypeArchive, typeArchivesPage } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
 import { getDefalutNumberProp } from '@/views/monitoring/utils'
+import { telAndMobileReg } from '@/utils/constant'
 
 interface FormItem {
   name?: string
@@ -177,7 +178,20 @@ interface FormItem {
   }[]
 }
 
-const defaultFormData = { basis: {}, siteFacility: {}, bindDevice: {} }
+const defaultFormData = () => ({
+  basis: {
+    coordiateX: undefined,
+    coordiateY: undefined,
+    name: '',
+    code: '',
+    psArea: '',
+    siteGroup: '',
+    address: '',
+    note: ''
+  },
+  siteFacility: { facility: '', facilityNote: '' },
+  bindDevice: { typeId: '', deviceId: '', installUser: '', installPhone: '', installTime: '' }
+})
 
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
@@ -191,9 +205,9 @@ export default class PointForm extends Vue {
   }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: IPointConnectDevice & { basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'> } = {
-    ...defaultFormData
-  }
+  formData: IPointConnectDevice & {
+    basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'>
+  } = defaultFormData()
 
   archives: ITypeArchive[] = []
 
@@ -261,8 +275,8 @@ export default class PointForm extends Vue {
     ],
     'bindDevice.installPhone': [
       { required: true, message: '联系方式不能为空！', trigger: 'blur' },
-      { type: 'string', max: 50, message: '联系方式不能超过50个字符' }
-      // { pattern: /^1[1-9][0-9]{9}$/, message: '请输入手机号', trigger: 'blur' }
+      { type: 'string', max: 50, message: '联系方式不能超过50个字符' },
+      { pattern: telAndMobileReg(), message: '请输入正确的联系方式', trigger: 'blur' }
     ],
     'bindDevice.installTime': [{ required: true, message: '请选择安装时间' }],
     'basis.note': [{ type: 'string', required: false, max: 255, message: '备注不能超过255个字符' }]
@@ -310,7 +324,7 @@ export default class PointForm extends Vue {
           siteFacility: siteFacility || {},
           bindDevice: { ...(bindDevice || {}), typeId, deviceId }
         }
-      : { ...defaultFormData }
+      : defaultFormData()
   }
 }
 </script>

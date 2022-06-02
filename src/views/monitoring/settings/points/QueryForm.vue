@@ -59,7 +59,7 @@
         type="primary"
         size="small"
         :loading="loading.setting"
-        :disabled="loading.setting"
+        :disabled="loading.setting || ids.length !== 1"
         @click="$emit('setting', ids.join())"
         icon="el-icon-setting"
       >

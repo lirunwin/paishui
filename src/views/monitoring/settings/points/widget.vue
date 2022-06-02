@@ -62,6 +62,7 @@
     />
     <PointThresholdForm
       title="阈值设置"
+      :selected="selected"
       :visible.sync="visible.setting"
       :loading="loading.setting"
       @submit="onSettingSubmit"
@@ -224,6 +225,8 @@ export default class MonitoringPoints extends Vue {
       this.$message[result ? 'success' : 'error'](
         `监测点${{ start: '开启', stop: '关闭' }[data.type]}${result ? '成功!' : '失败!'}`
       )
+      this.visible.enable = false
+      result && this.doQuery()
     } catch (error) {
       console.log(error)
     }
@@ -235,6 +238,8 @@ export default class MonitoringPoints extends Vue {
     try {
       const { result } = await pointDismount(data)
       this.$message[result ? 'success' : 'error'](`监测点拆卸${result ? '成功!' : '失败!'}`)
+      this.visible.dismount = false
+      result && this.doQuery()
     } catch (error) {
       console.log(error)
     }

@@ -277,11 +277,10 @@ export interface IStandard extends ICreator {
   /** 指标名称 */
   name?: string
   /** 设备类型id */
-  type?: string
+  type?: string | number
 }
 
 export interface IStandardParam extends ICreator {
-  departmentId?: string
   /** 设备类型参数id tf_ywpn_device_type_para */
   deviceTypeParaId?: string
   /** 有效时间开始 */
@@ -310,6 +309,21 @@ export interface IStandardParam extends ICreator {
   isSpecial?: boolean | number
   /** 特定阀值 */
   specialVal?: number
+  deviceTypeParaVo?: {
+    code?: string | number
+    codeAbridge?: string
+    id?: number | string
+    isDisplay?: boolean | number
+    lrangeLow?: string | number
+    lrangeUp?: string | number
+    name?: string
+    note?: string
+    rate?: number
+    sort?: number
+    typeId?: number | string
+    typeName?: string
+    unit?: string
+  } & ICreator
 }
 
 export interface IPoint extends ICreator {
@@ -401,8 +415,8 @@ export interface IPointConnectDevice extends IPoint {
 
 export interface IPointParam {
   /** 参数代码 */
-  code?: number
-  delFlag?: number
+  code?: string | number
+  delFlag?: number | boolean
   /** 设备id */
   deviceId?: string | number
   id?: string | number
@@ -417,9 +431,9 @@ export interface IPointParam {
   /** 量程上限 */
   lrangeUp?: number
   /** 参数名称 */
-  name?: number
+  name?: string
   /** 备注 */
-  note?: number
+  note?: string
   /** 站点参数代码 */
   siteCode?: string
   /** 序号 */

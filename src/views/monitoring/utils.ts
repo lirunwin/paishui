@@ -71,7 +71,7 @@ export const settingStandardCols: ColItem[] = [
 export const settingStandardParamCols = (levels: IDictionary[]): ColItem[] => [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'deviceTypeParaName', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'deviceTypeParaVo.name', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
   {
     prop: 'level',
     label: '判定',
@@ -165,6 +165,7 @@ export const settingMonitorCols: ColItem[] = [
 
 /**监测点管理 - 监测参数基本设置 */
 export const settingPointBasisCols: ColItem[] = [
+  { type: 'index', label: '序号', width: '50px' },
   { prop: 'name', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
   { prop: 'code', label: '参数代码', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
   { prop: 'unit', label: '参数单位', width: '80px' },
@@ -174,7 +175,7 @@ export const settingPointBasisCols: ColItem[] = [
     width: '100px',
     formatter: ({ lrangeLow, lrangeUp }: IPointParam) => getIntervalValue(lrangeLow, lrangeUp)
   },
-  { prop: 'sort', label: '序号', _slot: true, width: '80px' },
+  { prop: 'sort', label: '排序', _slot: true, width: '80px' },
   { prop: 'siteCode', label: '站点参数代码', _slot: true, width: '120px' },
   { prop: 'isDisplay', label: '是否显示', _slot: true, width: '80px' },
   { prop: 'note', label: '备注', _slot: true, minWidth: '120px' }
@@ -182,13 +183,14 @@ export const settingPointBasisCols: ColItem[] = [
 
 /**监测点管理 - 监测参数阈值设置 */
 export const settingPointParamCols: ColItem[] = [
+  { type: 'index', label: '序号', width: '50px' },
   { prop: 'name', label: '参数名称', _slot: true, minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
   { prop: 'level', label: '监测值判定', _slot: true, width: '110px' },
-  { prop: 'threshold', label: '监测阈值', _slot: true, _interval: true, width: '200px' },
-  { prop: 'allowance', label: '阈值容差', _slot: true, _interval: true, width: '200px' },
-  { prop: 'time', label: '有效时段', _slot: true, width: '160px' },
+  { prop: 'threshold', label: '报警阈值', _slot: true, _interval: true, width: '190px' },
+  { prop: 'allowance', label: '预警阈值', _slot: true, _interval: true, width: '190px' },
+  { prop: 'time', label: '有效时段', _slot: true, width: '140px' },
   { prop: 'isPush', label: '消息推送', _slot: true, width: '80px' },
-  { prop: 'action', label: '操作', _slot: true }
+  { prop: 'action', label: '操作', _slot: true, width: '50px' }
 ]
 
 export const monitorStates = [

@@ -28,3 +28,5 @@ export const translate = ({
   value: string | number
   label: string
 }) => (arr.find((item) => item[key] === String(value)) || {})[label] || value
+
+export const telAndMobileReg = () => /(^(0\d{2,3}-?)?\d{7,8}$)|(^1[3-9]\d{9}$)/
