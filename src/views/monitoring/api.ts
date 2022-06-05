@@ -54,13 +54,19 @@ const uris = {
       /** method: GET */
       page: `${base}/monitorsite/page`,
       /** method: POST */
-      saveAndBind: `${base}/monitorsite/saveAndBind`,
+      bindDevice: `${base}/monitorsite/saveAndBind`,
       /** method: POST */
       operate: `${base}/monitorsite/operate`,
       /** method: GET */
       groups: `${base}/monitorsite/group`,
       /** method: GET */
-      sections: `${base}/monitorsite/psArea`
+      sections: `${base}/monitorsite/psArea`,
+      /** method: POST */
+      bindStandard: `${base}/monitorsiteindicate/saveOrUpdateBatch`,
+      /** method: GET */
+      isConfigured: `${base}/monitorsiteindicate/validateOtherIndicate`,
+      /** method: POST */
+      submitSettings: `${base}/monitorsitepara/saveOrUpdateBatch`
     },
     /** 监测站管理 */
     sites: {
@@ -350,6 +356,8 @@ export interface IPoint extends ICreator {
   /** 1 启用 2停用 */
   status?: string
   note?: string
+  /** 是否绑定监测体系 */
+  isConfigured?: boolean | number
 }
 
 export interface IPointConnectDevice extends IPoint {
@@ -416,7 +424,7 @@ export interface IPointConnectDevice extends IPoint {
 export interface IPointParam {
   /** 参数代码 */
   code?: string | number
-  delFlag?: number | boolean
+  delFlag?: string | boolean
   /** 设备id */
   deviceId?: string | number
   id?: string | number
@@ -438,6 +446,7 @@ export interface IPointParam {
   siteCode?: string
   /** 序号 */
   sort?: number
+  indicateParaVo?: IStandardParam
 }
 
 export interface IPointThreshold extends ICreator {
@@ -491,6 +500,7 @@ export interface IPointEnableParams {
   /** note */
   note?: string
 }
+
 export interface IPointDismountParams {
   /** 监测点id，只能一个*/
   monitorSiteIds: string
@@ -504,6 +514,7 @@ export interface IPointDismountParams {
   type: 'del'
   note?: string
 }
+
 /** 获取字典值 */
 export const getDictKeys = async (keys: string = monitorStandardLevelKey.codeKey) => {
   const { result } = await axios.request<{ result: { [x: string]: IDictionary[] } }>({
@@ -660,8 +671,8 @@ export const pointsPage = (params: IPointConnectDevice & IQueryCommon) =>
 export const deletePointBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.points.del, method: 'delete', params: { ids } })
 
-export const addPointSetting = (data: IPointConnectDevice) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.points.saveAndBind, method: 'post', data })
+export const pointBindDevice = (data: IPointConnectDevice) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.bindDevice, method: 'post', data })
 
 export const groups = (name?: string) =>
   axios.request<IResult<string[]>>({ url: uris.settings.points.groups, method: 'get', params: { name } })
@@ -674,3 +685,20 @@ export const pointEnable = (data: IPointEnableParams) =>
 
 export const pointDismount = (data: IPointDismountParams) =>
   axios.request<IRes<boolean>>({ url: uris.settings.points.operate, method: 'post', data })
+
+export const bindStandardAndSettings = (data: IPointParam[]) =>
+  axios.request<IResult<IPointParam[]>>({
+    url: uris.settings.points.bindStandard,
+    method: 'post',
+    data: { siteDeviceIndicates: data }
+  })
+
+export const isConfigured = (params: { indicateId: string; deviceId: string }) =>
+  axios.request<IResult<string[]>>({ url: uris.settings.points.isConfigured, method: 'get', params })
+
+export const submitPointSettings = (data: IPointThreshold[]) =>
+  axios.request<IRes<IPointThreshold>>({
+    url: uris.settings.points.submitSettings,
+    method: 'post',
+    data: { deviceParas: data }
+  })

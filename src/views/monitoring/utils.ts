@@ -1,5 +1,5 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
-import { IDictionary, IPointParam, IStandardParam, ITypeParam } from './api'
+import { IDictionary, IPointConnectDevice, IPointParam, IStandardParam, ITypeParam } from './api'
 import { defaultValuesForMonitorStandardLevel, getIntervalValue, translate } from '@/utils/constant'
 
 interface ColItem extends Partial<ElTableColumn> {
@@ -122,6 +122,7 @@ export const settingPointCols: ColItem[] = [
   { prop: 'bindDevice.installPhone', label: '联系方式', width: '120px', showOverflowTooltip: true },
   { prop: 'address', label: '安装地址', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
   { prop: 'bindDevice.installTime', label: '安装时间', width: '120px', showOverflowTooltip: true },
+  { prop: 'isConfigured', label: '是否设置', width: '90px', _slot: true },
   { prop: 'status', label: '监测点状态', width: '90px', _slot: true }
 ]
 
@@ -298,7 +299,6 @@ export const getDefalutNumberProp = () => ({
   max: 9999999,
   size: 'small',
   precision: 0,
-  stepStrictly: true,
   style: { width: '100%', textAlign: 'left' },
   class: 'input-number',
   clearable: true

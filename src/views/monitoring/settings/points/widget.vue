@@ -26,12 +26,22 @@
       @selection-change="onSelectionChange"
       @page-change="onPageChange"
     >
+      <template v-for="(_, index) of points" v-slot:[`isConfigured-${index}`]="{ row }">
+        <el-switch
+          :key="`isConfigured-${index}-${row.id}`"
+          :active-value="1"
+          :inactive-value="0"
+          :value="Number(row.isConfigured)"
+          size="small"
+          style="user-select:none"
+        />
+      </template>
       <template v-for="(_, index) of points" v-slot:[`status-${index}`]="{ row }">
         <el-switch
-          :key="`${index}-${row.id}`"
-          active-value="1"
-          inactive-value="2"
-          :value="row.status"
+          :key="`status-${index}-${row.id}`"
+          :active-value="1"
+          :inactive-value="2"
+          :value="Number(row.status)"
           size="small"
           style="user-select:none"
           @change="() => onEnableSwitch(row)"
@@ -65,7 +75,7 @@
       :selected="selected"
       :visible.sync="visible.setting"
       :loading="loading.setting"
-      @submit="onSettingSubmit"
+      @submit="onBind"
     />
   </div>
 </template>
@@ -76,7 +86,7 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingPointCols as cols } from '@/views/monitoring/utils'
 import QueryForm, { ILoading, IQuery } from './QueryForm.vue'
 import PointForm from './PointForm.vue'
-import PointThresholdForm from './PointThresholdForm.vue'
+import PointThresholdForm, { IPointThresholdFormData } from './PointThresholdForm.vue'
 import DismountForm from './DismountForm.vue'
 import EnableForm from './EnableForm.vue'
 import { getDefaultPagination } from '@/utils/constant'
@@ -90,14 +100,18 @@ import {
   typesPage,
   updatePoint,
   addPoint,
-  addPointSetting,
+  pointBindDevice,
   groups,
   sections,
   IPointConnectDevice,
   IPointEnableParams,
   pointEnable,
   pointDismount,
-  IPointDismountParams
+  IPointDismountParams,
+  bindStandardAndSettings,
+  submitPointSettings,
+  IPointParam,
+  IPointThreshold
 } from '@/views/monitoring/api'
 
 @Component({
@@ -162,9 +176,9 @@ export default class MonitoringPoints extends Vue {
   async onSubmit(data: IPointConnectDevice, bind: boolean = true) {
     this.loading[data.id ? 'update' : 'add'] = true
     try {
-      const { result } = await (bind ? addPointSetting(data) : data.id ? updatePoint(data) : addPoint(data))
+      const { result } = await (bind ? pointBindDevice(data) : data.id ? updatePoint(data) : addPoint(data))
       this.$message[result ? 'success' : 'error'](
-        `${data.id ? '修改' : '新增'}监测点${bind ? '并绑定' : ''}${result ? '成功!' : '失败!'}`
+        `${data.id ? '修改' : '新增'}监测点${bind ? '并绑定设备' : ''}${result ? '成功!' : '失败!'}`
       )
       if (result) {
         this.visible.base = false
@@ -176,12 +190,19 @@ export default class MonitoringPoints extends Vue {
     this.loading[data.id ? 'update' : 'add'] = false
   }
 
-  async onSettingSubmit(data) {
+  async onBind({ threshold, param, indicateId} : IPointThresholdFormData) {
     this.loading.setting = true
     try {
-      const { result } = await addPointSetting(data)
+      const { result: baseSettings } = await bindStandardAndSettings(param)
+      this.$message[baseSettings ? 'success' : 'error'](`监测点基础配置${baseSettings ? '成功!' : '失败!'}`)
+
+      const { result } = await submitPointSettings(threshold.map<IPointThreshold>(({paraId, ...rest})=>{
+        return { ...rest, paraId: (baseSettings.find(item => item.indicateParaId === paraId)).id}
+      }))
+
       this.$message[result ? 'success' : 'error'](`阈值配置${result ? '成功!' : '失败!'}`)
-      if (result) {
+      
+      if (baseSettings && result) {
         this.visible.setting = false
         this.doQuery()
       }

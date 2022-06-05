@@ -20,6 +20,7 @@
           filterable
           clearable
           style="width:200px"
+          :disabled="(selected[0]||{}).isConfigured"
           @change="onStandardChange"
         >
           <el-option v-for="item in standards" :key="item.id" :label="item.name" :value="item.id" />
@@ -61,7 +62,7 @@
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-switch v-model="formData.param[index].isDisplay" size="small" />
+            <el-switch v-model="formData.param[index].isDisplay" size="small" :active-value="1" :inactive-value="0" />
           </el-form-item>
         </template>
         <template v-for="(item, index) of formData.param" v-slot:[`note-${index}`]>
@@ -248,7 +249,7 @@
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-switch v-model="formData.threshold[index].isPush" size="small" />
+            <el-switch v-model="formData.threshold[index].isPush" size="small" :active-value="1" :inactive-value="0" />
           </el-form-item>
         </template>
         <template v-for="(item, index) of formData.threshold" v-slot:[`action-${index}`]>
@@ -278,6 +279,7 @@ import {
   IPointConnectDevice,
   IPointParam,
   IPointThreshold,
+  isConfigured,
   IStandard,
   IStandardParam,
   pointsPage,
@@ -289,11 +291,10 @@ interface IThreshold extends IPointThreshold {
   name?: string
 }
 
-interface IFormData {
+export interface IPointThresholdFormData {
   threshold?: IThreshold[]
   param?: (IPointParam & { unit?: string })[]
   indicateId?: string
-  pointId?: string
 }
 
 const getDefaultThresholdValue = (
@@ -319,7 +320,7 @@ const getDefaultThresholdValue = (
     'id',
     { enumerable: false, configurable: true, value: id }
   )
-const getDefaultFormData = () => ({ threshold: [], param: [] })
+const getDefaultFormData = ():IPointThresholdFormData => ({ threshold: [], param: [],indicateId: '' })
 
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
@@ -328,7 +329,7 @@ export default class PointForm extends Vue {
   $listeners!: { open?: Function; submit?: Function; closed: Function }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: IFormData = getDefaultFormData()
+  formData: IPointThresholdFormData = getDefaultFormData()
   settingPointBasisCols = settingPointBasisCols
   settingPointParamCols = settingPointParamCols
 
@@ -471,7 +472,24 @@ export default class PointForm extends Vue {
     }, 100)
   }
 
+  async getSettings() {
+    const {id, isConfigured} = this.selected[0] || {}
+    if(!isConfigured) return
+    // const { result } = await isConfigured(id as any)
+    // const { indicateId, param, threshold  } = result as IPointThresholdFormData || {}
+    // this.formData = {
+    //   indicateId,
+    //   param: param.map(({indicateParaVo, ...rest})=> {
+    //     return  {...rest, }
+    //   }),
+    //   threshold: threshold.map(() => {
+    //     return {}
+    //   })
+    // }
+  }
+
   onOpen() {
+    this.getSettings()
     this.onStandardQuery()
     this.getLevels()
     this.$emit('open')
