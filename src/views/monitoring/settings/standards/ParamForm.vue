@@ -278,7 +278,8 @@ export default class ParamForm extends Vue {
 
   @Watch('data', { immediate: true })
   setDefaultData(val: IStandardParam) {
-    const { id, isSpecial, isPush, isUse, level, lower, upper, start, end, ...rest } = val || {}
+    const { id, isSpecial, isPush, isUse, level, lower, upper, start, end, deviceTypeParaVo, ...rest } = val || {}
+    const { id: deviceTypeParaId } = deviceTypeParaVo || {}
     this.formData = id
       ? {
           id,
@@ -292,6 +293,7 @@ export default class ParamForm extends Vue {
             start ? moment(start, format).toDate() : undefined,
             end ? moment(end, format).toDate() : undefined
           ],
+          deviceTypeParaId,
           ...rest
         }
       : getDefaultFormData()

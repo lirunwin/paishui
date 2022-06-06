@@ -59,7 +59,7 @@
         type="primary"
         size="small"
         :loading="loading.setting"
-        :disabled="loading.setting || ids.length !== 1"
+        :disabled="loading.setting || ids.length !== 1 || !selected[0].bindDevice.id"
         @click="$emit('setting', ids.join())"
         icon="el-icon-setting"
       >
@@ -111,7 +111,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
-import { IPoint, IType } from '@/views/monitoring/api'
+import { IPointConnectDevice, IType } from '@/views/monitoring/api'
 export interface ILoading {
   query: boolean
   add: boolean
@@ -135,7 +135,7 @@ export interface IQuery {
 @Component({ name: 'QueryForm', components: {} })
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) loading!: ILoading
-  @Prop({ type: Array, default: () => [] }) selected!: IPoint[]
+  @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
   @Prop({ type: Array, default: () => [] }) types!: IType[]
   @Prop({ type: Array, default: () => [] }) groups!: string[]
   @Prop({ type: Array, default: () => [] }) sections!: string[]

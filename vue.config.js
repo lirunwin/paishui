@@ -190,6 +190,7 @@ module.exports = {
         }
       })
       config.optimization.runtimeChunk('single')
+      config.externals({ './cptable': 'var cptable' })
     })
   }
 }

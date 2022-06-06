@@ -1,3 +1,4 @@
+import { serialize } from 'object-to-formdata'
 import axios from '@/utils/request'
 import store from '@/store'
 import { defaultValuesForMonitorStandardLevel, monitorStandardLevelKey } from '@/utils/constant'
@@ -66,7 +67,8 @@ const uris = {
       /** method: GET */
       isConfigured: `${base}/monitorsiteindicate/validateOtherIndicate`,
       /** method: POST */
-      submitSettings: `${base}/monitorsitepara/saveOrUpdateBatch`
+      submitSettings: `${base}/monitorsitepara/saveOrUpdateBatch`,
+      configurations: `${base}/monitorsiteindicate/getByMonitorId`
     },
     /** 监测站管理 */
     sites: {
@@ -288,7 +290,7 @@ export interface IStandard extends ICreator {
 
 export interface IStandardParam extends ICreator {
   /** 设备类型参数id tf_ywpn_device_type_para */
-  deviceTypeParaId?: string
+  deviceTypeParaId?: number | string
   /** 有效时间开始 */
   start?: string
   /** 有效时间结束 */
@@ -418,6 +420,7 @@ export interface IPointConnectDevice extends IPoint {
       typeName?: string
       name?: string
     }
+    filePathList?: string[]
   } & ICreator
 }
 
@@ -447,6 +450,7 @@ export interface IPointParam {
   /** 序号 */
   sort?: number
   indicateParaVo?: IStandardParam
+  unit?: string
 }
 
 export interface IPointThreshold extends ICreator {
@@ -672,7 +676,11 @@ export const deletePointBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.points.del, method: 'delete', params: { ids } })
 
 export const pointBindDevice = (data: IPointConnectDevice) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.points.bindDevice, method: 'post', data })
+  axios.request<IRes<boolean>>({
+    url: uris.settings.points.bindDevice,
+    method: 'post',
+    data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
+  })
 
 export const groups = (name?: string) =>
   axios.request<IResult<string[]>>({ url: uris.settings.points.groups, method: 'get', params: { name } })
@@ -702,3 +710,11 @@ export const submitPointSettings = (data: IPointThreshold[]) =>
     method: 'post',
     data: { deviceParas: data }
   })
+
+export const getPointConfigurations = (monitorId: string | number) =>
+  axios.request<
+    IResult<{
+      siteDeviceIndicates: IPointParam[]
+      siteDeviceParas: IPointThreshold[]
+    }>
+  >({ url: uris.settings.points.configurations, method: 'get', params: { monitorId } })

@@ -71,7 +71,7 @@
       @submit="onDismountSubmit"
     />
     <PointThresholdForm
-      title="阈值设置"
+      title="阈值配置"
       :selected="selected"
       :visible.sync="visible.setting"
       :loading="loading.setting"
@@ -175,8 +175,9 @@ export default class MonitoringPoints extends Vue {
 
   async onSubmit(data: IPointConnectDevice, bind: boolean = true) {
     this.loading[data.id ? 'update' : 'add'] = true
+    console.log(JSON.stringify(data, null, 2))
     try {
-      const { result } = await (bind ? pointBindDevice(data) : data.id ? updatePoint(data) : addPoint(data))
+      const { result } = await pointBindDevice(data)
       this.$message[result ? 'success' : 'error'](
         `${data.id ? '修改' : '新增'}监测点${bind ? '并绑定设备' : ''}${result ? '成功!' : '失败!'}`
       )
@@ -190,18 +191,21 @@ export default class MonitoringPoints extends Vue {
     this.loading[data.id ? 'update' : 'add'] = false
   }
 
-  async onBind({ threshold, param, indicateId} : IPointThresholdFormData) {
+  async onBind({ threshold, param }: { param: IPointParam[]; threshold: IPointThreshold[] }) {
     this.loading.setting = true
     try {
       const { result: baseSettings } = await bindStandardAndSettings(param)
       this.$message[baseSettings ? 'success' : 'error'](`监测点基础配置${baseSettings ? '成功!' : '失败!'}`)
 
-      const { result } = await submitPointSettings(threshold.map<IPointThreshold>(({paraId, ...rest})=>{
-        return { ...rest, paraId: (baseSettings.find(item => item.indicateParaId === paraId)).id}
-      }))
+      const { result } = await submitPointSettings(
+        threshold.map<IPointThreshold>(({ paraId, ...rest }) => {
+          const oldParam = baseSettings.find((item) => item.indicateParaId === paraId)
+          return { ...rest, paraId: oldParam ? oldParam.id : paraId }
+        })
+      )
 
       this.$message[result ? 'success' : 'error'](`阈值配置${result ? '成功!' : '失败!'}`)
-      
+
       if (baseSettings && result) {
         this.visible.setting = false
         this.doQuery()
