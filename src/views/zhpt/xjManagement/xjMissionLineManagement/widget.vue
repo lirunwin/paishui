@@ -96,7 +96,7 @@ import VectorSource from 'ol/source/Vector'
 import { Vector as VectorLayer } from 'ol/layer'
 import { Point,MultiPoint, LineString } from 'ol/geom'
 import {getLength} from 'ol/sphere'
-import { Icon, Style } from 'ol/style'
+import { Icon, Stroke, Style } from 'ol/style'
 import Draw from 'ol/interaction/Draw'
 import tfLegend from '@/views/zhpt/common/Legend.vue'
 import tfTableLegend from '@/views/zhpt/common/TableLegend.vue'
@@ -107,6 +107,7 @@ import $ from 'jquery'
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import request from '@/utils/request'
 import axios from 'axios'
+import { Coordinate } from 'ol/coordinate'
 @Component({
   name: 'xjMissionLineManagement',
   components: { tfTableLegend, tfLegend }
@@ -137,7 +138,6 @@ export default class XjMissionLineManagement extends Vue {
   multipleSelection = [] //已选择的行
   diaVisiable = false //是否展示编制页面
   isDrawEnd = true //是否绘制完成
-  drawEvent = null //绘制时间
   geometryEngine = null //地图geometryEngine类
   GeometryService = null //GeometryService服务类
   LineSymbol = null //线样式类
@@ -171,6 +171,12 @@ export default class XjMissionLineManagement extends Vue {
   layerId = 17 //片区图层id
   dataT1 = []
   mapV:Map=null;
+  defaultStyle:Style=new Style({
+    stroke:new Stroke({
+      color:'#2D74E7',
+      width:2
+    })
+  })
   mounted() {
     this.getData()
     this.initMapSource()
@@ -214,7 +220,7 @@ export default class XjMissionLineManagement extends Vue {
       view: new View({
         center: initCenter,
         zoom: initZoom,
-        maxZoom: 17,
+        maxZoom: 21,
         minZoom: 5,
         projection: 'EPSG:4326'
       })
@@ -297,7 +303,7 @@ export default class XjMissionLineManagement extends Vue {
         } else this.$message('服务加载失败 启用默认服务配置')
       })
     } else {
-      //nextDo()
+      this.addMap()
     }
   }
   /**
@@ -327,11 +333,25 @@ export default class XjMissionLineManagement extends Vue {
   cellSingleClick(val) {
     this.clearHighGra()
     if (val.geometry && val.geometry != '') {
-      let lineSymbol = {
-        color: '#FFD700',
-        width: '2px',
-        type: 'simple-line'
-      }
+      const style=new Style({
+        stroke:new Stroke({
+          color:"#00FFFF",
+          width:2
+        })
+      })
+      const geom=JSON.parse(val.geometry) as Array<Coordinate>;
+      const line=new LineString(geom);
+      const feature=new Feature({
+        geometry:line
+      })
+      feature.setStyle(style);
+      const mainmap= this.data.mapView as Map;
+      this.highGraphicLayer.getSource().addFeature(feature);
+      mainmap.getView().fit(line,{
+        size:mainmap.getSize(),
+        maxZoom:19,
+        duration:1000
+      });
       // let geo = JSON.parse(val.geometry)
       // geo.type = 'polyline'
       // let graphic = new this.data.mapView.TF_graphic({
@@ -497,10 +517,16 @@ export default class XjMissionLineManagement extends Vue {
       type:"LineString",
       source:this.drawLayer.getSource()
     })
-    this.drawEvent=this.draw.on('drawend',(e)=>{
+    this.draw.on('drawend',(e)=>{
       const geometry=(e.feature as Feature<LineString>).getGeometry();
+      console.log(geometry);
       const length=getLength(geometry,{projection:'EPSG:4326'});
       this.editInfo.length = length.toFixed(2);
+      //记录组成线的点信息
+      let geometrys = geometry.getCoordinates();
+      this.editInfo.geometry=JSON.stringify(geometrys);
+      map.removeInteraction(this.draw);
+      this.draw=null;
     })
     map.addInteraction(this.draw);
     // loadModules(
@@ -696,28 +722,18 @@ export default class XjMissionLineManagement extends Vue {
         if (res.result.records && res.result.records.length > 0) {
           res.result.records.forEach((item) => {
             if (item.geometry && item.geometry != '') {
-              let geo = JSON.parse(item.geometry)
-              lines.push.apply(lines, geo.paths)
+              let geo = JSON.parse(item.geometry);
+              const linestring=new LineString(geo);
+              const feature=new Feature({
+                geometry:linestring
+              })
+              feature.setStyle(this.defaultStyle);
+              this.xjGraphicLayer.getSource().addFeature(feature);
             }
           })
         } else {
           return
         }
-        // let polyline = {
-        //   type: 'polyline',
-        //   paths: lines,
-        //   spatialReference: mapV.spatialReference
-        // }
-        // let lineSymbol = {
-        //   color: '2D74E7',
-        //   width: '2px',
-        //   type: 'simple-line'
-        // }
-        // let graphic = new mapV.TF_graphic({
-        //   geometry: polyline,
-        //   symbol: lineSymbol
-        // })
-        // this.xjGraphicLayer.add(graphic)
       })
     }
     this.isRefreshMap = false
