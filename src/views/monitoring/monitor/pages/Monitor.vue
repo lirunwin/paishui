@@ -41,12 +41,6 @@ import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingMonitorCols, monitorResultStates } from '@/views/monitoring/utils'
 
-// import {
-//   // getJournalList,
-//   // getFiles,
-//   // getCountLogType
-// } from '@/api/base'
-
 @Component({ name: 'Monitor', components: { BaseTitle, BaseTable } })
 export default class Monitor extends Vue {
   query: {

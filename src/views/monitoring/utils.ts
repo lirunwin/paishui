@@ -1,5 +1,5 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
-import { IDictionary, IStandardParam, IDevice, IDeviceTypeParam } from './api'
+import { IDictionary, IStandardParam, IDevice, IDeviceTypeParam } from '@/views/monitoring/api'
 import { getIntervalValue, translate } from '@/utils/constant'
 
 interface ColItem extends Partial<ElTableColumn> {

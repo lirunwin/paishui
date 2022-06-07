@@ -118,7 +118,7 @@ import {
   typesPage,
   updateStandard,
   updateStandardParam
-} from '../../api'
+} from '@/views/monitoring/api'
 import { getDefaultPagination } from '@/utils/constant'
 
 @Component({ name: 'MonitoringStandards', components: { BaseTable, StandardForm, ParamForm } })

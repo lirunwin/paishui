@@ -29,12 +29,6 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingIconCols } from '@/views/monitoring/utils'
 import IconForm from './IconForm.vue'
 
-// import {
-//   // getJournalList,
-//   // getFiles,
-//   // getCountLogType
-// } from '@/api/base'
-
 @Component({ name: 'MonitoringIcons', components: { BaseTable, IconForm } })
 export default class MonitoringIcons extends Vue {
   settingIconCols = settingIconCols

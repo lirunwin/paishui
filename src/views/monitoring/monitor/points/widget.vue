@@ -18,12 +18,6 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { monitorPointsCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 
-// import {
-//   // getJournalList,
-//   // getFiles,
-//   // getCountLogType
-// } from '@/api/base'
-
 @Component({ name: 'PointsMonitor', components: { BaseTable, QueryForm } })
 export default class PointsMonitor extends Vue {
   monitorPointsCols = monitorPointsCols
