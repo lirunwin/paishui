@@ -43,7 +43,9 @@ const uris = {
         /** method: DELETE */
         del: `${base}/device/deleteByIds`,
         /** method: GET */
-        page: `${base}/device/page`
+        page: `${base}/device/page`,
+        /** method: GET */
+        available: `${base}/device/canBind`
       }
     },
     /** 监测点管理 */
@@ -229,7 +231,7 @@ export interface ITypeParam extends ICreator {
   codeAbridge?: string
   id?: number
   /** 是否显示 0 false 1true */
-  isDisplay?: boolean
+  isDisplay?: boolean | number
   lrange?: string
   /** 参数名称 */
   name?: string
@@ -278,6 +280,8 @@ export interface ITypeArchive extends ICreator {
   note?: string
   /** 设备状态 */
   status?: string
+  fileList?: string[]
+  filePathList?: string[]
 }
 
 export interface IStandard extends ICreator {
@@ -601,19 +605,34 @@ export const deleteTypeParamBatch = (ids: string) =>
 
 // 设备档案
 export const addTypeArchive = (data: Omit<ITypeArchive, 'id'>) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.device.archives.base, method: 'post', data })
+  axios.request<IRes<boolean>>({
+    url: uris.settings.device.archives.base,
+    method: 'post',
+    data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
+  })
 
 export const deleteTypeArchive = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.settings.device.archives.base}/${id}`, method: 'delete' })
 
 export const updateTypeArchive = (data: ITypeArchive) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.device.archives.base, method: 'put', data })
+  axios.request<IRes<boolean>>({
+    url: uris.settings.device.archives.base,
+    method: 'put',
+    data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
+  })
 
 export const getTypeArchive = (id: string) =>
   axios.request<IRes<ITypeArchive>>({ url: `${uris.settings.device.archives.base}/${id}`, method: 'get' })
 
 export const typeArchivesPage = (params: ITypeArchive & IQueryCommon) =>
   axios.request<IRes<ITypeArchive[]>>({ url: uris.settings.device.archives.page, method: 'get', params })
+
+export const typeArchivesAvailable = (id: string | number) =>
+  axios.request<IResult<ITypeArchive[]>>({
+    url: uris.settings.device.archives.available,
+    method: 'get',
+    params: { type: id }
+  })
 
 export const deleteTypeArchiveBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.archives.del, method: 'delete', params: { ids } })

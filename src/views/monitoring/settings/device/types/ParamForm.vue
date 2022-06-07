@@ -46,7 +46,9 @@
           v-bind="rest"
           clearable
         >
-          <template slot="suffix" v-if="name === 'rate'"> 分钟 </template>
+          <template slot="suffix" v-if="name === 'rate'">
+            分钟
+          </template>
         </el-input>
       </el-form-item>
     </el-form>
@@ -60,14 +62,14 @@ import { ElForm } from 'element-ui/types/form'
 import { ITypeParam } from '@/views/monitoring/api'
 import { getDefalutNumberProp } from '@/views/monitoring/utils'
 
-const getDefaultData = () => ({ isDisplay: false, sort: 0 })
+const getDefaultData = () => ({ isDisplay: 1, sort: 0, rate: 1 })
 
 @Component({ name: 'ParamForm', components: { BaseDialog } })
 export default class ParamForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Boolean, default: false }) loading!: boolean
   $refs!: { form: ElForm }
-  formData: ITypeParam = {}
+  formData: ITypeParam = getDefaultData()
 
   get listeners() {
     const { submit, ...rest } = this.$listeners
@@ -132,7 +134,7 @@ export default class ParamForm extends Vue {
         label: '参数单位',
         name: 'unit',
         rules: [
-          { required: true, message: '参数单位不能为空！', trigger: 'blur' },
+          { required: false, message: '参数单位不能为空！', trigger: 'blur' },
           { max: 20, message: '参数单位不超过20个字符' }
         ],
         size: 'small'
@@ -182,7 +184,9 @@ export default class ParamForm extends Vue {
         name: 'isDisplay',
         type: 'switch',
         rules: [{ required: true, message: '请选择是否显示', trigger: 'blur' }],
-        size: 'small'
+        size: 'small',
+        activeValue: 1,
+        inactiveValue: 0
       },
       {
         label: '显示顺序',
@@ -211,11 +215,15 @@ export default class ParamForm extends Vue {
   }
 
   @Watch('data', { immediate: true })
-  setDefaultData({ lrangeLow, lrangeUp, id, ...rest }) {
-    const temp = { lrangeLow, lrangeUp, id, ...rest }
-    if (lrangeLow === null) temp.lrangeLow = undefined
-    if (lrangeUp === null) temp.lrangeUp = undefined
-    this.formData = id ? temp : getDefaultData()
+  setDefaultData({ lrangeLow, lrangeUp, isDisplay, id, ...rest }) {
+    this.formData = id
+      ? {
+          lrangeLow: lrangeLow || undefined,
+          lrangeUp: lrangeUp || undefined,
+          isDisplay: Number(isDisplay),
+          ...rest
+        }
+      : getDefaultData()
   }
 }
 </script>

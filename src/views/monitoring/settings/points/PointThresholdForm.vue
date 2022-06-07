@@ -436,40 +436,42 @@ export default class PointForm extends Vue {
     }
   }
 
-  async onStandardChange(indicateId) {
+  async onStandardChange(indicateId: string, reset: boolean = true) {
     this.fetching = true
     try {
       const {
         result: { records }
-      } = await standardParamsPage({ indicateId, current: 1, size: 999999 })
+      } = await standardParamsPage({ indicateId, isUse: 1, current: 1, size: 999999 })
       this.standardParams = records
-      this.formData = {
-        ...this.formData,
-        // 缺deviceId 设备id 但有deviceTypeParaId， indicateId 监测体系id
-        param: records.map<IPointParam>(({ id, upper, lower, isSpecial, specialVal, deviceTypeParaVo }, index) => {
-          const { name, code, codeAbridge, unit } = deviceTypeParaVo || {}
-          return {
-            name,
-            code,
-            codeAbridge,
-            deviceId: this.deviceId,
-            indicateId,
-            indicateParaId: id,
-            unit,
-            id: '__temp__' + id,
-            lrangeUp: upper, // 体系参数叫upper 存的时候叫  lrangeUp
-            lrangeLow: lower, // 体系参数叫lower 存的时候叫  lrangeLow
-            sort: index + 1,
-            siteCode: '', //  后台是 number
-            isDisplay: 1,
-            isSpecial,
-            specialVal
-          }
-        }),
-        threshold: records.map<IPointThreshold>(({ id, deviceTypeParaVo }, index) => {
-          const { name, code } = deviceTypeParaVo || {}
-          return getDefaultThresholdValue(`__temp__${index}`, { name: `${name} | ${code}`, paraId: id })
-        })
+      if (reset) {
+        this.formData = {
+          ...this.formData,
+          // 缺deviceId 设备id 但有deviceTypeParaId， indicateId 监测体系id
+          param: records.map<IPointParam>(({ id, upper, lower, isSpecial, specialVal, deviceTypeParaVo }, index) => {
+            const { name, code, codeAbridge, unit } = deviceTypeParaVo || {}
+            return {
+              name,
+              code,
+              codeAbridge,
+              deviceId: this.deviceId,
+              indicateId,
+              indicateParaId: id,
+              unit,
+              id: '__temp__' + id,
+              lrangeUp: upper, // 体系参数叫upper 存的时候叫  lrangeUp
+              lrangeLow: lower, // 体系参数叫lower 存的时候叫  lrangeLow
+              sort: index + 1,
+              siteCode: '', //  后台是 number
+              isDisplay: 1,
+              isSpecial,
+              specialVal
+            }
+          }),
+          threshold: records.map<IPointThreshold>(({ id, deviceTypeParaVo }, index) => {
+            const { name, code } = deviceTypeParaVo || {}
+            return getDefaultThresholdValue(`__temp__${index}`, { name: `${name} | ${code}`, paraId: id })
+          })
+        }
       }
     } catch (error) {
       console.log(error)
@@ -528,7 +530,7 @@ export default class PointForm extends Vue {
       const { result } = await getPointConfigurations(id)
       const { siteDeviceIndicates: param, siteDeviceParas: threshold } = result || {}
       const indicateId = ((param || {})[0] || {}).indicateId
-      this.onStandardChange(indicateId)
+      this.onStandardChange(indicateId, false)
       this.formData = {
         indicateId,
         param: param.map(({ isDisplay, ...rest }) => ({ ...rest, isDisplay: Number(isDisplay) })),

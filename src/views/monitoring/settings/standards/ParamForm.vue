@@ -180,10 +180,10 @@ export default class ParamForm extends Vue {
         on: { change: () => this.onWarningChange('lowerTolerance') }
       },
       {
-        label: '报警级别',
+        label: '监测值判定',
         name: 'level',
         type: 'select',
-        rules: [{ required: true, message: '报警级别不能为空' }],
+        rules: [{ required: true, message: '监测值判定不能为空' }],
         options: this.levels.map(({ codeValue: value, notes: label }) => ({ value, label })),
         size: 'small'
       },

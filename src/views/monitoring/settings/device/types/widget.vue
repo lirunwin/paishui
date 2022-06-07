@@ -155,7 +155,8 @@ export default class DeviceTypes extends Vue {
     this.visible.param = true
   }
 
-  onTypeRowDblClick() {
+  onTypeRowDblClick(row) {
+    this.current = { ...this.current, lastType: this.current.type, type: { ...row } }
     this.visible.type = true
   }
 

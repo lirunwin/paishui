@@ -7,7 +7,7 @@
           filterable
           placeholder="请选择设备类型"
           size="small"
-          :disabled="formData.id"
+          :disabled="!!formData.id"
           clearable
         >
           <el-option v-for="item in types" :key="item.id" :label="item.name" :value="item.id" />
@@ -25,10 +25,10 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
-import { IType, typeParamsPage } from '@/views/monitoring/api'
+import { IType } from '@/views/monitoring/api'
 
-@Component({ name: 'TypeForm', components: { BaseDialog } })
-export default class TypeForm extends Vue {
+@Component({ name: 'StandardForm', components: { BaseDialog } })
+export default class StandardForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Array, default: () => [] }) types!: IType[]
   @Prop({ type: Boolean, default: false }) loading!: boolean
