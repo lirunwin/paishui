@@ -77,7 +77,7 @@ module.exports = {
       // pass options to sass-loader
       sass: {
         // 引入全局变量样式,@使我们设置的别名,执行src目录
-        data: `@import "@/styles/index.scss";`
+        data: `@import "@/styles/variables.scss";`
       }
     },
     // 启用 CSS modules for all css / pre-processor files.
