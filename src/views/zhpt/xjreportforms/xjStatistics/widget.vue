@@ -4,23 +4,13 @@
       <span class="select_name">分组</span>
       <div class="select_option dept_select">
         <el-select v-model="dept_select.value" size="small" placeholder="请选择" clearable>
-          <el-option
-            v-for="item in dept_select.options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
+          <el-option v-for="item in dept_select.options" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </div>
       <span class="select_name">人员</span>
       <div class="select_option user_select">
         <el-select v-model="user_select.value" multiple size="small" placeholder="请选择" clearable>
-          <el-option
-            v-for="item in user_select.options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
+          <el-option v-for="item in user_select.options" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </div>
       <div class="myRadio" style="position: relative;left: 550px;top: 6px;">
@@ -93,8 +83,8 @@
       <h2 class="weeklyStaticsName">巡查情况统计（2020/12/1-2020/12/14）</h2>
       <el-table
         :data="tableData"
-        :header-cell-style="{height:'50px', fontSize: '14px', color: '#333333'}"
-        :cell-style="{height: '30px', fontSize: '14px', color: '#333333'}"
+        :header-cell-style="{ height: '50px', fontSize: '14px', color: '#333333' }"
+        :cell-style="{ height: '30px', fontSize: '14px', color: '#333333' }"
         border
         show-summary
         stripe
@@ -103,69 +93,21 @@
       >
         <el-table-column prop="orderNo" label="序号" align="center">
           <template slot-scope="scope">
-            <span>{{ scope.$index+1 }}</span>
+            <span>{{ scope.$index + 1 }}</span>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="department"
-          label="分组名称"
-          align="center"
-        />
-        <el-table-column
-          prop="staffName"
-          label="人员姓名"
-          align="center"
-        />
-        <el-table-column
-          prop="xjDuration"
-          :label="'巡检时长\n(h)'"
-          align="center"
-        />
-        <el-table-column
-          prop="xjMileage"
-          :label="'巡检里程\n(m)'"
-          align="center"
-        />
-        <el-table-column
-          prop="validDuration"
-          :label="'有效时长\n(h)'"
-          align="center"
-        />
-        <el-table-column
-          prop="validMileage"
-          :label="'有效里程\n(m)'"
-          align="center"
-        />
-        <el-table-column
-          prop="reportTrouble"
-          :label="'上传隐患\n(个)'"
-          align="center"
-        />
-        <el-table-column
-          prop="troubleCheck"
-          :label="'隐患巡查\n(个)'"
-          align="center"
-        />
-        <el-table-column
-          prop="xjPoint"
-          :label="'巡检点\n(个)'"
-          align="center"
-        />
-        <el-table-column
-          prop="xjLine"
-          :label="'巡检线\n(m)'"
-          align="center"
-        />
-        <el-table-column
-          prop="workSiteCheck"
-          :label="'工地巡查\n(个)'"
-          align="center"
-        />
-        <el-table-column
-          prop="pipeLineCheck"
-          :label="'管线巡查\n(m)'"
-          align="center"
-        />
+        <el-table-column prop="department" label="分组名称" align="center" />
+        <el-table-column prop="staffName" label="人员姓名" align="center" />
+        <el-table-column prop="xjDuration" :label="'巡检时长\n(h)'" align="center" />
+        <el-table-column prop="xjMileage" :label="'巡检里程\n(m)'" align="center" />
+        <el-table-column prop="validDuration" :label="'有效时长\n(h)'" align="center" />
+        <el-table-column prop="validMileage" :label="'有效里程\n(m)'" align="center" />
+        <el-table-column prop="reportTrouble" :label="'上传隐患\n(个)'" align="center" />
+        <el-table-column prop="troubleCheck" :label="'隐患巡查\n(个)'" align="center" />
+        <el-table-column prop="xjPoint" :label="'巡检点\n(个)'" align="center" />
+        <el-table-column prop="xjLine" :label="'巡检线\n(m)'" align="center" />
+        <el-table-column prop="workSiteCheck" :label="'工地巡查\n(个)'" align="center" />
+        <el-table-column prop="pipeLineCheck" :label="'管线巡查\n(m)'" align="center" />
         <el-table-column prop="finishRatio" label="完成比例" align="center">
           <el-table-column prop="finshRatioPoint" label="点" align="center" />
           <el-table-column prop="finshRatioLine" label="线" align="center" />
@@ -185,13 +127,9 @@ export default {
   data() {
     return {
       dateTypeChoose: 1,
-      	// 部门筛选信息
+      // 部门筛选信息
       dept_select: {
-        options: [
-          { value: 1, label: '巡检组' },
-          { value: 2, label: '抢修组' },
-          { value: 3, label: '维护组' }
-        ],
+        options: [{ value: 1, label: '巡检组' }, { value: 2, label: '抢修组' }, { value: 3, label: '维护组' }],
         value: 1
       },
       // 人员筛选信息
@@ -209,88 +147,90 @@ export default {
       date_select: {
         value: ''
       },
-      tableData: [{
-        staffName: '李英莲',
-        department: '巡检组',
-        xjDuration: 0,
-        xjMileage: 0,
-        validDuration: 0,
-        validMileage: 0,
-        validAverageSpeed: 0,
-        reportTrouble: 0,
-        troubleCheck: '7',
-        xjPoint: '4',
-        xjLine: '1568',
-        workSiteCheck: '5',
-        pipeLineCheck: '1234',
-        finshRatioPoint: 0,
-        finshRatioLine: 0
-	  }, {
-        staffName: '汪苏',
-        department: '维护组',
-        xjDuration: 0,
-        xjMileage: 0,
-        validDuration: 0,
-        validMileage: 0,
-        validAverageSpeed: 0,
-        reportTrouble: 0,
-        troubleCheck: '7',
-        xjPoint: '4',
-        xjLine: '1568',
-        workSiteCheck: '5',
-        pipeLineCheck: '1234',
-        finshRatioPoint: 0,
-        finshRatioLine: 0
-	  }, {
-        staffName: '魏先义',
-        department: '巡检组',
-        xjDuration: 0,
-        xjMileage: 0,
-        validDuration: 0,
-        validMileage: 0,
-        validAverageSpeed: 0,
-        reportTrouble: 0,
-        troubleCheck: '7',
-        xjPoint: '4',
-        xjLine: '1568',
-        workSiteCheck: '5',
-        pipeLineCheck: '1234',
-        finshRatioPoint: 0,
-        finshRatioLine: 0
-	  },
-	  {
-        staffName: '徐华',
-        department: '维护组',
-        xjDuration: 0,
-        xjMileage: 0,
-        validDuration: 0,
-        validMileage: 0,
-        validAverageSpeed: 0,
-        reportTrouble: 0,
-        troubleCheck: '7',
-        xjPoint: '4',
-        xjLine: '1568',
-        workSiteCheck: '5',
-        pipeLineCheck: '1234',
-        finshRatioPoint: 0,
-        finshRatioLine: 0
-      }]
+      tableData: [
+        {
+          staffName: '李英莲',
+          department: '巡检组',
+          xjDuration: 0,
+          xjMileage: 0,
+          validDuration: 0,
+          validMileage: 0,
+          validAverageSpeed: 0,
+          reportTrouble: 0,
+          troubleCheck: '7',
+          xjPoint: '4',
+          xjLine: '1568',
+          workSiteCheck: '5',
+          pipeLineCheck: '1234',
+          finshRatioPoint: 0,
+          finshRatioLine: 0
+        },
+        {
+          staffName: '汪苏',
+          department: '维护组',
+          xjDuration: 0,
+          xjMileage: 0,
+          validDuration: 0,
+          validMileage: 0,
+          validAverageSpeed: 0,
+          reportTrouble: 0,
+          troubleCheck: '7',
+          xjPoint: '4',
+          xjLine: '1568',
+          workSiteCheck: '5',
+          pipeLineCheck: '1234',
+          finshRatioPoint: 0,
+          finshRatioLine: 0
+        },
+        {
+          staffName: '魏先义',
+          department: '巡检组',
+          xjDuration: 0,
+          xjMileage: 0,
+          validDuration: 0,
+          validMileage: 0,
+          validAverageSpeed: 0,
+          reportTrouble: 0,
+          troubleCheck: '7',
+          xjPoint: '4',
+          xjLine: '1568',
+          workSiteCheck: '5',
+          pipeLineCheck: '1234',
+          finshRatioPoint: 0,
+          finshRatioLine: 0
+        },
+        {
+          staffName: '徐华',
+          department: '维护组',
+          xjDuration: 0,
+          xjMileage: 0,
+          validDuration: 0,
+          validMileage: 0,
+          validAverageSpeed: 0,
+          reportTrouble: 0,
+          troubleCheck: '7',
+          xjPoint: '4',
+          xjLine: '1568',
+          workSiteCheck: '5',
+          pipeLineCheck: '1234',
+          finshRatioPoint: 0,
+          finshRatioLine: 0
+        }
+      ]
     }
   },
-  watch: {
-
-  },
+  watch: {},
   methods: {
     getSummaries(param) {
       const { columns, data } = param
       const sums = []
       columns.forEach((column, index) => {
         if (index === 0) {
-		  sums[index] = '合计'
-		  return
+          sums[index] = '合计'
+          return
         }
-        const values = data.map(item => Number(item[column.property]))
-        if (!values.every(value => isNaN(value))) {
+        const values = data.map((item) => Number(item[column.property]))
+        if (!values.every((value) => isNaN(value))) {
           sums[index] = values.reduce((prev, curr) => {
             const value = Number(curr)
             if (!isNaN(value)) {
@@ -310,7 +250,7 @@ export default {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .weeklyStatistics {
   position: relative;
   height: 100%;
@@ -324,7 +264,7 @@ export default {
     .select_name {
       position: relative;
       float: left;
-    //   font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+      //   font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
       font-size: 14px;
       font-weight: 500;
       color: black;
@@ -338,7 +278,7 @@ export default {
       position: relative;
       float: left;
       left: 5px;
-    //   font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+      //   font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
       font-size: 14px;
       font-weight: 500;
       color: black;
@@ -353,28 +293,26 @@ export default {
     }
   }
 }
-  .el-table {
-	position: absolute;
-	margin-top: 10px;
-	margin-bottom: 10px;
-	border-color: rgba(222, 226, 230, 0.5);
-  }
-  .statistics{
-    position: relative;
-    width: 100%;
-	top: 25px;
-    height: 400px;
-    background-size: 100% 100%;
-  }
-.weeklyStaticsName {
-	position: relative;
-	text-align: center;
- 	margin-bottom: 15px;
-	font-size: 14px;
+.el-table {
+  position: absolute;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border-color: rgba(222, 226, 230, 0.5);
 }
-</style>
-<style>
-.el-table th>.cell{
-	white-space: pre-line;
+.statistics {
+  position: relative;
+  width: 100%;
+  top: 25px;
+  height: 400px;
+  background-size: 100% 100%;
+}
+.weeklyStaticsName {
+  position: relative;
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+>>> .el-table th > .cell {
+  white-space: pre-line;
 }
 </style>
