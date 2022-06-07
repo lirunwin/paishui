@@ -2,8 +2,9 @@
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
 const CompressionWebpackPlugin = require('compression-webpack-plugin')
-const webpack = require('webpack')
+const setMemeoy = require('./memoryConfig')
 
+const webpack = require('webpack')
 function resolve(dir) {
   console.log(__dirname)
   return path.join(__dirname, dir)
@@ -76,7 +77,7 @@ module.exports = {
       // pass options to sass-loader
       sass: {
         // 引入全局变量样式,@使我们设置的别名,执行src目录
-        data: `@import "@/styles/index.scss";`
+        data: `@import "@/styles/variables.scss";`
       }
     },
     // 启用 CSS modules for all css / pre-processor files.
@@ -190,7 +191,8 @@ module.exports = {
         }
       })
       config.optimization.runtimeChunk('single')
-      config.externals({ './cptable': 'var cptable' })
     })
+    config.externals({ './cptable': 'var cptable' })
+    setMemeoy(config)
   }
 }

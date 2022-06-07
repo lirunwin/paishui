@@ -1,6 +1,6 @@
 @mixin clearfix {
   &:after {
-    content: "";
+    content: '';
     display: table;
     clear: both;
   }
@@ -26,4 +26,33 @@
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+@mixin font-style($fontSize, $lineHeight, $height) {
+  font-size: $fontSize;
+  line-height: $lineHeight;
+  height: $height;
+}
+
+@mixin base-scroll-bar {
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(#aaa, 0.7);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(#aaa, 0.35);
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-track-piece {
+    background: rgba(#aaa, 0.35);
+  }
 }

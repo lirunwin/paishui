@@ -303,7 +303,6 @@ export default class PointForm extends Vue {
   }
 
   onFileChange(file, fileList) {
-    console.log(fileList)
     const isJPG = file.raw.type === 'image/jpeg'
     const isPng = file.raw.type === 'image/png'
     const isLt2M = file.size / 1024 / 1024 < 2
