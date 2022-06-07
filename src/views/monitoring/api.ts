@@ -213,7 +213,7 @@ interface IQueryCommon extends IPagination {
   searchCount?: boolean
 }
 
-export interface IType extends ICreator {
+export interface IDeviceType extends ICreator {
   /** 数据归集时间（分钟） */
   collectTime?: string
   /** 设备类型名称 */
@@ -224,7 +224,7 @@ export interface IType extends ICreator {
   sort?: number | string
 }
 
-export interface ITypeParam extends ICreator {
+export interface IDeviceTypeParam extends ICreator {
   /** 参数代码 */
   code?: string
   /** 参数缩写 */
@@ -252,7 +252,7 @@ export interface ITypeParam extends ICreator {
   lrangeUp?: string
 }
 
-export interface ITypeArchive extends ICreator {
+export interface IDevice extends ICreator {
   /** 厂商名称 */
   companyName?: string
   /** 厂商电话 */
@@ -562,20 +562,20 @@ export const getStream = (fileName: string) =>
   axios.request<IRes>({ url: uris.common.getStream, method: 'get', params: { fileName } })
 
 // 设备类型
-export const addType = (data: Omit<IType, 'id'>) =>
+export const addType = (data: Omit<IDeviceType, 'id'>) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.base, method: 'post', data })
 
 export const deleteType = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.settings.device.types.base}/${id}`, method: 'delete' })
 
-export const updateType = (data: IType) =>
+export const updateType = (data: IDeviceType) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.base, method: 'put', data })
 
 export const getType = (id: string) =>
-  axios.request<IRes<IType>>({ url: `${uris.settings.device.types.base}/${id}`, method: 'get' })
+  axios.request<IRes<IDeviceType>>({ url: `${uris.settings.device.types.base}/${id}`, method: 'get' })
 
-export const typesPage = (params: IType & IQueryCommon) =>
-  axios.request<IRes<IType[]>>({
+export const typesPage = (params: IDeviceType & IQueryCommon) =>
+  axios.request<IRes<IDeviceType[]>>({
     url: uris.settings.device.types.page,
     method: 'get',
     params
@@ -585,56 +585,56 @@ export const deleteTypeBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.del, method: 'delete', params: { ids } })
 
 // 设备类型参数
-export const addTypeParam = (data: Omit<ITypeParam, 'id'>) =>
+export const addTypeParam = (data: Omit<IDeviceTypeParam, 'id'>) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.params.base, method: 'post', data })
 
 export const deleteTypeParam = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.settings.device.types.params.base}/${id}`, method: 'delete' })
 
-export const updateTypeParam = (data: ITypeParam) =>
+export const updateTypeParam = (data: IDeviceTypeParam) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.params.base, method: 'put', data })
 
 export const getTypeParam = (id: string) =>
-  axios.request<IRes<ITypeParam>>({ url: `${uris.settings.device.types.params.base}/${id}`, method: 'get' })
+  axios.request<IRes<IDeviceTypeParam>>({ url: `${uris.settings.device.types.params.base}/${id}`, method: 'get' })
 
-export const typeParamsPage = (params: ITypeParam & IQueryCommon & { LRange?: string }) =>
-  axios.request<IRes<ITypeParam[]>>({ url: uris.settings.device.types.params.page, method: 'get', params })
+export const typeParamsPage = (params: IDeviceTypeParam & IQueryCommon & { LRange?: string }) =>
+  axios.request<IRes<IDeviceTypeParam[]>>({ url: uris.settings.device.types.params.page, method: 'get', params })
 
 export const deleteTypeParamBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.params.del, method: 'delete', params: { ids } })
 
 // 设备档案
-export const addTypeArchive = (data: Omit<ITypeArchive, 'id'>) =>
+export const addDevice = (data: Omit<IDevice, 'id'>) =>
   axios.request<IRes<boolean>>({
     url: uris.settings.device.archives.base,
     method: 'post',
     data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
   })
 
-export const deleteTypeArchive = (id: string) =>
+export const deleteDevice = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.settings.device.archives.base}/${id}`, method: 'delete' })
 
-export const updateTypeArchive = (data: ITypeArchive) =>
+export const updateDevice = (data: IDevice) =>
   axios.request<IRes<boolean>>({
     url: uris.settings.device.archives.base,
     method: 'put',
     data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
   })
 
-export const getTypeArchive = (id: string) =>
-  axios.request<IRes<ITypeArchive>>({ url: `${uris.settings.device.archives.base}/${id}`, method: 'get' })
+export const getDevice = (id: string) =>
+  axios.request<IRes<IDevice>>({ url: `${uris.settings.device.archives.base}/${id}`, method: 'get' })
 
-export const typeArchivesPage = (params: ITypeArchive & IQueryCommon) =>
-  axios.request<IRes<ITypeArchive[]>>({ url: uris.settings.device.archives.page, method: 'get', params })
+export const devicesPage = (params: IDevice & IQueryCommon) =>
+  axios.request<IRes<IDevice[]>>({ url: uris.settings.device.archives.page, method: 'get', params })
 
-export const typeArchivesAvailable = (id: string | number) =>
-  axios.request<IResult<ITypeArchive[]>>({
+export const devicesAvailable = (id: string | number) =>
+  axios.request<IResult<IDevice[]>>({
     url: uris.settings.device.archives.available,
     method: 'get',
     params: { type: id }
   })
 
-export const deleteTypeArchiveBatch = (ids: string) =>
+export const deleteDeviceBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.archives.del, method: 'delete', params: { ids } })
 
 // 指标标准配置

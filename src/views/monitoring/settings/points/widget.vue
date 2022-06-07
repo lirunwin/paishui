@@ -93,13 +93,11 @@ import { getDefaultPagination } from '@/utils/constant'
 
 import {
   deletePointBatch,
-  IType,
+  IDeviceType,
   IPagination,
   IPoint,
   pointsPage,
   typesPage,
-  updatePoint,
-  addPoint,
   pointBindDevice,
   groups,
   sections,
@@ -127,7 +125,7 @@ export default class MonitoringPoints extends Vue {
 
   selected: IPoint[] = []
 
-  types: IType[] = []
+  types: IDeviceType[] = []
 
   points: IPoint[] = []
 

@@ -164,7 +164,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
-import { IPointConnectDevice, IType, ITypeArchive, typeArchivesAvailable } from '@/views/monitoring/api'
+import { IPointConnectDevice, IDeviceType, IDevice, devicesAvailable } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
 import { getDefalutNumberProp } from '@/views/monitoring/utils'
 import { telAndMobileReg } from '@/utils/constant'
@@ -205,7 +205,7 @@ const defaultFormData = () => ({
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   $refs!: { form: ElForm }
   getDefalutNumberProp = getDefalutNumberProp
   get listeners() {
@@ -219,7 +219,7 @@ export default class PointForm extends Vue {
     fileList?: Partial<ElUploadInternalFileDetail>[]
   } = defaultFormData()
 
-  archives: ITypeArchive[] = []
+  archives: IDevice[] = []
 
   get formItems(): FormItem[] {
     return [
@@ -295,7 +295,7 @@ export default class PointForm extends Vue {
   async onTypeChange(id, reset: boolean = true) {
     try {
       reset && (this.formData.bindDevice.deviceId = '')
-      const { result } = await typeArchivesAvailable(id)
+      const { result } = await devicesAvailable(id)
       this.archives = result || []
     } catch (error) {
       console.log(error)

@@ -108,8 +108,8 @@ import {
   updateTypeParam,
   addTypeParam,
   deleteTypeParamBatch,
-  IType,
-  ITypeParam
+  IDeviceType,
+  IDeviceTypeParam
 } from '@/views/monitoring/api'
 
 import { getDefaultPagination } from '@/utils/constant'
@@ -129,17 +129,17 @@ export default class DeviceTypes extends Vue {
     paramSubmitting: false
   }
 
-  current: { type: IType; param: ITypeParam; lastType: IType } = { type: {}, param: {}, lastType: {} }
+  current: { type: IDeviceType; param: IDeviceTypeParam; lastType: IDeviceType } = { type: {}, param: {}, lastType: {} }
 
-  selected: { type: IType[]; param: ITypeParam[] } = { type: [], param: [] }
+  selected: { type: IDeviceType[]; param: IDeviceTypeParam[] } = { type: [], param: [] }
 
   pagination: { type: IPagination; param: IPagination } = {
     type: getDefaultPagination(),
     param: getDefaultPagination()
   }
 
-  types: IType[] = []
-  params: ITypeParam[] = []
+  types: IDeviceType[] = []
+  params: IDeviceTypeParam[] = []
 
   onTypeAdd() {
     this.current = { ...this.current, lastType: this.current.type, type: {} }

@@ -1,5 +1,5 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
-import { IDictionary, IStandardParam, ITypeArchive, ITypeParam } from './api'
+import { IDictionary, IStandardParam, IDevice, IDeviceTypeParam } from './api'
 import { getIntervalValue, translate } from '@/utils/constant'
 
 interface ColItem extends Partial<ElTableColumn> {
@@ -35,14 +35,14 @@ export const settingDeviceTypeParamCols: ColItem[] = [
     prop: 'lrange',
     label: '量程',
     width: '110px',
-    formatter: ({ lrangeUp, lrangeLow }: ITypeParam) =>
+    formatter: ({ lrangeUp, lrangeLow }: IDeviceTypeParam) =>
       !lrangeLow && !lrangeUp ? '∞' : `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
   },
   {
     prop: 'isDisplay',
     label: '是否显示',
     width: '80px',
-    // formatter: ({ isDisplay }: ITypeParam) => (isDisplay ? '是' : '否'),
+    // formatter: ({ isDisplay }: IDeviceTypeParam) => (isDisplay ? '是' : '否'),
     _slot: true
   },
   { prop: 'sort', label: '显示顺序', width: '80px' },
@@ -50,7 +50,7 @@ export const settingDeviceTypeParamCols: ColItem[] = [
 ]
 
 /**设备档案管理 */
-export const settingArchiveCols: ColItem[] = [
+export const settingDeviceArchiveCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
   { prop: 'no', label: '设备编码', minWidth: '120px', ...alignLeft() },
@@ -66,7 +66,7 @@ export const settingArchiveCols: ColItem[] = [
     prop: 'status',
     label: '设备状态',
     width: '80px',
-    formatter: ({ status }: ITypeArchive) => ({ 0: '正常', 1: '离线' }[String(status)])
+    formatter: ({ status }: IDevice) => ({ 0: '正常', 1: '离线' }[String(status)])
   },
   { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft() }
 ]

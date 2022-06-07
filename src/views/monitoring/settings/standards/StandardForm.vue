@@ -25,12 +25,12 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
-import { IType } from '@/views/monitoring/api'
+import { IDeviceType } from '@/views/monitoring/api'
 
 @Component({ name: 'StandardForm', components: { BaseDialog } })
 export default class StandardForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   @Prop({ type: Boolean, default: false }) loading!: boolean
   $refs!: { form: ElForm }
 

@@ -112,7 +112,7 @@ import {
   IPagination,
   IStandard,
   IStandardParam,
-  IType,
+  IDeviceType,
   standardParamsPage,
   standardsPage,
   typesPage,
@@ -156,7 +156,7 @@ export default class MonitoringStandards extends Vue {
 
   standards: IStandard[] = []
   params: IStandardParam[] = []
-  types: IType[] = []
+  types: IDeviceType[] = []
 
   onStandardAdd() {
     this.current = { ...this.current, lastStandard: this.current.standard, standard: {} }

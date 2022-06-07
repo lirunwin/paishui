@@ -52,7 +52,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { getDefalutNumberProp, settingDeviceTypeParamCols } from '@/views/monitoring/utils'
 import { ElForm } from 'element-ui/types/form'
-import { IDictionary, IStandardParam, ITypeParam, typeParamsPage } from '@/views/monitoring/api'
+import { IDictionary, IStandardParam, IDeviceTypeParam, typeParamsPage } from '@/views/monitoring/api'
 import { TableColumn } from 'element-ui/types/table-column'
 import moment from 'moment'
 
@@ -89,7 +89,7 @@ export default class ParamForm extends Vue {
 
   formData: IFormData = getDefaultFormData()
 
-  typeParams: ITypeParam[] = []
+  typeParams: IDeviceTypeParam[] = []
 
   get keys() {
     return !this.formData.isSpecial ? ['specialVal'] : ['lower', 'lowerTolerance', 'upper', 'upperTolerance']

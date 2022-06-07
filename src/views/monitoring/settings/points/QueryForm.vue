@@ -111,7 +111,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
-import { IPointConnectDevice, IType } from '@/views/monitoring/api'
+import { IPointConnectDevice, IDeviceType } from '@/views/monitoring/api'
 export interface ILoading {
   query: boolean
   add: boolean
@@ -136,7 +136,7 @@ export interface IQuery {
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) loading!: ILoading
   @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   @Prop({ type: Array, default: () => [] }) groups!: string[]
   @Prop({ type: Array, default: () => [] }) sections!: string[]
 

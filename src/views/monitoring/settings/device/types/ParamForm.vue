@@ -59,7 +59,7 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
-import { ITypeParam } from '@/views/monitoring/api'
+import { IDeviceTypeParam } from '@/views/monitoring/api'
 import { getDefalutNumberProp } from '@/views/monitoring/utils'
 
 const getDefaultData = () => ({ isDisplay: 1, sort: 0, rate: 1 })
@@ -69,7 +69,7 @@ export default class ParamForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Boolean, default: false }) loading!: boolean
   $refs!: { form: ElForm }
-  formData: ITypeParam = getDefaultData()
+  formData: IDeviceTypeParam = getDefaultData()
 
   get listeners() {
     const { submit, ...rest } = this.$listeners

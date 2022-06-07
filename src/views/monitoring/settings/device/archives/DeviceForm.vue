@@ -84,12 +84,12 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
-import { IType, ITypeArchive, typeParamsPage } from '@/views/monitoring/api'
+import { IDeviceType, IDevice, typeParamsPage } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
 import { getRemoteImg } from '@/api/ftp'
 import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
 
-const getDefaultValue = (): ITypeArchive => ({
+const getDefaultValue = (): IDevice => ({
   name: '',
   no: '',
   sn: '',
@@ -105,11 +105,11 @@ const getDefaultValue = (): ITypeArchive => ({
 @Component({ name: 'TypeForm', components: { BaseDialog, BaseTitle } })
 export default class TypeForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   $refs!: { form: ElForm }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: Omit<ITypeArchive, 'fileList'> & { fileList?: Partial<ElUploadInternalFileDetail>[]; param?: string } = {
+  formData: Omit<IDevice, 'fileList'> & { fileList?: Partial<ElUploadInternalFileDetail>[]; param?: string } = {
     ...getDefaultValue(),
     fileList: [],
     param: ''
