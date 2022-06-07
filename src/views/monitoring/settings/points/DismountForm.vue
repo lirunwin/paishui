@@ -59,7 +59,10 @@ export default class DismountForm extends Vue {
       { pattern: telAndMobileReg(), message: '请输入正确的联系方式', trigger: 'blur' }
     ],
     operateTime: [{ required: true, message: '请选择修改时间' }],
-    note: [{ required: false, max: 255, message: '拆除原因最长为255个字符' }]
+    note: [
+      { required: true, message: '请输入拆除原因' },
+      { required: false, max: 255, message: '拆除原因最长为255个字符' }
+    ]
   }
 
   onSubmit() {

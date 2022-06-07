@@ -32,7 +32,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
 
-const getDefaultValue = () => ({ sort: 1, isCollect: false })
+const getDefaultValue = () => ({ sort: 1, isCollect: 1 })
 
 @Component({ name: 'TypeForm', components: { BaseDialog } })
 export default class TypeForm extends Vue {
@@ -119,7 +119,7 @@ export default class TypeForm extends Vue {
   onSubmit() {
     this.$refs.form.validate((valid) => valid && this.$emit('submit', this.formData))
   }
-  
+
   @Watch('data', { immediate: true })
   setDefaultData(val: any) {
     this.formData = val.id ? { ...val } : getDefaultValue()

@@ -41,12 +41,6 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingMonitorCols, monitorResultStates } from '@/views/monitoring/utils'
 import RouteCard from '@/views/monitoring/monitor/components/RouteCard/index.vue'
 
-// import {
-//   // getJournalList,
-//   // getFiles,
-//   // getCountLogType
-// } from '@/api/base'
-
 @Component({ name: 'Monitor', components: { BaseTitle, BaseTable, RouteCard } })
 export default class Monitor extends Vue {
   query: {

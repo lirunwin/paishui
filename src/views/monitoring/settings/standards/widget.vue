@@ -112,21 +112,21 @@ import {
   IPagination,
   IStandard,
   IStandardParam,
-  IType,
+  IDeviceType,
   standardParamsPage,
   standardsPage,
   typesPage,
   updateStandard,
   updateStandardParam
-} from '../../api'
+} from '@/views/monitoring/api'
 import { getDefaultPagination } from '@/utils/constant'
 
 @Component({ name: 'MonitoringStandards', components: { BaseTable, StandardForm, ParamForm } })
 export default class MonitoringStandards extends Vue {
   settingStandardCols = settingStandardCols
-get  settingStandardParamCols() {
-  return settingStandardParamCols(this.levels || [])
-}
+  get settingStandardParamCols() {
+    return settingStandardParamCols(this.levels || [])
+  }
 
   visible = { standard: false, param: false }
 
@@ -156,7 +156,7 @@ get  settingStandardParamCols() {
 
   standards: IStandard[] = []
   params: IStandardParam[] = []
-  types: IType[] = []
+  types: IDeviceType[] = []
 
   onStandardAdd() {
     this.current = { ...this.current, lastStandard: this.current.standard, standard: {} }
@@ -173,7 +173,7 @@ get  settingStandardParamCols() {
   }
 
   onStandardRowDblClick(row) {
-    this.current = { ...this.current, standard: { ...row } }
+    this.current = { ...this.current, lastStandard: this.current.standard, standard: { ...row } }
     this.visible.standard = true
   }
 

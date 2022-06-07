@@ -68,7 +68,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
-import { IType, ITypeArchive } from '@/views/monitoring/api'
+import { IDeviceType, IDevice } from '@/views/monitoring/api'
 
 export interface ILoading {
   query: boolean
@@ -87,8 +87,8 @@ export interface IQuery {
 @Component({ name: 'QueryForm', components: {} })
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) loading!: ILoading
-  @Prop({ type: Array, default: () => [] }) selected!: ITypeArchive[]
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  @Prop({ type: Array, default: () => [] }) selected!: IDevice[]
+  @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
 
   formData: IQuery = {}
 

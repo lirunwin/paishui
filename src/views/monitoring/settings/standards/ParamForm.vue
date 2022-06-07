@@ -52,7 +52,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { getDefalutNumberProp, settingDeviceTypeParamCols } from '@/views/monitoring/utils'
 import { ElForm } from 'element-ui/types/form'
-import { IDictionary, IStandardParam, ITypeParam, typeParamsPage } from '@/views/monitoring/api'
+import { IDictionary, IStandardParam, IDeviceTypeParam, typeParamsPage } from '@/views/monitoring/api'
 import { TableColumn } from 'element-ui/types/table-column'
 import moment from 'moment'
 
@@ -89,7 +89,7 @@ export default class ParamForm extends Vue {
 
   formData: IFormData = getDefaultFormData()
 
-  typeParams: ITypeParam[] = []
+  typeParams: IDeviceTypeParam[] = []
 
   get keys() {
     return !this.formData.isSpecial ? ['specialVal'] : ['lower', 'lowerTolerance', 'upper', 'upperTolerance']
@@ -180,10 +180,10 @@ export default class ParamForm extends Vue {
         on: { change: () => this.onWarningChange('lowerTolerance') }
       },
       {
-        label: '报警级别',
+        label: '监测值判定',
         name: 'level',
         type: 'select',
-        rules: [{ required: true, message: '报警级别不能为空' }],
+        rules: [{ required: true, message: '监测值判定不能为空' }],
         options: this.levels.map(({ codeValue: value, notes: label }) => ({ value, label })),
         size: 'small'
       },

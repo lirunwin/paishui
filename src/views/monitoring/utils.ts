@@ -1,80 +1,92 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
-import { IDictionary, IPointConnectDevice, IPointParam, IStandardParam, ITypeParam } from './api'
-import { defaultValuesForMonitorStandardLevel, getIntervalValue, translate } from '@/utils/constant'
+import { IDictionary, IStandardParam, IDevice, IDeviceTypeParam } from '@/views/monitoring/api'
+import { getIntervalValue, translate } from '@/utils/constant'
 
 interface ColItem extends Partial<ElTableColumn> {
   _slot?: boolean
   _interval?: boolean
 }
 
-const alignLeft: Pick<ElTableColumn, 'align' | 'headerAlign'> = { align: 'left', headerAlign: 'left' }
+const alignLeft = (tooltips: boolean = true): Partial<ElTableColumn> => ({
+  align: 'left',
+  headerAlign: 'left',
+  showOverflowTooltip: tooltips
+})
 
 /**设备类型配置 - 类型 */
 export const settingDeviceTypeCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'name', label: '设备类型名称', minWidth: '150px', ...alignLeft },
-  { prop: 'typeCode', label: '设备类型代码', minWidth: '110px', ...alignLeft },
-  { prop: 'collectTime', label: '数据归集时间（分钟）', width: '160px' }
+  { prop: 'name', label: '设备类型名称', minWidth: '150px', ...alignLeft() },
+  { prop: 'typeCode', label: '设备类型代码', minWidth: '110px', ...alignLeft() },
+  { prop: 'collectTime', label: '数据归集时间（分钟）', width: '160px' },
+  { prop: 'sort', label: '显示顺序', width: '80px' }
 ]
 
 /**设备类型配置 - 参数 */
 export const settingDeviceTypeParamCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'name', label: '参数名称', minWidth: '100px', ...alignLeft },
-  { prop: 'code', label: '参数代码', minWidth: '100px', ...alignLeft },
-  { prop: 'codeAbridge', label: '参数缩写', width: '90px', ...alignLeft },
+  { prop: 'code', label: '参数代码', minWidth: '120px', ...alignLeft() },
+  { prop: 'name', label: '参数名称', minWidth: '120px', ...alignLeft() },
+  { prop: 'codeAbridge', label: '参数缩写', width: '90px', ...alignLeft() },
   { prop: 'unit', label: '参数单位', width: '90px' },
   {
     prop: 'lrange',
     label: '量程',
     width: '110px',
-    formatter: ({ lrangeUp, lrangeLow }: ITypeParam) =>
+    formatter: ({ lrangeUp, lrangeLow }: IDeviceTypeParam) =>
       !lrangeLow && !lrangeUp ? '∞' : `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
   },
   {
     prop: 'isDisplay',
     label: '是否显示',
     width: '80px',
-    // formatter: ({ isDisplay }: ITypeParam) => (isDisplay ? '是' : '否'),
+    // formatter: ({ isDisplay }: IDeviceTypeParam) => (isDisplay ? '是' : '否'),
     _slot: true
   },
-  { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft, showOverflowTooltip: true }
+  { prop: 'sort', label: '显示顺序', width: '80px' },
+  { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft() }
 ]
 
 /**设备档案管理 */
-export const settingArchiveCols: ColItem[] = [
+export const settingDeviceArchiveCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'no', label: '设备编码', minWidth: '120px', ...alignLeft },
-  { prop: 'sn', label: '出厂编号', minWidth: '100px', ...alignLeft },
-  { prop: 'typeName', label: '设备类型', minWidth: '100px', ...alignLeft },
-  { prop: 'model', label: '设备型号', minWidth: '100px', ...alignLeft },
-  { prop: 'name', label: '设备名称', minWidth: '120px', ...alignLeft },
-  { prop: 'companyName', label: '设备厂商', minWidth: '120px', ...alignLeft },
+  { prop: 'no', label: '设备编码', minWidth: '120px', ...alignLeft() },
+  { prop: 'name', label: '设备名称', minWidth: '130px', ...alignLeft() },
+  { prop: 'sn', label: '出厂编号', minWidth: '130px', ...alignLeft() },
+  { prop: 'typeName', label: '设备类型', minWidth: '120px', ...alignLeft() },
+  { prop: 'model', label: '设备型号', minWidth: '100px', ...alignLeft() },
+  { prop: 'companyName', label: '设备厂商', minWidth: '120px', ...alignLeft() },
   { prop: 'companyUser', label: '厂商联系人', minWidth: '100px' },
   { prop: 'companyPhone', label: '联系人电话', width: '120px' },
   { prop: 'purchaseTime', label: '采购时间', width: '110px' },
-  { prop: 'status', label: '设备状态', width: '100px' },
-  { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft, showOverflowTooltip: true }
+  {
+    prop: 'status',
+    label: '设备状态',
+    width: '80px',
+    formatter: ({ status }: IDevice) => ({ 0: '正常', 1: '离线' }[String(status)])
+  },
+  { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft() }
 ]
 
 /**指标标准被指 */
 export const settingStandardCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'name', label: '监测体系名称', minWidth: '120px', ...alignLeft },
-  { prop: 'typeName', label: '设备类型', minWidth: '120px', ...alignLeft }
+  { prop: 'name', label: '监测体系名称', minWidth: '120px', ...alignLeft() },
+  { prop: 'typeName', label: '设备类型', minWidth: '120px', ...alignLeft() }
 ]
 /**指标标准被指 -参数*/
 export const settingStandardParamCols = (levels: IDictionary[]): ColItem[] => [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'deviceTypeParaVo.name', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'deviceTypeParaVo.name', label: '参数名称', minWidth: '120px', ...alignLeft() },
+  { prop: 'deviceTypeParaVo.unit', label: '单位', minWidth: '100px' },
   {
     prop: 'level',
-    label: '判定',
+    label: '监测值判定',
     width: '100px',
     formatter: ({ level }: IStandardParam) => translate({ arr: levels, key: 'codeValue', value: level, label: 'notes' })
   },
@@ -110,24 +122,24 @@ export const settingStandardParamCols = (levels: IDictionary[]): ColItem[] => [
 export const settingPointCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'no', label: '监测点编号', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'code', label: '监测点编码', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'name', label: '监测点名称', minWidth: '140px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'no', label: '监测点编号', minWidth: '120px', ...alignLeft() },
+  { prop: 'code', label: '监测点编码', minWidth: '120px', ...alignLeft() },
+  { prop: 'name', label: '监测点名称', minWidth: '140px', ...alignLeft() },
   {
     prop: 'bindDevice.deviceVo.typeName',
     label: '设备类型',
     minWidth: '120px',
-    ...alignLeft,
+    ...alignLeft(),
     showOverflowTooltip: true
   },
-  { prop: 'bindDevice.deviceVo.name', label: '设备名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'bindDevice.deviceVo.sn', label: '出厂编码', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'bindDevice.installUser', label: '负责人', width: '100px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.deviceVo.name', label: '设备名称', minWidth: '120px', ...alignLeft() },
+  { prop: 'bindDevice.deviceVo.sn', label: '出厂编码', minWidth: '130px', ...alignLeft() },
+  { prop: 'bindDevice.installUser', label: '负责人', width: '100px', ...alignLeft() },
   { prop: 'bindDevice.installPhone', label: '联系方式', width: '120px', showOverflowTooltip: true },
-  { prop: 'address', label: '安装地址', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'address', label: '安装地址', minWidth: '120px', ...alignLeft() },
   { prop: 'bindDevice.installTime', label: '安装时间', width: '120px', showOverflowTooltip: true },
-  { prop: 'psArea', label: '排水分区', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'siteGroup', label: '监测分组', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'psArea', label: '排水分区', minWidth: '90px', ...alignLeft() },
+  { prop: 'siteGroup', label: '监测分组', minWidth: '90px', ...alignLeft() },
   { prop: 'isConfigured', label: '是否配置', width: '90px', _slot: true },
   { prop: 'status', label: '监测点状态', width: '90px', _slot: true }
 ]
@@ -173,8 +185,8 @@ export const settingMonitorCols: ColItem[] = [
 /**监测点管理 - 监测参数基本设置 */
 export const settingPointBasisCols: ColItem[] = [
   { type: 'index', label: '序号', width: '50px' },
-  { prop: 'name', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'code', label: '参数代码', minWidth: '110px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'name', label: '参数名称', minWidth: '120px', ...alignLeft() },
+  { prop: 'code', label: '参数代码', minWidth: '110px', ...alignLeft() },
   { prop: 'unit', label: '参数单位', minWidth: '80px' },
   {
     prop: 'lower-upper',
@@ -197,14 +209,14 @@ export const settingPointBasisCols: ColItem[] = [
 /**监测点管理 - 监测参数阈值设置 */
 export const settingPointParamCols: ColItem[] = [
   { type: 'index', label: '序号', width: '50px' },
-  { prop: 'name', label: '参数名称', _slot: true, minWidth: '110px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'name', label: '参数名称', _slot: true, minWidth: '110px', ...alignLeft() },
   { prop: 'level', label: '监测值判定', _slot: true, width: '100px' },
   { prop: 'specialVal', label: '特定阈值', _slot: true, width: '80px' },
   { prop: 'threshold', label: '报警阈值', _slot: true, width: '190px' },
   { prop: 'allowance', label: '预警阈值', _slot: true, width: '190px' },
   { prop: 'time', label: '有效时段', _slot: true, width: '140px' },
   { prop: 'isPush', label: '消息推送', _slot: true, width: '80px' },
-  { prop: 'action', label: '操作', _slot: true, width: '50px' }
+  { prop: 'action', label: '操作', _slot: true, width: '50px', fixed: 'right' }
 ]
 
 export const monitorStates = [

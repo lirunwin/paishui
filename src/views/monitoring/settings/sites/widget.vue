@@ -20,12 +20,6 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingSiteCols as cols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 
-// import {
-//   // getJournalList,
-//   // getFiles,
-//   // getCountLogType
-// } from '@/api/base'
-
 @Component({ name: 'MonitoringSites', components: { BaseTable, QueryForm } })
 export default class MonitoringSites extends Vue {
   cols = cols

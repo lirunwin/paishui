@@ -13,7 +13,7 @@
       />
     </div>
     <BaseTable
-      :columns="settingArchiveCols"
+      :columns="settingDeviceArchiveCols"
       :data="archives"
       :pagination="pagination"
       v-loading="loading.query"
@@ -35,35 +35,35 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
-import { settingArchiveCols } from '@/views/monitoring/utils'
+import { settingDeviceArchiveCols } from '@/views/monitoring/utils'
 import QueryForm, { ILoading, IQuery } from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
 import {
-  ITypeArchive,
+  IDevice,
   IPagination,
-  IType,
-  typeArchivesPage,
-  updateTypeArchive,
-  addTypeArchive,
-  deleteTypeArchiveBatch,
+  IDeviceType,
+  devicesPage,
+  updateDevice,
+  addDevice,
+  deleteDeviceBatch,
   typesPage
 } from '@/views/monitoring/api'
 
 import { getDefaultPagination } from '@/utils/constant'
 
-@Component({ name: 'DeviceArchives', components: { BaseTable, QueryForm, DeviceForm } })
-export default class DeviceArchives extends Vue {
-  settingArchiveCols = settingArchiveCols
+@Component({ name: 'DeviceDeviceArchives', components: { BaseTable, QueryForm, DeviceForm } })
+export default class DeviceDeviceArchives extends Vue {
+  settingDeviceArchiveCols = settingDeviceArchiveCols
 
   visible = false
 
-  current: ITypeArchive = {}
+  current: IDevice = {}
 
-  selected: ITypeArchive[] = []
+  selected: IDevice[] = []
 
-  types: IType[] = []
+  types: IDeviceType[] = []
 
-  archives: ITypeArchive[] = []
+  archives: IDevice[] = []
 
   loading: ILoading = { query: false, add: false, update: false, del: false, export: false }
 
@@ -81,7 +81,7 @@ export default class DeviceArchives extends Vue {
     try {
       const {
         result: { records, size, total, current }
-      } = await typeArchivesPage({ ...this.pagination, ...this.query, ...query })
+      } = await devicesPage({ ...this.pagination, ...this.query, ...query })
       this.pagination = { current, size, total }
       this.archives = records || []
     } catch (error) {
@@ -95,10 +95,10 @@ export default class DeviceArchives extends Vue {
     this.doQuery()
   }
 
-  async onSubmit(data: ITypeArchive) {
+  async onSubmit(data: IDevice) {
     this.loading[data.id ? 'update' : 'add'] = true
     try {
-      const { result } = await (data.id ? updateTypeArchive(data) : addTypeArchive(data))
+      const { result } = await (data.id ? updateDevice(data) : addDevice(data))
       this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}设备档案${result ? '成功!' : '失败!'}`)
       if (result) {
         this.visible = false
@@ -128,7 +128,7 @@ export default class DeviceArchives extends Vue {
     })
     this.loading.del = true
     try {
-      const { result } = await deleteTypeArchiveBatch(ids)
+      const { result } = await deleteDeviceBatch(ids)
       this.$message[result ? 'success' : 'error'](`删除设备档案${result ? '成功!' : '失败!'}`)
       result && this.doQuery()
     } catch (error) {

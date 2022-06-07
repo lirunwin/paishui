@@ -140,6 +140,7 @@
                   :file-list="formData.fileList"
                   :on-change="onFileChange"
                   action="whatever"
+                  accept=".jpg,.jpeg,.png"
                 >
                   <i class="el-icon-plus"></i>
                 </el-upload>
@@ -163,12 +164,12 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
-import { IPointConnectDevice, IType, ITypeArchive, typeArchivesPage } from '@/views/monitoring/api'
+import { IPointConnectDevice, IDeviceType, IDevice, devicesAvailable } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
 import { getDefalutNumberProp } from '@/views/monitoring/utils'
 import { telAndMobileReg } from '@/utils/constant'
 import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 
 interface FormItem {
   name?: string
@@ -204,7 +205,7 @@ const defaultFormData = () => ({
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   $refs!: { form: ElForm }
   getDefalutNumberProp = getDefalutNumberProp
   get listeners() {
@@ -218,9 +219,7 @@ export default class PointForm extends Vue {
     fileList?: Partial<ElUploadInternalFileDetail>[]
   } = defaultFormData()
 
-  files: string[] = []
-
-  archives: ITypeArchive[] = []
+  archives: IDevice[] = []
 
   get formItems(): FormItem[] {
     return [
@@ -255,7 +254,7 @@ export default class PointForm extends Vue {
         items: [
           { label: '设备类型', name: 'typeId', type: 'select', options: this.types, onChange: this.onTypeChange },
           {
-            label: '出厂编号',
+            label: '出厂编码',
             name: 'deviceId',
             type: 'select',
             options: this.archives,
@@ -279,7 +278,7 @@ export default class PointForm extends Vue {
     'basis.coordiateX': [{ required: true, message: '经度不能为空' }],
     'basis.coordiateY': [{ required: true, message: '纬度不能为空' }],
     'bindDevice.typeId': [{ required: true, message: '请选择设备类型' }],
-    'bindDevice.deviceId': [{ required: true, message: '请选择设备sn码' }],
+    'bindDevice.deviceId': [{ required: true, message: '请选择设备' }],
     'bindDevice.installUser': [
       { required: true, message: '安装负责人不能为空' },
       { type: 'string', max: 50, message: '安装负责人不能超过50个字符' }
@@ -296,10 +295,8 @@ export default class PointForm extends Vue {
   async onTypeChange(id, reset: boolean = true) {
     try {
       reset && (this.formData.bindDevice.deviceId = '')
-      const {
-        result: { records }
-      } = await typeArchivesPage({ type: id, current: 1, size: 999999 })
-      this.archives = records || []
+      const { result } = await devicesAvailable({ type: id })
+      this.archives = result || []
     } catch (error) {
       console.log(error)
     }
@@ -359,7 +356,7 @@ export default class PointForm extends Vue {
           bindDevice: { ...(bindDevice || {}), typeId, deviceId },
           fileList: (filePathList || []).map((path, index) => ({
             name: path,
-            url: imageByName(path),
+            url: getRemoteImg(path),
             uid: +new Date() + index
           }))
         }

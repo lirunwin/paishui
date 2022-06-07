@@ -58,10 +58,15 @@
         <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
         <div style="margin-top:20px" class="upload">
           <el-upload
-            action="https://jsonplaceholder.typicode.com/posts/"
             list-type="picture-card"
             :on-preview="handlePictureCardPreview"
-            :on-remove="handleRemove"
+            :on-remove="handleRemovePic"
+            multiple
+            :auto-upload="false"
+            :file-list="formData.fileList"
+            :on-change="onFileChange"
+            action="whatever"
+            accept=".jpg,.jpeg,.png"
           >
             <i class="el-icon-plus"></i>
           </el-upload>
@@ -79,17 +84,36 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
-import { IType, typeParamsPage } from '@/views/monitoring/api'
+import { IDeviceType, IDevice, typeParamsPage } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
+import { getRemoteImg } from '@/api/ftp'
+import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
+
+const getDefaultValue = (): IDevice => ({
+  name: '',
+  no: '',
+  sn: '',
+  model: '',
+  type: '',
+  companyName: '',
+  companyUser: '',
+  companyPhone: '',
+  purchaseTime: '',
+  note: ''
+})
 
 @Component({ name: 'TypeForm', components: { BaseDialog, BaseTitle } })
 export default class TypeForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
-  @Prop({ type: Array, default: () => [] }) types!: IType[]
+  @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   $refs!: { form: ElForm }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: { [x: string]: string } = {}
+  formData: Omit<IDevice, 'fileList'> & { fileList?: Partial<ElUploadInternalFileDetail>[]; param?: string } = {
+    ...getDefaultValue(),
+    fileList: [],
+    param: ''
+  }
 
   get listeners() {
     const { submit, ...rest } = this.$listeners
@@ -113,7 +137,7 @@ export default class TypeForm extends Vue {
       },
       {
         /** ②	设备出厂唯一编号: 必填，自定义录入文本，要求与设备上的信息一致。 */
-        label: '设备SN码',
+        label: '出厂编码',
         name: 'sn',
         maxlength: 64
       },
@@ -228,14 +252,36 @@ export default class TypeForm extends Vue {
   onSubmit() {
     this.$refs.form.validate((valid) => {
       if (valid) {
-        const { param, ...rest } = this.formData
-        this.$emit('submit', rest)
+        const { param, fileList, ...rest } = this.formData
+        this.$emit('submit', { ...rest, fileList: fileList.map(({ raw }) => raw) })
       }
     })
   }
 
-  handleRemove(file, fileList) {
-    console.log(file, fileList)
+  onFileChange(file, fileList) {
+    console.log(fileList)
+    const isJPG = file.raw.type === 'image/jpeg'
+    const isPng = file.raw.type === 'image/png'
+    const isLt2M = file.size / 1024 / 1024 < 2
+    let needRemove = false
+    if (!isJPG && !isPng) {
+      this.$message.error('上传图片只能是 JPG/JPEG或png 格式!')
+      needRemove = true
+    }
+    if (!isLt2M) {
+      this.$message.error('上传头像图片大小不能超过 2MB!')
+      needRemove = true
+    }
+    if (fileList.length > 9) {
+      this.$message.error('最多可以上传9张图片!')
+      needRemove = true
+    }
+
+    this.formData.fileList = needRemove ? fileList.filter((item) => item.uid !== file.uid) : [...fileList]
+  }
+
+  handleRemovePic(file, fileList) {
+    this.formData.fileList = fileList.filter((item) => item.uid !== file.uid)
   }
 
   handlePictureCardPreview(file) {
@@ -245,7 +291,16 @@ export default class TypeForm extends Vue {
 
   @Watch('data', { immediate: true })
   setDefaultData(val) {
-    this.formData = val.id ? { ...val } : {}
+    this.formData = val.id
+      ? {
+          ...val,
+          fileList: (val.filePathList || []).map((path, index) => ({
+            name: path,
+            url: getRemoteImg(path),
+            uid: +new Date() + index
+          }))
+        }
+      : { ...getDefaultValue(), param: '', fileList: [] }
     if (val.type) this.getAllTypeParams(val.type)
   }
 }
@@ -254,8 +309,8 @@ export default class TypeForm extends Vue {
 .upload {
   /deep/ .el-upload-list--picture-card .el-upload-list__item,
   /deep/ .el-upload--picture-card {
-    width: 128px;
-    height: 128px;
+    width: 120px;
+    height: 120px;
   }
   /deep/ .el-upload--picture-card {
     line-height: normal;
