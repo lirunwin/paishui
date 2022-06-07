@@ -2,7 +2,7 @@
   <div class="testResultDiagram i-scrollbar" :data="'这个是data'">
     <!-- 检测成果专题图 -->
     <p class="title">查询设置</p>
-    <el-form ref="form" :model="form" label-width="auto" :rules="rules">
+    <el-form ref="form" :model="form" label-width="100px" :rules="rules">
       <el-form-item label="工程名称:" prop="name">
         <el-select @change="projectChange" v-model="form.project" clearable>
           <el-option
@@ -91,7 +91,7 @@
     </div>
     <!-- 表格当前列信息弹出框 -->
 
-    <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
+    <div id="popupCardDefRes" class="histroyPipeData" v-show="currentInfoCard">
 
       <div class="detailsCrad" v-if="currentInfoCard">
         <el-card class="box-card" style="width: 300px">
@@ -157,7 +157,7 @@
     
     <!-- 管道弹窗 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
+      <div id="popupCardRes" class="PipeEvData" v-show="currentInfoCard2">
         <div class="detailsCrad" v-if="currentInfoCard2">
           <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
             <div class="table-content">
@@ -208,7 +208,8 @@
                 </div>
                 <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                   <el-tabs v-model="activeName">
-                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum">
+                    <!-- <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum"> -->
+                      <el-tab-pane :label="`照片`" name="picnum">
                       <div class="container">
                         <el-image
                           style="width: 100%; height: 90%; -webkit-user-drag: none"
@@ -534,8 +535,13 @@ export default {
               this.reportOpt = data.map(d => {
                 return { label: d.wordInfoName, value: d.id }
               })
-              this.form.report = this.reportOpt.length !== 0 ? this.reportOpt[0] : ''
-              this.showLayer()
+              if (this.reportOpt.length !== 0) {
+                this.form.report = [this.reportOpt[0].label]
+                this.showLayer(this.projectOpt[0].value, this.reportOpt[0].value)
+              } else {
+                this.loading = false
+                this.hasLoad = true
+              }
             } else this.$message.error('获取报告失败!')
           })
           // 默认选择第一项
@@ -792,13 +798,20 @@ export default {
       })
     },
 
-    showLayer() {
+    showLayer(projectId, reportId) {
       if (!this.form.project) return this.$message.warning('请先填写工程名称')
       this.loading = true
-      let ids = !this.form.report ? this.form.report: this.form.report.join(",")
+      let ids = '', prjNo = ''
+      if (reportId) {
+        ids = reportId
+        prjNo = projectId
+      } else {
+        ids = this.form.report.join('')
+        prjNo = this.form.project
+      }
       let params = {
-        prjNo: this.form.project,
-        ids: this.form.report,
+        prjNo,
+        ids,
         jcStartDate: this.form.startDate ? this.form.startDate.toLocaleDateString().replace(/\//g, '-') : '',
         jcEndDate: this.form.endDate ? this.form.endDate.toLocaleDateString().replace(/\//g, '-') : ''
       }
@@ -877,7 +890,7 @@ export default {
       }
       // 
       if (position) {
-        let popupId = type === 1 ? 'popupCard' : 'popupCardEV'
+        let popupId = type === 1 ? 'popupCardDefRes' : 'popupCardRes'
         this.popup = new Overlay({
           element: document.getElementById(popupId),
           //当前窗口可见
@@ -1137,7 +1150,7 @@ export default {
     border: 1px solid #ff0000;
   }
 }
-#popupCard {
+#popupCardDefRes {
   .histroyPipeData {
     // 详情卡片的样式
     .detailsCrad {
@@ -1279,7 +1292,7 @@ export default {
   }
 }
 
-#popupCardEV {
+#popupCardRes {
   &::after {
     content: '';
     display: block;

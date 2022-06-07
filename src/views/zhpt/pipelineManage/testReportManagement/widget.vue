@@ -7,12 +7,12 @@
           <div class="title">关键字：</div>
           <el-input
             size="small"
-            placeholder="请输入工程名称、地点、报告名称"
+            placeholder="请输入工程、地点、报告名称"
             v-model="searchValue.serchValue"
             clearable
             class="serch-input"
-            suffix-icon="el-input__icon el-icon-search"
           >
+            <!-- suffix-icon="el-input__icon el-icon-search" -->
           </el-input>
           <div class="title">检测日期：</div>
           <!-- <el-date-picker
@@ -60,8 +60,8 @@
             <!-- <el-radio v-model="searchValue.checkList" label="0">未发布</el-radio> -->
             <!-- <el-radio v-model="searchValue.checkList" label="1">已发布</el-radio> -->
           </div>
-          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi"> 搜索 </el-button>
-          <el-button size="small" icon="el-icon-refresh-right" type="primary" @click="resetDate"> 重置 </el-button>
+          <el-button size="small" type="primary" @click="searchApi"> 搜索 </el-button>
+          <el-button size="small" type="primary" @click="resetDate"> 重置 </el-button>
         </div>
         <div class="right-btn">
           <el-button size="small" type="primary" @click="showUpdata">报告上传</el-button>
@@ -76,7 +76,6 @@
           >
           <el-button
             size="small"
-            icon="el-icon-delete"
             type="danger"
             :disabled="!multipleSelection.length"
             @click="removeBtn"
@@ -507,14 +506,11 @@
         </span>
       </el-dialog>
     </div>
+
     <!-- 当前列缺陷信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
-        <div
-          class="detailsCrad"
-          style="top: 10%; left: 20%; right: 62%; font-size: 14px; color: red"
-          v-if="currentInfoCard"
-        >
+      <div id="popupCardDefRpt" class="histroyPipeData" v-show="currentInfoCard">
+        <div class="detailsCrad" style="top: 10%; left: 20%; right: 62%; font-size: 14px; color: red" v-if="currentInfoCard">
           <el-card class="box-card" style="width: 300px">
             <div class="table-content" style="padding: 15px">
               <div
@@ -567,7 +563,7 @@
                           <source :src="getVideoUrl" type="video/mp4" />
                         </video>
                       </div>
-                      <div v-show="!DetailsForm.videopath" style="text-align: center; margin-top: 20px">暂无视频</div>
+                      <div v-else style="text-align: center; margin-top: 20px">暂无视频</div>
                     </el-tab-pane>
                   </el-tabs>
                 </div>
@@ -580,7 +576,7 @@
 
     <!-- 管道评估结果 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
+      <div id="popupCardRpt" class="PipeEvData" v-show="currentInfoCard2">
         <div class="detailsCrad" v-if="currentInfoCard2">
           <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
             <div class="table-content">
@@ -631,10 +627,11 @@
                 </div>
                 <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                   <el-tabs v-model="activeName">
-                    <el-tab-pane
+                    <!-- <el-tab-pane
                       :label="`照片(${getCurrentForm.pipeDefects ? getCurrentForm.pipeDefects.length || 0 : 0})`"
                       name="picnum"
-                    >
+                    > -->
+                    <el-tab-pane :label="`照片`" name="picnum" >
                       <div class="container">
                         <el-image
                           style="width: 100%; height: 90%; -webkit-user-drag: none"
@@ -817,7 +814,7 @@ export default {
       tableContent: [
         { sortable: false, label: '检测报告名称', name: 'wordInfoName' },
         { sortable: true, label: '检测段数', name: 'jcnum' },
-        { sortable: true, label: '检测长度', name: 'jclength' },
+        { sortable: true, label: '检测长度(m)', name: 'jclength' },
         { sortable: false, label: '工程名称', name: 'prjName' },
         { sortable: false, label: '工程地点', name: 'address' },
         { sortable: false, label: '施工单位', name: 'sgunit' },
@@ -884,10 +881,8 @@ export default {
   },
   created() {
     let res = this.getDate()
-
     this.initdefectQuantityStatisticsA = JSON.parse(JSON.stringify(this.defectQuantityStatisticsA))
     this.initdefectQuantityStatisticsB = JSON.parse(JSON.stringify(this.defectQuantityStatisticsB))
-    console.log('触发created', this.initdefectQuantityStatisticsA)
   },
   watch: {
     '$store.state.gis.activeSideItem': function (n, o) {
@@ -910,12 +905,10 @@ export default {
     // 获取文件url
     getVideoUrl() {
       let address = baseAddress + '/psjc/file' + this.DetailsForm.videopath
-      console.log('address', address)
       return address
     },
     getImgUrl() {
       let address = baseAddress + '/psjc/file' + this.DetailsForm.picPath
-      console.log('address', address)
       return address
     },
     // ------>
@@ -933,7 +926,6 @@ export default {
           return { value: v.value, title: v.title }
         }
       })
-      console.log('newArr', newArr)
       return newArr
     },
     // 提示框当前信息
@@ -947,13 +939,10 @@ export default {
     // 获取文件url
     getImgUrlEV() {
       let address = baseAddress + '/psjc/file' + this.getCurrentForm.pipeDefects[this.imgArrIndex].picPath
-      console.log('address', address)
       return address
     },
     getVideoUrlEV() {
-      console.log('照片', this.getCurrentForm.pipeDefects.length)
       let address = baseAddress + '/psjc/file' + this.getCurrentForm.videoPath
-      console.log('address', address)
       return address
     },
 
@@ -982,7 +971,6 @@ export default {
     }
   },
   mounted() {
-    console.log('IP', baseAddress)
     this.map = this.data.mapView
     this.projUtil = new projUtil()
     this.projUtil.resgis(this.currentDataProjName)
@@ -995,7 +983,6 @@ export default {
     // 打开检测详情
     async openDetailsDialog(id) {
       this.DetailsId = id
-      console.log('打开检测详情', this.DetailsId)
       this.detailsDialogFormVisible = true
     },
 
@@ -1048,7 +1035,6 @@ export default {
     },
     // 绘制统计饼图
     renderEcharts() {
-      console.log('渲染echarts')
       let chartDom = document.getElementById('statistics_echatrs')
       let myChart = echarts.init(chartDom)
       let option
@@ -1056,7 +1042,6 @@ export default {
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            // console.log('标题参数', a)
             return `${a['data']['title']} 数量 ${a['data']['value']} `
           }
         },
@@ -1098,7 +1083,6 @@ export default {
             data: this.defectTotal || [],
             label: {
               formatter: function (a) {
-                // console.log('标题参数', a)
                 return `${a['data']['title']} ${a['percent'].toFixed(1) + '%'} `
               },
               backgroundColor: '#F6F8FC',
@@ -1121,8 +1105,6 @@ export default {
     // 评估
     // 上一张照片
     lastImg() {
-      console.log('上一张照片', this.getCurrentForm.pipeDefects)
-
       if (this.imgArrIndex <= 0) {
         this.imgArrIndex = 0
         return
@@ -1157,23 +1139,21 @@ export default {
     // type: 1: 缺陷，2：管线
     //  传缺陷id
     async openPromptBox(id, position, type) {
+      console.log('打开弹出框')
       if (type === 1) {
         let res = await queryDefectdetails(id)
         this.DetailsForm = res.result
         this.currentInfoCard = true
-        console.log('管段缺陷', res)
       } else {
         // 管段评估(查询管段部分) 传管段编号
         let resEV = await histroyPipeData({ expNo: id })
         this.currentIndex = 0
         this.currentForm = resEV.result
         this.currentInfoCard2 = true
-        console.log('管段评估', resEV)
       }
 
       if (position) {
-        console.log('打开弹窗')
-        let popupId = type === 1 ? 'popupCard' : 'popupCardEV'
+        let popupId = type === 1 ? 'popupCardDefRpt' : 'popupCardRpt'
         this.popup = new Overlay({
           element: document.getElementById(popupId),
           //当前窗口可见
@@ -1186,16 +1166,13 @@ export default {
         this.map.addOverlay(this.popup)
         this.popup.setPosition(position)
       }
-      // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },
     // 双击打开详情或发布
     openDetails(row, column) {
       if (row.state == '1') {
         this.testReportDetails(row.id)
-        console.log('详情', row.state)
       } else {
         this.testReportDetails(row.id, true)
-        console.log('发布', row.state)
       }
     },
 
@@ -1248,7 +1225,6 @@ export default {
     // 根据状态设置每列表格样式
     modality(obj) {
       // 通过id标识来改变当前行的文字颜色
-      // console.log('obj', obj.row)
       let idArr
       if (this.multipleSelection != []) {
         idArr = this.multipleSelection.map((v) => v.id)
@@ -1274,14 +1250,12 @@ export default {
         }
       }
 
-      console.log('报告数据')
       let features = this.getPipeDefectData(1, row.id, true)
     },
     /**
      * 小地图完成加载后
      * */
     afterMapLoad() {
-      console.log('小地图加载')
       this.getPipeDefectData(2, this.id)
       this.$refs.myMap.showLegend('testReport', true)
     },
@@ -1292,9 +1266,8 @@ export default {
      * @param light 是否高亮
      * */
     getPipeDefectData(type = 1, id, light = false) {
-      let dataApi = null,
-        map,
-        layer
+      console.log('请求数据')
+      let dataApi = null, map, layer
       if (type === 1) {
         map = this.data.mapView
         layer = this.vectorLayer
@@ -1317,19 +1290,16 @@ export default {
             let reportInfo = Array.isArray(res.result) ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData, !light)
-
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
-              let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
-              map.getView().setCenter(center)
+              let center = mapUtil.getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+              this.lightLayer.getSource().clear()
               if (light) {
-                this.lightLayer.getSource().clear()
                 this.lightLayer.getSource().addFeatures([...funcDefectFeatures, ...strucDefectFeatures])
                 let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
-                map.getView().setCenter(center)
-                map.getView().setZoom(18)
+                map.getView().setCenter([center[0], center[1] - 0.001])
               } else {
-                this.lightLayer.getSource().clear()
                 layer.getSource().clear()
+                map.getView().setCenter(center)
                 map.getView().setZoom(12)
                 if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
                   layer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
@@ -1338,6 +1308,8 @@ export default {
               if (id) {
                 map.getView().setZoom(18)
               }
+            } else {
+              layer.getSource().clear()
             }
           }
         } else this.$message.error('管线缺陷数据请求失败')
@@ -1432,7 +1404,6 @@ export default {
             }
           })
         } else {
-          // console.log('没有geometry')
         }
       })
       return features
@@ -1462,29 +1433,24 @@ export default {
       this.loadingBool = false
       this.$refs['formDocx'] && this.$refs['formDocx'].resetFields()
       this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
-      console.log("this.$refs['updataDocx']", this.$refs['updataDocx'])
       this.selectParm = { current: 1, size: 30 }
       this.selectLoadTotal = 0 // 选择框总页数
       this.upDataTable = []
       this.fileList = []
       this.getPipeDefectData() // 刷新地图
       this.getDate()
-
-      console.log('关闭了弹框')
       return false
     },
     closeDialogVideo() {
       this.loadingBool = false
       this.$refs['formVideo'] && this.$refs['formVideo'].resetFields()
       this.$refs['updataVideo'] && this.$refs['updataVideo'].clearFiles()
-      console.log("this.$refs['updataVideo']", this.$refs['updataVideo'])
       this.selectParm = { current: 1, size: 30 }
       this.selectLoadTotal = 0 // 选择框总页数
       this.upDataTable = []
       this.getPipeDefectData() // 刷新地图
       this.getDate()
 
-      console.log('关闭了弹框')
       return false
     },
     // 获取字典id
@@ -1521,7 +1487,6 @@ export default {
     },
     // 打开弹框时
     openRelease() {
-      console.log('打开了弹框')
     },
     // 关闭发布弹框时触发
     closeRelease() {
@@ -1531,7 +1496,6 @@ export default {
       this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }
       this.isOpen = false
       this.isRelease = false
-      console.log('关闭了弹框', this.defectQuantityStatisticsA)
     },
     // 判断是否是'/'
     judge(value) {
@@ -1551,33 +1515,23 @@ export default {
         background: 'rgba(0, 0, 0, 0.7)'
       })
 
-      let timeId = setTimeout(() => {
-        loading.close()
-        this.$message.error('系统错误')
-        clearTimeout(timeId)
-      }, 8000)
-
       // 判断是否已加载地图
       if (this.hasLoadMap) {
         this.getPipeDefectData(2, id, false)
       }
 
       this.id = id
-      console.log('当前id', id)
       isRelease ? (this.isRelease = true) : ''
-      // console.log('是不是发布', this.isRelease)
       let res = await queryPipecheckDetails(id)
 
       if (res) {
         loading.close()
-        console.log('返回了信息')
       }
       // this.defectQuantityStatisticsA
       // 按缺陷名称给数据分类
       // 缺陷数量统计
       res.result.forEach((resValue) => {
         this.defectQuantityStatisticsA.forEach((sumValue) => {
-          // console.log("类型是否相等",typeof resValue.defectCode,sumValue.type);
           if (resValue.defectCode == sumValue.type) {
             if (resValue.defectLevel == '一级') {
               sumValue.oneValue = resValue.defectNums
@@ -1633,10 +1587,8 @@ export default {
 
       let resUrl = await queryPipeState(id)
       this.remark = resUrl.result.remark
-      console.log('详情', resUrl)
       if (resUrl.result.pdfFilePath) {
         this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
-        // console.log('this.pdfUrl',this.pdfUrl);
       } else {
         this.pdfUrl = null
       }
@@ -1705,10 +1657,7 @@ export default {
     // 文件发生变化时触发
     getFile(file, fileList) {
       this.fileList = fileList
-      let num = 1024.0 //byte
-      // console.log('视频file', file)
-      // console.log('上传file的状态', file.status)
-      // console.log('视频fileList', fileList)
+      let num = 1024.0 // byte
       this.upDataTable = this.fileList.map((v) => {
         return {
           name: v.name,
@@ -1716,8 +1665,6 @@ export default {
           status: v.status
         }
       })
-      console.log('this.upDataTable', this.upDataTable)
-      // console.log('this.fileList',this.fileList);
     },
     // 重置
     async resetDate() {
@@ -1741,7 +1688,6 @@ export default {
     // 失去焦点时
     initSelectDate() {
       this.selectParm.current = 1
-      console.log('选择的选项值', this.form.name)
     },
     // 选择工程下拉刷新加载更多数据（报告上传）
     async selectLoadMore() {
@@ -1749,14 +1695,12 @@ export default {
       this.selectParm.current++
       let res = await projectPagingQuery(this.selectParm)
       let data = res.result.records
-      console.log('data', data)
       data.forEach((v) => {
         this.selectArr.push({
           name: v.wordInfoName,
           No: v.id
         })
       })
-      console.log('下滑到底了')
     },
     // 视频上传
     async selectLoadMoreVideo() {
@@ -1773,7 +1717,6 @@ export default {
           No: v.id
         })
       })
-      console.log('下滑到底了')
     },
     // 报告上传按钮
     async showUpdata() {
@@ -1787,8 +1730,6 @@ export default {
           No: v.id
         }
       })
-      // this.selectArr
-      console.log('选择框数据', this.selectArr)
       this.dialogFormVisible = true
     },
     // 视频上传按钮
@@ -1803,7 +1744,6 @@ export default {
           No: v.id
         }
       })
-      // console.log('视频选择框数据', this.videoSelectArr)
       this.dialogFormVisible2 = true
     },
     // 上传按钮
@@ -1814,11 +1754,8 @@ export default {
           // 获取字典id
           await this.getParamsId('wordInfoDoc', 'tf_ywpn_prjinfo_w')
           this.updataParamsId.itemId = this.form.name
-          //  console.log('提交前', this.$refs.updataDocx.submit)
           await this.$refs.updataDocx.submit()
-          //  console.log('提交后', this.$refs.updataDocx.submit)
         } else {
-          console.log('不能提交!!')
           return false
         }
       })
@@ -1830,10 +1767,8 @@ export default {
           // 获取字典id
           await this.getParamsId('pipeVideo', 'tf_ywpn_prjinfo_w')
           this.updataParamsId.itemId = this.form.name
-          console.log('提交前', this.$refs.updataVideo)
           await this.$refs.updataVideo.submit()
         } else {
-          console.log('不能提交!!')
           return false
         }
       })
@@ -1842,10 +1777,8 @@ export default {
     handleAvatarSuccess(res, file, fileList) {
       // this.imageUrl = URL.createObjectURL(file.raw)
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
-      // console.log(arrState)
       if (res.result == null || res.result.length == 0) {
         file.status = 'error'
-        // this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }
       if (arrState) {
         this.$message({
@@ -1854,34 +1787,10 @@ export default {
         })
         this.lastFileList = fileList
         this.loadingBool = false
-        // let timeId = setTimeout(() => {
-        //   this.dialogFormVisible = false
-        //   this.form.name = ''
-        //   clearTimeout(timeId)
-        // }, 1500)
       }
-
-      // fileList.forEach((v) => {
-      //   if (v.status == 'ready' || v.status == 'uploading') {
-      //     return false
-      //   } else {
-      //     // let timeId = setTimeout(() => {
-      //     //   this.dialogFormVisible = false
-      //     //   this.form.name = ''
-      //     //   clearTimeout(timeId)
-      //     // }, 2000)
-      //     // console.log('上传后的code码', res)
-      // console.log('上传后的res信息', res)
-      // console.log('上传后的file信息', file)
-      // console.log('上传后的fileList信息', fileList)
-      //     // console.log('上传后的文件列表信息', fileList)
-      //   }
-      // })
     },
     // 检测报告是否已被上传成功过
     checkState(file) {
-      console.log('当前文件状态', file)
-      console.log('上传的文件列表', this.upDataTable)
       if (file.status == 'success') {
         this.$message({
           message: '文件都已上传完成',
@@ -1894,7 +1803,6 @@ export default {
     // 视频
     handleAvatarSuccessVideo(res, file, fileList) {
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
-      // console.log(arrState)
       if (res.result == null || res.result.length == 0) {
         file.status = 'error'
         // this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
@@ -1929,17 +1837,11 @@ export default {
       //       this.form.name = ''
       //       clearTimeout(timeId)
       //     }, 2000)
-      //     // console.log('上传后的code码', res)
-      // console.log('上传后的文件信息', file)
       //   }
       // })
     },
     beforeUpload(event, file, fileList) {
-      console.log('文件上传中', file)
       let num = 1024.0 //byte
-      // console.log('file', file)
-      // console.log('上传file的状态', file.status)
-      // console.log('fileList', fileList)
       this.upDataTable = fileList.map((v) => {
         return {
           name: v.name,
@@ -1947,7 +1849,6 @@ export default {
           status: v.status
         }
       })
-      // console.log('文件上传时', this.upDataTable)
     },
     handleExceed(files, fileList) {
       this.$message.warning(`本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
@@ -1964,7 +1865,6 @@ export default {
       } else {
         params.checkList = ''
       }
-      // console.log('搜索时传的参数', params)
       this.getDate(params)
     },
     // 删除按钮
@@ -1996,28 +1896,23 @@ export default {
     // 查询数据
     async getDate(params) {
       let data = { ...this.pagination }
-      // console.log('参数', params)
       if (params) {
         data.jcStartDate = params.dateTime.startDate
         data.jcEndDate = params.dateTime.finishDate
         data.state = params.checkList
         data.prjNo = params.serchValue
       }
-      // console.log('最后传进去的参数', data)
       await queryPageTestReportNew(data).then((res) => {
-        // console.log('接口返回', res)
         this.tableData = res.result.records
         this.paginationTotal = res.result.total
       })
     },
     // 发布tab标签点击事件
     handleClick(tab, event) {
-      // console.log(tab, event)
     },
     add() {},
     // 表格选中事件
     handleSelectionChange(val) {
-      // console.log('表格选中事件', val)
       if (val.length !== 0) {
         this.getPipeDefectData(1, val[0].id, true)
       } else {
@@ -2029,12 +1924,10 @@ export default {
     async handleSizeChange(val) {
       this.pagination.size = val
       await this.getDate()
-      console.log(`每页 ${val} 条`)
     },
     async handleCurrentChange(val) {
       this.pagination.current = val
       await this.getDate()
-      console.log(`当前页: ${val}`)
     }
   },
   // 过滤器
@@ -2740,7 +2633,7 @@ $fontSize: 14px !important;
     }
   }
 }
-#popupCard {
+#popupCardDefRpt {
   &::after {
     content: '';
     display: block;
@@ -2753,7 +2646,7 @@ $fontSize: 14px !important;
     transform: translate(-50%, 0);
   }
 }
-#popupCardEV {
+#popupCardRpt {
   &::after {
     content: '';
     display: block;

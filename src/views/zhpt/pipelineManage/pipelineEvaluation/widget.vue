@@ -11,7 +11,6 @@
             v-model="searchValue.queryParams"
             clearable
             class="serch-input"
-            suffix-icon="el-input__icon el-icon-search"
           >
           </el-input>
           <div class="title">检测时间：</div>
@@ -85,7 +84,9 @@
             name="管道评估结果表单.xls"
             type="xls"
           >
-            <el-button size="small" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
+            <el-button size="small" type="primary">导出
+              <!-- <i class="el-icon-download el-icon--right"></i> -->
+              </el-button>
           </download-excel>
 
           <!-- <el-button size="small" type="primary" @click.stop="exportConfirm()"
@@ -153,8 +154,9 @@
         >
         </el-table-column>
 
-        <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
+        <el-table-column fixed="right" header-align="center" label="操作" align="center" width="150">
           <template slot-scope="scope">
+            <el-button type="text" size="small" @click.stop="toVideo(scope.row)">视频</el-button>
             <el-button type="text" size="small" @click.stop="toPdfPage(scope.row.pdfFilePath)">报告</el-button>
             <el-button type="text" size="small" @click.stop="openDetails(scope.row)">详情</el-button>
           </template>
@@ -176,7 +178,7 @@
 
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
+      <div id="popupCardEva" class="histroyPipeData" v-show="currentInfoCard">
         <div class="detailsCrad" v-if="currentInfoCard">
           <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
             <div class="table-content">
@@ -227,7 +229,8 @@
                 </div>
                 <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                   <el-tabs v-model="activeName">
-                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum">
+                    <!-- <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects.length || 0})`" name="picnum"> -->
+                      <el-tab-pane :label="`照片`" name="picnum">
                       <div class="container">
                         <el-image
                           style="width: 100%; height: 90%; -webkit-user-drag: none"
@@ -262,6 +265,14 @@
         </div>
       </div>
     </transition>
+
+    <el-dialog width='80%' :title="videoTitle" v-if="showVideo" :visible.sync="showVideo" :append-to-body="true">
+      <div style="width: 100%; height: 80%">
+        <video controls="controls" width="100%" height="83%">
+            <source :src="videoUrl" type="video/mp4" />
+        </video>
+      </div>
+    </el-dialog>
 
     <!-- 管段检测详情卡片 -->
     <transition name="el-fade-in-linear">
@@ -309,19 +320,19 @@ export default {
   data() {
     return {
       json_fields: {
-        工程名称: 'prjName',
-        管段编号: 'expNo',
-        管段类型: 'pipeType',
+        '工程名称': 'prjName',
+        '管段编号': 'expNo',
+        '管段类型': 'pipeType',
         '管径(mm)': 'diameter',
-        材质: 'material',
-        结构性缺陷评价: 'structEstimate',
-        缺陷数量: 'defectnum',
-        检测照片: 'picnum',
-        检测视频: 'videoFileName',
-        检测地点: 'checkAddress',
-        检测日期: 'sampleTime',
-        结构性缺陷等级: 'structClass',
-        功能性缺陷等级: 'funcClass'
+        '材质': 'material',
+        '结构性缺陷评价': 'structEstimate',
+        '缺陷数量': 'defectnum',
+        '检测照片': 'picnum',
+        '检测视频': 'videoFileName',
+        '检测地点': 'checkAddress',
+        '检测日期': 'sampleTime',
+        '结构性缺陷等级': 'structClass',
+        '功能性缺陷等级': 'funcClass'
       },
       id: null, // 当前列表id
       activeName: 'picnum', // 照片视频tab标签
@@ -368,7 +379,6 @@ export default {
         { width: '', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
         { width: '100', sortable: true, label: '缺陷数量', name: 'defectnum' },
         { width: '100', sortable: true, label: '检测照片', name: 'picnum' },
-        { width: '100', sortable: false, label: '检测视频', name: 'videoFileName' },
         { width: '100', sortable: false, label: '检测地点', name: 'checkAddress' },
         { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' }
       ],
@@ -400,11 +410,16 @@ export default {
       vectorLayer: null,
       map: null,
       lightLayer: null,
+      searchLayer: null,
       clickEvent: null,
       projUtil: null, // 坐标系工具
       currentDataProjName: 'proj43', // 当前坐标系
       popup: null,
-      hasLoad: false
+      hasLoad: false,
+      // 
+      showVideo: false,
+      videoUrl: '',
+      videoTitle: '视频'
     }
   },
   created() {
@@ -573,6 +588,15 @@ export default {
     closePromptBox() {
       this.currentInfoCard = false
     },
+    toVideo (row) {
+      console.log('暂无视频')
+      let { videopath, videoFileName } = row
+      if (!videopath) return this.$message.warning('暂无视频')
+      let address = baseAddress + '/psjc/file' + videopath
+      this.videoTitle = `${videoFileName} 视频`
+      this.videoUrl = address
+      this.showVideo = true
+    },
     // 跳转到pdf页面
     toPdfPage(url) {
       if (!url) {
@@ -589,12 +613,14 @@ export default {
     },
 
     init() {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), visible: false })
+      this.searchLayer = new VectorLayer({ source: new VectorSource() })
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
         style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)')
       })
       this.map.addLayer(this.vectorLayer)
+      this.map.addLayer(this.searchLayer)
       this.map.addLayer(this.lightLayer)
       this.clickEvent = this.map.on('click', (evt) => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
@@ -608,6 +634,7 @@ export default {
       this.getPipeDefectData()
     },
     clearAll() {
+      this.searchLayer && this.map.removeLayer(this.searchLayer)
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
@@ -621,13 +648,14 @@ export default {
             let reportInfo = res.result[0] ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
-            this.vectorLayer.getSource().clear()
+            this.searchLayer.getSource().clear()
             this.lightLayer.getSource().clear()
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
               view.animate({ zoom: 13 })
+              this.searchLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
             this.hasLoad = true
@@ -831,7 +859,7 @@ export default {
       // 定位
       if (position) {
         this.popup = new Overlay({
-          element: document.getElementById('popupCard'),
+          element: document.getElementById('popupCardEva'),
           //当前窗口可见
           autoPan: true,
           positioning: 'bottom-center',
@@ -870,7 +898,43 @@ export default {
     searchApi() {
       this.pagination.current = 1
       this.getDate(this.searchValue)
+      // this.searchMap({
+      //   funcClass: this.searchValue.funcClass,
+      //   structClass: this.searchValue.structClass,
+      //   queryText: this.searchValue.queryParams,
+      //   endDate: this.searchValue.testTime.finishDate,
+      //   startDate: this.searchValue.testTime.startDate,
+      // })
       // console.log(this.searchValue.testTime)
+    },
+    // 搜索地图
+    searchMap (filterObj) {
+      console.log('过滤条件', filterObj)
+      let features = this.vectorLayer.getSource().getFeatures()
+      features = features.filter(fea => filter(fea)).map(fea => fea.clone())
+
+      let source = this.searchLayer.getSource()
+      source.clear()
+      source.addFeatures(features)
+
+      function filter (fea) {
+        if (!fea.get('expNo').includes(filterObj.queryText) && !fea.get('material').includes(filterObj.queryText)) return false
+
+        if (!fea.get('funcClass').includes(filterObj.funcClass)) return false
+
+        if (!fea.get('structClass').includes(filterObj.structClass)) return false
+
+        let date = fea.get('sampleTime')
+        let startDate = filterObj.startDate
+        let endDate = filterObj.endDate
+        if (startDate || endDate) {
+          if (endDate === startDate) {
+            return date === endDate
+          } else {
+            return (!startDate ? true : new Date(date) >= new Date(filterObj.startDate)) && (!endDate ? true : new Date(date) <= new Date(filterObj.endDate))
+          }
+        } return true
+      }
     },
 
     // 表格多选事件
@@ -889,7 +953,6 @@ export default {
         data.funcClass = params.funcClass
         data.structClass = params.structClass
       }
-      console.log('上传的参数', params)
       await queryPageAssessment(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
@@ -1227,7 +1290,7 @@ export default {
     }
   }
 }
-#popupCard {
+#popupCardEva {
   &::after {
     content: '';
     display: block;

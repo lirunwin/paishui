@@ -60,7 +60,7 @@
             >
             </el-option>
           </el-select>
-          <el-button size="small"  style="margin-right: 5px"  icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
+          <el-button size="small"  style="margin-right: 5px" type="primary" @click="searchApi">搜索</el-button>
           <download-excel
             :fields="exportFields"
             :data="exportData"
@@ -68,7 +68,7 @@
             name="管道缺陷汇总表.xls"
             type="xls"
           >
-           <el-button size="small" icon="el-icon-search" type="primary">导出</el-button>
+           <el-button size="small" type="primary">导出</el-button>
           </download-excel>
         </div>
         <div class="right-btn"></div>
@@ -150,8 +150,8 @@ export default {
         { width: '110', sortable: false, label: '起始井号', name: 'startPoint' },
         { width: '110', sortable: false, label: '终止井号', name: 'endPoint' },
         { width: '110', sortable: true, label: '管径(mm)', name: 'diameter' },
-        { width: '110', sortable: true, label: '管段长度', name: 'pipeLength' },
-        { width: '110', sortable: true, label: '检测长度', name: 'jclength' },
+        { width: '110', sortable: true, label: '管段长度(m)', name: 'pipeLength' },
+        { width: '110', sortable: true, label: '检测长度(m)', name: 'jclength' },
         { width: '130', sortable: false, label: '缺陷名称', name: 'defectName' },
         { width: '130', sortable: true, label: '缺陷等级', name: 'defectLevel' },
         { width: '120', sortable: false, label: '整改建议', name: 'checkSuggest' },

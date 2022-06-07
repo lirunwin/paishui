@@ -51,7 +51,11 @@
               </el-col>
             </el-row>
           </div>
-          <el-button size="small" style="margin-right: 5px" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
+          <div class="title">整改建议</div>
+          <el-select clearable v-model="searchValue.suggest" placeholder="全部">
+            <el-option v-for="(item, i) in suggests" :key="i" :label="item" :value="item"></el-option>
+          </el-select>
+          <el-button size="small" style="margin-right: 5px" type="primary" @click="searchApi">搜索</el-button>
           <download-excel
             :fields="exportFields"
             :data="exportData"
@@ -59,7 +63,7 @@
             name="管道评估汇总表.xls"
             type="xls"
           >
-           <el-button size="small" icon="el-icon-search" type="primary">导出</el-button>
+           <el-button size="small" type="primary">导出</el-button>
           </download-excel>
          
         </div>
@@ -119,7 +123,7 @@
 </template>
 
 <script>
-import { queryPageAssessment } from '@/api/pipelineManage'
+import { queryPageAssessment, queryDictionariesId } from '@/api/pipelineManage'
 
 // 引入公共ip地址
 import { baseAddress } from '@/utils/request.ts'
@@ -132,7 +136,8 @@ export default {
         startDate: '',
         finishDate: '',
         startPoint: '',
-        endPoint: ''
+        endPoint: '',
+
       },
       // 表格参数
       tableContent: [
@@ -143,9 +148,9 @@ export default {
         { width: '130', sortable: true, label: '终点埋深(m)', name: 'endDepth' },
         { width: '110', sortable: false, label: '管段类型', name: 'pipeType' },
         { width: '', sortable: false, label: '管段材质', name: 'material' },
-        { width: '110', sortable: true, label: '管段直径', name: 'diameter' },
-        { width: '110', sortable: true, label: '管段长度', name: 'pipeLength' },
-        { width: '110', sortable: true, label: '检测长度', name: 'jclength' },
+        { width: '110', sortable: true, label: '管段直径(mm)', name: 'diameter' },
+        { width: '110', sortable: true, label: '管段长度(m)', name: 'pipeLength' },
+        { width: '110', sortable: true, label: '检测长度(m)', name: 'jclength' },
         { width: '110', sortable: false, label: '检测方向', name: 'detectDir' },
         { width: '110', sortable: false, label: '检测人员', name: 'detectPerson' }
       ],
@@ -162,7 +167,8 @@ export default {
       pickerOptions1: '',
       multipleSelection: [], // 选择的列表
       exportFields: {},
-      exportData: []
+      exportData: [],
+      suggests: ['暂不处理', '修复计划', '处理计划', '修复计划', '尽快修复', '立即处理']
     }
   },
   computed: {},
@@ -170,6 +176,9 @@ export default {
     this.updateTable()
     this.setFields() // 设置导出字段
     this.setData()
+    queryDictionariesId({ keys: 'check_suggest' }).then(res => {
+      this.suggests = res.result.check_suggest
+    })
   },
   methods: {
     setFields () {

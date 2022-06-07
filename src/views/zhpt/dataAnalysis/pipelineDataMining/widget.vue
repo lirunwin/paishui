@@ -15,9 +15,7 @@
         <el-divider></el-divider>
         <div class="top-title flexCss">
           <el-checkbox v-model="linkage">联动</el-checkbox>
-          <el-button type="primary" size="small" @confirm="$message('该功能暂未开放')"
-            >导出<i class="el-icon-download el-icon--right"></i
-          ></el-button>
+          <el-button type="primary" size="small" @confirm="$message('该功能暂未开放')">导出</el-button>
         </div>
         <el-divider></el-divider>
         <!-- 视图列表 -->
