@@ -160,7 +160,6 @@
                     <div class="flexDiv" style="width: 100%;">
                             <el-button size="mini" type="primary" :disabled="pageShow.userDraw" @click="drawAndQuery">绘制范围</el-button>
                             <el-button size="mini" type="primary" :disabled="pageShow.userDraw" @click="clearDraw">清除范围</el-button>
-                            <el-checkbox style="margin-left:10px;margin-right: 0px ;" v-model="pageShow.showPlace" @change="regionShow">片区显示</el-checkbox>
                             <el-checkbox v-show='pageShow.showSQLPage' style="margin-left:10px;margin-right: 0px ;" v-model="pageShow.showSQLContent" >条件查询框显示
                             </el-checkbox>
                     </div>
@@ -261,7 +260,7 @@
                             <el-input v-model="serverSearch.queText" ref="textBox" type="textarea" :rows="4" placeholder="请输入内容 如:OBJECTID > 0"/>
                             <el-row style='padding-top:10px'>
                                 <el-button size="mini" type="primary" @click="clearQueryCondition">清空</el-button>
-                                <el-button size="mini" type="primary" @click="getGeoData">查询</el-button>
+                                <el-button size="mini" type="primary" @click="getGeoData2">查询</el-button>
                             </el-row>
                         </tf-legend>     
                     </div>

@@ -285,7 +285,7 @@ export const appconfig = {
       'groupname': '离线业务地图服务',
       'type': 'dynamic',
       'config': [
-        { 'name': '业务地图', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer' }
+        { 'name': '业务地图', 'url': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/psmap' }
       ]
     },
     'print': {
