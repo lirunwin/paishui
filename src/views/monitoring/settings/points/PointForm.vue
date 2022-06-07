@@ -295,7 +295,7 @@ export default class PointForm extends Vue {
   async onTypeChange(id, reset: boolean = true) {
     try {
       reset && (this.formData.bindDevice.deviceId = '')
-      const { result } = await devicesAvailable(id)
+      const { result } = await devicesAvailable({ type: id })
       this.archives = result || []
     } catch (error) {
       console.log(error)

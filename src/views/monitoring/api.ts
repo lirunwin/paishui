@@ -45,7 +45,7 @@ const uris = {
         /** method: GET */
         page: `${base}/device/page`,
         /** method: GET */
-        available: `${base}/device/canBind`
+        all: `${base}/device/list`
       }
     },
     /** 监测点管理 */
@@ -627,12 +627,8 @@ export const getDevice = (id: string) =>
 export const devicesPage = (params: IDevice & IQueryCommon) =>
   axios.request<IRes<IDevice[]>>({ url: uris.settings.device.archives.page, method: 'get', params })
 
-export const devicesAvailable = (id: string | number) =>
-  axios.request<IResult<IDevice[]>>({
-    url: uris.settings.device.archives.available,
-    method: 'get',
-    params: { type: id }
-  })
+export const devicesAvailable = (params: IDevice & IQueryCommon) =>
+  axios.request<IResult<IDevice[]>>({ url: uris.settings.device.archives.all, method: 'get', params })
 
 export const deleteDeviceBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.archives.del, method: 'delete', params: { ids } })
