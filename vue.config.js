@@ -2,8 +2,9 @@
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
 const CompressionWebpackPlugin = require('compression-webpack-plugin')
-const webpack = require('webpack')
+const setMemeoy = require('./memoryConfig')
 
+const webpack = require('webpack')
 function resolve(dir) {
   console.log(__dirname)
   return path.join(__dirname, dir)
@@ -190,7 +191,8 @@ module.exports = {
         }
       })
       config.optimization.runtimeChunk('single')
-      config.externals({ './cptable': 'var cptable' })
     })
+    config.externals({ './cptable': 'var cptable' })
+    setMemeoy(config)
   }
 }
