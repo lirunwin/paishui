@@ -345,6 +345,7 @@ export default {
         .then(() => {
           deleteDictionary(id).then((res) => {
             if (res.code === 1) {
+              this.queryDictTypeList()
               this.$message({
                 type: 'success',
                 message: '删除成功!'
@@ -363,9 +364,6 @@ export default {
             type: 'info',
             message: '已取消删除'
           })
-        })
-        .finally(() => {
-          this.queryDictTypeList()
         })
     },
 

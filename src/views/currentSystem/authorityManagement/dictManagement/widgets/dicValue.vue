@@ -21,11 +21,11 @@
           <img src="@/assets/icon/null.png" alt="" />
           <p class="empty-p">暂无数据</p>
         </template>
-        <el-table-column label="序号" width="80" align="center" type="index" />
         <el-table-column prop="sort" label="排序" width="80" align="center" />
 
         <el-table-column prop="notes" label="字典名称" show-overflow-tooltip align="center"></el-table-column>
         <el-table-column prop="codeValue" label="字典编码" show-overflow-tooltip align="center"></el-table-column>
+        <el-table-column label="序号" width="80" align="center" type="index" />
         <el-table-column label="操作" align="center" width="140">
           <template slot-scope="scope">
             <el-button type="text" size="mini" @click="editDicValue(scope)" style="color:#36af36">编辑</el-button>
