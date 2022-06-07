@@ -72,9 +72,14 @@ export default class BaseDialog extends Vue {
   $font-color: #fff;
   $bg-color: rgba(45, 116, 231, 1);
   border-radius: $radius;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   /deep/ .el-dialog {
     background-color: transparent;
     max-width: 1280px;
+    margin-top: 0 !important;
+
     &__header {
       background-color: $bg-color;
       color: $font-color;
