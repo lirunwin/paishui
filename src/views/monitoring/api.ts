@@ -70,6 +70,7 @@ const uris = {
       isConfigured: `${base}/monitorsiteindicate/validateOtherIndicate`,
       /** method: POST */
       submitSettings: `${base}/monitorsitepara/saveOrUpdateBatch`,
+      /** method: POST  获取配置信息 */
       configurations: `${base}/monitorsiteindicate/getByMonitorId`
     },
     /** 监测站管理 */
