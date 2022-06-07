@@ -11,7 +11,6 @@
             v-model="searchParams.keyword"
             clearable
             class="serch-input"
-            suffix-icon="el-input__icon el-icon-search"
           >
           </el-input>
           <div class="title">检测日期：</div>
@@ -46,11 +45,11 @@
           </div>
 
           <div class="title">结构性缺陷等级：</div>
-          <el-select clearable v-model="searchParams.funcClass" placeholder="">
+          <el-select clearable v-model="searchParams.funcClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i + gradeArr.length" :label="item" :value="item"></el-option>
           </el-select>
           <div class="title">功能性缺陷等级：</div>
-          <el-select clearable v-model="searchParams.structClass" placeholder="">
+          <el-select clearable v-model="searchParams.structClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
         </div>
@@ -259,7 +258,7 @@
     
     <!-- 管道弹窗 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCardEV" class="PipeEvData" v-show="currentInfoCard2">
+      <div id="popupCardIns" class="PipeEvData" v-show="currentInfoCard2">
         <div class="detailsCrad" v-if="currentInfoCard2">
           <el-card class="box-card" style="width: 440px; min-height: 310px; border: none; border-radius: 5px">
             <div class="table-content">
@@ -276,7 +275,7 @@
                 <span style="font-weight: bold; user-select: none"
                   >{{ getCurrentForm.expNo || '' + getCurrentForm.pipeType || '' }}
                   <i class="el-icon-caret-left" style="cursor: pointer" type="text" @click="lastPageEv"></i>
-                  {{ currentForm2.length ? currentIndex + 1 : 0 }}/{{ currentForm2.length }}
+                  {{ currentForm2.length ? currentIndex2 + 1 : 0 }}/{{ currentForm2.length }}
                   <i class="el-icon-caret-right" style="cursor: pointer" type="text" @click="nextPageEv"></i>
                 </span>
                 <a
@@ -310,7 +309,8 @@
                 </div>
                 <div class="right" style="width: 250px; margin-left: 20px; min-height: 240px">
                   <el-tabs v-model="activeName2">
-                    <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum">
+                    <!-- <el-tab-pane :label="`照片(${getCurrentForm.pipeDefects ? (getCurrentForm.pipeDefects.length || 0): 0})`" name="picnum"> -->
+                      <el-tab-pane :label="`照片`" name="picnum">
                       <div class="container">
                         <el-image
                           style="width: 100%; height: 90%; -webkit-user-drag: none"
@@ -606,6 +606,9 @@ export default {
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     changeDate() {
+      if (!this.searchParams.jcDate.startDate) {
+        this.searchParams.jcDate.startDate = this.searchParams.jcDate.finishDate
+      }
       //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
       let date1 = new Date(this.searchParams.jcDate.startDate).getTime()
       let date2 = new Date(this.searchParams.jcDate.finishDate).getTime()
@@ -819,7 +822,7 @@ export default {
         this.currentForm2 = resEV.result
         this.currentInfoCard2 = true
         this.popup = new Overlay({
-          element: document.getElementById('popupCardEV'),
+          element: document.getElementById('popupCardIns'),
           //当前窗口可见
           autoPan: true,
           positioning: 'bottom-center',
@@ -1076,6 +1079,7 @@ export default {
   .histroyPipeData {
     position: fixed;
     top: 120px;
+    z-index: 999;
     right: 50px;
     // 详情卡片的样式
     .detailsCrad {
@@ -1421,7 +1425,7 @@ export default {
 
 
 
-#popupCardEV {
+#popupCardIns {
   &::after {
     content: '';
     display: block;

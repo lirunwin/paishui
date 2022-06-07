@@ -188,13 +188,13 @@ export default {
     this.$nextTick(() => {
       // this.initData()
     })
-    this.$refs.myMap.showLegend('pipelineEvaluate', true)
+    this.$refs.myMap && this.$refs.myMap.showLegend('pipelineEvaluate', true)
     console.log('this.setOptionShowNum', this.setOptionShowNum)
     console.log('this.setOptionShowLen', this.setOptionShowLen)
   },
   destroyed() {
     this.data.that.clearMap()
-    this.$refs.myMap.showLegend('pipelineEvaluate', false)
+    this.$refs.myMap && this.$refs.myMap.showLegend('pipelineEvaluate', false)
   },
   beforeCreate() {
     console.log('销毁echatrs')
@@ -484,12 +484,10 @@ export default {
     },
     pipNum: function (newValue, old) {
       newValue ? (this.pipNumShow = 1) : (this.pipNumShow = 0)
-      console.log('pipNumShow', this.pipNumShow)
       this.initData()
     },
     pipLen: function (newValue, old) {
       newValue ? (this.pipLenShow = 1) : (this.pipLenShow = 0)
-      console.log('pipLenShow', this.pipLenShow)
       this.initData()
     },
 

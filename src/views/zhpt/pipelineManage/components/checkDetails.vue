@@ -18,16 +18,28 @@
           <!-- 检测信息 -->
           <div class="box1" v-show="activeIndex == '1'">
             <div class="detailsTitle">管段信息</div>
-            <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
+            <el-form ref="form" :model="DetailsForm" label-width="100px" label-position="right">
               <el-row v-for="(v, i) in cardTableContent" :key="i">
                 <el-col :span="12" style="padding-right: 15px">
-                  <el-form-item :label="v[0].label">
+                  <el-form-item v-if='!v[0].unit' :label="v[0].label">
                     <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
                   </el-form-item>
+                  <el-form-item v-else :label="v[0].label">
+                    <el-col :span="22">
+                      <el-input size="small" v-model="DetailsForm[v[0].name]" disabled show-word-limit></el-input>
+                    </el-col>
+                    <el-col :span="2" style="text-align:center;">{{ v[0].unit }}</el-col>
+                  </el-form-item>
                 </el-col>
-                <el-col :span="12" style="padding-right: 15px"
-                  ><el-form-item :label="v[1].label">
+                <el-col :span="12" style="padding-right: 15px">
+                  <el-form-item v-if='!v[1].unit'  :label="v[1].label">
                     <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                  </el-form-item>
+                  <el-form-item v-else :label="v[1].label">
+                    <el-col :span="22">
+                      <el-input size="small" v-model="DetailsForm[v[1].name]" disabled show-word-limit></el-input>
+                    </el-col>
+                    <el-col :span="2" style="text-align:center;">{{ v[1].unit }}</el-col>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -40,7 +52,10 @@
                 </el-col>
                 <el-col :span="12" style="padding-right: 15px"
                   ><el-form-item label="检测长度">
-                    <el-input size="small" v-model="DetailsForm.checkLength" disabled show-word-limit></el-input>
+                    <el-col :span="22" >
+                      <el-input size="small" v-model="DetailsForm.checkLength" disabled show-word-limit></el-input>
+                    </el-col>
+                    <el-col :span="2" style="text-align:center;"> m </el-col>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -74,7 +89,7 @@
                   </div>
                   <div class="info-item">
                     <div class="profile-text">检测长度</div>
-                    <span>{{ DetailsForm.jclength || 0 }}m</span>
+                    <span>{{ DetailsForm.checkLength || 0 }}m</span>
                   </div>
                 </div>
               </div>
@@ -82,7 +97,7 @@
           </div>
           <!-- 功能性缺陷 -->
           <div class="box1" v-show="activeIndex == '2'">
-            <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
+            <el-form ref="form" :model="DetailsForm" label-width="100px" label-position="right">
               <div class="detailsTitle">功能性缺陷评价（等级：{{ DetailsForm.funcClass }}）</div>
               <el-row v-for="(v) in funcArr" :key="v[0].label">
                 <el-col :span="12" style="padding-right: 15px">
@@ -112,7 +127,7 @@
                   </el-form-item>
                 </el-col>
               </el-row>
-              <div class="detailsTitle">功能性缺陷评信息（{{ structDefectArr.length }}）</div>
+              <div class="detailsTitle">功能性缺陷信息（{{ structDefectArr.length }}）</div>
 
               <div v-if="!structDefectArr" style="text-align: center">
                 <img
@@ -145,7 +160,7 @@
           </div>
           <!-- 结构性缺陷 -->
           <div class="box1" v-show="activeIndex == '3'">
-            <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
+            <el-form ref="form" :model="DetailsForm" label-width="100px" label-position="right">
               <div class="detailsTitle">结构性缺陷评价（等级：{{ DetailsForm.structClass }}）</div>
               <el-row v-for="v in structArr" :key="v[0].label">
                 <el-col :span="12" style="padding-right: 15px">
@@ -209,7 +224,7 @@
           </div>
           <!-- 工程信息 -->
           <div class="box1" v-show="activeIndex == '4'">
-            <el-form ref="form" :model="DetailsForm" label-width="auto" label-position="right">
+            <el-form ref="form" :model="DetailsForm" label-width="100px" label-position="right">
               <div class="detailsTitle">工程信息</div>
               <el-row v-for="(v, i) in projectArr" :key="i">
                 <el-col :span="12" style="padding-right: 15px">
@@ -300,8 +315,8 @@ export default {
       ], // 结构性数据
       funcArr: [
         [
-          { label: '平均值S', name: 'funcYmean' },
-          { label: '最大值Smax', name: 'funcYmax' }
+          { label: '平均值Y', name: 'funcYmean' },
+          { label: '最大值Ymax', name: 'funcYmax' }
         ],
         [
           { label: '缺陷密度', name: 'funcDensity' },
@@ -314,16 +329,16 @@ export default {
           { label: '管段类型', name: 'pipeType' }
         ],
         [
-          { label: '起点埋深', name: 'startDepth' },
-          { label: '终点埋深', name: 'endDepth' }
+          { label: '起点埋深', name: 'startDepth', unit: 'm' },
+          { label: '终点埋深', name: 'endDepth', unit: 'm' }
         ],
         [
-          { label: '管径', name: 'diameter' },
+          { label: '管径', name: 'diameter', unit: 'mm' },
           { label: '材质', name: 'material' }
         ],
         [
           { label: '敷设年代', name: 'constr' },
-          { label: '长度', name: 'pipeLength' }
+          { label: '长度', name: 'pipeLength', unit: 'm'  }
         ]
       ], // 详情表格参数
       activeIndex: '1', // 详情导航索引
@@ -414,9 +429,10 @@ export default {
         this.seriesXArr = seriesXArr
         this.echartsArr = ecArr
         // 缺陷信息分类
+        console.log('缺陷信息分类')
+        this.funcDefectArr = []
+        this.structDefectArr = []
         this.DetailsForm.pipeDefects.forEach((v) => {
-          this.funcDefectArr = []
-          this.structDefectArr = []
           if (this.defectQuantityStatisticsA.includes(v.defectCode)) {
             // 放入结构性缺陷
             this.funcDefectArr.push(v)

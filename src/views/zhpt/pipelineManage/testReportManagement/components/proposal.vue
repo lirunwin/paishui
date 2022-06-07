@@ -16,9 +16,8 @@
         :label="v.label"
         align="center"
         show-overflow-tooltip
-        v-for="(v, i) in tableContent.other1"
+        v-for="v in tableContent.other1"
         :key="v.label"
-        :show-overflow-tooltip="true"
       >
       </el-table-column>
       <!-- 缺陷位置 -->
@@ -29,9 +28,8 @@
           :label="v.label"
           align="center"
           show-overflow-tooltip
-          v-for="(v, i) in tableContent.buriedDepth"
+          v-for="v in tableContent.buriedDepth"
           :key="v.label"
-          :show-overflow-tooltip="true"
         >
         </el-table-column>
       </el-table-column>
@@ -42,9 +40,8 @@
         :label="v.label"
         align="center"
         show-overflow-tooltip
-        v-for="(v, i) in tableContent.other2"
+        v-for="v in tableContent.other2"
         :key="v.label"
-        :show-overflow-tooltip="true"
       >
       </el-table-column>
     </el-table>
@@ -91,14 +88,9 @@ export default {
   methods: {
     async getdata() {
       let resPrj = await queryPipeStateDetails(this.paramId)
-      let arr = resPrj.result.map((v)=>{
-        if(v.defectCode != "ZC"){
-          return v
-        }
-      })
-      this.tableData = arr
-      console.log('检测评估建议  ', resPrj)
-      console.log('上面传来的id', this.paramId)
+      if (resPrj.code === 1) {
+        this.tableData = resPrj.result.filter(v => v.defectCode !== "ZC")
+      } else this.$message.error('请求数据失败！')
     },
    
   }

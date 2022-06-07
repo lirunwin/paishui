@@ -4,11 +4,13 @@
     <el-table
       :data="tableData"
       border
-      :summary-method="getSummaries"
-      show-summary
       style="width: 100%; margin-top: 20px"
       stripe
     >
+      <template slot="empty">
+        <img src="@/assets/icon/null.png" alt="">
+        <p class="empty-p">暂无数据</p>
+      </template>
       <!-- pipeType --> 
       <el-table-column type="index" label="序号" width="80" align="center" header-align="center"> </el-table-column>
       <el-table-column label="名称" width="400" align="center" header-align="center">

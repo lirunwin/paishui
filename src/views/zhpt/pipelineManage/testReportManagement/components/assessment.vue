@@ -14,7 +14,6 @@
         :width="v.width"
         v-for="(v, i) in tableContent.other"
         :key="i"
-        :show-overflow-tooltip="true"
       >
       </el-table-column>
       <!-- 埋深 -->
@@ -28,7 +27,6 @@
           :width="v.width"
           v-for="(v, i) in tableContent.buriedDepth"
           :key="i"
-          :show-overflow-tooltip="true"
         >
         </el-table-column>
       </el-table-column>
@@ -44,7 +42,6 @@
           :width="v.width"
           v-for="(v, i) in tableContent.structEstimate"
           :key="i"
-          :show-overflow-tooltip="true"
         >
         </el-table-column>
       </el-table-column>
@@ -60,7 +57,6 @@
           :width="v.width"
           v-for="(v, i) in tableContent.funcEstimate"
           :key="i"
-          :show-overflow-tooltip="true"
         >
         </el-table-column>
       </el-table-column>

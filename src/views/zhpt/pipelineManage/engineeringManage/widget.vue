@@ -13,22 +13,20 @@
             style="margin-right: 10px"
           >
           </el-input>
-          <el-button size="small" icon="el-icon-search" type="primary" @click="searchApi">搜索</el-button>
+          <el-button size="small" type="primary" @click="searchApi">搜索</el-button>
         </div>
         <div class="right-btn">
-          <el-button size="small" @click="showForm" icon="el-icon-plus" type="primary">添加</el-button>
+          <el-button size="small" @click="showForm" type="primary">添加</el-button>
           <!-- multipleSelection -->
           <el-button
             size="small"
             :disabled="multipleSelection.length != 1"
-            icon="el-icon-edit"
             type="primary"
             @click="updataInfo"
             >修改</el-button
           >
           <el-button
             size="small"
-            icon="el-icon-delete"
             type="danger"
             :disabled="!multipleSelection.length"
             @click="removeBtn"
@@ -105,12 +103,14 @@
                   :maxlength="item[0].maxLength"
                   show-word-limit
                   :disabled="isDetails"
+                  clearable
                 ></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item :label="item[1].label" :prop="item[1].name">
                 <el-input
+                  clearable
                   size="small"
                   v-model="form[item[1].name]"
                   :maxlength="item[1].maxLength"
@@ -123,6 +123,7 @@
 
           <el-form-item label="隐蔽管线点数量(个)" prop="hpoints">
             <el-input
+              clearable
               size="small"
               v-model="form.hpoints"
               maxlength="15"
@@ -145,6 +146,7 @@
             <el-row>
               <el-col :span="11">
                 <el-date-picker
+                  clearable
                   :disabled="isDetails"
                   v-model="form.startDate"
                   type="date"
@@ -158,6 +160,7 @@
               <el-col :span="1" style="text-align: center">至</el-col>
               <el-col :span="12">
                 <el-date-picker
+                  clearable
                   :disabled="isDetails"
                   v-model="form.finishDate"
                   type="date"
@@ -210,15 +213,13 @@
                 </span>
               </div>
               <div slot="tip" class="el-upload__tip">
-                <p style="line-height: 10px; margin: 10px 0">只能上传docx/doc文件</p>
+                <p style="line-height: 10px; margin: 10px 0">上传 *.docx / *.doc格式文件</p>
                 <p v-show="isEdit" style="height: 20px; font-size: 12px; border-bottom: 1px solid #dedede; margin: 0; line-height: 20px"></p>
                 <!-- <p>只能上传docx/doc文件</p> -->
               </div>
             </el-upload>
             <!-- 附件列表 -->
-            <p
-              v-show="isEdit"
-              style="
+            <p v-show="isEdit" style="
                 height: 20px;
                 font-size: 12px;
                 border-bottom: 1px solid #dedede;
@@ -226,32 +227,22 @@
                 margin: 0;
                 margin-top: 10px;
                 line-height: 20px;
-              "
-            >
-              已上传的文件列表
-            </p>
+              " > 已上传的文件列表 </p>
             <div
               v-show="isDetails || isEdit"
               class="hideScrollBar"
-              style="max-height: 120px; overflow-y: scroll; border: 1px solid #dedede; padding-left: 10px"
-            >
+              style="max-height: 120px; overflow-y: scroll; border: 1px solid #dedede; padding-left: 10px; margin-top:10px">
               <div
                 v-for="(item, i) in fileListData"
                 :key="i"
                 class="text-space"
-                style="height: 20px; line-height: 20px"
+                style="height: 20px; line-height: 20px; margin:5px"
               >
                 <el-link :href="fileLinkToStreamDownload(item.id)" type="primary">{{ item.originalName }}</el-link>
-                <el-link type="danger" @click="removeFile(item)">删除</el-link>
+                <el-link v-show="isEdit" type="danger" @click="removeFile(item)">删除</el-link>
               </div>
             </div>
-            <p
-              v-show="isDetails || isEdit"
-              v-if="!fileListData.length"
-              style="text-align: center; height: 20px; font-size: 12px; margin: 0px; line-height: 20px"
-            >
-              暂无附件
-            </p>
+            <p v-if="!fileListData.length" style="text-align: center; height: 20px; font-size: 12px; margin: 0px; line-height: 20px"> 暂无附件 </p>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -586,6 +577,7 @@ export default {
       this.initForm = { ...this.form }
       this.form = res.result
       this.isDetails = true
+      this.isEdit = false
       this.dialogFormVisible = true
     },
     // 关闭对话框
@@ -650,13 +642,8 @@ export default {
     },
     // 确认删除
     async removeDatas() {
-      let res = {}
-      if (this.multipleSelection.length == 1) {
-        res = await deleteData(this.multipleSelection[0].id)
-      } else {
-        let idArr = this.multipleSelection.map((v) => v.id)
-        res = await deleteDatas({ ids: idArr.join(',') })
-      }
+      let idArr = this.multipleSelection.map(v => v.id)
+      let res = await deleteDatas({ ids: idArr.join(',') })
       if (res.result) {
         this.$message({
           message: '删除成功',
@@ -686,6 +673,7 @@ export default {
       // async uploadWord() {
       //   await this.$refs.updataDocx.submit()
       // },
+      console.log('添加数据')
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           // 将文件上传到服务器，先触发beforeUpload事件，对上传的文件进行校验，校验通过后才会上传
@@ -785,7 +773,7 @@ export default {
       this.fileListData = fileRes.result.records
     },
     // 双击修改
-    async dblclickUpdata(row, column, event) {
+    async dblclickUpdata(row) {
       // 打开修改
       let res = await projectDetailsQuery(row.id)
       this.id = row.id
@@ -794,15 +782,16 @@ export default {
       this.initForm = { ...this.form }
       this.form = res.result
       this.isEdit = true
+      this.isDetails = false
       this.dialogFormVisible = true
     },
     // 修改信息
     updataInfo() {
       this.initForm = { ...this.form }
-      console.log('initForm', this.initForm)
-      this.form = this.multipleSelection[0]
-      this.isEdit = true
-      this.dialogFormVisible = true
+      if (this.multipleSelection.length === 1) {
+        let id = this.multipleSelection[0].id
+        this.dblclickUpdata({ id })
+      } else this.$message.warning('请选择一条修改的信息')
     },
     // 分页触发的事件
     async handleSizeChange(val) {

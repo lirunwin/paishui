@@ -82,7 +82,7 @@
               <el-checkbox v-model="checkDefectLevel">缺陷等级</el-checkbox>
             </div>
             <div id="pdfDom" style="padding: 10px">
-              <h2 style="text-align: center">管道评估统计图</h2>
+              <h2 style="text-align: center">管道缺陷区域统计图</h2>
               <div id="mainPDAS" style="height: 330px"></div>
               <!-- 表格 -->
               <div class="detailsTitle">管道缺陷数量统计表</div>

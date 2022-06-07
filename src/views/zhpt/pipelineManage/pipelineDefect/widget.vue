@@ -11,7 +11,6 @@
             v-model="searchValue.queryParams"
             clearable
             class="serch-input"
-            suffix-icon="el-input__icon el-icon-search"
           >
           </el-input>
           <div class="title">检测日期：</div>
@@ -53,14 +52,18 @@
               </el-col>
             </el-row>
           </div>
-          <div class="title">结构性缺陷等级：</div>
+          <!-- <div class="title">结构性缺陷等级：</div>
           <el-select clearable v-model="searchValue.structClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
+          </el-select> -->
+          <div class="title">缺陷等级：</div>
+          <el-select clearable v-model="searchValue.defectLevel" placeholder="全部">
+            <el-option v-for="(item, i) in defectLevel" :key="i" :label="item" :value="item"></el-option>
           </el-select>
-          <div class="title">功能性缺陷等级：</div>
+          <!-- <div class="title">功能性缺陷等级：</div>
           <el-select clearable v-model="searchValue.funcClass" placeholder="全部">
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
-          </el-select>
+          </el-select> -->
           <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
           <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
@@ -73,7 +76,7 @@
             name="管道缺陷管理表单.xls"
             type="xls"
           >
-            <el-button size="small" type="primary">导出<i class="el-icon-download el-icon--right"></i></el-button>
+            <el-button size="small" type="primary">导出</el-button>
           </download-excel>
           <!-- <el-button  type="primary" @click="openDialogEnclosure" :disabled="multipleSelection.length != 1"
             >导出<i class="el-icon-download el-icon--right"></i
@@ -115,14 +118,19 @@
           :sortable="v.sortable"
         >
         </el-table-column>
+        <el-table-column width="120" header-align="center" label="缺陷名称代码" align="center" show-overflow-tooltip>
+          <template slot-scope="scope">
+            <div style="text-align: center">{{ `(${scope.row.defectCode})${scope.row.defectName}` }}</div>
+          </template>
+        </el-table-column>
         <el-table-column header-align="center" label="管道内部状况描述" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
             <div style="text-align: center">{{ scope.row.structEstimate }}}</div>
           </template>
         </el-table-column>
-        <el-table-column width="120" header-align="center" label="缺陷名称代码" align="center" show-overflow-tooltip>
+        <el-table-column fixed="right" width="120" header-align="center" label="操作" align="center">
           <template slot-scope="scope">
-            <div style="text-align: center">{{ `(${scope.row.defectCode})${scope.row.defectName}` }}</div>
+            <el-button type="text" size="small" @click.stop="toVideo(scope.row)">视频</el-button>
           </template>
         </el-table-column>
         <!-- <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
@@ -147,7 +155,7 @@
 
     <!-- 表格当前列信息弹出框 -->
     <transition name="el-fade-in-linear">
-      <div id="popupCard" class="histroyPipeData" v-show="currentInfoCard">
+      <div id="popupCardDefect" class="histroyPipeData" v-show="currentInfoCard">
         <div
           class="detailsCrad"
           style="top: 10%; left: 20%; right: 62%; font-size: 14px; color: red"
@@ -216,6 +224,14 @@
     <transition name="el-fade-in-linear">
       <delete-dialog @sendBool="getBool" v-if="dialogFormVisible" :checkParam="id"></delete-dialog>
     </transition>
+
+    <el-dialog width='80%' :title="videoTitle" v-if="showVideo" :visible.sync="showVideo" :append-to-body="true">
+      <div style="width: 100%; height: 80%">
+        <video controls="controls" width="100%" height="83%">
+            <source :src="videoUrl" type="video/mp4" />
+        </video>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -270,20 +286,20 @@ export default {
   data() {
     return {
       json_fields: {
-        管段编号: 'expNo',
-        管段类型: 'pipeType',
+        '管段编号': 'expNo',
+        '管段类型': 'pipeType',
         '管径(mm)': 'diameter',
-        材质: 'material',
-        检测方向: 'detectDir',
+        '材质': 'material',
+        '检测方向': 'detectDir',
         '距离(m)': 'checkLength',
-        分值: 'defectNum',
-        等级: 'defectLevel',
-        检测视频: 'videoFileName',
-        工程名称: 'prjName',
-        工程地点: 'checkAddress',
-        检测日期: 'sampleTime',
-        管道内部状况描述: 'structEstimate',
-        缺陷名称代码: 'defectCode'
+        '分值': 'defectNum',
+        '等级': 'defectLevel',
+        '检测视频': 'videoFileName',
+        '工程名称': 'prjName',
+        '工程地点': 'checkAddress',
+        '检测日期': 'sampleTime',
+        '管道内部状况描述': 'structEstimate',
+        '缺陷名称代码': 'defectCode'
       },
       currentId: null,
       id: null,
@@ -342,22 +358,22 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { width: '', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '200', sortable: false, label: '管段编号', name: 'expNo' },
         { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
-        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
+        { width: '90', sortable: true, label: '管径(mm)', name: 'diameter' },
         { width: '100', sortable: false, label: '材质', name: 'material' },
         { width: '100', sortable: false, label: '检测方向', name: 'detectDir' },
         { width: '100', sortable: true, label: '距离(m)', name: 'checkLength' },
-        { width: '100', sortable: true, label: '分值', name: 'defectNum' },
+        { width: '80', sortable: true, label: '分值', name: 'defectNum' },
         { width: '100', sortable: true, label: '等级', name: 'defectLevel' },
-        { width: '100', sortable: false, label: '检测视频', name: 'videoFileName' },
         { width: '100', sortable: false, label: '工程名称', name: 'prjName' },
         { width: '100', sortable: false, label: '工程地点', name: 'checkAddress' },
         { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' }
         // { label: '结构性缺陷评价', name: 'structEstimate' },
         // { label: '检测地点', name: 'checkAddress' },
       ],
-      gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
+      // gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
+      defectLevel: ['一级', '二级', '三级', '四级'], 
       // 日期选择器规则
       pickerOptions0: '',
       pickerOptions1: '',
@@ -368,7 +384,8 @@ export default {
         }, // 检测日期
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
-        structClass: '' // 结构型缺陷等级
+        structClass: '', // 结构型缺陷等级
+        defectLevel: ''
       }, // 搜索关键字的值
       trueValue: true,
       currentId: '', // 当前列的id
@@ -391,7 +408,11 @@ export default {
       projUtil: null,
       currentDataProjName: 'proj43',
       hadLoad: false,
-      popup: null
+      popup: null,
+      // 
+      showVideo: false,
+      videoUrl: '',
+      videoTitle: '视频'
     }
   },
   watch: {
@@ -445,6 +466,15 @@ export default {
     }
   },
   methods: {
+    toVideo (row) {
+      console.log('暂无视频')
+      let { videopath, videoFileName } = row
+      if (!videopath) return this.$message.warning('暂无视频')
+      let address = baseAddress + '/psjc/file' + videopath
+      this.videoTitle = `${videoFileName} 视频`
+      this.videoUrl = address
+      this.showVideo = true
+    },
     //导出前确认
     //导出表格
     startDownload() {
@@ -477,7 +507,8 @@ export default {
         },
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
-        structClass: '' // 结构型缺陷等级
+        structClass: '', // 结构型缺陷等级
+        defectLevel: ''
       }
       this.changeDate()
       await this.getDate()
@@ -616,7 +647,7 @@ export default {
                 { level: '二级', img: defectImg2, index: 1 },
                 { level: '三级', img: defectImg3, index: 2 },
                 { level: '四级', img: defectImg4, index: 3 },
-                { level: '/', img: defectImg0, index: 4 }
+                // { level: '/', img: defectImg0, index: 4 }
               ]
               let findimg = null
 
@@ -725,7 +756,7 @@ export default {
       //
       if (position) {
         this.popup = new Overlay({
-          element: document.getElementById('popupCard'),
+          element: document.getElementById('popupCardDefect'),
           //当前窗口可见
           autoPan: true,
           positioning: 'bottom-center',
@@ -771,7 +802,10 @@ export default {
 
     // 表格多选事件
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      console.log('缺陷')
+      this.multipleSelection = val.map(item => {
+        return { ...item, defectCode: `(${item.defectCode})${item.defectName}` }
+      })
     },
     // 查询数据
     async getDate(params) {
@@ -783,11 +817,12 @@ export default {
         data.queryParams = params.queryParams
         data.funcClass = params.funcClass
         data.structClass = params.structClass
+        data.defectLevel = params.defectLevel
       }
       await queryPageDefectInfo(data).then((res) => {
-        // console.log('接口返回', res)
-        this.tableData = res.result.records
-        this.paginationTotal = res.result.total
+        let { records, total } = res.result
+        this.tableData = records
+        this.paginationTotal = total
         // this.$message.success("上传成功");
       })
     },
@@ -1069,7 +1104,7 @@ export default {
     }
   }
 }
-#popupCard {
+#popupCardDefect {
   &::after {
     content: '';
     display: block;

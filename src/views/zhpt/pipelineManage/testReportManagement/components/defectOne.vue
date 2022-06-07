@@ -3,11 +3,11 @@
     <!-- 主要工程量表 -->
     <el-table
       :data="tableData"
+      stripe
       border
       style="width: 100%; margin-top: 20px"
-      stripe
     >
-      <el-table-column type="index" label="序号" width="80" align="center" header-align="center" fixed="left">
+      <el-table-column type="index" label="序号" width="80" align="center" header-align="center">
       </el-table-column>
       <el-table-column
         :prop="v.name"
@@ -36,7 +36,7 @@ export default {
         { label: '管径(mm)', name: 'diameter' },
         { label: '管段材质', name: 'material' },
         { label: '管段长度(m)', name: 'pipeLength' },
-        { label: '检测长度(m)', name: 'jclength' },
+        { label: '检测长度(m)', name: 'checkLength' },
         { label: '结构性缺陷', name: 'structEstimate' },
         { label: '功能性缺陷', name: 'funcEstimate' }
       ],
