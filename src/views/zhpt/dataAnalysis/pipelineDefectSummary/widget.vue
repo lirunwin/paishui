@@ -32,8 +32,8 @@
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions0"
-                  @change="changeDate"
+                  :picker-options="sOpition"
+                  @change="sDateChange"
                 ></el-date-picker>
               </el-col>
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
@@ -44,12 +44,22 @@
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions1"
-                  @change="changeDate"
+                  :picker-options="eOpition"
+                  @change="eDateChange"
                 ></el-date-picker>
               </el-col>
             </el-row>
           </div>
+          <div class="title">缺陷等级：</div>
+          <el-select size="small" clearable v-model="searchValue.defectLevel" placeholder="选择缺陷等级">
+            <el-option
+              v-for="item in defectLevels"
+              :key="item"
+              :label="item"
+              :value="item"
+            >
+            </el-option>
+          </el-select>
           <div class="title">整改建议：</div>
           <el-select size="small" clearable v-model="searchValue.fixSuggest" placeholder="选择建议">
             <el-option
@@ -142,16 +152,18 @@ export default {
         finishDate: '',
         startPoint: '',
         endPoint: '',
-        fixSuggest: ''
+        fixSuggest: '',
+        defectLevel: ''
       },
+      defectLevels: ['一级', '二级', '三级', '四级'],
       // 表格参数
       tableContent: [
-        { width: '120', sortable: true, label: '检测日期', name: 'jcDate' },
+        { width: '120', sortable: true, label: '检测日期', name: 'sampleTime' },
         { width: '110', sortable: false, label: '起始井号', name: 'startPoint' },
         { width: '110', sortable: false, label: '终止井号', name: 'endPoint' },
         { width: '110', sortable: true, label: '管径(mm)', name: 'diameter' },
         { width: '110', sortable: true, label: '管段长度(m)', name: 'pipeLength' },
-        { width: '110', sortable: true, label: '检测长度(m)', name: 'jclength' },
+        { width: '110', sortable: true, label: '检测长度(m)', name: 'checkLength' },
         { width: '130', sortable: false, label: '缺陷名称', name: 'defectName' },
         { width: '130', sortable: true, label: '缺陷等级', name: 'defectLevel' },
         { width: '120', sortable: false, label: '整改建议', name: 'checkSuggest' },
@@ -166,8 +178,24 @@ export default {
       paginationTotal: 0, // 总页数
       tableData: [],
       // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.finishDate) {
+            return time > new Date(this.searchValue.finishDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.startDate) {
+            return time < new Date(this.searchValue.startDate).getTime() || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
       multipleSelection: [], // 选择的列表
       //
       exportFields: {},
@@ -249,28 +277,19 @@ export default {
       console.log('checkSuggest', checkSuggest.result.check_suggest)
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
+    sDateChange (t) {
+      console.log('时间选择')
+      if (!this.searchValue.finishDate) {
+        this.$nextTick(() => {
+          this.searchValue.finishDate = this.searchValue.startDate
+        })
+      }
+    },
+    eDateChange (t) {
       if (!this.searchValue.startDate) {
-        this.searchValue.startDate = this.searchValue.finishDate
-      }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.startDate).getTime()
-      let date2 = new Date(this.searchValue.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
+        this.$nextTick(() => {
+          this.searchValue.startDate = this.searchValue.finishDate
+        })
       }
     },
     // 搜索
@@ -301,6 +320,7 @@ export default {
       data.jcStartDate = this.searchValue.startDate
       data.jcEndDate = this.searchValue.finishDate
       data.fixSuggest = this.searchValue.fixSuggest
+      data.defectLevel = this.searchValue.defectLevel
       
       queryPageDefectInfo(data).then((res) => {
         // console.log('接口返回', res)
@@ -314,11 +334,6 @@ export default {
     this.$nextTick(() => {
       this.$refs['multipleTable'].doLayout()
     })
-  },
-  watch: {
-    'searchValue.startDate': function (n) {
-      this.searchValue.finishDate = n
-    }
   }
 }
 </script>

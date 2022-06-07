@@ -33,8 +33,8 @@
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions0"
-                  @change="changeDate"
+                  :picker-options="sOpition"
+                  @change="sDateChange"
                 ></el-date-picker>
               </el-col>
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
@@ -45,16 +45,12 @@
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions1"
-                  @change="changeDate"
+                  :picker-options="eOpition"
+                  @change="eDateChange"
                 ></el-date-picker>
               </el-col>
             </el-row>
           </div>
-          <div class="title">整改建议</div>
-          <el-select clearable v-model="searchValue.suggest" placeholder="全部">
-            <el-option v-for="(item, i) in suggests" :key="i" :label="item" :value="item"></el-option>
-          </el-select>
           <el-button size="small" style="margin-right: 5px" type="primary" @click="searchApi">搜索</el-button>
           <download-excel
             :fields="exportFields"
@@ -137,11 +133,10 @@ export default {
         finishDate: '',
         startPoint: '',
         endPoint: '',
-
       },
       // 表格参数
       tableContent: [
-        { width: '120', sortable: true, label: '检测日期', name: 'jcDate' },
+        { width: '120', sortable: true, label: '检测日期', name: 'sampleTime' },
         { width: '110', sortable: false, label: '起始井号', name: 'startPoint' },
         { width: '110', sortable: false, label: '终止井号', name: 'endPoint' },
         { width: '130', sortable: true, label: '起点埋深(m)', name: 'startDepth' },
@@ -150,7 +145,7 @@ export default {
         { width: '', sortable: false, label: '管段材质', name: 'material' },
         { width: '110', sortable: true, label: '管段直径(mm)', name: 'diameter' },
         { width: '110', sortable: true, label: '管段长度(m)', name: 'pipeLength' },
-        { width: '110', sortable: true, label: '检测长度(m)', name: 'jclength' },
+        { width: '110', sortable: true, label: '检测长度(m)', name: 'checkLength' },
         { width: '110', sortable: false, label: '检测方向', name: 'detectDir' },
         { width: '110', sortable: false, label: '检测人员', name: 'detectPerson' }
       ],
@@ -162,13 +157,30 @@ export default {
       pagination: { current: 1, size: 30 }, // 分页参数信息
       paginationTotal: 0, // 总页数
       tableData: [],
-      // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+
       multipleSelection: [], // 选择的列表
       exportFields: {},
       exportData: [],
-      suggests: ['暂不处理', '修复计划', '处理计划', '修复计划', '尽快修复', '立即处理']
+      suggests: ['暂不处理', '修复计划', '处理计划', '修复计划', '尽快修复', '立即处理'],
+      // 时间过滤
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.finishDate) {
+            return time > new Date(this.searchValue.finishDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.startDate) {
+            return time < new Date(this.searchValue.startDate).getTime() || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
     }
   },
   computed: {},
@@ -233,28 +245,18 @@ export default {
       this.multipleSelection = val
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
+    sDateChange (t) {
+      if (!this.searchValue.finishDate) {
+        this.$nextTick(() => {
+          this.searchValue.finishDate = this.searchValue.startDate
+        })
+      }
+    },
+    eDateChange (t) {
       if (!this.searchValue.startDate) {
-        this.searchValue.startDate = this.searchValue.finishDate
-      }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.startDate).getTime()
-      let date2 = new Date(this.searchValue.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
+        this.$nextTick(() => {
+          this.searchValue.startDate = this.searchValue.finishDate
+        })
       }
     },
     // 搜索
@@ -298,11 +300,6 @@ export default {
     this.$nextTick(() => {
       this.$refs['multipleTable'].doLayout()
     })
-  },
-  watch: {
-    'searchValue.startDate': function (n) {
-      this.searchValue.finishDate = n
-    }
   }
 }
 </script>

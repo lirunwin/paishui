@@ -600,7 +600,7 @@ export default class BaseMap extends Vue {
               })
               .finally(() => {
                 console.log('替换服务')
-                const repItems = ['地图配置服务', '图层服务']
+                const repItems = ['地图配置服务', '图层服务', '数据服务']
                 res.forEach((service) => {
                   let resData = service.child,
                     source = null

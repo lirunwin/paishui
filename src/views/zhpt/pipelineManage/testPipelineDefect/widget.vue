@@ -268,22 +268,23 @@ export default {
   },
   data() {
     return {
-      json_fields: {
-        "管段编号": 'expNo',
-        管段类型: 'pipeType',
-        '管径(mm)': 'diameter',
-        材质: 'material',
-        检测方向: 'detectDir',
-        '距离(m)': 'checkLength',
-        分值: 'defectNum',
-        等级: 'defectLevel',
-        检测视频: 'videoFileName',
-        工程名称: 'prjName',
-        工程地点: 'checkAddress',
-        检测日期: 'sampleTime',
-        管道内部状况描述: 'structEstimate',
-        缺陷名称代码: 'defectCode'
-      },
+      // json_fields: {
+      //   "管段编号": 'expNo',
+      //   管段类型: 'pipeType',
+      //   '管径(mm)': 'diameter',
+      //   材质: 'material',
+      //   检测方向: 'detectDir',
+      //   '距离(m)': 'checkLength',
+      //   分值: 'defectNum',
+      //   等级: 'defectLevel',
+      //   检测视频: 'videoFileName',
+      //   工程名称: 'prjName',
+      //   工程地点: 'checkAddress',
+      //   检测日期: 'sampleTime',
+      //   管道内部状况描述: 'structEstimate',
+      //   缺陷名称代码: 'defectCode'
+      // },
+      json_fields: {},
       currentId: null,
       id: null,
       activeName: 'picnum', // 照片视频tab标签
@@ -331,8 +332,6 @@ export default {
         { width: '120', sortable: false, label: '修复方式', name: 'repairMode' },
         { width: '120', sortable: true, label: '检测日期', name: 'sampleTime' },
         { width: '', sortable: false, label: '评价', name: 'pipeNote' },
-        // { label: '结构性缺陷评价', name: 'structEstimate' },
-        // { label: '检测地点', name: 'checkAddress' },
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
@@ -401,6 +400,12 @@ export default {
       this.rootPage = rootPage
       this.tableData = data.map((fea) => fea.values_)
       console.log('这里是地图传入的数据', this.tableData)
+
+      this.tableContent.forEach(item => {
+        this.json_fields[item.label] = item.name
+      })
+      this.json_fields['序号'] = 'index'
+      this.json_fields['缺陷名称代码'] = 'codeName' 
     }
   },
   destroyed() {
@@ -511,7 +516,10 @@ export default {
 
     // 表格多选事件
     handleSelectionChange(val) {
-      this.multipleSelection = val
+      console.log('表格多选')
+      this.multipleSelection = val.map((res, index) => {
+        return { ...res, index, codeName: `(${res.defectCode})${res.defectName}` }
+      })
     },
     // 查询数据
     async getDate(params) {
