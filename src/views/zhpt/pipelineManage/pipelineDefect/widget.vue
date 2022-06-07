@@ -796,7 +796,7 @@ export default {
     // 搜索
     searchApi() {
       this.pagination.current = 1
-      this.getDate(this.searchValue)
+      this.getDate()
       // console.log(this.searchValue.testTime)
     },
 
@@ -808,17 +808,17 @@ export default {
       })
     },
     // 查询数据
-    async getDate(params) {
+    async getDate() {
       let data = this.pagination
       data.wordInfoState = 1
-      if (params) {
-        data.jcStartDate = params.testTime.startDate
-        data.jcEndDate = params.testTime.finishDate
-        data.queryParams = params.queryParams
-        data.funcClass = params.funcClass
-        data.structClass = params.structClass
-        data.defectLevel = params.defectLevel
-      }
+
+        data.jcStartDate = this.searchValue.testTime.startDate
+        data.jcEndDate = this.searchValue.testTime.finishDate
+        data.queryParams = this.searchValue.queryParams
+        data.funcClass = this.searchValue.funcClass
+        data.structClass = this.searchValue.structClass
+        data.defectLevel = this.searchValue.defectLevel
+
       await queryPageDefectInfo(data).then((res) => {
         let { records, total } = res.result
         this.tableData = records

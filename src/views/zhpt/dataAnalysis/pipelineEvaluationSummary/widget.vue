@@ -177,7 +177,7 @@ export default {
     this.setFields() // 设置导出字段
     this.setData()
     queryDictionariesId({ keys: 'check_suggest' }).then(res => {
-      this.suggests = res.result.check_suggest
+      this.suggests = res.result.check_suggest.map(res => res.codeValue)
     })
   },
   methods: {
@@ -260,7 +260,7 @@ export default {
     // 搜索
     searchApi() {
       this.pagination.current = 1
-      this.updateTable(this.searchValue)
+      this.updateTable()
     },
 
     // 分页触发的事件
@@ -275,17 +275,17 @@ export default {
       console.log(`当前页: ${val}`)
     },
     // 查询数据
-    updateTable(params) {
+    updateTable() {
       let data = {
         current: this.pagination.current,
         size: this.pagination.size
       }
-      if (params) {
-        data.startPoint = this.searchValue.startPoint
-        data.endPoint = this.searchValue.endPoint
-        data.jcStartDate = this.searchValue.startDate
-        data.jcEndDate = this.searchValue.finishDate
-      }
+      
+      data.startPoint = this.searchValue.startPoint
+      data.endPoint = this.searchValue.endPoint
+      data.jcStartDate = this.searchValue.startDate
+      data.jcEndDate = this.searchValue.finishDate
+      
       queryPageAssessment({ ...data, wordInfoState: 1 }).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
