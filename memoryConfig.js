@@ -1,7 +1,7 @@
 const os = require('os')
 const totalMem = os.totalmem()
 
-const percentage = 0.5
+const percentage = 0.375
 
 module.exports = (config) => {
   config.plugin('fork-ts-checker').tap((args) => {
