@@ -91,7 +91,8 @@ import Echarts from 'echarts'
 import { taskPie, taskList, taskListPage } from '@/api/dashboard'
 import { homeInterval } from 'staticPub/config'
 import MoreInfos from '../Layout/MoreInfos'
-import gisNames from '@/utils/gisNames'
+import { gisNames } from '@/utils/constant'
+
 import gis from '@/store/modules/gis'
 
 const columns = [

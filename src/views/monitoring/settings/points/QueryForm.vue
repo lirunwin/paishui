@@ -16,12 +16,12 @@
     </el-form-item>
     <el-form-item label="排水分区" prop="psArea">
       <el-select v-model="formData.psArea" placeholder="请选择排水分区" size="small" filterable clearable>
-        <el-option :key="item" :value="item" :label="item" v-for="item of sections" />
+        <el-option :key="item" :value="item" :label="item || '(无分区)'" v-for="item of sections" />
       </el-select>
     </el-form-item>
     <el-form-item label="监测分组" prop="team">
       <el-select v-model="formData.siteGroup" placeholder="请选择监测分组" size="small" filterable clearable>
-        <el-option :key="item" :value="item" :label="item" v-for="item of groups" />
+        <el-option :key="item" :value="item" :label="item || '(无分组)'" v-for="item of groups" />
       </el-select>
     </el-form-item>
     <el-form-item>
@@ -50,7 +50,7 @@
         size="small"
         :loading="loading.update"
         :disabled="loading.update || ids.length !== 1"
-        @click="$emit('update', ids.toString())"
+        @click="$emit('update', selected[0])"
         icon="el-icon-edit"
       >
         修改
@@ -59,8 +59,8 @@
         type="primary"
         size="small"
         :loading="loading.setting"
-        :disabled="loading.setting"
-        @click="$emit('setting', ids.toString())"
+        :disabled="loading.setting || ids.length !== 1 || !selected[0].bindDevice.id"
+        @click="$emit('setting', ids.join())"
         icon="el-icon-setting"
       >
         配置
@@ -68,9 +68,9 @@
       <el-button
         type="danger"
         size="small"
-        :loading="loading.del"
-        :disabled="loading.del || !ids.length"
-        @click="$emit('delete')"
+        :loading="loading.delete"
+        :disabled="loading.delete || !ids.length"
+        @click="$emit('delete', ids.join())"
         icon="el-icon-delete"
       >
         删除
@@ -80,7 +80,7 @@
         size="small"
         :loading="loading.enable"
         :disabled="loading.enable || !ids.length"
-        @click="$emit('enable', on, ids)"
+        @click="$emit('enable', on, ids.join())"
         :icon="`${on ? 'el-icon-circle-check' : 'el-icon-remove-outline'}`"
       >
         {{ `${on ? '启' : '停'}` }}用
@@ -88,9 +88,9 @@
       <el-button
         type="primary"
         size="small"
-        :loading="loading.dismantle"
-        :disabled="loading.dismantle || !ids.length"
-        @click="$emit('dismantle', ids)"
+        :loading="loading.dismount"
+        :disabled="loading.dismount || ids.length !== 1"
+        @click="$emit('dismount')"
         icon="el-icon-scissors"
       >
         拆卸
@@ -111,16 +111,16 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
-import { IPoint, IType } from '@/views/monitoring/api'
+import { IPointConnectDevice, IType } from '@/views/monitoring/api'
 export interface ILoading {
-  query?: boolean
-  add?: boolean
-  update?: boolean
-  del?: boolean
-  enable?: boolean
-  dismantle?: boolean
-  export?: boolean
-  setting?: boolean
+  query: boolean
+  add: boolean
+  update: boolean
+  delete: boolean
+  enable: boolean
+  dismount: boolean
+  export: boolean
+  setting: boolean
 }
 
 export interface IQuery {
@@ -135,7 +135,7 @@ export interface IQuery {
 @Component({ name: 'QueryForm', components: {} })
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) loading!: ILoading
-  @Prop({ type: Array, default: () => [] }) selected!: IPoint[]
+  @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
   @Prop({ type: Array, default: () => [] }) types!: IType[]
   @Prop({ type: Array, default: () => [] }) groups!: string[]
   @Prop({ type: Array, default: () => [] }) sections!: string[]

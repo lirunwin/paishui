@@ -27,7 +27,7 @@
       v-if="pagination && pagination.total > 0"
       class="pagination"
       :current-page="pagination.current"
-      :page-sizes="[10, 20, 30, 50, 100, 1000]"
+      :page-sizes="pageSizes"
       :page-size="pagination.size"
       :total="pagination.total"
       layout="total, sizes, prev, pager, next, jumper"
@@ -40,6 +40,7 @@
 import { ElTable } from 'element-ui/types/table'
 import { ElTableColumn } from 'element-ui/types/table-column'
 import Vue, { PropType } from 'vue'
+import { pageSizes } from '@/utils/constant'
 
 interface IPagination {
   current?: string | number
@@ -59,6 +60,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      pageSizes,
       defaultAttrs: {
         toolTipEffect: 'light',
         showOverflowTooltip: true,

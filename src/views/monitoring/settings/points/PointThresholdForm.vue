@@ -5,73 +5,74 @@
     @open="onOpen"
     @closed="onClosed"
     @submit="onSubmit"
+    :disabled="!formData.param.length || fetching"
+    :loading="fetching"
     width="80vw"
     top="7vh"
   >
     <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" :rules="rules">
-      <BaseTitle>体系 & 检测点</BaseTitle>
+      <BaseTitle>监测体系基本设置</BaseTitle>
       <el-form-item prop="indicateId" label="监测体系">
-        <el-col :span="12">
-          <el-select
-            v-model="formData.indicateId"
-            placeholder="请选择监测体系"
-            size="small"
-            filterable
-            clearable
-            @change="onStandardChange"
-          >
-            <el-option v-for="item in standards" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-col>
+        <el-select
+          v-model="formData.indicateId"
+          placeholder="请选择监测体系"
+          size="small"
+          filterable
+          clearable
+          style="width:200px"
+          :disabled="(selected[0] || {}).isConfigured"
+          @change="onStandardChange"
+        >
+          <el-option v-for="item in standards" :key="item.id" :label="item.name" :value="item.id" />
+        </el-select>
       </el-form-item>
-      <el-form-item prop="pointId" label="监测点">
-        <el-col :span="12">
-          <el-select v-model="formData.pointId" placeholder="请选择监测点" size="small" filterable clearable multiple>
-            <el-option v-for="item in points" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-col>
-      </el-form-item>
-
-      <BaseTitle style="margin-top: 20px">监测参数基本设置</BaseTitle>
-      <BaseTable :columns="settingPointBasisCols" :data="formData.system" border>
-        <template v-for="(item, index) of formData.system" v-slot:[`index-${index}`]="{ row }">
+      <BaseTable :columns="settingPointBasisCols" :data="formData.param" v-loading="fetching" border>
+        <template v-for="(item, index) of formData.param" v-slot:[`sort-${index}`]>
           <el-form-item
-            :key="`index-${item.id}`"
-            :prop="`system[${index}].index`"
+            :key="`sort-${item.id}`"
+            :prop="`param[${index}].sort`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-input v-model="formData.system[index].index" :placeholder="row.name" />
+            <el-input-number
+              v-model="formData.param[index].sort"
+              size="small"
+              :controls="false"
+              :min="0"
+              :precision="0"
+              style="width:100%"
+            />
           </el-form-item>
         </template>
-        <template v-for="(item, index) of formData.system" v-slot:[`paramCode-${index}`]="{ row }">
+        <template v-for="(item, index) of formData.param" v-slot:[`siteCode-${index}`]>
           <el-form-item
-            :key="`paramCode-${item.id}`"
-            :prop="`system[${index}].paramCode`"
+            :key="`siteCode-${item.id}`"
+            :prop="`param[${index}].siteCode`"
+            label-width="0"
+            style="margin-bottom: 0"
+            :rules="getRequiredRule(item.name)"
+          >
+            <el-input v-model="formData.param[index].siteCode" size="small" :max="50" />
+          </el-form-item>
+        </template>
+        <template v-for="(item, index) of formData.param" v-slot:[`isDisplay-${index}`]>
+          <el-form-item
+            :key="`isDisplay-${item.id}`"
+            :prop="`param[${index}].isDisplay`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-input v-model="formData.system[index].paramCode" :placeholder="row.name" />
+            <el-switch v-model="formData.param[index].isDisplay" size="small" :active-value="1" :inactive-value="0" />
           </el-form-item>
         </template>
-        <template v-for="(item, index) of formData.system" v-slot:[`display-${index}`]="{ row }">
-          <el-form-item
-            :key="`display-${item.id}`"
-            :prop="`system[${index}].display`"
-            label-width="0"
-            style="margin-bottom: 0"
-          >
-            <el-switch v-model="formData.system[index].display" :placeholder="row.name" />
-          </el-form-item>
-        </template>
-        <template v-for="(item, index) of formData.system" v-slot:[`note-${index}`]="{ row }">
+        <template v-for="(item, index) of formData.param" v-slot:[`note-${index}`]>
           <el-form-item
             :key="`note-${item.id}`"
-            :prop="`system[${index}].note`"
+            :prop="`param[${index}].note`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-input v-model="formData.system[index].note" :placeholder="row.name" />
+            <el-input v-model="formData.param[index].note" size="small" :max="255" />
           </el-form-item>
         </template>
       </BaseTable>
@@ -83,105 +84,211 @@
           size="small"
           style="margin: -10px 0 -10px 1em"
           @click="onParamAdd"
-          :disabled="!formData.param"
+          :disabled="
+            !formData.param ||
+              !formData.param.length ||
+              formData.threshold.length >= formData.param.length * levels.length
+          "
           >添加</el-button
         >
       </BaseTitle>
-      <BaseTable :columns="settingPointParamCols" :data="formData.param" border>
-        <template v-for="(item, index) of formData.param" v-slot:[`name-${index}`]="{ row }">
-          <template v-if="row.id.startsWith('__new__')">
+      <BaseTable :columns="settingPointParamCols" :data="formData.threshold" v-loading="fetching" border>
+        <template v-for="(item, index) of formData.threshold" v-slot:[`name-${index}`]>
+          <template v-if="String(item.id).startsWith('__new__')">
             <el-form-item
               :key="`name-${item.id}`"
-              :prop="`param[${index}].id`"
+              :prop="`threshold[${index}].id`"
               label-width="0"
               style="margin-bottom: 0"
+              :rules="getRequiredRule(item.name, true, true)"
             >
-              <el-select v-model="formData.param[index].id" :placeholder="`请选择${row.name}`">
-                <el-option v-for="sys of standards" :label="sys.name" :value="sys.id" :key="sys.id" />
+              <el-select v-model="formData.threshold[index].paraId" placeholder="请选择参数名称">
+                <el-option
+                  v-for="param of standardParams"
+                  :label="
+                    param.deviceTypeParaVo
+                      ? `${param.deviceTypeParaVo.name} | ${param.deviceTypeParaVo.code}`
+                      : param.deviceTypeParaId
+                  "
+                  :value="param.id"
+                  :key="param.id"
+                  :disabled="formData.threshold.filter((i) => i.paraId === param.id).length === levels.length"
+                />
               </el-select>
             </el-form-item>
           </template>
           <template v-else>
-            {{ row.name }}
+            {{ item.name }}
           </template>
         </template>
 
-        <template v-for="(item, index) of formData.param" v-slot:[`value-${index}`]="{ row }">
+        <template v-for="(item, index) of formData.threshold" v-slot:[`level-${index}`]>
           <el-form-item
-            :key="`value-${item.id}`"
-            :prop="`param[${index}].value`"
+            :key="`level-${item.id}`"
+            :prop="`threshold[${index}].level`"
             label-width="0"
             style="margin-bottom: 0"
+            :rules="getRequiredRule(item.name, true, true)"
           >
-            <el-select v-model="formData.param[index].value" :placeholder="`请选择${row.name}`">
-              <el-option v-for="level of levels" :label="level.notes" :value="level.id" :key="level.id" />
+            <el-select v-model="formData.threshold[index].level" placeholder="请选择监测值判定" clearable>
+              <el-option
+                v-for="level of levels"
+                :label="level.notes"
+                :value="level.id"
+                :key="level.id"
+                :disabled="formData.threshold.some((i) => i.paraId === item.paraId && i.level === level.id)"
+              />
             </el-select>
           </el-form-item>
         </template>
 
-        <template v-for="(item, index) of formData.param" v-slot:[`interval-${index}`]="{ row }">
-          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`interval-${item.id}`">
+        <template v-for="(item, index) of formData.threshold" v-slot:[`threshold-${index}`]>
+          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`threshold-${item.id}`">
             <el-col>
-              <el-form-item :prop="`param[${index}].interval[0]`" label-width="0" style="margin-bottom: 0">
-                <el-input v-model="formData.param[index].interval[0]" :placeholder="row.name" />
-              </el-form-item>
-            </el-col>
-            <el-col style="flex: 0 0 1em">~</el-col>
-            <el-col>
-              <el-form-item :prop="`param[${index}].interval[1]`" label-width="0" style="margin-bottom: 0">
-                <el-input v-model="formData.param[index].interval[1]" :placeholder="row.name" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </template>
-
-        <template v-for="(item, index) of formData.param" v-slot:[`interval1-${index}`]="{ row }">
-          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`interval1-${item.id}`">
-            <el-col>
-              <el-form-item :prop="`param[${index}].interval1[0]`" label-width="0" style="margin-bottom: 0">
-                <el-input v-model="formData.param[index].interval1[0]" :placeholder="row.name" />
+              <el-form-item
+                :prop="`threshold[${index}].lower`"
+                label-width="0"
+                style="margin-bottom: 0"
+                :rules="getRequiredRule(item.name, !formData.threshold[index].specialVal)"
+              >
+                <el-input-number
+                  :controls="false"
+                  :min="0"
+                  :max="formData.threshold[index].upper - 0.01"
+                  v-model="formData.threshold[index].lower"
+                  :precision="2"
+                  size="small"
+                  style="width: 70px"
+                />
               </el-form-item>
             </el-col>
             <el-col style="flex: 0 0 1em">~</el-col>
             <el-col>
               <el-form-item
-                :key="`interval1-${item.id}`"
-                :prop="`param[${index}].interval1[1]`"
+                :prop="`threshold[${index}].upper`"
                 label-width="0"
                 style="margin-bottom: 0"
+                :rules="getRequiredRule(item.name, !formData.threshold[index].specialVal)"
               >
-                <el-input v-model="formData.param[index].interval1[1]" :placeholder="row.name" />
+                <el-input-number
+                  v-model="formData.threshold[index].upper"
+                  :controls="false"
+                  :disabled="!formData.threshold[index].lower"
+                  :min="formData.threshold[index].lower + 0.01"
+                  :precision="2"
+                  size="small"
+                  style="width: 70px"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+        <template v-for="(item, index) of formData.threshold" v-slot:[`specialVal-${index}`]>
+          <el-form-item
+            :key="`specialVal-${item.id}`"
+            :prop="`threshold[${index}].specialVal`"
+            label-width="0"
+            style="margin-bottom: 0"
+          >
+            <el-input-number
+              v-model="formData.threshold[index].specialVal"
+              :controls="false"
+              :min="0"
+              :precision="2"
+              size="small"
+              style="width: 60px"
+              @change="() => onSpecialValChange(index)"
+            />
+          </el-form-item>
+        </template>
+        <template v-for="(item, index) of formData.threshold" v-slot:[`allowance-${index}`]>
+          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`allowance-${item.id}`">
+            <el-col>
+              <el-form-item
+                :prop="`threshold[${index}].lowerTolerance`"
+                label-width="0"
+                style="margin-bottom: 0"
+                :rules="
+                  getRequiredRule(
+                    item.name,
+                    !formData.threshold[index].upperTolerance && !formData.threshold[index].specialVal
+                  )
+                "
+              >
+                <el-input-number
+                  v-model="formData.threshold[index].lowerTolerance"
+                  :controls="false"
+                  :min="0"
+                  :precision="2"
+                  size="small"
+                  style="width: 70px"
+                  @change="() => onEarlyWarningChange(index, 'upperTolerance')"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col style="flex: 0 0 1em">~</el-col>
+            <el-col>
+              <el-form-item
+                :prop="`threshold[${index}].upperTolerance`"
+                label-width="0"
+                style="margin-bottom: 0"
+                :rules="
+                  getRequiredRule(
+                    item.name,
+                    !formData.threshold[index].lowerTolerance && !formData.threshold[index].specialVal
+                  )
+                "
+              >
+                <el-input-number
+                  v-model="formData.threshold[index].upperTolerance"
+                  :controls="false"
+                  :min="0"
+                  :precision="2"
+                  size="small"
+                  style="width: 70px"
+                  @change="() => onEarlyWarningChange(index, 'lowerTolerance')"
+                />
               </el-form-item>
             </el-col>
           </el-row>
         </template>
 
-        <template v-for="(item, index) of formData.param" v-slot:[`time-${index}`]="{ row }">
-          <el-time-picker
-            v-model="formData.param[index].time"
-            is-range
-            range-separator="~"
-            :key="`time-${item.id}`"
-            :placeholder="row.name"
-            style="width:100%"
-            format="HH:mm"
-            value-format="HH:mm"
-            size="small"
-          />
-        </template>
-
-        <template v-for="(item, index) of formData.param" v-slot:[`msgPush-${index}`]>
+        <template v-for="(item, index) of formData.threshold" v-slot:[`time-${index}`]>
           <el-form-item
-            :key="`msgPush-${item.id}`"
-            :prop="`param[${index}].msgPush`"
+            :key="`time-${item.id}`"
+            :prop="`threshold[${index}].timeRange`"
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-switch v-model="formData.param[index].msgPush" />
+            <el-time-picker
+              v-model="formData.threshold[index].timeRange"
+              is-range
+              range-separator="~"
+              style="width: 100%"
+              format="HH:mm"
+              value-format="HH:mm"
+              size="small"
+              prefix-icon=""
+              arrow-control
+              :clearable="false"
+            />
           </el-form-item>
         </template>
-        <template v-for="(item, index) of formData.param" v-slot:[`action-${index}`]="{ row }">
-          <el-button :key="`action-${item.id}`" type="text" @click="() => onParamDel(row)">删除</el-button>
+
+        <template v-for="(item, index) of formData.threshold" v-slot:[`isPush-${index}`]>
+          <el-form-item
+            :key="`isPush-${item.id}`"
+            :prop="`threshold[${index}].isPush`"
+            label-width="0"
+            style="margin-bottom: 0"
+          >
+            <el-switch v-model="formData.threshold[index].isPush" size="small" :active-value="1" :inactive-value="0" />
+          </el-form-item>
+        </template>
+        <template v-for="(item, index) of formData.threshold" v-slot:[`action-${index}`]>
+          <el-button :key="`action-${item.id}`" type="text" @click="() => onParamDel(item)" size="small"
+            >删除</el-button
+          >
         </template>
       </BaseTable>
     </el-form>
@@ -189,39 +296,74 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingPointBasisCols, settingPointParamCols } from '@/views/monitoring/utils'
+import { ElForm } from 'element-ui/types/form'
+import moment from 'moment'
+const format = 'HH:mm'
+const thresholdKeys = ['upper', 'lower', 'upperTolerance', 'lowerTolerance']
 import {
-  addDictionary,
-  defaultValuesForMonitorStandardLevel,
   getDictKeys,
+  getPointConfigurations,
   IDictionary,
   IPoint,
+  IPointConnectDevice,
+  IPointParam,
+  IPointThreshold,
   IStandard,
   IStandardParam,
-  monitorStandardLevelKey,
-  pointsPage,
   standardParamsPage,
   standardsPage
 } from '@/views/monitoring/api'
-import { ElForm } from 'element-ui/types/form'
 
-interface FormData {
-  threshold?: { [x: string]: string }[]
-  param?: { [x: string]: string | number }[]
-  [x: string]: any
+interface IThreshold extends IPointThreshold {
+  timeRange?: (string | Date)[]
+  name?: string
 }
+
+export interface IPointThresholdFormData {
+  threshold?: IThreshold[]
+  param?: (IPointParam & { unit?: string; codeAbridge?: string; isSpecial?: boolean | number })[]
+  indicateId?: string
+}
+
+const getDefaultThresholdValue = (
+  id: string | number = '',
+  value: { name?: string; paraId?: string } = { paraId: '' }
+): IThreshold =>
+  Object.defineProperty(
+    {
+      //  name
+      // paraId   // 监测指标参数id 关联 设备基础配置信息id
+      ...value,
+      level: '',
+      lower: undefined, // threshold
+      upper: undefined, // threshold
+      lowerTolerance: undefined, // allowance
+      upperTolerance: undefined, // allowance
+      start: undefined, // time
+      end: undefined, // time
+      specialVal: undefined,
+      isPush: 1,
+      isSpecial: false,
+      timeRange: [moment('00:00', format).toDate(), moment('23:59', format).toDate()]
+    },
+    'id',
+    { enumerable: false, configurable: true, value: id }
+  )
+const getDefaultFormData = (): IPointThresholdFormData => ({ threshold: [], param: [], indicateId: '' })
 
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
+  @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
   $refs!: { form: ElForm }
-  $listeners!: { open?: () => void; submit?: () => void; closed: () => void }
+  $listeners!: { open?: Function; submit?: Function; closed: Function }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: FormData = { system: [], param: [] }
+  formData: IPointThresholdFormData = getDefaultFormData()
   settingPointBasisCols = settingPointBasisCols
   settingPointParamCols = settingPointParamCols
 
@@ -229,6 +371,8 @@ export default class PointForm extends Vue {
     indicateId: [{ required: true, message: '请选择体系！', trigger: 'blur' }],
     pointId: [{ required: true, message: '请选择检测点', trigger: 'blur' }]
   }
+
+  fetching: boolean = false
 
   standards: IStandard[] = []
 
@@ -238,6 +382,8 @@ export default class PointForm extends Vue {
 
   levels: IDictionary[] = []
 
+  deviceId: string | number = ''
+
   get listeners() {
     const { submit, open, closed, ...rest } = this.$listeners
     return rest
@@ -246,71 +392,89 @@ export default class PointForm extends Vue {
   onSubmit() {
     this.$refs.form.validate((valid) => {
       if (valid) {
-        console.log('valid')
+        const { indicateId, threshold, param } = this.formData
+        // console.log(JSON.stringify(this.formData, null, 2))
+        this.$emit('submit', {
+          indicateId,
+          param: param.map<IPointParam>(({ id, ...rest }) => {
+            return {
+              ...rest,
+              id: String(id).startsWith('__new__') || String(id).startsWith('__temp__') ? undefined : id
+            }
+          }),
+          threshold: threshold.map<IPointThreshold>(({ name, id, timeRange, ...rest }) => {
+            const [start, end] = timeRange || []
+            return {
+              ...rest,
+              start: moment(start, format).format(format),
+              end: moment(end, format).format(format),
+              id: String(id).startsWith('__new__') || String(id).startsWith('__temp__') ? undefined : id
+            }
+          })
+        })
       }
     })
   }
 
-  getDefaultParam(key: string = 'threshold') {
-    return {
-      param: settingPointBasisCols,
-      threshold: settingPointParamCols
-    }[key]
-      .filter((item) => item._interval)
-      .reduce(
-        (data, current) => {
-          const temp = { ...data }
-          temp[current.prop] = []
-          return temp
-        },
-        {} as { [x: string]: any }
-      )
-  }
+  getRequiredRule = (message: string, required: boolean = true, isSelect: boolean = false) => [
+    { required, message: `请${isSelect ? '选择' : '输入'}${message}` }
+  ]
 
   async onStandardQuery() {
+    const {
+      bindDevice: { deviceVo, deviceId }
+    } = this.selected[0] || {}
+    this.deviceId = deviceId
+    const { type } = deviceVo || {}
     try {
       const {
         result: { records }
-      } = await standardsPage({ current: 1, size: 999999 })
+      } = await standardsPage({ current: 1, size: 999999, type })
       this.standards = records || []
     } catch (error) {
       console.log(error)
     }
-    this.standards = [{ id: '1', name: '第一系统' }, { id: '2', name: '第二系统' }, { id: '3', name: '第三系统' }]
   }
 
   async onStandardChange(indicateId) {
+    this.fetching = true
     try {
       const {
         result: { records }
       } = await standardParamsPage({ indicateId, current: 1, size: 999999 })
+      this.standardParams = records
       this.formData = {
         ...this.formData,
-        param: records.map(({ id, name, upper, lower }) => ({ // code, unit,
-          id,
-          name,
-          // code,
-          // unit,
-          upper,
-          lower,
-          ...this.getDefaultParam('param')
-        })),
-        threshold: records.map(({ id }) => ({ id, ...this.getDefaultParam() }))
+        // 缺deviceId 设备id 但有deviceTypeParaId， indicateId 监测体系id
+        param: records.map<IPointParam>(({ id, upper, lower, isSpecial, specialVal, deviceTypeParaVo }, index) => {
+          const { name, code, codeAbridge, unit } = deviceTypeParaVo || {}
+          return {
+            name,
+            code,
+            codeAbridge,
+            deviceId: this.deviceId,
+            indicateId,
+            indicateParaId: id,
+            unit,
+            id: '__temp__' + id,
+            lrangeUp: upper, // 体系参数叫upper 存的时候叫  lrangeUp
+            lrangeLow: lower, // 体系参数叫lower 存的时候叫  lrangeLow
+            sort: index + 1,
+            siteCode: '', //  后台是 number
+            isDisplay: 1,
+            isSpecial,
+            specialVal
+          }
+        }),
+        threshold: records.map<IPointThreshold>(({ id, deviceTypeParaVo }, index) => {
+          const { name, code } = deviceTypeParaVo || {}
+          return getDefaultThresholdValue(`__temp__${index}`, { name: `${name} | ${code}`, paraId: id })
+        })
       }
     } catch (error) {
       console.log(error)
     }
-  }
-
-  async onPointQuery() {
-    try {
-      const {
-        result: { records }
-      } = await pointsPage({ current: 1, size: 999999 })
-      this.points = records || []
-    } catch (error) {
-      console.log(error)
-    }
+    this.fetching = false
   }
 
   /** 获取体系指标判定 */
@@ -318,18 +482,6 @@ export default class PointForm extends Vue {
     try {
       const values = await getDictKeys()
       this.levels = (values as IDictionary[]) || []
-      // 如果没有， 添加默认值
-      if (values.length === 0) {
-        const { username: creater = '' }: { username: string } = this.$store.state.user || {}
-        await Promise.all([
-          addDictionary({ ...monitorStandardLevelKey, ulevel: 1, creater }),
-          ...defaultValuesForMonitorStandardLevel.map((item) =>
-            addDictionary({ ulevel: 2, ...monitorStandardLevelKey, creater, ...item })
-          )
-        ])
-        // 完成后，再次获取判定值
-        this.getLevels()
-      }
     } catch (error) {
       console.log(error)
     }
@@ -338,48 +490,98 @@ export default class PointForm extends Vue {
   onParamAdd() {
     this.formData = {
       ...this.formData,
-      threshold: [
-        ...this.formData.threshold,
-        Object.defineProperty(this.getDefaultParam(), 'id', { enumerable: false, value: '__new__' + new Date() })
-      ]
+      threshold: [...this.formData.threshold, getDefaultThresholdValue('__new__' + new Date())]
     }
   }
 
-  onParamDel({ id }) {
-    this.standardParams = this.standardParams.filter((item) => item.id !== id)
+  onParamDel({ id }: IThreshold) {
+    this.formData = {
+      ...this.formData,
+      threshold: this.formData.threshold.filter((item) => item.id !== id)
+    }
+  }
+
+  onEarlyWarningChange(index: number, key: string) {
+    this.formData.threshold[index][key] = undefined
+    this.formData.threshold[index].specialVal = undefined
+    this.formData.threshold[index].isSpecial = false
+
+    setTimeout(() => {
+      this.$refs.form.validateField(`threshold[${index}].${key}`)
+    }, 100)
+  }
+  onSpecialValChange(index: number) {
+    this.formData.threshold[index].isSpecial = true
+    thresholdKeys.forEach((key) => {
+      this.formData.threshold[index][key] = undefined
+      setTimeout(() => {
+        this.$refs.form.validateField(`threshold[${index}].${key}`)
+      }, 100)
+    })
+  }
+
+  async getSettings() {
+    const { id, isConfigured } = this.selected[0] || {}
+    if (!isConfigured) return
+    this.fetching = true
+    try {
+      const { result } = await getPointConfigurations(id)
+      const { siteDeviceIndicates: param, siteDeviceParas: threshold } = result || {}
+      const indicateId = ((param || {})[0] || {}).indicateId
+      this.onStandardChange(indicateId)
+      this.formData = {
+        indicateId,
+        param: param.map(({ isDisplay, ...rest }) => ({ ...rest, isDisplay: Number(isDisplay) })),
+        threshold: threshold.map(
+          ({ start, end, paraId, specialVal, lower, lowerTolerance, upper, upperTolerance, isPush, ...rest }) => {
+            return {
+              ...rest,
+              paraId,
+              name: (param.find((item) => item.id === paraId) || {}).name,
+              timeRange: [moment(start, format).toDate(), moment(end, format).toDate()],
+              specialVal: specialVal || undefined,
+              lower: lower || undefined,
+              lowerTolerance: lowerTolerance || undefined,
+              upper: upper || undefined,
+              upperTolerance: upperTolerance || undefined,
+              isPush: Number(isPush)
+            }
+          }
+        )
+      }
+    } catch (error) {
+      console.log(error)
+    }
+    this.fetching = false
   }
 
   onOpen() {
+    this.getSettings()
     this.onStandardQuery()
-    this.onPointQuery()
     this.getLevels()
-    this.$listeners.open && this.$listeners.open()
+    this.$emit('open')
   }
 
   onClosed() {
     this.standardParams = []
-    this.$listeners.closed && this.$listeners.closed()
+    this.formData = getDefaultFormData()
+    this.$emit('closed')
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.upload {
-  /deep/ .el-upload-list--picture-card .el-upload-list__item,
-  /deep/ .el-upload--picture-card {
-    width: 128px;
-    height: 128px;
+.form {
+  >>> .el-input-number {
+    .el-input__inner {
+      padding-left: 3px;
+      padding-right: 3px;
+    }
   }
-  /deep/ .el-upload--picture-card {
-    line-height: normal;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-.preview {
-  /deep/ .el-dialog .el-dialog__header {
-    border-bottom: 0;
+  >>> .el-date-editor--timerange {
+    .el-input__icon {
+      display: none;
+    }
   }
 }
 </style>

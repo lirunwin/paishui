@@ -1,5 +1,6 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
-import { IPointConnectDevice, IStandardParam, ITypeParam } from './api'
+import { IDictionary, IPointConnectDevice, IPointParam, IStandardParam, ITypeParam } from './api'
+import { defaultValuesForMonitorStandardLevel, getIntervalValue, translate } from '@/utils/constant'
 
 interface ColItem extends Partial<ElTableColumn> {
   _slot?: boolean
@@ -21,21 +22,16 @@ export const settingDeviceTypeCols: ColItem[] = [
 export const settingDeviceTypeParamCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'name', label: '参数名称', width: '100px', ...alignLeft },
-  { prop: 'code', label: '参数代码', width: '100px', ...alignLeft },
-  { prop: 'codeAbridge', label: '参数缩写', width: '100px', ...alignLeft },
+  { prop: 'name', label: '参数名称', minWidth: '100px', ...alignLeft },
+  { prop: 'code', label: '参数代码', minWidth: '100px', ...alignLeft },
+  { prop: 'codeAbridge', label: '参数缩写', width: '90px', ...alignLeft },
   { prop: 'unit', label: '参数单位', width: '90px' },
   {
     prop: 'lrange',
     label: '量程',
-    width: '120px',
-    formatter: ({ lrangeUp, lrangeLow }: ITypeParam) => {
-      if (!lrangeLow && !lrangeUp) {
-        return '-'
-      } else {
-        return `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
-      }
-    }
+    width: '110px',
+    formatter: ({ lrangeUp, lrangeLow }: ITypeParam) =>
+      !lrangeLow && !lrangeUp ? '∞' : `${lrangeLow || 0} ~ ${lrangeUp || '∞'}`
   },
   {
     prop: 'isDisplay',
@@ -51,14 +47,14 @@ export const settingDeviceTypeParamCols: ColItem[] = [
 export const settingArchiveCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'no', label: '设备编码', width: '120px', ...alignLeft },
-  { prop: 'sn', label: 'SN序列号', width: '120px', ...alignLeft },
-  { prop: 'typeName', label: '设备类型', width: '100px', ...alignLeft },
-  { prop: 'model', label: '设备型号', width: '100px', ...alignLeft },
+  { prop: 'no', label: '设备编码', minWidth: '120px', ...alignLeft },
+  { prop: 'sn', label: '出厂编号', minWidth: '100px', ...alignLeft },
+  { prop: 'typeName', label: '设备类型', minWidth: '100px', ...alignLeft },
+  { prop: 'model', label: '设备型号', minWidth: '100px', ...alignLeft },
   { prop: 'name', label: '设备名称', minWidth: '120px', ...alignLeft },
   { prop: 'companyName', label: '设备厂商', minWidth: '120px', ...alignLeft },
   { prop: 'companyUser', label: '厂商联系人', minWidth: '100px' },
-  { prop: 'companyPhone', label: '联系人电话', width: '100px' },
+  { prop: 'companyPhone', label: '联系人电话', width: '120px' },
   { prop: 'purchaseTime', label: '采购时间', width: '110px' },
   { prop: 'status', label: '设备状态', width: '100px' },
   { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft, showOverflowTooltip: true }
@@ -72,29 +68,40 @@ export const settingStandardCols: ColItem[] = [
   { prop: 'typeName', label: '设备类型', minWidth: '120px', ...alignLeft }
 ]
 /**指标标准被指 -参数*/
-export const settingStandardParamCols: ColItem[] = [
+export const settingStandardParamCols = (levels: IDictionary[]): ColItem[] => [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'deviceTypeParaId', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'level', label: '判定', width: '100px' },
+  { prop: 'deviceTypeParaVo.name', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  {
+    prop: 'level',
+    label: '判定',
+    width: '100px',
+    formatter: ({ level }: IStandardParam) => translate({ arr: levels, key: 'codeValue', value: level, label: 'notes' })
+  },
   {
     prop: 'lower-upper',
     label: '监测阈值',
-    width: '100px',
-    formatter: ({ lower, upper }: IStandardParam) => (!lower && !upper ? '-' : `${lower || 0} ~ ${upper || '∞'}`)
+    minWidth: '110px',
+    formatter: ({ lower, upper, isSpecial }: IStandardParam) => (isSpecial ? '-' : getIntervalValue(lower, upper))
   },
   {
     prop: 'lowerTolerance-upperTolerance',
     label: '监测容差',
+    minWidth: '110px',
+    formatter: ({ lowerTolerance, upperTolerance, isSpecial }: IStandardParam) =>
+      isSpecial ? '-' : getIntervalValue(lowerTolerance, upperTolerance)
+  },
+  {
+    prop: 'specialVal',
+    label: '特定阈值',
     width: '100px',
-    formatter: ({ lowerTolerance, upperTolerance }: IStandardParam) =>
-      !lowerTolerance && !upperTolerance ? '-' : `${lowerTolerance || 0} ~ ${upperTolerance || '∞'}`
+    formatter: ({ isSpecial, specialVal }: IStandardParam) => (isSpecial ? specialVal : '-')
   },
   {
     prop: 'start-end',
     label: '有效时段',
     width: '120px',
-    formatter: ({ start, end }: IStandardParam) => (!start && !end ? '-' : `${start || 0} ~ ${end || '∞'}`)
+    formatter: ({ start, end }: IStandardParam) => getIntervalValue(start, end)
   },
   { prop: 'isPush', label: '是否推送', width: '80px', _slot: true }
 ]
@@ -103,18 +110,25 @@ export const settingStandardParamCols: ColItem[] = [
 export const settingPointCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'psArea', label: '排水分区', width: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'siteGroup', label: '监测分组', width: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'no', label: '监测点编号', width: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'code', label: '监测点编码', width: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'name', label: '监测点名称', width: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'bindDevice.deviceVo.sn', label: '设备SN', width: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'bindDevice.deviceVo.typeName', label: '设备类型', width: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'bindDevice.deviceVo.name', label: '设备名称', width: '120px', ...alignLeft, showOverflowTooltip: true },
-  { prop: 'bindDevice.installUser', label: '负责人', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'no', label: '监测点编号', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'code', label: '监测点编码', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'name', label: '监测点名称', minWidth: '140px', ...alignLeft, showOverflowTooltip: true },
+  {
+    prop: 'bindDevice.deviceVo.typeName',
+    label: '设备类型',
+    minWidth: '120px',
+    ...alignLeft,
+    showOverflowTooltip: true
+  },
+  { prop: 'bindDevice.deviceVo.name', label: '设备名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.deviceVo.sn', label: '出厂编码', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'bindDevice.installUser', label: '负责人', width: '100px', ...alignLeft, showOverflowTooltip: true },
   { prop: 'bindDevice.installPhone', label: '联系方式', width: '120px', showOverflowTooltip: true },
-  { prop: 'address', label: '安装地址', width: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'address', label: '安装地址', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
   { prop: 'bindDevice.installTime', label: '安装时间', width: '120px', showOverflowTooltip: true },
+  { prop: 'psArea', label: '排水分区', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'siteGroup', label: '监测分组', minWidth: '100px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'isConfigured', label: '是否配置', width: '90px', _slot: true },
   { prop: 'status', label: '监测点状态', width: '90px', _slot: true }
 ]
 
@@ -158,25 +172,39 @@ export const settingMonitorCols: ColItem[] = [
 
 /**监测点管理 - 监测参数基本设置 */
 export const settingPointBasisCols: ColItem[] = [
-  { prop: 'name', label: '参数名称' },
-  { prop: 'code', label: '参数代码' },
-  { prop: 'unit', label: '参数单位' },
-  { prop: 'distance', label: '量程' },
-  { prop: 'index', label: '序号', _slot: true },
-  { prop: 'paramCode', label: '站点参数代码', _slot: true },
-  { prop: 'display', label: '是否显示', _slot: true },
-  { prop: 'note', label: '备注', _slot: true }
+  { type: 'index', label: '序号', width: '50px' },
+  { prop: 'name', label: '参数名称', minWidth: '120px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'code', label: '参数代码', minWidth: '110px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'unit', label: '参数单位', minWidth: '80px' },
+  {
+    prop: 'lower-upper',
+    label: '量程',
+    minWidth: '110px',
+    formatter: ({ lrangeLow, lrangeUp, isSpecial }: any) => (isSpecial ? '-' : getIntervalValue(lrangeLow, lrangeUp))
+  },
+  // {
+  //   prop: 'isSpecial',
+  //   label: '特定阈值',
+  //   width: '80px',
+  //   formatter: ({ isSpecial, specialVal }: any) => (isSpecial ? specialVal : '-')
+  // },
+  { prop: 'sort', label: '排序', _slot: true, width: '80px' },
+  { prop: 'siteCode', label: '站点参数代码', _slot: true, width: '120px' },
+  { prop: 'isDisplay', label: '是否显示', _slot: true, width: '80px' },
+  { prop: 'note', label: '备注', _slot: true, minWidth: '120px' }
 ]
 
 /**监测点管理 - 监测参数阈值设置 */
 export const settingPointParamCols: ColItem[] = [
-  { prop: 'name', label: '参数名称', _slot: true, width: '150px' },
-  { prop: 'value', label: '监测值判定', _slot: true, width: '120px' },
-  { prop: 'interval', label: '监测阈值', _slot: true, _interval: true, width: '200px' },
-  { prop: 'interval1', label: '阈值容差', _slot: true, _interval: true, width: '200px' },
-  { prop: 'time', label: '有效时段', _slot: true, width: '160px' },
-  { prop: 'msgPush', label: '消息推送', _slot: true, width: '80px' },
-  { prop: 'action', label: '操作', _slot: true }
+  { type: 'index', label: '序号', width: '50px' },
+  { prop: 'name', label: '参数名称', _slot: true, minWidth: '110px', ...alignLeft, showOverflowTooltip: true },
+  { prop: 'level', label: '监测值判定', _slot: true, width: '100px' },
+  { prop: 'specialVal', label: '特定阈值', _slot: true, width: '80px' },
+  { prop: 'threshold', label: '报警阈值', _slot: true, width: '190px' },
+  { prop: 'allowance', label: '预警阈值', _slot: true, width: '190px' },
+  { prop: 'time', label: '有效时段', _slot: true, width: '140px' },
+  { prop: 'isPush', label: '消息推送', _slot: true, width: '80px' },
+  { prop: 'action', label: '操作', _slot: true, width: '50px' }
 ]
 
 export const monitorStates = [
@@ -284,7 +312,6 @@ export const getDefalutNumberProp = () => ({
   max: 9999999,
   size: 'small',
   precision: 0,
-  stepStrictly: true,
   style: { width: '100%', textAlign: 'left' },
   class: 'input-number',
   clearable: true

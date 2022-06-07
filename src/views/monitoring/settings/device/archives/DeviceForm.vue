@@ -45,7 +45,7 @@
               v-model="formData[name]"
               :type="type || 'text'"
               :disabled="disabled"
-              :placeholder="`请输入${label}`"
+              :placeholder="name === 'no' ? '系统自动添加' : `请输入${label}`"
               size="small"
               clearable
               v-bind="rest"
@@ -182,9 +182,9 @@ export default class TypeForm extends Vue {
 
   rules = {
     name: [
-      { required: true, message: '设备名称不能为空！', trigger: 'blur' },
+      { required: true, message: '设备名称不能为空！' },
       { max: 50, message: '设备名称不超过50个字符' },
-      { pattern: /^[\u4e00-\u9fa5\w -]+$/, message: '允许输入汉字、英文、数字', trigger: 'blur' }
+      { pattern: /^[\u4e00-\u9fa5\w -]+$/, message: '允许输入汉字、英文、数字' }
     ],
     /** ①	设备编码: 系统维护。编码规则: 项目编号 + JCSB_+ 4位流水号，如: HN01JCSB0004。（JCSB表示监测设备） */
     // no: [
@@ -199,7 +199,7 @@ export default class TypeForm extends Vue {
     //   { type: 'string', max: 128, message: '设备型号不能超过128个字符' }
     // ],
     /** ④	设备类型: 必填，下拉框，在【设备类型配置】中配置的设备类型。 */
-    type: [{ required: true, message: '请选择设备类型', trigger: 'blur' }]
+    type: [{ required: true, message: '请选择设备类型' }]
     /** ⑤	监测参数: 系统自动显示，根据设备类型关联显示该设备监测参数。 */
     // param: []
     /** ⑥	设备厂商: 必填，自定义录入文本。 */

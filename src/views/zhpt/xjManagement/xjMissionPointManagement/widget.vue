@@ -103,7 +103,7 @@ import { xjTypeQuery } from '@/api/xjConfigManageApi'
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import request from '@/utils/request'
 import axios from 'axios'
-import locationIcon from './images/location.png'
+import locationIcon from '@/assets/images/map/location.png'
 @Component({
   name: 'XjMissionPointManagement',
   components: { tfTableLegend, tfLegend }
@@ -148,7 +148,7 @@ export default class XjMissionPointManagement extends Vue {
     image:new Icon({
       src:locationIcon,
       scale:0.5,
-      color:'rgba(0,0,255,1.0)'
+      color:'#2D74E7'
     })
   });
   mounted() {
@@ -216,7 +216,7 @@ export default class XjMissionPointManagement extends Vue {
       view: new View({
         center: initCenter,
         zoom: initZoom,
-        maxZoom: 17,
+        maxZoom: 21,
         minZoom: 5,
         projection: 'EPSG:4326'
       })

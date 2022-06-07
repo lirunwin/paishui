@@ -46,9 +46,7 @@
           v-bind="rest"
           clearable
         >
-          <template slot="suffix" v-if="name === 'rate'">
-            分钟
-          </template>
+          <template slot="suffix" v-if="name === 'rate'"> 分钟 </template>
         </el-input>
       </el-form-item>
     </el-form>
@@ -98,14 +96,6 @@ export default class ParamForm extends Vue {
   }
   get formItems() {
     return [
-      {
-        label: '显示顺序',
-        name: 'sort',
-        type: 'number',
-        rules: [{ type: 'integer', min: -1, message: '显示顺序为数字' }],
-        size: 'small',
-        ...getDefalutNumberProp()
-      },
       {
         label: '参数名称',
         name: 'name',
@@ -158,7 +148,7 @@ export default class ParamForm extends Vue {
             rest: {
               ...getDefalutNumberProp(),
               precision: 2,
-              max: this.formData.lrangeUp || 9999999,
+              max: Number(this.formData.lrangeUp) || 9999999,
               controls: false
             },
             rules: [{ validator: this.validatelrangeLow, trigger: 'blur' }]
@@ -170,7 +160,7 @@ export default class ParamForm extends Vue {
             rest: {
               ...getDefalutNumberProp(),
               precision: 2,
-              min: this.formData.lrangeLow || 0,
+              min: Number(this.formData.lrangeLow) || 0,
               controls: false
             },
             rules: [{ validator: this.validatelrangeUp, trigger: 'blur' }]
@@ -193,6 +183,14 @@ export default class ParamForm extends Vue {
         type: 'switch',
         rules: [{ required: true, message: '请选择是否显示', trigger: 'blur' }],
         size: 'small'
+      },
+      {
+        label: '显示顺序',
+        name: 'sort',
+        type: 'number',
+        rules: [{ type: 'integer', min: -1, message: '显示顺序为数字' }],
+        size: 'small',
+        ...getDefalutNumberProp()
       },
       {
         label: '备注',

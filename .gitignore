@@ -4,3 +4,4 @@ dist
 *.zip
 psjc
 report.20*.json
+.doc*

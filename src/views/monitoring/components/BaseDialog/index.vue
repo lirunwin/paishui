@@ -23,19 +23,17 @@
 </template>
 
 <script lang="ts">
+import { ElForm } from 'element-ui/types/form'
 import { Vue, Component, Prop, PropSync } from 'vue-property-decorator'
 
 @Component({ name: 'BaseDialog', inheritAttrs: false })
 export default class BaseDialog extends Vue {
   @PropSync('visible', { type: Boolean }) dialogVisible!: boolean
-
   @Prop({ type: String }) title!: string
-
   @Prop({ type: Boolean }) loading!: boolean
   @Prop({ type: Boolean }) disabled!: boolean
   @Prop({ type: Boolean, default: true }) clear!: boolean
 
-  @Prop({ type: [Object, Array] }) form!: Vue
   get listeners() {
     const { open, closed, submit, ...rest } = this.$listeners
     return rest
@@ -43,27 +41,23 @@ export default class BaseDialog extends Vue {
 
   onOpen() {
     if (this.clear) {
-      const { clearValidate } = (this.$parent.$refs['form'] || {}) as any
-      if (typeof clearValidate === 'function') {
-        setTimeout(() => {
-          clearValidate()
-        }, 0)
-      }
+      const { clearValidate } = (this.$parent.$refs['form'] as ElForm) || {}
+      setTimeout(() => {
+        clearValidate && clearValidate()
+      }, 0)
     }
-    const { open } = this.$listeners
-    if (typeof open === 'function') open()
+    this.$emit('open')
   }
 
   onClosed() {
     if (this.clear) {
-      const { resetFields } = (this.$parent.$refs['form'] || {}) as any
-      if (typeof resetFields === 'function') resetFields()
+      const { resetFields } = (this.$parent.$refs['form'] as ElForm) || {}
+      resetFields && resetFields()
     }
-    const { closed } = this.$listeners
-    if (typeof closed === 'function') closed()
+    this.$emit('closed')
   }
   updated() {
-    this.$nextTick(function() {
+    this.$nextTick(() => {
       /**我也不知道为什么title会被传到html上 */
       ;[...document.querySelectorAll('.dialog')].forEach((dialog) => {
         dialog.removeAttribute('title')
@@ -80,7 +74,7 @@ export default class BaseDialog extends Vue {
   border-radius: $radius;
   /deep/ .el-dialog {
     background-color: transparent;
-    max-width: 1024px;
+    max-width: 1280px;
     &__header {
       background-color: $bg-color;
       color: $font-color;

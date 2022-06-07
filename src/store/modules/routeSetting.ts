@@ -1,7 +1,7 @@
 import { packageRouter, ERROR } from '@/router/routes'
 import { getUserMenu } from '@/api/user'
 import userx from './user'
-import gisNames from '@/utils/gisNames'
+import { gisNames } from '@/utils/constant'
 
 const state = {
   routes: [],
@@ -9,13 +9,13 @@ const state = {
   menus: [],
   dynamicRoutes: {}
 }
-const bigScreenRoutes={
+const bigScreenRoutes = {
   path: '/bigScreen',
   component: () => import('@/views/bigScreen/index.vue'),
   meta: { title: '一张图' },
   type: 'sys',
   label: '一张图',
-  icon: 'el-icon-star-on',
+  icon: 'el-icon-star-on'
 }
 const dashboardRoute = {
   path: '/',
@@ -131,7 +131,9 @@ const actions = {
                 path: autoLink(item.type, item)
               }
             })
-            menus.some((item, i) => {if (item.name === 'bigScreen') menus.splice(i, 1)})
+            menus.some((item, i) => {
+              if (item.name === 'bigScreen') menus.splice(i, 1)
+            })
             commit('SET_NAVMENUS', menus)
             let routes = data.map((item) => item.childrens)
             routes = routes.flat()

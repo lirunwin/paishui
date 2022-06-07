@@ -1,16 +1,9 @@
+import { serialize } from 'object-to-formdata'
 import axios from '@/utils/request'
+import store from '@/store'
+import { defaultValuesForMonitorStandardLevel, monitorStandardLevelKey } from '@/utils/constant'
 
 const base = '/monitor'
-
-export const monitorStandardLevelKey = { codeKey: 'monitor_indicate_level', codeRemark: '体系指标判定' }
-
-/** 体系默认levels */
-export const defaultValuesForMonitorStandardLevel = [
-  { codeValue: '0', notes: '优质', sort: 0 },
-  { codeValue: '1', notes: '轻度', sort: 1 },
-  { codeValue: '2', notes: '中度', sort: 2 },
-  { codeValue: '3', notes: '严重', sort: 3 }
-]
 
 const uris = {
   addDictionary: '/base/code',
@@ -62,11 +55,20 @@ const uris = {
       /** method: GET */
       page: `${base}/monitorsite/page`,
       /** method: POST */
-      setting: `${base}/monitorsite/saveAndBind`,
+      bindDevice: `${base}/monitorsite/saveAndBind`,
+      /** method: POST */
+      operate: `${base}/monitorsite/operate`,
       /** method: GET */
       groups: `${base}/monitorsite/group`,
       /** method: GET */
-      sections: `${base}/monitorsite/psArea`
+      sections: `${base}/monitorsite/psArea`,
+      /** method: POST */
+      bindStandard: `${base}/monitorsiteindicate/saveOrUpdateBatch`,
+      /** method: GET */
+      isConfigured: `${base}/monitorsiteindicate/validateOtherIndicate`,
+      /** method: POST */
+      submitSettings: `${base}/monitorsitepara/saveOrUpdateBatch`,
+      configurations: `${base}/monitorsiteindicate/getByMonitorId`
     },
     /** 监测站管理 */
     sites: {
@@ -283,15 +285,12 @@ export interface IStandard extends ICreator {
   /** 指标名称 */
   name?: string
   /** 设备类型id */
-  type?: string
+  type?: string | number
 }
 
 export interface IStandardParam extends ICreator {
-  departmentId?: string
-  /** 参数名称 */
-  name?: string
   /** 设备类型参数id tf_ywpn_device_type_para */
-  deviceTypeParaId?: string
+  deviceTypeParaId?: number | string
   /** 有效时间开始 */
   start?: string
   /** 有效时间结束 */
@@ -300,11 +299,11 @@ export interface IStandardParam extends ICreator {
   /** 监测体系id 关联表 tf_ywpn_device_indecate */
   indicateId?: string
   /** 是否推送报警 0 false 1是 */
-  isPush?: boolean
+  isPush?: boolean | number
   /** 0 否 1是 */
-  isUse?: boolean
+  isUse?: boolean | number
   /** 关联字典表 优质、轻度、中度、严重 */
-  level?: number
+  level?: number | string
   /** 上限 */
   upper?: number
   /** 下限 */
@@ -314,6 +313,25 @@ export interface IStandardParam extends ICreator {
   /** 下限容差 */
   lowerTolerance?: number
   delFlag?: string
+  /** 是否特定阈值 */
+  isSpecial?: boolean | number
+  /** 特定阀值 */
+  specialVal?: number
+  deviceTypeParaVo?: {
+    code?: string | number
+    codeAbridge?: string
+    id?: number | string
+    isDisplay?: boolean | number
+    lrangeLow?: string | number
+    lrangeUp?: string | number
+    name?: string
+    note?: string
+    rate?: number
+    sort?: number
+    typeId?: number | string
+    typeName?: string
+    unit?: string
+  } & ICreator
 }
 
 export interface IPoint extends ICreator {
@@ -340,6 +358,8 @@ export interface IPoint extends ICreator {
   /** 1 启用 2停用 */
   status?: string
   note?: string
+  /** 是否绑定监测体系 */
+  isConfigured?: boolean | number
 }
 
 export interface IPointConnectDevice extends IPoint {
@@ -400,19 +420,64 @@ export interface IPointConnectDevice extends IPoint {
       typeName?: string
       name?: string
     }
+    filePathList?: string[]
   } & ICreator
 }
 
-export interface IPointSetting {
-  /** 数据归集时间（分钟） */
-  collectTime?: string
-  /** 设备类型名称 */
+export interface IPointParam {
+  /** 参数代码 */
+  code?: string | number
+  delFlag?: string | boolean
+  /** 设备id */
+  deviceId?: string | number
+  id?: string | number
+  /** 监测体系id */
+  indicateId?: string | number
+  /** 监测体系指标id */
+  indicateParaId?: string | number
+  /** 是否展示 false true */
+  isDisplay?: boolean | number
+  /** 量程下限 */
+  lrangeLow?: number
+  /** 量程上限 */
+  lrangeUp?: number
+  /** 参数名称 */
   name?: string
-  /** 设备类型代码 */
-  typeCode?: string
-  id?: string
-  sort?: number | string
-  status?: string
+  /** 备注 */
+  note?: string
+  /** 站点参数代码 */
+  siteCode?: string
+  /** 序号 */
+  sort?: number
+  indicateParaVo?: IStandardParam
+  unit?: string
+}
+
+export interface IPointThreshold extends ICreator {
+  delFlag?: string
+  /** 有效时间结束 */
+  end?: string
+  id?: string | number
+  /** 是否推送 0 false 1是 */
+  isPush?: boolean | number
+  /** 是否特殊值 默认false */
+  isSpecial?: boolean | number
+  /** 关联字典表 优质、轻度、中度、严重 */
+  level?: string | number
+  /** 下限 */
+  lower?: number
+  /** 下限容差 */
+  lowerTolerance?: number
+  /** 监测指标参数id 关联 设备基础配置信息id */
+  paraId?: string | number
+  /** 特殊阈值 */
+  specialVal?: string
+  /** 有效时间开始 */
+  start?: string
+  /** 上限 */
+  upper?: number
+  /** 上限容差 */
+  upperTolerance?: number
 }
 
 export interface IDictionary {
@@ -427,6 +492,33 @@ export interface IDictionary {
   ulevel?: string | number
 }
 
+export interface IPointEnableParams {
+  /** 监测点id，多个以,号分割 */
+  monitorSiteIds: string
+  /** 操作人 */
+  operateUserName: string
+  /** 操作时间 */
+  operateTime: string
+  /** 状态 */
+  type: 'start' | 'stop'
+  /** note */
+  note?: string
+}
+
+export interface IPointDismountParams {
+  /** 监测点id，只能一个*/
+  monitorSiteIds: string
+  /** 操作人 */
+  operateUserName: string
+  /** 操作人人电话号码 */
+  operateUserPhone: string
+  /** 操作时间 */
+  operateTime: string
+  /** 状态 */
+  type: 'del'
+  note?: string
+}
+
 /** 获取字典值 */
 export const getDictKeys = async (keys: string = monitorStandardLevelKey.codeKey) => {
   const { result } = await axios.request<{ result: { [x: string]: IDictionary[] } }>({
@@ -434,8 +526,20 @@ export const getDictKeys = async (keys: string = monitorStandardLevelKey.codeKey
     method: 'get',
     params: { keys }
   })
-  if (!monitorStandardLevelKey.codeKey.includes(',')) {
-    const { [monitorStandardLevelKey.codeKey]: values } = result
+
+  if (!keys.includes(',')) {
+    const { [keys]: values } = result
+    if (values.length === 0) {
+      const { username: creater = '' }: { username: string } = store.state.user || {}
+      await Promise.all([
+        addDictionary({ ...monitorStandardLevelKey, ulevel: 1, creater }),
+        ...defaultValuesForMonitorStandardLevel.map((item) =>
+          addDictionary({ ulevel: 2, ...monitorStandardLevelKey, creater, ...item })
+        )
+      ])
+      const temp = (await getDictKeys(keys)) as IDictionary[]
+      return temp
+    }
     return values || []
   }
   return result || {}
@@ -571,11 +675,46 @@ export const pointsPage = (params: IPointConnectDevice & IQueryCommon) =>
 export const deletePointBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.points.del, method: 'delete', params: { ids } })
 
-export const addPointSetting = (data: IPointConnectDevice) =>
-  axios.request<IRes<boolean>>({ url: uris.settings.points.setting, method: 'post', data })
+export const pointBindDevice = (data: IPointConnectDevice) =>
+  axios.request<IRes<boolean>>({
+    url: uris.settings.points.bindDevice,
+    method: 'post',
+    data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
+  })
 
 export const groups = (name?: string) =>
   axios.request<IResult<string[]>>({ url: uris.settings.points.groups, method: 'get', params: { name } })
 
 export const sections = (name?: string) =>
   axios.request<IResult<string[]>>({ url: uris.settings.points.sections, method: 'get', params: { name } })
+
+export const pointEnable = (data: IPointEnableParams) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.operate, method: 'post', data })
+
+export const pointDismount = (data: IPointDismountParams) =>
+  axios.request<IRes<boolean>>({ url: uris.settings.points.operate, method: 'post', data })
+
+export const bindStandardAndSettings = (data: IPointParam[]) =>
+  axios.request<IResult<IPointParam[]>>({
+    url: uris.settings.points.bindStandard,
+    method: 'post',
+    data: { siteDeviceIndicates: data }
+  })
+
+export const isConfigured = (params: { indicateId: string; deviceId: string }) =>
+  axios.request<IResult<string[]>>({ url: uris.settings.points.isConfigured, method: 'get', params })
+
+export const submitPointSettings = (data: IPointThreshold[]) =>
+  axios.request<IRes<IPointThreshold>>({
+    url: uris.settings.points.submitSettings,
+    method: 'post',
+    data: { deviceParas: data }
+  })
+
+export const getPointConfigurations = (monitorId: string | number) =>
+  axios.request<
+    IResult<{
+      siteDeviceIndicates: IPointParam[]
+      siteDeviceParas: IPointThreshold[]
+    }>
+  >({ url: uris.settings.points.configurations, method: 'get', params: { monitorId } })

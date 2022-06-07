@@ -90,6 +90,7 @@
                   v-model="formData[sectionName][name]"
                   :placeholder="`请选择${label}`"
                   clearable
+                  filterable
                   v-on="onChange ? { change: onChange } : {}"
                 >
                   <el-option
@@ -117,7 +118,7 @@
                   v-model="formData[sectionName][name]"
                   :type="type || 'text'"
                   :disabled="disabled"
-                  :placeholder="`请输入${label}`"
+                  :placeholder="name === 'no' ? '系统自动添加' : `请输入${label}`"
                   clearable
                 />
               </template>
@@ -125,14 +126,20 @@
           </el-col>
           <el-col :span="12">
             <template v-if="sectionName === 'bindDevice'">
-              设备照片
-              <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
-              <div style="margin-top:20px" class="upload">
+              <div style="line-height:32px;margin-bottom:20px">
+                现场安装照片
+                <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
+              </div>
+              <div class="upload">
                 <el-upload
-                  action="https://jsonplaceholder.typicode.com/posts/"
                   list-type="picture-card"
                   :on-preview="handlePictureCardPreview"
                   :on-remove="handleRemovePic"
+                  multiple
+                  :auto-upload="false"
+                  :file-list="formData.fileList"
+                  :on-change="onFileChange"
+                  action="whatever"
                 >
                   <i class="el-icon-plus"></i>
                 </el-upload>
@@ -159,6 +166,9 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { IPointConnectDevice, IType, ITypeArchive, typeArchivesPage } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
 import { getDefalutNumberProp } from '@/views/monitoring/utils'
+import { telAndMobileReg } from '@/utils/constant'
+import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
+import { imageByName } from '@/api/ftp'
 
 interface FormItem {
   name?: string
@@ -175,7 +185,21 @@ interface FormItem {
   }[]
 }
 
-const defaultFormData = { basis: {}, siteFacility: {}, bindDevice: {} }
+const defaultFormData = () => ({
+  basis: {
+    coordiateX: undefined,
+    coordiateY: undefined,
+    name: '',
+    code: '',
+    psArea: '',
+    siteGroup: '',
+    address: '',
+    note: ''
+  },
+  siteFacility: { facility: '', facilityNote: '' },
+  bindDevice: { typeId: '', deviceId: '', installUser: '', installPhone: '', installTime: '' },
+  fileList: []
+})
 
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointForm extends Vue {
@@ -189,9 +213,12 @@ export default class PointForm extends Vue {
   }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: IPointConnectDevice & { basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'> } = {
-    ...defaultFormData
-  }
+  formData: IPointConnectDevice & {
+    basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'>
+    fileList?: Partial<ElUploadInternalFileDetail>[]
+  } = defaultFormData()
+
+  files: string[] = []
 
   archives: ITypeArchive[] = []
 
@@ -228,14 +255,14 @@ export default class PointForm extends Vue {
         items: [
           { label: '设备类型', name: 'typeId', type: 'select', options: this.types, onChange: this.onTypeChange },
           {
-            label: '设备SN序列',
+            label: '出厂编号',
             name: 'deviceId',
             type: 'select',
             options: this.archives,
             formatter: ({ sn, name }) => (sn ? `${sn} | ${name}` : name || '')
           },
           { label: '安装负责人', name: 'installUser' },
-          { label: '联系方式', name: 'installPhone' },
+          { label: '联系电话', name: 'installPhone', type: 'tel' },
           { label: '安装时间', name: 'installTime', type: 'date' }
         ]
       }
@@ -244,23 +271,23 @@ export default class PointForm extends Vue {
 
   rules = {
     'basis.name': [
-      { required: true, message: '监测点名称不能为空！', trigger: 'blur' },
+      { required: true, message: '监测点名称不能为空！' },
       { type: 'string', max: 50, message: '监测点名称不能超过50个字符' }
     ],
     'basis.code': [{ type: 'string', max: 128, message: '监测点编码不能超过128个字符' }],
     'basis.address': [{ type: 'string', max: 128, message: '地址不能超过128个字符' }],
-    'basis.coordiateX': [{ required: true, message: '经度不能为空', trigger: 'blur' }],
-    'basis.coordiateY': [{ required: true, message: '纬度不能为空', trigger: 'blur' }],
-    'bindDevice.typeId': [{ required: true, message: '请选择设备类型', trigger: 'blur' }],
-    'bindDevice.deviceId': [{ required: true, message: '请选择设备sn码', trigger: 'blur' }],
+    'basis.coordiateX': [{ required: true, message: '经度不能为空' }],
+    'basis.coordiateY': [{ required: true, message: '纬度不能为空' }],
+    'bindDevice.typeId': [{ required: true, message: '请选择设备类型' }],
+    'bindDevice.deviceId': [{ required: true, message: '请选择设备sn码' }],
     'bindDevice.installUser': [
-      { required: true, message: '安装负责人不能为空', trigger: 'blur' },
+      { required: true, message: '安装负责人不能为空' },
       { type: 'string', max: 50, message: '安装负责人不能超过50个字符' }
     ],
     'bindDevice.installPhone': [
-      { required: true, message: '联系方式不能为空！', trigger: 'blur' },
-      { type: 'string', max: 11, message: '联系方式不能超过11个字符' },
-      { pattern: /^1[1-9][0-9]{9}$/, message: '请输入手机号', trigger: 'blur' }
+      { required: true, message: '联系方式不能为空！' },
+      { type: 'string', max: 50, message: '联系方式不能超过50个字符' },
+      { pattern: telAndMobileReg(), message: '请输入正确的联系方式' }
     ],
     'bindDevice.installTime': [{ required: true, message: '请选择安装时间' }],
     'basis.note': [{ type: 'string', required: false, max: 255, message: '备注不能超过255个字符' }]
@@ -278,18 +305,40 @@ export default class PointForm extends Vue {
     }
   }
 
+  onFileChange(file, fileList) {
+    console.log(fileList)
+    const isJPG = file.raw.type === 'image/jpeg'
+    const isPng = file.raw.type === 'image/png'
+    const isLt2M = file.size / 1024 / 1024 < 2
+    let needRemove = false
+    if (!isJPG && !isPng) {
+      this.$message.error('上传图片只能是 JPG/JPEG或png 格式!')
+      needRemove = true
+    }
+    if (!isLt2M) {
+      this.$message.error('上传头像图片大小不能超过 2MB!')
+      needRemove = true
+    }
+    if (fileList.length > 9) {
+      this.$message.error('最多可以上传9张图片!')
+      needRemove = true
+    }
+
+    this.formData.fileList = needRemove ? fileList.filter((item) => item.uid !== file.uid) : [...fileList]
+  }
+
   onSubmit() {
     const form = this.$refs['form'] as any
     form.validate((valid) => {
       if (valid) {
-        const { bindDevice = {}, siteFacility = {}, basis = {} } = this.formData
-        this.$emit('submit', { ...basis, bindDevice, siteFacility })
+        const { bindDevice = {}, siteFacility = {}, basis = {}, fileList } = this.formData
+        this.$emit('submit', { ...basis, bindDevice, siteFacility, fileList: fileList.map(({ raw }) => raw) })
       }
     })
   }
 
   handleRemovePic(file, fileList) {
-    console.log(file, fileList)
+    this.formData.fileList = fileList.filter((item) => item.uid !== file.uid)
   }
 
   handlePictureCardPreview(file) {
@@ -300,15 +349,21 @@ export default class PointForm extends Vue {
   @Watch('data', { immediate: true })
   setDefaultData(val: IPointConnectDevice) {
     const { id, siteFacility = {}, bindDevice = {}, ...rest } = val || {}
-    const { type: typeId, id: deviceId } = (bindDevice || {}).deviceVo || {}
+    const { filePathList, deviceVo } = bindDevice || {}
+    const { type: typeId, id: deviceId } = deviceVo || {}
     typeId && this.onTypeChange(typeId, false)
     this.formData = val.id
       ? {
           basis: { id, ...rest },
           siteFacility: siteFacility || {},
-          bindDevice: { ...(bindDevice || {}), typeId, deviceId }
+          bindDevice: { ...(bindDevice || {}), typeId, deviceId },
+          fileList: (filePathList || []).map((path, index) => ({
+            name: path,
+            url: imageByName(path),
+            uid: +new Date() + index
+          }))
         }
-      : { ...defaultFormData }
+      : defaultFormData()
   }
 }
 </script>
@@ -327,8 +382,8 @@ export default class PointForm extends Vue {
 .upload {
   /deep/ .el-upload-list--picture-card .el-upload-list__item,
   /deep/ .el-upload--picture-card {
-    width: 128px;
-    height: 128px;
+    width: 120px;
+    height: 120px;
   }
   /deep/ .el-upload--picture-card {
     line-height: normal;

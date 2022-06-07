@@ -71,11 +71,11 @@ import { Vue, Component, Prop } from 'vue-property-decorator'
 import { IType, ITypeArchive } from '@/views/monitoring/api'
 
 export interface ILoading {
-  query?: boolean
-  add?: boolean
-  update?: boolean
-  del?: boolean
-  export?: boolean
+  query: boolean
+  add: boolean
+  update: boolean
+  del: boolean
+  export: boolean
 }
 
 export interface IQuery {

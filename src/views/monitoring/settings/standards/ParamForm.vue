@@ -1,58 +1,37 @@
 <template>
-  <BaseDialog width="450px" v-bind="$attrs" v-on="listeners" @submit="onSubmit" top="8vh">
+  <BaseDialog width="450px" v-bind="$attrs" v-on="listeners" @submit="onSubmit" @open="onOpen" top="8vh">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '10em', size: 'medium' }" :model="formData">
       <el-form-item
-        v-for="{ name, label, type, required = true, disabled, rules, names, onChange, options, ...rest } of formItems"
+        v-for="{ name, label, type, required = true, disabled, rules, on = {}, options, ...rest } of formItems"
         :key="name"
         :required="required"
         :label="label"
         :rules="rules"
+        :prop="name"
       >
-        <el-row v-if="name === 'time'" type="flex" justify="space-between">
-          <el-col>
-            <el-form-item :rules="rules[0]" :prop="names[0]">
-              <el-time-select
-                v-model="formData[names[0]]"
-                placeholder="开始时间"
-                size="small"
-                style="width: 100%"
-                clearable
-              />
-            </el-form-item>
-          </el-col>
-          <el-col style="flex:0 0 2em;text-align:center"> ~ </el-col>
-          <el-col>
-            <el-form-item :rules="rules[1]" :prop="names[1]">
-              <el-time-select
-                v-model="formData[names[1]]"
-                placeholder="结束时间"
-                size="small"
-                style="width: 100%"
-                clearable
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <el-time-picker v-if="type === 'timePicker'" v-model="formData[name]" v-bind="rest" v-on="on" />
         <el-select
           v-else-if="type === 'select'"
           v-model="formData[name]"
           :placeholder="`请选择${label}`"
           clearable
           v-bind="rest"
+          v-on="on"
         >
-          <el-option v-for="item of options" :key="item.id || item.value" :value="item.value" :label="item.label" />
+          <el-option v-for="item of options" :key="item.value" :value="item.value" :label="item.label" />
         </el-select>
-        <el-switch v-else-if="type === 'switch'" v-model="formData[name]" v-bind="rest" />
+        <el-switch v-else-if="type === 'switch'" v-model="formData[name]" v-bind="rest" v-on="on" />
         <el-input-number
           v-else-if="type === 'number'"
           v-model="formData[name]"
           controls-position="right"
           :placeholder="`请输入${label}`"
           v-bind="rest"
+          v-on="on"
         />
-        <el-checkbox v-else-if="type === 'checkbox'" v-model="formData[name]" @change="onChange" v-bind="rest">{{
-          label
-        }}</el-checkbox>
+        <el-checkbox v-else-if="type === 'checkbox'" v-model="formData[name]" v-bind="rest" v-on="on">
+          {{ label }}
+        </el-checkbox>
         <el-input
           v-else
           v-model="formData[name]"
@@ -61,6 +40,7 @@
           :disabled="disabled"
           clearable
           v-bind="rest"
+          v-on="on"
         />
       </el-form-item>
     </el-form>
@@ -70,67 +50,102 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import { getDefalutNumberProp } from '@/views/monitoring/utils'
+import { getDefalutNumberProp, settingDeviceTypeParamCols } from '@/views/monitoring/utils'
+import { ElForm } from 'element-ui/types/form'
+import { IDictionary, IStandardParam, ITypeParam, typeParamsPage } from '@/views/monitoring/api'
+import { TableColumn } from 'element-ui/types/table-column'
+import moment from 'moment'
+
+const format = 'HH:mm'
+
+interface IFormData extends IStandardParam {
+  unit?: string
+  range?: string
+  timeRange?: (string | Date)[]
+}
+
+const getDefaultFormData = (): IFormData => ({
+  isPush: 1,
+  isUse: 1,
+  isSpecial: 0,
+  timeRange: [moment('00:00', format).toDate(), moment('23:59', format).toDate()]
+})
+
+const getTime = (time: string | Date) => moment(time, format).format(format)
 
 @Component({ name: 'ParamForm', components: { BaseDialog } })
 export default class ParamForm extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) data!: object
+  @Prop({ type: Object, default: () => ({}) }) data!: IStandardParam
+  @Prop({ type: Array, default: () => [] }) levels!: IDictionary[]
+  @Prop({ type: [String, Number], default: '' }) typeId!: string | number
 
-  @Watch('data', { immediate: true })
-  setDefaultData(val) {
-    const { time = [], display = '1', msg = '1', ...rest } = val || {}
-    this.formData = { ...rest, time, display, msg }
-  }
+  $refs!: { form: ElForm }
+  $listeners: { submit: Function; open: Function }
 
   get listeners() {
-    const { submit, ...rest } = this.$listeners
+    const { submit, open, ...rest } = this.$listeners
     return rest
   }
 
-  formData: { [x: string]: string } = {}
+  formData: IFormData = getDefaultFormData()
 
-  levels = []
+  typeParams: ITypeParam[] = []
+
   get keys() {
     return !this.formData.isSpecial ? ['specialVal'] : ['lower', 'lowerTolerance', 'upper', 'upperTolerance']
   }
+
   get formItems() {
     return [
       {
         label: '参数名称',
-        name: 'name',
+        name: 'deviceTypeParaId',
         type: 'select',
         rules: [{ required: true, message: '请选择参数名称', trigger: 'blur' }],
-        size: 'small'
+        size: 'small',
+        options: this.typeParams.map(({ id: value, name, code }) => ({ value, label: `${name} | ${code}` })),
+        on: { change: this.onTypeParamChange }
       },
       {
         label: '单位',
         name: 'unit',
         required: false,
         disabled: true,
-        rules: [{ type: 'string', max: 10, message: '单位不能超过10个字符' }],
+        size: 'small'
+      },
+      {
+        label: '量程',
+        name: 'range',
+        required: false,
+        disabled: true,
         size: 'small'
       },
       {
         label: '是否特定阈值',
         name: 'isSpecial',
-        type: 'checkbox',
-        rules: [{ required: true, message: '请输入特定阈值' }],
+        type: 'switch',
+        rules: [{ required: true, message: '特定阈值不能为空' }],
         size: 'small',
-        trueLabel: true,
-        falseLabel: false,
-        onChange: this.onIsSpecialChange
+        // trueLabel: 1,
+        // falseLabel: 0,
+        activeValue: 1,
+        inactiveValue: 0,
+        on: { change: this.onIsSpecialChange }
       },
       {
         label: '特定阀值',
         name: 'specialVal',
-        rules: [{ required: true, message: '请输入特定阈值' }],
-        size: 'small'
+        type: 'number',
+        rules: [{ required: true, message: '下限不能为空' }],
+        ...getDefalutNumberProp(),
+        controls: false,
+        precision: 2
       },
       {
         label: '下限',
         name: 'lower',
         type: 'number',
-        rules: [{ required: true, message: '下限不能为空！', trigger: 'blur' }],
+        rules: [{ required: true, message: '下限不能为空' }],
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2
@@ -143,13 +158,13 @@ export default class ParamForm extends Vue {
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2,
-        onChange: () => this.onWarningChange('upperTolerance')
+        on: { change: () => this.onWarningChange('upperTolerance') }
       },
       {
         label: '上限',
         name: 'upper',
         type: 'number',
-        rules: [{ required: true, message: '上限不能为空！', trigger: 'blur' }],
+        rules: [{ required: true, message: '上限不能为空' }],
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2
@@ -162,68 +177,126 @@ export default class ParamForm extends Vue {
         ...getDefalutNumberProp(),
         controls: false,
         precision: 2,
-        onChange: () => this.onWarningChange('lowerTolerance')
+        on: { change: () => this.onWarningChange('lowerTolerance') }
       },
       {
         label: '报警级别',
         name: 'level',
         type: 'select',
-        rules: [{ required: true, message: '报警级别不能为空！' }],
-        options: this.levels,
+        rules: [{ required: true, message: '报警级别不能为空' }],
+        options: this.levels.map(({ codeValue: value, notes: label }) => ({ value, label })),
         size: 'small'
       },
       {
         label: '有效时间',
-        name: 'time',
-        names: ['start', 'end'],
-        rules: [
-          [{ required: true, message: '请选择开始时间' }],
-          [
-            { required: true, message: '请选择结束时间' }
-            // {
-            //   validator: (rule, value, callback) => {
-            //     if (value <= (+this.formData.time[0] || 0)) callback('上限需大于下限')
-            //   }
-            // }
-          ]
-        ],
-        size: 'small'
+        name: 'timeRange',
+        type: 'timePicker',
+        size: 'small',
+        allowControl: true,
+        isRange: true,
+        style: 'width: 100%',
+        clearable: true,
+        startPlaceholder: '开始时间',
+        endPlaceholder: '结束时间',
+        valueFormat: format,
+        format
       },
       {
         label: '是否启用',
-        name: 'display',
+        name: 'isUse',
         type: 'switch',
-        rules: [{ required: true, message: '请选择是否启用' }],
-        activeValue: 'true',
-        inactiveValue: 'false',
+        activeValue: 1,
+        inactiveValue: 0,
         size: 'small'
       },
       {
         label: '是否发送警报消息',
-        name: 'msg',
+        name: 'isPush',
         type: 'switch',
-        rules: [{ required: true, message: '请选择是否发送警报消息' }],
-        activeValue: 'true',
-        inactiveValue: 'false',
+        activeValue: 1,
+        inactiveValue: 0,
         size: 'small'
       }
     ].filter(({ name }) => !this.keys.includes(name))
   }
 
-  onWarningChange(key: string) {
-    this.formData[key] = ''
+  onWarningChange(key: 'upperTolerance' | 'lowerTolerance') {
+    this.formData[key] = undefined
   }
+
   onIsSpecialChange() {
-    this.keys.forEach((key) => this.formData[key] === '')
+    this.keys.forEach((key) => {
+      this.formData[key] = undefined
+    })
   }
+
+  onTypeParamChange(id) {
+    if (!id) return
+    const { unit, lrangeLow, lrangeUp } = this.typeParams.find((item) => item.id === id) || {}
+    this.formData.unit = unit
+    const col = settingDeviceTypeParamCols.find((item) => item.prop === 'lrange') || {}
+    this.formData.range =
+      col.formatter &&
+      col.formatter(
+        {
+          lrangeLow,
+          lrangeUp
+        },
+        col as TableColumn
+      )
+  }
+
   onSubmit() {
-    console.log('submit')
     const form = this.$refs['form'] as any
     form.validate((valid) => {
       if (valid) {
         console.log(JSON.stringify(this.formData, null, 2))
+        const {
+          timeRange: [start, end],
+          unit,
+          range,
+          ...rest
+        } = this.formData
+        this.$emit('submit', { start: getTime(start), end: getTime(end), ...rest })
       }
     })
+  }
+
+  async onOpen(typeId = '') {
+    if (!this.typeId) return
+    try {
+      const {
+        result: { records }
+      } = await typeParamsPage({ typeId, current: 1, size: 9999999 })
+      this.typeParams = records || []
+      const { deviceTypeParaId } = this.data
+      deviceTypeParaId && this.onTypeParamChange(deviceTypeParaId)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  @Watch('data', { immediate: true })
+  setDefaultData(val: IStandardParam) {
+    const { id, isSpecial, isPush, isUse, level, lower, upper, start, end, deviceTypeParaVo, ...rest } = val || {}
+    const { id: deviceTypeParaId } = deviceTypeParaVo || {}
+    this.formData = id
+      ? {
+          id,
+          level: String(level),
+          isPush: Number(isPush),
+          isSpecial: Number(isSpecial),
+          isUse: Number(isUse),
+          lower: lower || undefined,
+          upper: upper || undefined,
+          timeRange: [
+            start ? moment(start, format).toDate() : undefined,
+            end ? moment(end, format).toDate() : undefined
+          ],
+          deviceTypeParaId,
+          ...rest
+        }
+      : getDefaultFormData()
   }
 }
 </script>
