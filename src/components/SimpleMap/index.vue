@@ -75,7 +75,8 @@ export default {
       moveEvent: null,
       showMapLengend: false,
       showLegendBox: true,
-      legendData: []
+      legendData: [],
+      drawer: null,
     }
   },
   methods: {
@@ -196,14 +197,17 @@ export default {
       return features
     },
     draw({ type = 'polygon', callback }) {
-      console.log('绘制')
-      let drawer = new iDraw(this.map, type, {
+      this.drawer && this.drawer.end()
+      this.drawer = new iDraw(this.map, type, {
         endDrawCallBack: feature => {
           drawer.remove()
           callback && callback(feature)
         }
       })
       drawer.start()
+    },
+    clearDraw () {
+      this.drawer && this.drawer.end()
     },
     getDataInMap(data, extent) {
       console.log('管道评估数据', data)

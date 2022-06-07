@@ -806,8 +806,10 @@ export default {
         ids = reportId
         prjNo = projectId
       } else {
-        ids = this.form.report.join('')
-        prjNo = this.form.project
+        if (this.form.report) {
+          ids = this.reportOpt.filter(proj => this.form.report.some(rep => proj.value === rep || proj.label === rep)).map(proj => proj.value).join(',')
+        }
+        prjNo = this.projectOpt.find(proj => proj.value === this.form.project || proj.label === this.form.project).value
       }
       let params = {
         prjNo,

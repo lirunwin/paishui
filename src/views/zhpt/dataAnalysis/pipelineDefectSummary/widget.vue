@@ -277,7 +277,7 @@ export default {
     searchApi() {
       this.pagination.current =1
 
-      this.updateTable(this.searchValue)
+      this.updateTable()
     },
 
     // 分页触发的事件
@@ -290,19 +290,18 @@ export default {
       this.updateTable()
     },
     // 查询数据
-    updateTable(params) {
+    updateTable() {
       let data = {
         current: this.pagination.current,
         size: this.pagination.size
       }
       data.wordInfoState = 1
-      if (params) {
-        data.startPoint = this.searchValue.startPoint
-        data.endPoint = this.searchValue.endPoint
-        data.jcStartDate = this.searchValue.startDate
-        data.jcEndDate = this.searchValue.finishDate
-        data.fixSuggest = this.searchValue.fixSuggest
-      }
+      data.startPoint = this.searchValue.startPoint
+      data.endPoint = this.searchValue.endPoint
+      data.jcStartDate = this.searchValue.startDate
+      data.jcEndDate = this.searchValue.finishDate
+      data.fixSuggest = this.searchValue.fixSuggest
+      
       queryPageDefectInfo(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records

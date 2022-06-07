@@ -916,7 +916,7 @@ export default {
     },
     // 搜索
     searchApi() {
-      this.getDate(this.searchParams)
+      this.getDate()
     },
     // 表格多选事件
     handleSelectionChange(val) {
@@ -934,18 +934,17 @@ export default {
       console.log(`当前页: ${val}`)
     },
     // 查询数据
-    async getDate(params) {
+    async getDate() {
       let data = { ...this.pagination }
       data.wordInfoState = 1
-      console.log('参数', params)
-      if (params) {
-        data.jcStartDate = params.jcDate.startDate
-        data.jcEndDate = params.jcDate.finishDate
-        data.queryParams = params.keyword
-        data.state = params.checkList
-        data.funcClass = params.funcClass
-        data.structClass = params.structClass
-      }
+
+        data.jcStartDate = this.searchParams.jcDate.startDate
+        data.jcEndDate = this.searchParams.jcDate.finishDate
+        data.queryParams = this.searchParams.keyword
+        data.state = this.searchParams.checkList
+        data.funcClass = this.searchParams.funcClass
+        data.structClass = this.searchParams.structClass
+
       console.log('最后传进去的参数', data)
       await queryPageHistory(data).then((res) => {
         // console.log('接口返回', res)

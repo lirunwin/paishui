@@ -897,7 +897,7 @@ export default {
     // 搜索
     searchApi() {
       this.pagination.current = 1
-      this.getDate(this.searchValue)
+      this.getDate()
       // this.searchMap({
       //   funcClass: this.searchValue.funcClass,
       //   structClass: this.searchValue.structClass,
@@ -943,16 +943,14 @@ export default {
       this.multipleSelection = val
     },
     // 查询数据
-    async getDate(params) {
+    async getDate() {
       let data = this.pagination
       data.wordInfoState = 1
-      if (params) {
-        data.jcStartDate = params.testTime.startDate
-        data.jcEndDate = params.testTime.finishDate
-        data.queryParams = params.queryParams
-        data.funcClass = params.funcClass
-        data.structClass = params.structClass
-      }
+        data.jcStartDate = this.searchValue.testTime.startDate
+        data.jcEndDate = this.searchValue.testTime.finishDate
+        data.queryParams = this.searchValue.queryParams
+        data.funcClass = this.searchValue.funcClass
+        data.structClass = this.searchValue.structClass
       await queryPageAssessment(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records

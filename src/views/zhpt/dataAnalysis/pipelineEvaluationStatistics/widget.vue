@@ -64,7 +64,7 @@
                 <el-button size="small" class="serch-btn" type="primary" @click="search"> 查询 </el-button>
                 <el-button size="small" class="serch-btn" type="primary"> 导出 </el-button>
                 <el-button size="small" class="serch-btn" type="primary" @click="drawFeature">绘制范围</el-button>
-                <el-button size="small" class="serch-btn" type="primary">清除绘制</el-button>
+                <el-button size="small" class="serch-btn" type="primary" @click="clearDraw">清除绘制</el-button>
               </div>
             </div>
           </div>
@@ -204,6 +204,10 @@ export default {
     this.getParamsId()
   },
   methods: {
+    clearDraw () {
+      this.hasDraw = false
+      this.$refs.myMap.clearDraw()
+    },
     // 获取字典
     async getParamsId() {
       // 获取字典
@@ -276,19 +280,19 @@ export default {
     },
     // 绘制
     drawFeature() {
+      this.hasDraw = true
       this.$refs.myMap.draw({
         callback: (fea) => {
           this.getDataFromExtent(fea).then((res) => {
-            console.log('这是绘制的数据', res)
             this.getMapData(res)
           })
         }
       })
     },
+    // 地图范围变化
     mapMoveEvent(extent) {
       this.getDataFromExtent(extent).then((res) => {
-        console.log('这是地图移动的数据', res)
-        this.getMapData(res)
+        !this.hasDraw && this.getMapData(res)
       })
     },
     // 查询
@@ -367,8 +371,7 @@ export default {
         )
       }
 
-      mychart.on('legendselectchanged', (e) => {
-        console.log('dianjile', e.name)
+      myChart.on('legendselectchanged', (e) => {
         for (var i = 0; i < option.legend.data.length; i++) {
           var opt = option.legend.data[i]
           if (opt === e.name) {
@@ -379,6 +382,7 @@ export default {
         }
       })
     },
+
     // 动态设置echatrs大小
     setEchatrsMain(main, radius) {
       main.radius = radius
@@ -428,14 +432,16 @@ export default {
         },
         data: this.lengthArr
       }
-      if ((this.pipNum == true && this.pipLen == true) || (this.pipNum == false && this.pipLen == false)) {
-        return [seriesNum, seriesLength]
+
+      let resMain = []
+      if (this.pipNum && this.pipLen) {
+        resMain =  [seriesNum, seriesLength]
+      } else if (this.pipNum) {
+        resMain = [this.setEchatrsMain(seriesNum, [0, '80%'])]
+      } else if (this.pipLen) {
+        resMain = [this.setEchatrsMain(seriesLength, [0, '80%'])]
       }
-      if (this.pipNum) {
-        return [this.setEchatrsMain(seriesNum, [0, '80%'])]
-      } else {
-        return [this.setEchatrsMain(seriesLength, [0, '80%'])]
-      }
+      return resMain
     },
     // 动态加载echatrs(柱状图)
     loadEchatrsBar() {
@@ -463,14 +469,16 @@ export default {
           }
         }
       }
-      if ((this.pipNum == true && this.pipLen == true) || (this.pipNum == false && this.pipLen == false)) {
-        return [seriesNum, seriesLength]
+
+      let resMain = []
+      if (this.pipNum && this.pipLen) {
+        resMain =  [seriesNum, seriesLength]
+      } else if (this.pipNum) {
+        resMain = [seriesNum]
+      } else if (this.pipLen) {
+        resMain = [seriesLength]
       }
-      if (this.pipNum) {
-        return [seriesNum]
-      } else {
-        return [seriesLength]
-      }
+      return resMain
     },
     mapExtent() {
       return this.$store.state.gis.mapExtent
