@@ -199,18 +199,18 @@ export default {
     draw({ type = 'polygon', callback }) {
       this.drawer && this.drawer.end()
       this.drawer = new iDraw(this.map, type, {
+        showCloser: false,
         endDrawCallBack: feature => {
-          drawer.remove()
+          this.drawer.remove()
           callback && callback(feature)
         }
       })
-      drawer.start()
+      this.drawer.start()
     },
     clearDraw () {
       this.drawer && this.drawer.end()
     },
     getDataInMap(data, extent) {
-      console.log('管道评估数据', data)
       let that = this
       // 无范围 默认全图
       if (!extent) {

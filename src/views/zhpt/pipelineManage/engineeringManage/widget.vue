@@ -681,8 +681,16 @@ export default {
           // 获取入库人id和名称
           this.form.createUserId = sessionStorage.getItem('userId') * 1
           this.form.createUserName = sessionStorage.getItem('username')
+          let data = {}
+          for (let key in this.form) {
+            if (this.form[key] === null) {
+              data[key] = ''
+            } else {
+              data[key] = this.form[key]
+            }
+          }
           if (this.isEdit) {
-            res = await changeInfo(this.form)
+            res = await changeInfo(data)
           } else {
             res = await addData(this.form)
           }

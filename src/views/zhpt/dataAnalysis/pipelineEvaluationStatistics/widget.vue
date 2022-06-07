@@ -181,7 +181,8 @@ export default {
         jcStartDate: '',
         jcEndDate: '',
         checkSuggest: ''
-      }
+      },
+      hasDraw: false
     }
   },
   mounted() {
@@ -396,7 +397,6 @@ export default {
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            console.log('标题参数', a)
             return `（${a['data']['name']}）数量:${a['data']['value']}   `
           }
         },
@@ -417,7 +417,6 @@ export default {
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            console.log('标题参数', a)
             return `（${a['data']['name']}）长度:${a['data']['value']}   `
           }
         },
@@ -452,7 +451,6 @@ export default {
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            console.log('标题参数', a)
             return `（${a['data']['name']}）数量:${a['data']['value']}   `
           }
         }
@@ -464,7 +462,6 @@ export default {
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            console.log('标题参数', a)
             return `（${a['data']['name']}）长度:${a['data']['value']}   `
           }
         }
