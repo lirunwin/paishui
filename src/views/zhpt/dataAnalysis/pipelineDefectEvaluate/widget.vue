@@ -61,11 +61,11 @@
             <el-option v-for="item in echartsData" :key="item.name" :label="item.name" :value="item.name"> </el-option>
           </el-select>
           <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 查询 </el-button>
-          <el-button class="serch-btn" type="primary"> 导出 </el-button>
+          <el-button class="serch-btn" type="primary" @click="getPdf('管道缺陷评价统计')"> 导出 </el-button>
         </div>
         <div class="right-btn"></div>
       </div>
-      <div class="content">
+      <div id="pdfDom" class="content">
         <div id="mainE" style="height: 500px"></div>
         <div style="border: 1px solid #ccc">
           <div class="detailsTitle">管道缺陷评价统计表</div>

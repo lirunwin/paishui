@@ -204,8 +204,7 @@ export default {
         // console.log('缺陷类型统计图新的echartsData', this.echartsData)
         this.initData()
       },
-      deep: true,
-      immediate: true
+      deep: true
     }
   },
 }

@@ -189,6 +189,7 @@
           <el-form-item label="附件:">
             <!-- action="http://192.168.2.78:1111/psjc/pipeState/pipeStateUpload" -->
             <el-upload
+              :on-success="uploadSuccess"
               v-show="!isDetails"
               show-file-list
               ref="updataDocx"
@@ -452,6 +453,11 @@ export default {
     this.simplifyRules()
   },
   methods: {
+    uploadSuccess (file, fileList) {
+      if (fileList.response.result[0].flag === 'fail') {
+        this.$message.error(fileList.response.result[0].msg)
+      }
+    },
     // 确认删除附件
     async removeFlieDatas() {
       let id = this.currentFlie.id
@@ -656,7 +662,7 @@ export default {
       }
     },
     // 上传触发的方法
-    beforeUpload() {
+    beforeUpload(event, file, fileList) {
       console.log('附件列表', this.fileList)
     },
     handleExceed(files, fileList) {
@@ -705,6 +711,7 @@ export default {
           }
           if (this.isEdit) {
             if (res.result) {
+              console.log('修改成功')
               this.$message({
                 message: '修改成功',
                 type: 'success'

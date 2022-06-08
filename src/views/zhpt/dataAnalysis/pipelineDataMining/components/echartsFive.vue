@@ -27,8 +27,7 @@ export default {
         console.log('缺陷等级统计图新的echartsData', this.paramData)
         this.initData()
       },
-      deep: true,
-      immediate: true
+      deep: true
     }
   },
   computed: {},
@@ -39,6 +38,7 @@ export default {
   methods: {
     // 处理缺陷数据
     setDefectData() {
+      this.echartsData = this.paramData
       let arr = this.echartsData.map((v) => {
         return {
           name: v.checkSuggest,
@@ -66,9 +66,7 @@ export default {
       // console.log('渲染管道检测情况统计图')
       let chartDom = document.getElementById('echartsFive')
       let myChart = echarts.init(chartDom)
-      let option
-
-      option = {
+      let option = {
         tooltip: {
           trigger: 'item'
         },

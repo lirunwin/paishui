@@ -45,11 +45,9 @@ export default {
     paramData: {
       handler(nv, ov) {
         this.echartsData = nv
-        console.log('缺陷等级统计图新的echartsData', this.paramData)
         this.setDefectData()
       },
-      deep: true,
-      immediate: true
+      deep: true
     }
   },
   computed: {},
