@@ -394,6 +394,9 @@ export default class Header extends Vue {
     this.$store.commit('map/RESET_ALL')
     //
     this.$store.state.gis.activeHeaderItem = this.defaultActiveIndex
+
+    //大屏跳转
+    if(event.name=='bigScreen') this.$router.push('/bigScreen')
   }
   // scrollPrev() {
   //   this.$refs.navScroll.$el.scrollLeft = 0;

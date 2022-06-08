@@ -8,10 +8,10 @@
     <!--头部菜单模块-->
     <Header/>
     <!--监测中心模块-->
-    <ELPWLMStatistic :show="showMonitoringCenter" :fontSize="fontSize"/>
-    <PNLLMonitoring :show="showMonitoringCenter" />
-    <ELPVmonitoring :show="showMonitoringCenter" />
-    <MMIStatistic :show="showMonitoringCenter" />
+    <ELPWLMStatistic :show="showMonitoringCenter" :fontSize="fontSize"/><!--左侧模块-->
+    <PNLLMonitoring :show="showMonitoringCenter" />                     <!--底部模块-->
+    <ELPVmonitoring :show="showMonitoringCenter" />                     <!--右侧模块-->
+    <MMIStatistic :show="showMonitoringCenter" />                       <!--中部模块-->
     <!--数据总览模块-->
     <PNIARStatistic :show="showOverviewData" :fontSize="fontSize"/>
     <WFStatistic :show="showOverviewData" />
