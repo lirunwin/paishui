@@ -33,7 +33,7 @@
           :inactive-value="0"
           :value="Number(row.isConfigured)"
           size="small"
-          style="user-select:none"
+          style="user-select: none"
         />
       </template>
       <template v-for="(_, index) of points" v-slot:[`status-${index}`]="{ row }">
@@ -43,7 +43,7 @@
           :inactive-value="2"
           :value="Number(row.status)"
           size="small"
-          style="user-select:none"
+          style="user-select: none"
           @change="() => onEnableSwitch(row)"
         />
       </template>
@@ -300,7 +300,6 @@ export default class MonitoringPoints extends Vue {
     this.selected = [...selections]
   }
 
-  /** 没有查询全部类型的接口, 暂用分页接口 */
   async getAllTypes() {
     try {
       const {

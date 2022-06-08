@@ -176,10 +176,10 @@ export const settingIconCols: ColItem[] = [
 /**监测点管理 - 监控台 */
 export const settingMonitorCols: ColItem[] = [
   { type: 'index', label: '序号', width: '50px' },
-  { prop: 'name', label: '监测分组', width: '80px' },
-  { prop: 'code', label: '监测站点', width: '80px' },
-  { prop: 'unit', label: '地址' },
-  { prop: 'action', label: '操作', width: '80px', _slot: true }
+  { prop: 'siteGroup', label: '监测分组', width: '80px' },
+  { prop: 'name', label: '监测站点', minWidth: '120px', ...alignLeft() },
+  { prop: 'address', label: '地址', minWidth: '150px', ...alignLeft() },
+  { prop: 'action', fixed: 'right', label: '操作', width: '80px', _slot: true }
 ]
 
 /**监测点管理 - 监测参数基本设置 */
@@ -217,21 +217,6 @@ export const settingPointParamCols: ColItem[] = [
   { prop: 'time', label: '有效时段', _slot: true, width: '140px' },
   { prop: 'isPush', label: '消息推送', _slot: true, width: '80px' },
   { prop: 'action', label: '操作', _slot: true, width: '50px', fixed: 'right' }
-]
-
-export const monitorStates = [
-  { name: 'normal', label: '正常', color: '#333333' },
-  { name: 'offline', label: '离线', color: 'rgba(51,51,51,0.6)' },
-  { name: 'warning', label: '报警', color: '#F65252' }
-]
-
-export const monitorResultStates = [
-  { name: 'normal', label: '正常', color: '#333333' },
-  { name: 'good', label: '优质', color: '#06B64C' },
-  { name: 'light', label: '轻度', color: '#E29F3B' },
-  { name: 'medium', label: '中度', color: '#F25FFF' },
-  { name: 'heavy', label: '严重', color: '#F65252' },
-  { name: 'invalid', label: '无效', color: 'rgba(51,51,51,0.6)' }
 ]
 
 export const monitorPointsCols: ColItem[] = [

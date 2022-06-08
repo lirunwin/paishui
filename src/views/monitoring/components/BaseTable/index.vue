@@ -3,7 +3,7 @@
     <el-table class="table" v-on="$listeners" v-bind="{ ...defaultAttrs, ...attrs }" :style="style">
       <template slot="empty">
         <img src="@/assets/icon/null.png" alt="" />
-        <p style="margin-top:-7px">暂无数据</p>
+        <p style="margin-top: -7px">暂无数据</p>
       </template>
       <template v-for="{ prop, type, _slot, ...col } of columns">
         <template v-if="_slot">
@@ -26,11 +26,14 @@
     <el-pagination
       v-if="pagination && pagination.total > 0"
       class="pagination"
-      :current-page="pagination.current"
-      :page-sizes="pageSizes"
-      :page-size="pagination.size"
-      :total="pagination.total"
-      layout="total, sizes, prev, pager, next, jumper"
+      v-bind="{
+        pageSizes: pageSizes,
+        total: pagination.total,
+        ...pagination,
+        currentPage: pagination.currentPage || pagination.current,
+        pageSize: pagination.pageSize || pagination.size,
+        layout: pagination.layout || 'total, sizes, prev, pager, next, jumper'
+      }"
       @size-change="($event) => onPageChange($event, 'size')"
       @current-change="($event) => onPageChange($event, 'current')"
     />
@@ -41,6 +44,7 @@ import { ElTable } from 'element-ui/types/table'
 import { ElTableColumn } from 'element-ui/types/table-column'
 import Vue, { PropType } from 'vue'
 import { pageSizes } from '@/utils/constant'
+import { ElPagination } from 'element-ui/types/pagination'
 
 interface IPagination {
   current?: string | number
@@ -56,7 +60,7 @@ export default Vue.extend({
   inheritAttrs: false,
   props: {
     columns: { type: Array as PropType<ICol[]> },
-    pagination: { type: Object as PropType<IPagination> }
+    pagination: { type: Object as PropType<ElPagination & IPagination> }
   },
   data() {
     return {

@@ -3,14 +3,14 @@
     <div slot="header" class="info-card-title">
       <span>童家河入河口水质监测点</span>
       <div>
-        <el-button type="text" icon="el-icon-map-location" style="height:1.2em;padding:0;" />
+        <el-button type="text" icon="el-icon-map-location" style="height: 1.2em; padding: 0" />
         <el-button
           type="text"
           icon="el-icon-s-tools"
           @click="() => $emit('distribute', info)"
-          style="height:1.2em;padding:0;"
+          style="height: 1.2em; padding: 0"
         />
-        <el-button type="text" icon="el-icon-data-line" style="height:1.2em;padding:0;" />
+        <el-button type="text" icon="el-icon-data-line" style="height: 1.2em; padding: 0" />
       </div>
     </div>
     <h3 class="type">报警</h3>
@@ -50,10 +50,7 @@ export default class InfoCard extends Vue {
     address?: string
     car?: string
   }
-  arrow: {
-    up: '&uarr;'
-    down: '&darr;'
-  }
+  arrow = { up: '&uarr;', down: '&darr;' }
 }
 </script>
 

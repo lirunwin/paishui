@@ -17,7 +17,7 @@
         <el-col>
           <el-form-item label="缓冲距离">
             <el-row type="flex">
-              <el-col><el-input v-model.number="query.distance"/></el-col><el-col style="padding: 0 20px">公里</el-col>
+              <el-col><el-input v-model.number="query.distance" /></el-col><el-col style="padding: 0 20px">公里</el-col>
             </el-row>
           </el-form-item>
         </el-col>
@@ -35,10 +35,9 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import { monitorStates } from '@/views/monitoring/utils'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
-import { settingMonitorCols, monitorResultStates } from '@/views/monitoring/utils'
+import { settingMonitorCols } from '@/views/monitoring/utils'
 import RouteCard from '@/views/monitoring/monitor/components/RouteCard/index.vue'
 
 @Component({ name: 'Monitor', components: { BaseTitle, BaseTable, RouteCard } })
@@ -52,7 +51,6 @@ export default class Monitor extends Vue {
   } = { state: [] }
 
   monitoring = false
-  monitorStates = monitorStates
   settingMonitorCols = settingMonitorCols
 
   selected = { standard: [], param: [] }
@@ -109,7 +107,7 @@ export default class Monitor extends Vue {
   ]
 
   rowStyle({ row }) {
-    return { color: (monitorResultStates.find((item) => item.name === row.state) || {}).color }
+    return { color: '' }
   }
 }
 </script>

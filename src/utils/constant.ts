@@ -48,3 +48,5 @@ export const getDistance = ([lat1, lng1]: number[], [lat2, lng2]: number[]): num
   s = Math.round(s * 10000) / 10000
   return s
 }
+
+export const monitorAutoRefreshInterval = 3000

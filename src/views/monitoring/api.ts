@@ -732,6 +732,7 @@ export const getPointConfigurations = (monitorId: string | number) =>
       siteDeviceParas: IPointThreshold[]
     }>
   >({ url: uris.settings.points.configurations, method: 'get', params: { monitorId } })
+
 export interface IMonitorItem {
   address: string
   code: string
@@ -762,10 +763,19 @@ export interface IMonitorItemDetail {
   status: string
 }
 
-export const monitorItemsPage = (params: Partial<IMonitorItem & IQueryCommon>) =>
-  axios.request<IRes<IMonitorItem[]>>({ url: uris.monitor.index.page, method: 'get', params })
+export interface IMonitorItemSummary {
+  label: '在线' | '离线' | '报警'
+  total: number
+  code: string
+}
 
-export const monitorItemsSummary = async (params: Partial<IMonitorItem & IQueryCommon>) => {
+export const monitorItemsPage = (
+  params: Partial<IMonitorItem & IQueryCommon & { monitorStatus: string; queryStr: string }>
+) => axios.request<IRes<IMonitorItem[]>>({ url: uris.monitor.index.page, method: 'get', params })
+
+export const monitorItemsSummary = async (
+  params: Partial<IMonitorItem & IQueryCommon & { monitorStatus: string; queryStr: string }>
+): Promise<IMonitorItemSummary[]> => {
   const {
     result: { data, title }
   } = await axios.request<
@@ -775,7 +785,7 @@ export const monitorItemsSummary = async (params: Partial<IMonitorItem & IQueryC
     }>
   >({ url: uris.monitor.index.summary, method: 'get', params })
   return title.map(({ code, value: label }) => {
-    return { label, total: (data.find((item) => item.status === code) || {}).total || 0 }
+    return { label, code, total: (data.find((item) => item.status === code) || {}).total || 0 }
   })
 }
 
