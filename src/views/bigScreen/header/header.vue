@@ -12,8 +12,8 @@
                 </div>
                 <div class="menu">
                     <ul class="main">
-                        <li v-for="item in menuList" :key="item.id">
-                            <a  :id='item.id' 
+                        <li v-for="item in menuList" :key="item.name">
+                            <a  :name='item.name' 
                             :class="(currentActive===item.label)?'pick-on':''"
                             @click="currentActive=item.label"
                             >{{item.label}}</a>
@@ -32,13 +32,14 @@
 
 <script>
 import Config from './config.json'
+import { getUserMenu } from '@/api/user'
 export default {
     name:"bigScreenHeader",//大屏头部菜单栏
     data(){
         return{
             title:null,//标题
             menuList:[],//菜单栏配置
-            currentActive:'数据总览',//当前激活模块
+            currentActive:'',//当前激活模块
             specificTime:null,//系统当前时间
         }
     },
@@ -48,8 +49,9 @@ export default {
         }
     },
     mounted(){
+        this.getUserActiveModule();
         this.title=this.config.title
-        this.menuList=this.config.menuList
+        // this.menuList=this.config.menuList
         this.showCurrentTime()
     },
     watch:{
@@ -61,6 +63,24 @@ export default {
         }
     },
     methods:{
+        //获取用户激活模块
+        getUserActiveModule(){
+            const userId = sessionStorage.getItem('userId') || this.$store.state.user.userId
+            getUserMenu(userId)
+            .then((res) => {
+                let arr = res.result.filter((item)=>item.type ==='bigScreen')
+                arr[0].childrens.forEach(item => {
+                    this.menuList.unshift({
+                        name:item.name,
+                        label:item.label
+                    })
+                    this.currentActive=this.menuList[0].label
+                });
+            })
+            .catch((err) => {
+                console.log(err)
+            })
+        },
         //进入系统
         enterSys(){
             this.$router.push({ path: '/' })
