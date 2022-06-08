@@ -211,6 +211,7 @@ export default {
       this.drawer && this.drawer.end()
     },
     getDataInMap(data, extent) {
+      console.log('查询数据')
       let that = this
       // 无范围 默认全图
       if (!extent) {
@@ -313,7 +314,6 @@ export default {
     },
     //
     getDefectDataInMap(data, extent) {
-      console.log('管道分析数据', data)
       let that = this
       // 无范围 默认全图
       if (!extent) {

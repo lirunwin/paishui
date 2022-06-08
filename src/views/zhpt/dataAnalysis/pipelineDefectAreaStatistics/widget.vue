@@ -23,49 +23,71 @@
                 <el-row style="display: flex; justify-content: center; align-items: center">
                   <el-col :span="11">
                     <el-date-picker
-                      v-model="searchValue.startDate"
+                      v-model="searchValue.jcStartDate"
                       type="date"
                       placeholder="选择开始日期"
                       value-format="yyyy-MM-dd"
                       size="small"
-                      :picker-options="pickerOptions0"
-                      @change="changeDate"
+                      :picker-options="sOpition"
+                      @change="sDateChange"
                     ></el-date-picker>
                   </el-col>
                   <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
                   <el-col :span="12">
                     <el-date-picker
-                      v-model="searchValue.finishDate"
+                      v-model="searchValue.jcEndDate"
                       type="date"
                       placeholder="选择结束日期"
                       value-format="yyyy-MM-dd"
                       size="small"
-                      :picker-options="pickerOptions1"
-                      @change="changeDate"
+                      :picker-options="eOpition"
+                      @change="eDateChange"
                     ></el-date-picker>
                   </el-col>
                 </el-row>
               </div>
             </div>
+
             <div class="serch-engineering">
-              <div class="title">整改建议：</div>
-              <el-select size="small" clearable v-model="searchValue.fixSuggest" placeholder="选择建议">
+              <div class="title">起始井号</div>
+               <el-input
+                size="small"
+                placeholder="请输入起始井号"
+                v-model="searchValue.startPoint"
+                clearable
+                style="margin: 0 10px;width:150px"
+              ></el-input>
+            </div>
+            <div class="serch-engineering">
+              <div class="title">终止井号</div>
+               <el-input
+                width='150px'
+                size="small"
+                placeholder="请输入终止井号"
+                v-model="searchValue.endPoint"
+                clearable
+                style="margin: 0 10px;width:150px"
+              ></el-input>
+            </div>
+            <div class="serch-engineering">
+              <div class="title">缺陷等级：</div>
+              <el-select size="small" clearable v-model="searchValue.defectLevel" placeholder="选择建议">
                 <el-option
-                  v-for="item in fixSuggestList"
-                  :key="item.codeValue"
-                  :label="item.codeValue"
-                  :value="item.codeValue"
+                  v-for="item in defectLevels"
+                  :key="item"
+                  :label="item"
+                  :value="item"
                 >
                 </el-option>
               </el-select>
             </div>
             <div class="operation-box">
               <div class="serch-engineering">
-                <el-button class="serch-btn" type="primary"> 查询 </el-button>
-                <el-button class="serch-btn" type="primary" @click="getPdf('管道评估统计')"> 导出 </el-button>
+                <el-button class="serch-btn" type="primary" @click="drawFeature"> 范围 </el-button>
+                <el-button class="serch-btn" type="primary"  @click="clearDraw"> 清除 </el-button>
+                <el-button class="serch-btn" type="primary" @click="searchData"> 查询 </el-button>
+                <el-button class="serch-btn" type="primary" @click="getPdf('管道区域缺陷统计')"> 导出 </el-button>
                 <!-- <el-button class="serch-btn" type="primary" > 导出 </el-button> -->
-                <el-button class="serch-btn" type="primary" @click="drawFeature"> 绘制范围 </el-button>
-                <el-button class="serch-btn" type="primary"> 清除绘制 </el-button>
               </div>
             </div>
           </div>
@@ -78,8 +100,8 @@
               <el-radio v-model="radio" label="1">饼状图</el-radio>
               <el-radio v-model="radio" label="2">柱状图</el-radio>
               <el-checkbox v-model="checkDefectType">缺陷类型</el-checkbox>
-              <el-checkbox v-model="checkDefectName">类型名称</el-checkbox>
               <el-checkbox v-model="checkDefectLevel">缺陷等级</el-checkbox>
+              <el-checkbox v-model="checkDefectName">缺陷名称</el-checkbox>
             </div>
             <div id="pdfDom" style="padding: 10px">
               <h2 style="text-align: center">管道缺陷区域统计图</h2>
@@ -126,16 +148,34 @@ export default {
       typeArr: [], // 建议类型数组
       numArr: [], // 管道数量
       lengthArr: [], // 管道长度
-      radio: '2', // 单选框的值
+      radio: '1', // 单选框的值
       searchValue: {
-        startDate: '',
-        finishDate: '',
-        fixSuggest: ''
-        // 检测日期
-      }, // 搜索关键字的值
+        jcStartDate: '',
+        jcEndDate: '',
+        startPoint: '',
+        endPoint: '',
+        defectLevel: ''
+      },
+      defectLevels: ['一级', '二级', '三级', '四级'],
       // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.jcEndDate) {
+            return time > new Date(this.searchValue.jcEndDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.jcStartDate) {
+            return time < new Date(this.searchValue.jcStartDate).getTime() || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
       defectQuantityStatisticsA: [
         { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
         { title: '(BX)变形', type: 'BX', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
@@ -157,7 +197,6 @@ export default {
         { title: '(ZW)障碍物', type: 'ZW', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
       ],
       defectSumObj: { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }, // 合计
-      pageData: [],
       contentEchatrs: [],
       allArr: [
         {
@@ -183,13 +222,9 @@ export default {
       ],
       echartsTitle: [],
       echartsData: [],
+      // 
+      hasDraw: false,
 
-      // 筛选条件
-      filter: {
-        jcStartDate: '',
-        jcEndDate: '',
-        checkSuggest: ''
-      }
     }
   },
 
@@ -197,12 +232,10 @@ export default {
     this.$nextTick(() => {
       // this.initData()
     })
-    this.$refs.myMap.showLegend('testReport', true)
-    console.log('this.setOptionShowNum', this.setOptionShowNum)
-    console.log('this.setOptionShowLen', this.setOptionShowLen)
+    this.$refs.myMap && this.$refs.myMap.showLegend('testReport', true)
   },
   destroyed() {
-    this.$refs.myMap.showLegend('testReport', false)
+    this.$refs.myMap && this.$refs.myMap.showLegend('testReport', false)
     this.data.that.clearMap()
   },
   beforeCreate() {
@@ -210,40 +243,28 @@ export default {
     // document.getElementById('mainPDAS').removeAttribute('_echarts_instance_')
   },
   created() {
-    this.getParamsId()
   },
   methods: {
     // 获取字典
     async getParamsId() {
-      // 获取字典
       // check_suggest
       let checkSuggest = await queryDictionariesId({ keys: 'check_suggest' })
       this.fixSuggestList = checkSuggest.result.check_suggest
       console.log('checkSuggest', checkSuggest.result.check_suggest)
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
-      if (!this.searchValue.startDate) {
-        this.searchValue.startDate = this.searchValue.finishDate
+    sDateChange(t) {
+      if (!this.searchValue.jcEndDate) {
+        this.$nextTick(() => {
+          this.searchValue.jcEndDate = this.searchValue.jcStartDate
+        })
       }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.startDate).getTime()
-      let date2 = new Date(this.searchValue.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
+    },
+    eDateChange(t) {
+      if (!this.searchValue.jcStartDate) {
+        this.$nextTick(() => {
+          this.searchValue.jcStartDate = this.searchValue.jcEndDate
+        })
       }
     },
     // 处理地图给的数据
@@ -252,8 +273,23 @@ export default {
         this.loading = false
       }
       let arr = res.defectData
-      this.pageData = arr
-      console.log('0202002arr', arr)
+
+      // 数据清零
+      this.defectQuantityStatisticsA.forEach(item => {
+        item.oneValue = 0
+        item.twoValue = 0
+        item.threeValue = 0
+        item.fourValue = 0
+        item.value = 0
+      })
+      this.defectQuantityStatisticsB.forEach(item => {
+        item.oneValue = 0
+        item.twoValue = 0
+        item.threeValue = 0
+        item.fourValue = 0
+        item.value = 0
+      })
+      this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }
       // 按缺陷名称给数据分类
       // 缺陷数量统计
       if (arr) {
@@ -262,36 +298,27 @@ export default {
             // console.log("类型是否相等",typeof resValue.defectCode,sumValue.type);
             if (resValue.defectCode == sumValue.type) {
               if (resValue.defectLevel == '一级') {
-                sumValue.oneValue = resValue.defectNum * 1
-                return
+                sumValue.oneValue += 1
               } else if (resValue.defectLevel == '二级') {
-                sumValue.twoValue = resValue.defectNum * 1
-                return
+                sumValue.twoValue += 1
               } else if (resValue.defectLevel == '三级') {
-                sumValue.threeValue = resValue.defectNum * 1
-                return
+                sumValue.threeValue += 1
               } else if (resValue.defectLevel == '四级') {
-                sumValue.fourValue = resValue.defectNum * 1
-                return
+                sumValue.fourValue += 1
               }
-              console.log('defectQuantityStatisticsA', this.defectQuantityStatisticsA)
             }
           })
 
           this.defectQuantityStatisticsB.forEach((sumValue) => {
             if (resValue.defectCode == sumValue.type) {
               if (resValue.defectLevel == '一级') {
-                sumValue.oneValue = resValue.defectNum
-                return
+                sumValue.oneValue += 1
               } else if (resValue.defectLevel == '二级') {
-                sumValue.twoValue = resValue.defectNum
-                return
+                sumValue.twoValue += 1
               } else if (resValue.defectLevel == '三级') {
-                sumValue.threeValue = resValue.defectNum
-                return
+                sumValue.threeValue += 1
               } else if (resValue.defectLevel == '四级') {
-                sumValue.fourValue = resValue.defectNum
-                return
+                sumValue.fourValue += 1
               }
             }
           })
@@ -314,9 +341,6 @@ export default {
           this.defectSumObj.total += v.value
         })
       }
-
-      // console.log('returnTabel', this.returnTabel)
-      console.log('数据处理完了')
       this.loading = false
       this.$nextTick(() => {
         this.initData()
@@ -324,26 +348,29 @@ export default {
     },
     // 绘制
     drawFeature() {
+      this.hasDraw = true
       this.$refs.myMap.draw({
         callback: (fea) => {
           this.getDataFromExtent(fea).then((res) => {
-            console.log('这是绘制的数据', res)
             this.getMapData(res)
           })
         }
       })
     },
+    // 清除
+    clearDraw () {
+      this.hasDraw = false
+      this.$refs.myMap && this.$refs.myMap.clearDraw()
+    },
     // 地图移动
     mapMoveEvent(extent) {
       this.getDataFromExtent(extent).then((res) => {
-        console.log('这是地图移动的数据', res)
         this.getMapData(res)
       })
     },
     // 查询
-    search() {
+    searchData () {
       this.getDataFromExtent().then((res) => {
-        console.log('这是查询的数据', res)
         this.getMapData(res)
       })
     },
@@ -359,13 +386,11 @@ export default {
       let params = {
         startPoint: '',
         endPoint: '',
-        funcClass: '',
-        structClass: '',
         jcStartDate: '',
         jcEndDate: '',
-        checkSuggest: '',
         wordInfoState: "1",
-        ...this.filter
+        defectLevel: '',
+        ...this.searchValue
       }
       return getDefectDataBySE(params)
     },
@@ -401,7 +426,7 @@ export default {
             legend: {},
             xAxis: {
               type: 'category',
-              data: this.typeArr
+              data: ['一级', '二级', '三级', '四级']
             },
             yAxis: {
               type: 'value'
@@ -421,8 +446,17 @@ export default {
   computed: {
     // 动态加载echatrs(饼图)
     loadEchatrsPie() {
+      let allData = [...this.defectQuantityStatisticsA, ...this.defectQuantityStatisticsB]
+      // 类型
+      let typeData = [
+        { name: '结构性缺陷', value: 0 },
+        { name: '功能性缺陷', value: 0 },
+        // { name: '正常', value: 0 }
+      ]
+      typeData[0].value = this.defectQuantityStatisticsA.map(item => item.value).reduce((prev, next) => prev + next, 0)
+      typeData[1].value = this.defectQuantityStatisticsB.map(item => item.value).reduce((prev, next) => prev + next, 0)
+
       let seriesType = {
-        name: '缺陷类型统计',
         type: 'pie',
         selectedMode: 'single',
         radius: [0, '25%'],
@@ -433,19 +467,39 @@ export default {
         labelLine: {
           show: false
         },
-        data: this.contentEchatrs
+        data: typeData
       }
-      let seriesName = {
+
+      // 级别
+      let levelData = [
+        { name: '1级', Lname: '一级', value: 0 },
+        { name: '2级', Lname: '二级', value: 0 },
+        { name: '3级', Lname: '三级', value: 0 },
+        { name: '4级', Lname: '四级', value: 0 }
+      ]
+      allData.forEach(item => {
+        levelData[0].value += item.oneValue
+        levelData[1].value += item.twoValue
+        levelData[2].value += item.threeValue
+        levelData[3].value += item.fourValue
+      })
+      let seriesLevel = {
         type: 'pie',
         radius: ['30%', '45%'],
         label: {
           position: 'inner',
           fontSize: 12
         },
-        data: this.allArr
+        data: levelData
       }
 
-      let seriesLevel = {
+      // 缺陷名称
+      let defectData = allData.filter(item => {
+        return item.oneValue + item.twoValue + item.threeValue + item.fourValue > 0
+      }).map(item => {
+        return { name: item.title, value: item.oneValue + item.twoValue + item.threeValue + item.fourValue }
+      })
+      let seriesName= {
         type: 'pie',
         radius: ['55%', '65%'],
         label: {
@@ -469,76 +523,120 @@ export default {
             }
           }
         },
-        data: this.echartsData
+        data: defectData
       }
 
       let arr = [this.checkDefectType, this.checkDefectName, this.checkDefectLevel]
-      if (arr.every((v) => v == true) || arr.every((v) => v == false)) {
+      if (arr.every(v => v)) {
         return [seriesType, seriesName, seriesLevel]
       }
+
       // 判断条件
       let condition1 = !this.checkDefectType && this.checkDefectName && this.checkDefectLevel
       let condition2 = this.checkDefectType && !this.checkDefectName && this.checkDefectLevel
       let condition3 = this.checkDefectType && this.checkDefectName && !this.checkDefectLevel
       let condition4 = !this.checkDefectType && !this.checkDefectName && this.checkDefectLevel
       let condition5 = this.checkDefectType && !this.checkDefectName && !this.checkDefectLevel
+      let condition6 = !this.checkDefectType && this.checkDefectName && !this.checkDefectLevel
 
       if (condition1) {
-        return [this.setEchatrsMain(seriesName, [0, '45%']), seriesLevel]
+        return [this.setEchatrsMain(seriesLevel, [0, '45%']), this.setEchatrsMain(seriesName, ['55%', '65%'])]
       } else if (condition2) {
-        return [this.setEchatrsMain(seriesType, [0, '45%']), seriesLevel]
+        return [this.setEchatrsMain(seriesType, [0, '45%']), this.setEchatrsMain(seriesLevel, ['55%', '65%'])]
       } else if (condition3) {
-        return [seriesType, this.setEchatrsMain(seriesName, ['30%', '65%'])]
+        return [this.setEchatrsMain(seriesType, [0, '45%']), this.setEchatrsMain(seriesName, ['55%', '65%'])]
       } else if (condition4) {
         return [this.setEchatrsMain(seriesLevel, [0, '65%'])]
       } else if (condition5) {
         return [this.setEchatrsMain(seriesType, [0, '65%'])]
+      } else if (condition6) {
+        return [this.setEchatrsMain(seriesName, [0, '65%'])]
       } else {
-        return [seriesType, seriesName, seriesLevel]
+        return []
       }
     },
     // 动态加载echatrs(柱状图)
     loadEchatrsBar() {
-      let seriesType = {
-        name: '缺陷类型统计',
-        type: 'bar',
-        data: this.contentEchatrs,
-        tooltip: {
-          trigger: 'item',
-          formatter: function (a) {
-            // console.log('标题参数', a)
-            return `（${a['data']['name']}）类型:${a['data']['value']}   `
-          }
-        }
-      }
-      let seriesName = {
-        name: '缺陷同等级数量统计',
-        type: 'bar',
-        data: this.allArr,
-        tooltip: {
-          trigger: 'item',
-          formatter: function (a) {
-            // console.log('标题参数', a)
-            return `（${a['data']['name']}）数量:${a['data']['value']}   `
-          }
-        }
-      }
+      let allData = [...this.defectQuantityStatisticsA, ...this.defectQuantityStatisticsB]
+      // 缺陷等级数据
+      let leveldata = [0, 0, 0, 0];
+      allData.forEach(item => {
+        leveldata[0] += item.oneValue
+        leveldata[1] += item.twoValue
+        leveldata[2] += item.threeValue
+        leveldata[3] += item.fourValue
+      })
       let seriesLevel = {
-        name: '缺陷总数量统计',
+        name: '缺陷等级',
         type: 'bar',
-        data: this.echartsData,
+        data: leveldata,
         tooltip: {
           trigger: 'item',
           formatter: function (a) {
-            // console.log('标题参数', a)
-            return `（${a['data']['name']}）数量:${a['data']['value']}   `
+            return `（${a['name']}）数量:${a['value']}   `
           }
         }
       }
+      // 功能性、结构性缺陷数据
+      let sDefectData = [0, 0, 0, 0], fDefectData = [0, 0, 0, 0]
+      this.defectQuantityStatisticsA.forEach(item => {
+        sDefectData[0] += item.oneValue
+        sDefectData[1] += item.twoValue
+        sDefectData[2] += item.threeValue
+        sDefectData[3] += item.fourValue
+      })
+      this.defectQuantityStatisticsB.forEach(item => {
+        fDefectData[0] += item.oneValue
+        fDefectData[1] += item.twoValue
+        fDefectData[2] += item.threeValue
+        fDefectData[3] += item.fourValue
+      })
+      let seriesFtype = {
+        name: '功能性缺陷',
+        type: 'bar',
+        stack: 'defectType',
+        data: fDefectData,
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            return `${a['seriesName']}（${a['name']}）:${a['value']}   `
+          }
+        }
+      }
+      let seriesStype = {
+        name: '结构性缺陷',
+        type: 'bar',
+        stack: 'defectType',
+        data: sDefectData,
+        tooltip: {
+          trigger: 'item',
+          formatter: function (a) {
+            return `${a['seriesName']}（${a['name']}）:${a['value']}   `
+          }
+        }
+      }
+      // 各种缺陷
+      let seriesNames = allData.filter(item => {
+        // 去掉全是 0 的统计
+        return item.oneValue + item.twoValue + item.threeValue + item.fourValue > 0
+      }).map(item => {
+        return {
+          name: item.title,
+          type: 'bar',
+          stack: 'defectNames',
+          data: [item.oneValue, item.twoValue, item.threeValue, item.fourValue],
+          tooltip: {
+            trigger: 'item',
+            formatter: function (a) {
+            return `（${a['seriesName']}）数量:${a['value']}   `
+            }
+          }
+        }
+      })
 
       let arr = [this.checkDefectType, this.checkDefectName, this.checkDefectLevel]
-      if (arr.every((v) => v == true) || arr.every((v) => v == false)) {
-        return [seriesType, seriesName, seriesLevel]
+      if (arr.every(v => v)) {
+        return [seriesLevel, seriesFtype, seriesStype, ...seriesNames]
       }
       // 判断条件
       let condition1 = !this.checkDefectType && this.checkDefectName && this.checkDefectLevel
@@ -546,19 +644,22 @@ export default {
       let condition3 = this.checkDefectType && this.checkDefectName && !this.checkDefectLevel
       let condition4 = !this.checkDefectType && !this.checkDefectName && this.checkDefectLevel
       let condition5 = this.checkDefectType && !this.checkDefectName && !this.checkDefectLevel
+      let condition6 = !this.checkDefectType && this.checkDefectName && !this.checkDefectLevel
 
       if (condition1) {
-        return [seriesName, seriesLevel]
+        return [seriesLevel, ...seriesNames]
       } else if (condition2) {
-        return [seriesType, seriesLevel]
+        return [seriesLevel, seriesFtype, seriesStype]
       } else if (condition3) {
-        return [seriesType, seriesName]
+        return [seriesFtype, seriesStype, ...seriesNames]
       } else if (condition4) {
         return [seriesLevel]
       } else if (condition5) {
-        return [seriesType]
-      } else {
-        return [seriesType, seriesName, seriesLevel]
+        return [seriesFtype, seriesStype]
+      } else if (condition6) {
+        return [seriesNames]
+      }else {
+        return []
       }
     },
     returnTabel() {
@@ -569,25 +670,8 @@ export default {
       }
       return obj
     },
-
-    mapExtent() {
-      return this.$store.state.gis.mapExtent
-    }
   },
   watch: {
-    mapExtent: {
-      handler(nv, ov) {
-        console.log('视图改变')
-        if (this.data.mapView.getView().getZoom() > 16) {
-          this.data.that.queryForExtent(nv)
-        } else {
-          // 在地图界别较小时，移除管网
-          this.data.that.clearMap()
-        }
-      },
-      deep: true,
-      immediate: true
-    },
     radio: function (newValue, old) {
       if (old != newValue) {
         this.initData()
@@ -601,73 +685,6 @@ export default {
     },
     checkDefectLevel: function (newValue, old) {
       this.initData()
-    },
-    pageData: function (newValue, old) {
-      this.contentEchatrs = [
-        {
-          name: '结构性缺陷',
-          value: 0
-        },
-        {
-          name: '功能性缺陷',
-          value: 0
-        },
-        {
-          name: '正常',
-          value: 0
-        }
-      ]
-
-      this.defectQuantityStatisticsA.forEach((v) => {
-        this.contentEchatrs[0].value += v.value
-      })
-      this.defectQuantityStatisticsB.forEach((v) => {
-        this.contentEchatrs[1].value += v.value
-      })
-      newValue.forEach((v) => {
-        if (v.defectCode == 'ZC') {
-          this.contentEchatrs[2].value += v.defectNum
-        }
-        this.allArr.forEach((av) => {
-          if (v.defectLevel == av.Lname) {
-            av.value += v.defectNum
-          }
-        })
-      })
-
-      let echartsDataArr = newValue.map((v) => {
-        return {
-          value: v.defectNum,
-          defectCode: v.defectCode,
-          name: v.defectName
-        }
-      })
-
-      echartsDataArr = echartsDataArr.reduce((obj, item) => {
-        let find = obj.find((i) => i.defectCode === item.defectCode)
-        let _d = {
-          ...item,
-          frequency: 1
-        }
-        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
-        return obj
-      }, [])
-
-      console.log('echartsDataArr', echartsDataArr)
-      this.echartsTitle = echartsDataArr.map((titleV) => {
-        return titleV.name
-      })
-      this.echartsData = echartsDataArr
-      // 建议类型数组
-      // this.typeArr = this.echartsData.map((v) => {
-      //   return v.name
-      // })
-      console.log(' this.echartsData ', this.echartsData)
-      this.initData()
-    },
-
-    'searchValue.startDate': function (n) {
-      this.searchValue.finishDate = n
     }
   }
 }

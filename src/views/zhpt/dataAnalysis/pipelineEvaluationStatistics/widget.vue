@@ -23,25 +23,25 @@
                 <el-row style="display: flex; justify-content: center; align-items: center">
                   <el-col :span="11">
                     <el-date-picker
-                      v-model="searchValue.startDate"
+                      v-model="searchValue.jcStartDate"
                       type="date"
                       placeholder="选择开始日期"
                       value-format="yyyy-MM-dd"
                       size="small"
-                      :picker-options="pickerOptions0"
-                      @change="changeDate"
+                      :picker-options="eOpition"
+                      @change="eDateChange"
                     ></el-date-picker>
                   </el-col>
                   <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
                   <el-col :span="12">
                     <el-date-picker
-                      v-model="searchValue.finishDate"
+                      v-model="searchValue.jcEndDate"
                       type="date"
                       placeholder="选择结束日期"
                       value-format="yyyy-MM-dd"
                       size="small"
-                      :picker-options="pickerOptions1"
-                      @change="changeDate"
+                      :picker-options="sOpition"
+                      @change="sDateChange"
                     ></el-date-picker>
                   </el-col>
                 </el-row>
@@ -62,9 +62,9 @@
             <div class="operation-box">
               <div class="serch-engineering">
                 <el-button size="small" class="serch-btn" type="primary" @click="search"> 查询 </el-button>
-                <el-button size="small" class="serch-btn" type="primary"> 导出 </el-button>
-                <el-button size="small" class="serch-btn" type="primary" @click="drawFeature">绘制范围</el-button>
-                <el-button size="small" class="serch-btn" type="primary" @click="clearDraw">清除绘制</el-button>
+                <el-button size="small" class="serch-btn" type="primary" @click="getPdf('管道评估统计')"> 导出 </el-button>
+                <el-button size="small" class="serch-btn" type="primary" @click="drawFeature">范围</el-button>
+                <el-button size="small" class="serch-btn" type="primary" @click="clearDraw">清除</el-button>
               </div>
             </div>
           </div>
@@ -79,39 +79,41 @@
               <el-checkbox v-model="pipNum">管道数量</el-checkbox>
               <el-checkbox v-model="pipLen">管道长度</el-checkbox>
             </div>
-            <h2 style="text-align: center">管道评估统计图</h2>
-            <div id="mainPESS" style="height: 250px"></div>
-            <!-- 表格 -->
-            <el-table
-              ref="multipleTable"
-              :data="tableData"
-              tooltip-effect="dark"
-              stripe
-              style="width: 100%"
-              show-summary
-            >
-              <template slot="empty">
-                <img
-                  style="width: 100px; height: 100px; -webkit-user-drag: none"
-                  src="@/assets/images/nullData.png"
-                  alt="暂无数据"
-                  srcset=""
-                />
-                <p style="padding: 0; margin: 0; padding-bottom: 20px">暂无数据</p>
-              </template>
-              <el-table-column header-align="center" align="center" label="管道评估统计表">
-                <el-table-column
-                  :prop="v.name"
-                  header-align="center"
-                  align="center"
-                  :label="v.label"
-                  show-overflow-tooltip
-                  v-for="v in tableContent"
-                  :key="v.name"
-                >
+            <div id="pdfDom">
+              <h2 style="text-align: center">管道评估统计图</h2>
+              <div id="mainPESS" style="height: 250px"></div>
+              <!-- 表格 -->
+              <el-table
+                ref="multipleTable"
+                :data="tableData"
+                tooltip-effect="dark"
+                stripe
+                style="width: 100%"
+                show-summary
+              >
+                <template slot="empty">
+                  <img
+                    style="width: 100px; height: 100px; -webkit-user-drag: none"
+                    src="@/assets/images/nullData.png"
+                    alt="暂无数据"
+                    srcset=""
+                  />
+                  <p style="padding: 0; margin: 0; padding-bottom: 20px">暂无数据</p>
+                </template>
+                <el-table-column header-align="center" align="center" label="管道评估统计表">
+                  <el-table-column
+                    :prop="v.name"
+                    header-align="center"
+                    align="center"
+                    :label="v.label"
+                    show-overflow-tooltip
+                    v-for="v in tableContent"
+                    :key="v.name"
+                  >
+                  </el-table-column>
                 </el-table-column>
-              </el-table-column>
-            </el-table>
+              </el-table>
+              </div>
           </div>
         </div>
       </div>
@@ -153,7 +155,7 @@ export default {
       typeArr: [], // 建议类型数组
       numArr: [], // 管道数量
       lengthArr: [], // 管道长度
-      radio: '2', // 单选框的值
+      radio: '1', // 单选框的值
       zero: '',
       form: {
         name: '',
@@ -167,14 +169,30 @@ export default {
         projectIntroduction: ''
       },
       searchValue: {
-        startDate: '',
-        finishDate: '',
+        jcStartDate: '',
+        jcEndDate: '',
         fixSuggest: ''
         // 检测日期
-      }, // 搜索关键字的值
+      },
       // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.jcEndDate) {
+            return time > new Date(this.searchValue.jcEndDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.jcStartDate) {
+            return time < new Date(this.searchValue.jcStartDate).getTime() || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
 
       // 筛选条件
       filter: {
@@ -218,28 +236,18 @@ export default {
       console.log('checkSuggest', checkSuggest.result.check_suggest)
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
-      if (!this.searchValue.startDate) {
-        this.searchValue.startDate = this.searchValue.finishDate
+    sDateChange(t) {
+      if (!this.searchValue.jcEndDate) {
+        this.$nextTick(() => {
+          this.searchValue.jcEndDate = this.searchValue.jcStartDate
+        })
       }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.startDate).getTime()
-      let date2 = new Date(this.searchValue.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
+    },
+    eDateChange(t) {
+      if (!this.searchValue.jcStartDate) {
+        this.$nextTick(() => {
+          this.searchValue.jcStartDate = this.searchValue.jcEndDate
+        })
       }
     },
     // 处理地图给的数据
@@ -299,8 +307,8 @@ export default {
     // 查询
     search() {
       this.filter = {
-        jcStartDate: this.searchValue.startDate,
-        jcEndDate: this.searchValue.finishDate,
+        jcStartDate: this.searchValue.jcStartDate,
+        jcEndDate: this.searchValue.jcEndDate,
         checkSuggest: this.searchValue.fixSuggest
       }
       this.getDataFromExtent().then((res) => {
@@ -318,15 +326,11 @@ export default {
     // 根据条件获取缺陷数据
     getPipeData() {
       let params = {
-        startPoint: '',
-        endPoint: '',
-        funcClass: '',
-        structClass: '',
         jcStartDate: '',
         jcEndDate: '',
         checkSuggest: '',
         wordInfoState: 1,
-        ...this.filter
+        ...this.searchValue
       }
       return getDefectDataBySE(params)
     },
@@ -476,9 +480,6 @@ export default {
         resMain = [seriesLength]
       }
       return resMain
-    },
-    mapExtent() {
-      return this.$store.state.gis.mapExtent
     }
   },
   watch: {
@@ -494,10 +495,6 @@ export default {
     pipLen: function (newValue, old) {
       newValue ? (this.pipLenShow = 1) : (this.pipLenShow = 0)
       this.initData()
-    },
-
-    'searchValue.startDate': function (n) {
-      this.searchValue.finishDate = n
     }
   }
 }

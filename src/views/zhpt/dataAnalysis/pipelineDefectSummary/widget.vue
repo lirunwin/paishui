@@ -61,9 +61,9 @@
             </el-option>
           </el-select>
           <div class="title">整改建议：</div>
-          <el-select size="small" clearable v-model="searchValue.fixSuggest" placeholder="选择建议">
+          <el-select size="small" clearable v-model="searchValue.checkSuggest" placeholder="选择建议">
             <el-option
-              v-for="item in fixSuggestList"
+              v-for="item in checkSuggestList"
               :key="item.codeValue"
               :label="item.codeValue"
               :value="item.codeValue"
@@ -146,13 +146,13 @@ export default {
   components: {},
   data() {
     return {
-      fixSuggestList: [],
+      checkSuggestList: [],
       searchValue: {
         startDate: '',
         finishDate: '',
         startPoint: '',
         endPoint: '',
-        fixSuggest: '',
+        checkSuggest: '',
         defectLevel: ''
       },
       defectLevels: ['一级', '二级', '三级', '四级'],
@@ -225,7 +225,7 @@ export default {
       data.endPoint = ''
       data.jcStartDate = ''
       data.jcEndDate = ''
-      data.fixSuggest = ''
+      data.checkSuggest = ''
       queryPageDefectInfo(data).then((res) => {
         if (res.code === 1) {
           this.exportData = res.result.records
@@ -273,7 +273,7 @@ export default {
       // 获取字典
       // check_suggest
       let checkSuggest = await queryDictionariesId({ keys: 'check_suggest' })
-      this.fixSuggestList = checkSuggest.result.check_suggest
+      this.checkSuggestList = checkSuggest.result.check_suggest
       console.log('checkSuggest', checkSuggest.result.check_suggest)
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
@@ -319,7 +319,7 @@ export default {
       data.endPoint = this.searchValue.endPoint
       data.jcStartDate = this.searchValue.startDate
       data.jcEndDate = this.searchValue.finishDate
-      data.fixSuggest = this.searchValue.fixSuggest
+      data.checkSuggest = this.searchValue.checkSuggest
       data.defectLevel = this.searchValue.defectLevel
       
       queryPageDefectInfo(data).then((res) => {

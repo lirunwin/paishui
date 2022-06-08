@@ -39,8 +39,7 @@
             v-model="searchValue.startPoint"
             clearable
             style="margin-right: 10px"
-          >
-          </el-input>
+          ></el-input>
           <div class="title">终止井号：</div>
           <el-input
             size="small"
@@ -48,29 +47,50 @@
             v-model="searchValue.endPoint"
             clearable
             style="margin-right: 10px"
-          >
-          </el-input>
+          ></el-input>
           <div class="title">缺陷类型：</div>
           <el-select size="small" clearable v-model="searchValue.defectType" placeholder="选择缺陷类型">
-            <el-option v-for="item in contentEchatrs" :key="item.name" :label="item.name" :value="item.name">
-            </el-option>
+            <el-option
+              v-for="item in types"
+              :key="item"
+              :label="item"
+              :value="item"
+            ></el-option>
           </el-select>
 
-          <div class="title">类型名称：</div>
+          <div class="title">缺陷名称：</div>
           <el-select size="small" clearable v-model="searchValue.defectName" placeholder="选择类型名称">
-            <el-option v-for="item in echartsData" :key="item.name" :label="item.name" :value="item.name"> </el-option>
+            <el-option
+              v-for="item in defectTypes"
+              :key="item.name"
+              :label="item.name"
+              :value="item.name"
+            ></el-option>
           </el-select>
 
-          <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 查询 </el-button>
-          <el-button class="serch-btn" type="primary"> 导出 </el-button>
+          <el-button
+            class="serch-btn"
+            style="margin-left: 26px"
+            type="primary"
+            @click="searchApi"
+          >查询</el-button>
+          <el-button class="serch-btn" type="primary" @click="getPdf('管道缺陷分类统计')">导出</el-button>
         </div>
         <div class="right-btn"></div>
       </div>
-      <div class="content" v-if="!isNull">
+      <div id="pdfDom" class="content" v-show="!isNull">
         <div id="mainA" style="height: 500px"></div>
         <div style="border: 1px solid #ccc">
           <div class="detailsTitle">管道缺陷分类统计表</div>
-          <table width="100%" height="160" border="1" class="left-table" cellspacing="0" align="center" stripe>
+          <table
+            width="100%"
+            height="160"
+            border="1"
+            class="left-table"
+            cellspacing="0"
+            align="center"
+            stripe
+          >
             <thead>
               <tr height="34">
                 <th>缺陷类型</th>
@@ -110,13 +130,16 @@
           </table>
         </div>
       </div>
-      <div v-if="isNull" style="height: 100%; display: flex; justify-content: center; align-items: center">
+      <div
+        v-if="isNull"
+        style="height: 100%; display: flex; justify-content: center; align-items: center"
+      >
         <div style="text-align: center">
           <img
             style="width: 100px; height: 100px; -webkit-user-drag: none"
             src="@/assets/images/nullData.png"
             alt="暂无数据"
-            srcset=""
+            srcset
           />
           <p>暂无数据</p>
         </div>
@@ -158,7 +181,7 @@ export default {
           return time > new Date().getTime()
         }
       },
-      
+
       searchValue: {
         startDate: '',
         finishDate: '',
@@ -174,133 +197,142 @@ export default {
       echartsTitle: [],
       echartsData: [],
       contentEchatrs: [],
-      pageData: []
+      //
+      defectTypes: [],
+      types: ['结构性缺陷', '功能性缺陷', '正常'],
+      defectTypesData: [],
     }
   },
-  async created() {
-    await this.getData()
-    await this.initData()
-    // console.log('created生效了吗?')
+  created() {
+    this.getData().then((res) => {
+      if (res.result.length === 0) {
+        this.isNull = true
+      } else {
+        this.setData(res.result)
+        this.setTypes(res.result)
+        this.isNull = false
+      }
+    })
   },
-  mounted() {
-    // console.log('mounted生效了吗?')
-  },
-  beforeCreate() {
-    console.log('销毁echatrs')
-    document.getElementById('mainA').removeAttribute('_echarts_instance_')
-  },
-  computed: {},
   watch: {
-    pageData: {
-      handler(nv, ov) {
-        this.defectQuantityStatisticsA = []
-        this.defectQuantityStatisticsB = []
-        this.defectSum = 0
-        this.zc.value = 0
-        // this.pageData = nv
-
-        this.contentEchatrs = nv.map((v) => {
-          return {
-            name: v.defectType,
-            value: v.defectNum
-          }
-        })
-
-        this.contentEchatrs = this.contentEchatrs.reduce((obj, item) => {
-          let find = obj.find((i) => i.name === item.name)
-          let _d = {
-            ...item,
-            frequency: 1
-          }
-          find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
-          return obj
-        }, [])
-
-        this.contentEchatrs.forEach((v) => {
-          if (v.name == null) {
-            v.name = '正常'
-          }
-        })
-
-        this.echartsTitle = nv.map((v) => {
-          return v.defectName
-        })
-
-        this.echartsData = nv.map((v) => {
-          this.defectSum += v.defectNum
-          return {
-            value: v.defectNum,
-            name: v.defectName
-          }
-        })
-        nv.forEach((pv) => {
-          if (pv.defectType == '结构性缺陷' && pv.defectType != null) {
-            this.defectQuantityStatisticsA.push({
-              // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
-              name: pv.defectName,
-              type: pv.defectCode,
-              value: pv.defectNum,
-              title: `（${pv.defectCode}）${pv.defectName}`
-            })
-          }
-
-          if (pv.defectType == '功能性缺陷' && pv.defectType != null) {
-            this.defectQuantityStatisticsB.push({
-              // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
-              name: pv.defectName,
-              type: pv.defectCode,
-              value: pv.defectNum,
-              title: `（${pv.defectCode}）${pv.defectName}`
-            })
-          }
-          if (pv.defectCode == 'ZC') {
-            this.zc.value = pv.defectNum
-          }
-        })
-
-        this.defectQuantityStatisticsA = this.defectQuantityStatisticsA.reduce((obj, item) => {
-          let find = obj.find((i) => i.name === item.name)
-          let _d = {
-            ...item,
-            frequency: 1
-          }
-          find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
-          return obj
-        }, [])
-
-        this.defectQuantityStatisticsB = this.defectQuantityStatisticsB.reduce((obj, item) => {
-          let find = obj.find((i) => i.name === item.name)
-          let _d = {
-            ...item,
-            frequency: 1
-          }
-          find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
-          return obj
-        }, [])
-
-        console.log('this.zc', this.zc)
-        console.log('defectQuantityStatisticsA', this.defectQuantityStatisticsA)
-        console.log('defectQuantityStatisticsB', this.defectQuantityStatisticsB)
-        this.initData()
-      },
-      deep: true,
-      immediate: true
+    'searchValue.defectType': function (nv, ov) {
+      this.defectTypes = this.defectTypesData.filter(item => item.type && item.type.includes(nv))
     }
+  },
+  mounted() {},
+  beforeCreate() {
   },
   methods: {
+    setTypes (data) {
+      this.defectTypesData = data.map(v => {
+        return { value: v.defectNum, name: v.defectName, type: v.defectType }
+      })
+      this.defectTypes = [...this.defectTypesData]
+    },
+    setData(data) {
+      this.defectQuantityStatisticsA = []
+      this.defectQuantityStatisticsB = []
+      this.defectSum = 0
+      this.zc.value = 0
+
+      // 设置
+      this.contentEchatrs = data.map((v) => {
+        return { name: v.defectType, value: v.defectNum }
+      })
+
+      this.contentEchatrs = this.contentEchatrs.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = { ...item, frequency: 1 }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      this.contentEchatrs.forEach((v) => {
+        if (v.name == null) {
+          v.name = '正常'
+        }
+      })
+
+      this.echartsTitle = data.map((v) => {
+        return v.defectName
+      })
+
+      this.echartsData = data.map((v) => {
+        this.defectSum += v.defectNum
+        return {
+          value: v.defectNum,
+          name: v.defectName
+        }
+      })
+
+      data.forEach((pv) => {
+        if (pv.defectType == '结构性缺陷' && pv.defectType != null) {
+          this.defectQuantityStatisticsA.push({
+            // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
+            name: pv.defectName,
+            type: pv.defectCode,
+            value: pv.defectNum,
+            title: `（${pv.defectCode}）${pv.defectName}`
+          })
+        }
+
+        if (pv.defectType == '功能性缺陷' && pv.defectType != null) {
+          this.defectQuantityStatisticsB.push({
+            // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
+            name: pv.defectName,
+            type: pv.defectCode,
+            value: pv.defectNum,
+            title: `（${pv.defectCode}）${pv.defectName}`
+          })
+        }
+        if (pv.defectCode == 'ZC') {
+          this.zc.value = pv.defectNum
+        }
+      })
+
+      this.defectQuantityStatisticsA = this.defectQuantityStatisticsA.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+
+      this.defectQuantityStatisticsB = this.defectQuantityStatisticsB.reduce((obj, item) => {
+        let find = obj.find((i) => i.name === item.name)
+        let _d = {
+          ...item,
+          frequency: 1
+        }
+        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
+        return obj
+      }, [])
+      this.$nextTick(() => {
+        this.initData()
+      })
+    },
     // 搜索
     searchApi() {
-      this.getData(this.searchValue)
+      this.getData(this.searchValue).then(res => {
+        if (res.result.length === 0) {
+          this.isNull = true
+        } else {
+          this.setData(res.result)
+          this.isNull = false
+        }
+      })
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    sDateChange (t) {
+    sDateChange(t) {
       if (!this.searchValue.finishDate) {
         this.$nextTick(() => {
           this.searchValue.finishDate = this.searchValue.startDate
         })
       }
     },
-    eDateChange (t) {
+    eDateChange(t) {
       if (!this.searchValue.startDate) {
         this.$nextTick(() => {
           this.searchValue.startDate = this.searchValue.finishDate
@@ -319,19 +351,12 @@ export default {
         data.defectType = params.defectType
         data.defectName = params.defectName
       }
-
-      let res = await getPipeDefectsTypeCount(data)
-      console.log('获取数据') 
-      this.pageData = res.result
-      if (res.result.length === 0) {
-        this.isNull = true
-      } else {
-        this.isNull = false
-      }
+      return getPipeDefectsTypeCount(data)
     },
     //初始化数据
     initData() {
       // 基于准备好的dom，初始化echarts实例
+      document.getElementById('mainA').removeAttribute('_echarts_instance_')
       let myChart = echarts.init(document.getElementById('mainA'))
       // 绘制图表
       myChart.setOption(

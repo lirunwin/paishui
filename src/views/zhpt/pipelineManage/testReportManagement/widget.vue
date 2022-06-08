@@ -275,6 +275,7 @@
                       </p>
                     </template>
                   </el-table-column>
+                  <el-table-column show-overflow-tooltip property="result" label="上传结果" align="center" width="80"></el-table-column>
                 </el-table>
               </div>
             </el-upload>
@@ -385,6 +386,7 @@
                       </p>
                     </template>
                   </el-table-column>
+                  <el-table-column show-overflow-tooltip property="result" label="上传结果" align="center" width="80"></el-table-column>
                 </el-table>
               </div>
             </el-upload>
@@ -1290,9 +1292,9 @@ export default {
             let reportInfo = Array.isArray(res.result) ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData, !light)
+            this.lightLayer.getSource().clear()
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
               let center = mapUtil.getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
-              this.lightLayer.getSource().clear()
               if (light) {
                 this.lightLayer.getSource().addFeatures([...funcDefectFeatures, ...strucDefectFeatures])
                 let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
@@ -1659,10 +1661,13 @@ export default {
       this.fileList = fileList
       let num = 1024.0 // byte
       this.upDataTable = this.fileList.map((v) => {
-        return {
+        let result = v.response ? v.response.result[0].msg : ''
+        let status = v.response ? (v.response.result[0].flag === 'succ' ? "success" : 'error') : v.status
+        return {  
           name: v.name,
           size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
-          status: v.status
+          status,
+          result
         }
       })
     },
@@ -1775,6 +1780,7 @@ export default {
     },
     // 上传触发的方法
     handleAvatarSuccess(res, file, fileList) {
+      console.log('报告上传中')
       // this.imageUrl = URL.createObjectURL(file.raw)
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
       if (res.result == null || res.result.length == 0) {
@@ -1846,7 +1852,8 @@ export default {
         return {
           name: v.name,
           size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
-          status: v.status
+          status: v.status,
+          result: ''
         }
       })
     },

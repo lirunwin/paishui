@@ -15,11 +15,11 @@
         <el-divider></el-divider>
         <div class="top-title flexCss">
           <el-checkbox v-model="linkage">联动</el-checkbox>
-          <el-button type="primary" size="small" @confirm="$message('该功能暂未开放')">导出</el-button>
+          <el-button type="primary" size="small" @click="getPdf('管道检测数据挖掘')">导出</el-button>
         </div>
         <el-divider></el-divider>
         <!-- 视图列表 -->
-        <div class="echarts-list" v-loading="loading">
+        <div id="pdfDom" class="echarts-list" v-loading="loading">
           <div class="threeBottom">
             <div class="threeBottom-one">
               <echarts-two v-if="redayY" :paramData="defectTypeObj"></echarts-two>
@@ -68,10 +68,11 @@ export default {
     }
   },
   mounted() {
-    this.$refs.myMap.showLegend('testReport', true)
+    this.$refs.myMap && this.$refs.myMap.showLegend('testReport', true)
+    this.hasLaod = true
   },
   destroyed() {
-    this.$refs.myMap.showLegend('testReport', false)
+    this.$refs.myMap && this.$refs.myMap.showLegend('testReport', false)
     this.data.that.clearMap()
   },
   beforeCreate() {
@@ -91,7 +92,7 @@ export default {
       // 缺陷数量统计图
       // 处理方式统计图
       this.defectLevel = defectArr
-      this.redayY = true
+
       // console.log('this.defectLevel', this.defectLevel)
 
       // 管道检测情况统计图
@@ -110,7 +111,7 @@ export default {
         }
       })
       this.loading = false
-
+      this.redayY = true
       // console.log('this.defectTypeObj', this.defectTypeObj)
     },
     // 绘制
@@ -158,24 +159,8 @@ export default {
     }
   },
   computed: {
-    mapExtent() {
-      return this.$store.state.gis.mapExtent
-    }
   },
   watch: {
-    mapExtent: {
-      handler(nv, ov) {
-        console.log('视图改变')
-        if (this.data.mapView.getView().getZoom() > 16) {
-          this.data.that.queryForExtent(nv)
-        } else {
-          // 在地图界别较小时，移除管网
-          this.data.that.clearMap()
-        }
-      },
-      deep: true,
-      immediate: true
-    }
   }
 }
 </script>
