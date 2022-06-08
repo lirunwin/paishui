@@ -97,7 +97,7 @@ import {
   IPagination,
   IPoint,
   pointsPage,
-  typesPage,
+  deviceTypesPage,
   pointBindDevice,
   groups,
   sections,
@@ -305,7 +305,7 @@ export default class MonitoringPoints extends Vue {
     try {
       const {
         result: { records }
-      } = await typesPage({ current: 1, size: 999999 })
+      } = await deviceTypesPage({ current: 1, size: 999999 })
       this.types = records || []
     } catch (error) {
       console.log(error)

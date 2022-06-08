@@ -382,8 +382,8 @@ export default class APPV extends Vue {
     const params = {
       type: that.appClassfication || undefined,
       releasestatus: that.publishStatus || undefined,
-      startDate: that.publishTime.startTime ? that.publishTime.startTime + ' 00:00:00' : '',
-      endDate: that.publishTime.endTime ? that.publishTime.endTime + ' 23:59:59' : '',
+      startDate: that.publishTime.startTime || '',
+      endDate: that.publishTime.endTime || '',
       current: that.pagination.current,
       size: that.pagination.size
     }

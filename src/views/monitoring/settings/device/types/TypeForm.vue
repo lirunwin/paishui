@@ -51,9 +51,9 @@ export default class TypeForm extends Vue {
         name: 'name',
         required: true,
         rules: [
-          { required: true, message: '设备类型名称不能为空！', trigger: 'blur' },
+          { required: true, message: '设备类型名称不能为空！' },
           { max: 50, message: '设备类型名称不超过50个字符' },
-          { pattern: /^[\u4e00-\u9fa5\w -]+$/, message: '允许输入汉字、英文、数字', trigger: 'blur' }
+          { pattern: /^[\u4e00-\u9fa5\w -]+$/, message: '允许输入汉字、英文、数字' }
         ],
         size: 'small'
       },
@@ -61,9 +61,9 @@ export default class TypeForm extends Vue {
         label: '设备类型代码',
         name: 'typeCode',
         rules: [
-          { required: false, message: '设备类型代码不能为空！', trigger: 'blur' },
+          { required: false, message: '设备类型代码不能为空！' },
           { max: 50, message: '设备类型代码不超过50个字符' },
-          { pattern: /^[\w-]+$/, message: '允许输入英文、数字', trigger: 'blur' }
+          { pattern: /^[\w-]+$/, message: '允许输入英文、数字' }
         ],
         size: 'small'
       },
@@ -82,7 +82,7 @@ export default class TypeForm extends Vue {
         label: '数据归集时间',
         name: 'collectTime',
         rules: [
-          { required: !!this.formData.isCollect, message: '数据归集时间不能为空！', trigger: 'blur' },
+          { required: !!this.formData.isCollect, message: '数据归集时间不能为空！' },
           {
             type: 'number',
             message: '数据归集时间须为数字 ',

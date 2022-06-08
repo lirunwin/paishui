@@ -14,19 +14,16 @@
     "planHeader":{
         "xj":[                    
             {"label": "名称","value":"name"},
-            {"label": "所在片区","value":"regionName"},
             {"label": "备注信息","value":"note"},
             {"label": "创建时间","value":"createTime"}
         ],
         "yh":[                    
             {"label": "名称","value":"pipeName"},
-            {"label": "所在片区","value":"regionId"},
             {"label": "备注信息","value":"notes"},
             {"label": "创建时间","value":"createTime"}
         ],
         "gd":[                    
             {"label": "类型","value":"uploadType"},
-            {"label": "所在片区","value":"regionId"},
             {"label": "备注信息","value":"notes"},
             {"label": "创建时间","value":"createTime"}
         ],

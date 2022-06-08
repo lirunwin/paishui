@@ -82,7 +82,7 @@ interface IBesides {
   to: string
   checked: boolean
 }
-@Component({ name: 'QueryForm', components: {} })
+@Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
   @Prop({ type: Boolean, default: false }) loading!: boolean
 

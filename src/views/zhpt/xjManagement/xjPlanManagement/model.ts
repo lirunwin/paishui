@@ -3,14 +3,13 @@
  * @author 梁罗、李顺<876330731@qq.com>
  */
 import { Vue, Prop, Component, Watch } from 'vue-property-decorator'
-import { Map, View } from 'ol'
+import { Feature, Map, View } from 'ol'
 import { defaults as controls } from 'ol/control'
 import tfLegend from "@/views/zhpt/common/Legend.vue";
 import tfTableLegend from '@/views/zhpt/common/TableLegend.vue';
 import initConfig from './config.json';
 import tool from './tool';
-import { esriConfig, appconfig } from 'staticPub/config';
-import { loadModules } from 'esri-loader';
+import { appconfig } from 'staticPub/config';
 import {
     queryTaskArrange, addTaskArrange, editTaskArrange, deleteTaskArrange, submitPauseCheckInfo,
     submitAbandonCheckInfo, xjRoundDispose, queryDetail, getGroupPersonById, queryRegionRelation, stopList, cancleList
@@ -24,6 +23,13 @@ import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import request from '@/utils/request'
 import axios from 'axios'
 import $ from 'jquery'
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import { Geometry, LineString, MultiPoint, Point, Polygon } from 'ol/geom';
+import { Icon, Stroke, Style } from 'ol/style';
+import locationIcon from '@/assets/images/map/location.png'
+import SuperMapService from '@/utils/SuperMapService'
+import { Draw } from 'ol/interaction';
 @Component({
     name: 'XjPlanManagement',
     components: { tfTableLegend, tfLegend }
@@ -110,8 +116,8 @@ export default class XjPlanManagement extends Vue {
     regionLayerId = 17//获取片区图层的ID条件
     comLayerList = {//本模块通用的图层
         regionLayer: null,//当前巡检组下的片区图层
-        highLayer: null,//高亮图层
-        drawLayer: null//绘制图层
+        drawLayer: null,//绘制图层
+        highLayer: null//高亮图层
     }
     comColorList = {//图层颜色管理
         highColor: "#00FFFF",//高亮图层颜色
@@ -223,15 +229,16 @@ export default class XjPlanManagement extends Vue {
     planDataShow = false;//计划内容是否存在
     hideDataContentA = true;//计划内容是否显示
     splitMonth = 1000;//切割查询出的objectids（用于server查询）
-    breakLength = 10;//打断参数
+    breakLength = 1000;//打断参数
     setIntervalEvent = null//定时事件
     serverSearch = {//图层查询集合
         queText: "",//查询条件
         analysisAtt: [],//图层字段
         layerFix: []//字段的取值
     }
-    mapV = null
+    mapV: Map = null
     view = null;
+    draw:Draw=null;
     get watchMonthId() {
         if (this.acceptData) {
             return this.acceptData.monthId
@@ -259,7 +266,6 @@ export default class XjPlanManagement extends Vue {
         //保存输入框的默认配置
         this.planModel.initInput = tool.copyValue(this.planModel.input);
         //添加本模块使用的地图
-        //this.addMap();
         this.initMapSource();
         //获取图层信息
         this.getLayerInfo();
@@ -294,9 +300,8 @@ export default class XjPlanManagement extends Vue {
     }
     destroyed() {
         this.controlComLayer("destory");
-        if (this.mapV && this.mapV.map) {
-            this.mapV.map.removeAll();
-            this.mapV.destroy();
+        if (this.mapV) {
+            this.mapV.dispose();
         }
     }
     /**
@@ -709,33 +714,33 @@ export default class XjPlanManagement extends Vue {
      * 绘制片区
     */
     drawRegion() {
-        let rings = [];
-        if (this.planModel.regionInfo.currentRegion && this.planModel.regionInfo.currentRegion.length > 0) {
-            this.planModel.regionInfo.currentRegion.forEach(item => {
-                rings.push(item.geometry);
-            })
-            const polygon = {
-                rings: rings,
-                type: "polygon",
-                spatialReference: this.mapV.spatialReference
-            };
-            this.planModel.regionInfo.currentRegionGeo = polygon;
-            var symbol = {
-                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
-                color: this.comColorList.regionInColor,
-                style: "solid",
-                outline: {  // autocasts as new SimpleLineSymbol()
-                    color: this.comColorList.regionLineColor,
-                    width: 1
-                }
-            };
-            let polygonGra = new this.data.mapView.TF_graphic({
-                geometry: polygon,
-                symbol: symbol
-            });
-            this.comLayerList.regionLayer.removeAll();
-            this.comLayerList.regionLayer.add(polygonGra);
-        }
+        // let rings = [];
+        // if (this.planModel.regionInfo.currentRegion && this.planModel.regionInfo.currentRegion.length > 0) {
+        //     this.planModel.regionInfo.currentRegion.forEach(item => {
+        //         rings.push(item.geometry);
+        //     })
+        //     const polygon = {
+        //         rings: rings,
+        //         type: "polygon",
+        //         spatialReference: this.mapV.spatialReference
+        //     };
+        //     this.planModel.regionInfo.currentRegionGeo = polygon;
+        //     var symbol = {
+        //         type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        //         color: this.comColorList.regionInColor,
+        //         style: "solid",
+        //         outline: {  // autocasts as new SimpleLineSymbol()
+        //             color: this.comColorList.regionLineColor,
+        //             width: 1
+        //         }
+        //     };
+        //     let polygonGra = new this.data.mapView.TF_graphic({
+        //         geometry: polygon,
+        //         symbol: symbol
+        //     });
+        //     this.comLayerList.regionLayer.removeAll();
+        //     this.comLayerList.regionLayer.add(polygonGra);
+        // }
     }
 
     /**
@@ -754,26 +759,24 @@ export default class XjPlanManagement extends Vue {
             view: new View({
                 center: initCenter,
                 zoom: initZoom,
-                maxZoom: 17,
+                maxZoom: 21,
                 minZoom: 5,
                 projection: "EPSG:4326"
             })
         })
-        this.view = map;
+        this.mapV = map;
         this.addLayers(layerResource);
+        this.controlComLayer("init");
     }
     addLayers(layers) {
         layers.forEach((layerConfig) => {
             let { name, type, url, parentname, id, visible = true } = layerConfig
             let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-            this.view.addLayer(layer)
+            this.mapV.addLayer(layer)
         })
     }
     initMapSource() {
         var resource = appconfig.gisResource['iserver_resource']
-        var nextDo = () => {
-            this.$nextTick(this.addMap)
-        }
         if (appconfig.isloadServer) {
             request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then((res1) => {
                 if (res1.code == 1) {
@@ -797,7 +800,6 @@ export default class XjPlanManagement extends Vue {
                                 isOnline = false //异常返回
                             })
                             .finally(() => {
-                                console.log('替换服务')
                                 const repItems = ['地图配置服务']
                                 res.forEach((service) => {
                                     let resData = service.child,
@@ -831,51 +833,13 @@ export default class XjPlanManagement extends Vue {
                                         }
                                     }
                                 })
-                                // for (var i = 0, ii = res.length; i < ii; i++) {
-                                //   var dr = res[i]
-                                //   if (resource.hasOwnProperty(dr.code)) {
-                                //     //天地图相关的编码
-                                //     let replaceItems = [
-                                //       'tian_online_vector',
-                                //       'tian_online_raster',
-                                //       'tian_online_vector_label',
-                                //       'tian_online_raster_label'
-                                //     ]
-                                //     //离线状况下替换天地图地址
-                                //     if (!isOnline) {
-                                //       if (replaceItems.some(valItem => valItem == dr.code)) {
-                                //         let index2 = res.findIndex(item => item.code === dr.code + '_dl')
-                                //         if (index2 !== -1) {
-                                //           let dataItem = res[index2]
-                                //           var odr = resource[dr.code]
-                                //           odr.type = dataItem.type
-                                //           odr.groupname = dataItem.name
-                                //           if (dataItem.child) {
-                                //             odr.config = dataItem.child.map(e => {
-                                //               return { name: e.name, url: e.cval }
-                                //             })
-                                //           }
-                                //         }
-                                //         continue
-                                //       }
-                                //     }
-                                //     var odr = resource[dr.code]
-                                //     odr.type = dr.type
-                                //     odr.groupname = dr.name
-                                //     if (dr.child) {
-                                //       odr.config = dr.child.map((e) => {
-                                //         return { name: e.name, url: e.cval }
-                                //       })
-                                //     }
-                                //   }
-                                // }
-                                //nextDo()
+                                this.addMap();
                             })
                     }
                 } else this.$message('服务加载失败 启用默认服务配置')
             })
-        } else{
-            //nextDo()
+        } else {
+            this.addMap();
         }
     }
 
@@ -884,21 +848,23 @@ export default class XjPlanManagement extends Vue {
      * 传入destory则删除图层，将 图层移除地图)
     */
     controlComLayer(action) {
-        // for (let item in this.comLayerList) {
-        //     if (action == "init") {
-        //         if (this.comLayerList[item]) {
-        //             this.comLayerList[item].removeAll();
-        //         } else {
-        //             this.comLayerList[item] = new this.data.mapView.TF_graphicsLayer();
-        //             this.mapV.map.add(this.comLayerList[item]);
-        //         }
-        //     } else if (action == 'destory') {
-        //         if (this.comLayerList[item]) {
-        //             this.mapV.map.remove(this.comLayerList[item]);
-        //             this.comLayerList[item] = null;
-        //         }
-        //     }
-        // }
+        for (let item in this.comLayerList) {
+            if (action == "init") {
+                if (this.comLayerList[item]) {
+                    this.comLayerList[item].getSource().clear();
+                } else {
+                    this.comLayerList[item] = new VectorLayer({
+                        source: new VectorSource()
+                    })
+                    this.mapV.addLayer(this.comLayerList[item]);
+                }
+            } else if (action == 'destory') {
+                if (this.comLayerList[item]) {
+                    this.mapV.removeLayer(this.comLayerList[item]);
+                    this.comLayerList[item] = null;
+                }
+            }
+        }
     }
 
     /**
@@ -909,34 +875,36 @@ export default class XjPlanManagement extends Vue {
         this.$refs.mapBox.appendChild(this.$refs.cctvMap)
         //@ts-ignore
         this.$refs.cctvMap.style.display = ''
-        //this.mapV.extent = this.data.mapView.extent
-        this.addMap();
+        //地图容器初始隐藏，需要更新size
+        if (this.mapV) {
+            this.mapV.updateSize()
+        }
     }
 
     /**
      * 获取图层信息
     */
     getLayerInfo() {
-        $.ajax({
-            url: appconfig.gisResource.business_map.config[0].url + "/?f=pjson",
-            type: 'GET',
-            success: (data) => {
-                data = JSON.parse(data).layers
-                if (!data) return this.$message.error('图层字段获取失败')
-                var tId = []
-                for (let i = 0, ii = data.length; i < ii; i++) {
-                    var layer = data[i]
-                    // if([0, 16, 17].indexOf(layer.id) < 0){
-                    //     tId.push({ value: layer.id, label: layer.name })
-                    // }
-                    if (layer.parentLayerId != -1) {
-                        tId.push({ value: layer.id, label: layer.name })
-                    }
-                }
-                this.planModel.optionData.layerNames = tId
-            },
-            error: (error) => this.$message.error(error)
-        })
+        // $.ajax({
+        //     url: appconfig.gisResource.business_map.config[0].url + "/?f=pjson",
+        //     type: 'GET',
+        //     success: (data) => {
+        //         data = JSON.parse(data).layers
+        //         if (!data) return this.$message.error('图层字段获取失败')
+        //         var tId = []
+        //         for (let i = 0, ii = data.length; i < ii; i++) {
+        //             var layer = data[i]
+        //             // if([0, 16, 17].indexOf(layer.id) < 0){
+        //             //     tId.push({ value: layer.id, label: layer.name })
+        //             // }
+        //             if (layer.parentLayerId != -1) {
+        //                 tId.push({ value: layer.id, label: layer.name })
+        //             }
+        //         }
+        //         this.planModel.optionData.layerNames = tId
+        //     },
+        //     error: (error) => this.$message.error(error)
+        // })
     }
 
     //改变巡检组的情况
@@ -1177,7 +1145,7 @@ export default class XjPlanManagement extends Vue {
                         for (let i = 0; i < geo.paths.length; i++) {
                             let itemGeometry = {
                                 paths: [geo.paths[i]],
-                                spatialReference: this.mapV.spatialReference,
+                                // spatialReference: this.mapV.spatialReference,
                                 type: "polyline"
                             }
                             polylines.push(itemGeometry);
@@ -1472,7 +1440,7 @@ export default class XjPlanManagement extends Vue {
             this.$refs.mapBox1.appendChild(this.$refs.cctvMap);
             //@ts-ignore
             this.$refs.cctvMap.style.display = '';
-            this.mapV.extent = this.data.mapView.extent;
+            //this.mapV.extent = this.data.mapView.extent;
             //获取计划详情
             queryDetail(e.id).then(res => {
                 if (res.code == 1) {
@@ -1489,105 +1457,86 @@ export default class XjPlanManagement extends Vue {
     /**
      * 处理地图点数据(points格式[[x,y]])
     */
-    addPointToMap(points, layer) {
+    addPointToMap(points: number[][], layer: VectorLayer<VectorSource<any>>) {
         this.clearLayer(layer);
-        let mapView = this.mapV;
-        let sp = mapView.spatialReference;
-        let Graphic = this.data.mapView.TF_graphic;
-        let multipoint = {
-            type: "multipoint",
-            points: points,
-            spatialReference: sp
-        };
-        const simpleMarkerSymbol = {
-            path:
-                "M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z",
-            color: this.comColorList.planColor,
-            outline: { color: this.comColorList.planColor, width: "1px" },
-            size: "30px",
-            yoffset: "15px",
-            xoffset: "0px",
-            type: "simple-marker"
-        };
-        let graphic = new Graphic({
-            geometry: multipoint,
-            symbol: simpleMarkerSymbol
-        });
-        layer.add(graphic);
+        const map = this.mapV;
+        const style = new Style({
+            image: new Icon({
+                src: locationIcon,
+                color: "#2D74E7",
+                scale: 0.5
+            })
+        })
+        const feature = new Feature({
+            geometry: new MultiPoint(points)
+        })
+        feature.setStyle(style);
+        layer.getSource().addFeature(feature);
     }
 
     //处理线地图数据(lines的格式[[[x,y],[x1,x2]],[[x3,y3],[x4,x4]]])
-    addLineToMap(lines, layer) {
+    addLineToMap(lines: number[][][], layer: VectorLayer<VectorSource<any>>) {
         this.clearLayer(layer);
-        let mapView = this.mapV;
-        let sp = mapView.spatialReference;
-        let Graphic = this.data.mapView.TF_graphic;
-        let lineSymbol = {
-            color: this.comColorList.planColor,
-            width: "2px",
-            type: "simple-line"
-        };
-        let graphic = new Graphic({
-            geometry: {
-                paths: lines,
-                spatialReference: sp,
-                type: "polyline"
-            },
-            symbol: lineSymbol
-        });
-        layer.add(graphic);
+        const source = layer.getSource();
+        const style = new Style({
+            stroke: new Stroke({
+                width: 2,
+                color: "#2D74E7"
+            })
+        })
+        for (let i = 0; i < lines.length; i++) {
+            const geo = lines[i];
+            const linestring = new LineString(geo);
+            const feature = new Feature({
+                geometry: linestring
+            })
+            feature.setStyle(style);
+            source.addFeature(feature);
+        }
     }
     //高亮点及定位pointData的格式[x,y]
-    highPointToMap(pointData) {
+    highPointToMap(pointData: number[]) {
+        //清空高亮图层
         this.clearLayer(this.comLayerList.highLayer);
-        let point = {
-            type: "point",
-            latitude: pointData[0],
-            longitude: pointData[1],
-            spatialReference: this.data.mapView.spatialReference
-        };
-        const simpleMarkerSymbol = {
-            path:
-                "M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z",
-            color: this.comColorList.highColor,
-            outline: { color: this.comColorList.highColor, width: "1px" },
-            size: "30px",
-            yoffset: "15px",
-            xoffset: "0px",
-            type: "simple-marker"
-        };
-        let graphic = new this.data.mapView.TF_graphic({
-            geometry: point,
-            symbol: simpleMarkerSymbol
-        });
-        let gotoJson = {
-            target: graphic,
-            zoom: 15
-        };
-        this.mapV.goTo(gotoJson);
-        this.comLayerList.highLayer.add(graphic);
+        const style = new Style({
+            image: new Icon({
+                src: locationIcon,
+                scale: 0.5,
+                color: this.comColorList.highColor
+            })
+        })
+        const feature = new Feature({
+            geometry: new Point(pointData)
+        })
+        feature.setStyle(style)
+        this.comLayerList.highLayer.getSource().addFeature(feature);
+        //定位
+        this.mapV.getView().animate({
+            center: [pointData[0], pointData[1]],
+            zoom: 17
+        })
     }
     //高亮线及定位(lines的格式[[[x,y],[x1,x2]],[[x3,y3],[x4,x4]]])
-    hLineToMap(lines) {
+    hLineToMap(lines: number[][]) {
         this.clearLayer(this.comLayerList.highLayer);
-        let mapView = this.mapV;
-        let sp = mapView.spatialReference;
-        let Graphic = this.data.mapView.TF_graphic;
-        let lineSymbol = {
-            color: this.comColorList.highColor,
-            width: "2px",
-            type: "simple-line"
-        };
-        let graphic = new Graphic({
-            geometry: {
-                paths: lines,
-                spatialReference: mapView.spatialReference,
-                type: "polyline"
-            },
-            symbol: lineSymbol
+        const line = new LineString(lines);
+        const feature = new Feature({
+            geometry: line
+        })
+        const style = new Style({
+            stroke: new Stroke({
+                width: 2,
+                color: this.comColorList.highColor
+            })
+        })
+        feature.setStyle(style);
+        const mainmap = this.mapV;
+        this.comLayerList.highLayer.getSource().addFeature(feature);
+        mainmap.getView().fit(line, {
+            size: mainmap.getSize(),
+            maxZoom: 19,
+            duration: 1000
         });
-        mapView.extent = graphic.geometry.extent;
-        this.comLayerList.highLayer.add(graphic);
     }
 
     /**
@@ -1661,59 +1610,59 @@ export default class XjPlanManagement extends Vue {
      * 打断线并求取长度
     */
     breakLine(currentData) {
-        let overlengthPipe = currentData.planInfo.overlengthPipe;
-        var cnum = overlengthPipe.paths.length;
-        let lengths = overlengthPipe.lengths;
-        let polylines = [];
-        let d = this.breakLength;
-        for (var i = 0; i < cnum; i++) {
-            var len = lengths[i];
-            let path = overlengthPipe.paths[i];
-            let pointOne = path[0];
-            let pointTwo = path[1];
-            let prePoint = path[0];
-            if (len > d) {//大于规定距离
-                var count = Math.floor(len / d) - 1;
-                if (count > 0) {
-                    var pt1 = pointOne, pt2 = pointTwo;
-                    var k = (pt2[1] - pt1[1]) / (pt2[0] - pt1[0]);
-                    var mlen = Math.sqrt((pt2[1] - pt1[1]) * (pt2[1] - pt1[1]) + (pt2[0] - pt1[0]) * (pt2[0] - pt1[0]));
-                    var md = mlen / (count + 1);
-                    var sqk = Math.sqrt(1 + k * k);
-                    var dd = md;
-                    let x, y;
-                    for (var j = 0; j < count; j++) {
-                        x = (dd / sqk) + pt1[0];
-                        y = (k * dd / sqk) + pt1[1];
-                        if ((x > pt1[0] && x > pt2[0]) || (x < pt1[0] && x < pt2[0])) {
-                            x = pt1[0] - (dd / sqk);
-                        }
-                        if ((y > pt1[1] && y > pt2[1]) || (y < pt1[1] && y < pt2[1])) {
-                            y = pt1[1] - (k * dd / sqk);
-                        }
-                        dd = dd + md;
-                        polylines.push({
-                            paths: [[prePoint, [x, y]]],
-                            spatialReference: this.mapV.spatialReference,
-                            type: "polyline"
-                        });
-                        prePoint = [x, y];
-                    }
-                    polylines.push({
-                        paths: [[[x, y], pointTwo]],
-                        spatialReference: this.mapV.spatialReference,
-                        type: "polyline"
-                    })
-                } else {
-                    polylines.push({
-                        paths: [path],
-                        spatialReference: this.mapV.spatialReference,
-                        type: "polyline"
-                    })
-                }
-            }
-        }
-        this.mathLength({ polylines: polylines }, currentData)
+        // let overlengthPipe = currentData.planInfo.overlengthPipe;
+        // var cnum = overlengthPipe.paths.length;
+        // let lengths = overlengthPipe.lengths;
+        // let polylines = [];
+        // let d = this.breakLength;
+        // for (var i = 0; i < cnum; i++) {
+        //     var len = lengths[i];
+        //     let path = overlengthPipe.paths[i];
+        //     let pointOne = path[0];
+        //     let pointTwo = path[1];
+        //     let prePoint = path[0];
+        //     if (len > d) {//大于规定距离
+        //         var count = Math.floor(len / d) - 1;
+        //         if (count > 0) {
+        //             var pt1 = pointOne, pt2 = pointTwo;
+        //             var k = (pt2[1] - pt1[1]) / (pt2[0] - pt1[0]);
+        //             var mlen = Math.sqrt((pt2[1] - pt1[1]) * (pt2[1] - pt1[1]) + (pt2[0] - pt1[0]) * (pt2[0] - pt1[0]));
+        //             var md = mlen / (count + 1);
+        //             var sqk = Math.sqrt(1 + k * k);
+        //             var dd = md;
+        //             let x, y;
+        //             for (var j = 0; j < count; j++) {
+        //                 x = (dd / sqk) + pt1[0];
+        //                 y = (k * dd / sqk) + pt1[1];
+        //                 if ((x > pt1[0] && x > pt2[0]) || (x < pt1[0] && x < pt2[0])) {
+        //                     x = pt1[0] - (dd / sqk);
+        //                 }
+        //                 if ((y > pt1[1] && y > pt2[1]) || (y < pt1[1] && y < pt2[1])) {
+        //                     y = pt1[1] - (k * dd / sqk);
+        //                 }
+        //                 dd = dd + md;
+        //                 polylines.push({
+        //                     paths: [[prePoint, [x, y]]],
+        //                     spatialReference: this.mapV.spatialReference,
+        //                     type: "polyline"
+        //                 });
+        //                 prePoint = [x, y];
+        //             }
+        //             polylines.push({
+        //                 paths: [[[x, y], pointTwo]],
+        //                 spatialReference: this.mapV.spatialReference,
+        //                 type: "polyline"
+        //             })
+        //         } else {
+        //             polylines.push({
+        //                 paths: [path],
+        //                 spatialReference: this.mapV.spatialReference,
+        //                 type: "polyline"
+        //             })
+        //         }
+        //     }
+        // }
+        // this.mathLength({ polylines: polylines }, currentData)
     }
     //处理巡检点数据
     planPoint(saveData) {
@@ -1858,8 +1807,8 @@ export default class XjPlanManagement extends Vue {
                     planInfo.tableData.forEach(item => {
                         if (item.geometry && item.geometry != "") {
                             let geo = JSON.parse(item.geometry);
-                            item.geometryPaths = geo.paths;
-                            lines.push.apply(lines, geo.paths);
+                            //item.geometryPaths = geo;
+                            lines.push(lines, geo);
                         }
                     });
                 } else {
@@ -1928,9 +1877,11 @@ export default class XjPlanManagement extends Vue {
                 if (index == -1) {
                     let layerName = "";
                     let layerId = "";
+                    let layerNameEn = "";
                     for (let value of planTypeList) {
                         if (value.id === item) {
                             layerName = value.layerName
+                            layerNameEn = value.layerNameEn
                         }
                     }
                     for (let value of layerNames) {
@@ -1938,7 +1889,7 @@ export default class XjPlanManagement extends Vue {
                             layerId = value.value
                         }
                     }
-                    typeInfo.push({ name: layerName, layerName: layerName, planPercent: 100, layerId: layerId, typeId: item, planInfo: null, exist: true, fristSelect: true })
+                    typeInfo.push({ name: layerName, layerName: layerName, layerNameEn: layerNameEn, planPercent: 100, layerId: layerId, typeId: item, planInfo: null, exist: true, fristSelect: true })
                 } else {
                     typeInfo[index].exist = true;
                     typeInfo[index].fristSelect = false;
@@ -1991,7 +1942,7 @@ export default class XjPlanManagement extends Vue {
      * */
     removeLayer(layer) {
         if (layer) {
-            this.mapV.map.remove(layer);
+            this.mapV.removeLayer(layer);
         }
     }
 
@@ -2074,7 +2025,7 @@ export default class XjPlanManagement extends Vue {
                 } else if (data.layerName == '工地监护点') {
                     data.planInfo = this.initData(initConfig.planHeader.gd, true, false)
                     this.planSitePoint(data);
-                } else if (data.layerName.indexOf("管线") != -1) {
+                } else if (data.layerName.indexOf("管道") != -1) {
                     data.planInfo = this.initData(initConfig.planHeader.pipeLine, false, true);
                     if (this.addOrUpdateOrLook != 'add') {
                         this.groupGetInfoBySid(data);
@@ -2090,15 +2041,19 @@ export default class XjPlanManagement extends Vue {
         if (this.planModel.input.planTypeInfo.length > 0) {
             this.paneHandleClick();
         }
-        this.mapV.map.reorder(this.comLayerList.highLayer, this.mapV.map.layers.length)
+        //this.mapV.map.reorder(this.comLayerList.highLayer, this.mapV.map.layers.length)
     }
 
     /**
      * 将数据格式化为planTypeInfo的planInfo
      */
     initData(header, isCheckData, isServer) {
-        let layer = new this.data.mapView.TF_graphicsLayer();
-        this.mapV.map.add(layer);
+        const layer = new VectorLayer({
+            source: new VectorSource()
+        })
+        //防止遮挡高亮图层
+        const layers = this.mapV.getLayers();
+        layers.setAt(2, layer);
         return {
             header: header,//表头
             tableData: [],//数据
@@ -2149,7 +2104,7 @@ export default class XjPlanManagement extends Vue {
         if (!data) {
             return;
         }
-        this.comLayerList.highLayer.removeAll();
+        this.comLayerList.highLayer.getSource().clear();
         this.planModel.input.planTypeInfo.forEach((item, index) => {
             if (data.planInfo.layer != item.planInfo.layer) {
                 item.planInfo.layer.visible = false;
@@ -2157,7 +2112,7 @@ export default class XjPlanManagement extends Vue {
                 item.planInfo.layer.visible = true;
                 this.clearLayer(this.comLayerList.drawLayer);
                 if (item.planInfo.drawGraphic) {
-                    this.comLayerList.drawLayer.add(item.planInfo.drawGraphic);
+                    //this.comLayerList.drawLayer.add(item.planInfo.drawGraphic);
                 }
             }
         });
@@ -2172,28 +2127,31 @@ export default class XjPlanManagement extends Vue {
             div[0].style.display = ''
             div[1].innerText = '加载中'
             this.serverSearch.analysisAtt = [] //存储图层字段信息
-            $.ajax({
-                url: appconfig.gisResource.business_map.config[0].url + "/" + data.layerId + "/?f=pjson",
-                type: 'GET',
-                success: (data) => {
-                    data = JSON.parse(data).fields
-                    if (!data) return this.$message.error('图层信息获取失败')
-                    var fields = []
-                    for (let i = 0, ii = data.length; i < ii; i++) {
-                        var layer = data[i]
-                        if (layer.alias.search(/[A-Za-z]+/)) {
-                            fields.push({ value: layer.name, label: layer.alias })
-                        }
+            SuperMapService.getLayerFields({
+                url: appconfig.gisResource.business_map.config[0].url,
+                layer: data.layerNameEn
+            }).then(result => {
+                const fieldNames = result.result.recordsets[0].fields;
+                const fieldcaptions = result.result.recordsets[0].fieldCaptions;
+                if (!fieldNames || !fieldcaptions) return this.$message.error('图层信息获取失败')
+                const fields = [];
+                for (let i = 0, ii = fieldNames.length; i < ii; i++) {
+                    const field = fieldNames[i] as string;
+                    if (field.toLowerCase().indexOf('sm') >= 0) {
+                        continue;
                     }
-                    this.serverSearch.analysisAtt = fields
-                    div[0].style.display = 'none'
-                    if (this.serverSearch.analysisAtt.length == 0) {
-                        div[1].innerText = '图层无字段'
-                    } else {
-                        div[1].innerText = ''
-                    }
-                },
-                error: (error) => this.$message.error(error)
+                    const title = fieldcaptions[i];
+                    fields.push({ value: field, label: title })
+                }
+                this.serverSearch.analysisAtt = fields
+                div[0].style.display = 'none'
+                if (this.serverSearch.analysisAtt.length == 0) {
+                    div[1].innerText = '图层无字段'
+                } else {
+                    div[1].innerText = ''
+                }
+            }).catch(err => {
+                this.$message.error('获取图层字段失败');
             })
         } else {
             this.pageShow.showSQLPage = false
@@ -2245,41 +2203,43 @@ export default class XjPlanManagement extends Vue {
         div[0].style.display = ''
         div[1].innerText = '加载中'
         this.serverSearch.layerFix = []
-        $.ajax({
-            url: appconfig.gisResource.fieldUniqueValue.config[0].url,
-            type: 'POST',
-            data: {
-                usertoken: appconfig.usertoken,
-                layerid: currentData.layerId,
-                field_name: field,
-                f: 'pjson'
-            },
-            success: (data) => {
-                data = JSON.parse(data)
-                if (data.code != 10000) {
-                    div[0].style.display = 'none'
-                    div[1].innerText = '图层字段获取失败'
-                    return this.$message.error('图层字段获取失败')
-                }
-                this.serverSearch.layerFix = data.result.rows
-                if (this.serverSearch.layerFix.length > 0) {
-                    div[1].innerText = ''
-                } else {
-                    div[1].innerText = '字段无属性'
-                }
-                div[0].style.display = 'none'
-
-            },
-            error: (error) => this.$message.error(error)
+        SuperMapService.getFieldUniqueValue({
+            url: appconfig.gisResource.business_map.config[0].url,
+            layer: currentData.layerNameEn,
+            uniqueField: field
+        }).then(result => {
+            const features = result.result.recordsets[0].features.features;
+            const recordSet = result.result.recordsets[0];
+            const data = features.map(item => {
+                // switch (recordSet.fieldTypes[0]) {
+                //     case "INT32":
+                //     case "DOUBLE":
+                //         return { uniqueVal: item.attributes[field] };
+                //         break;
+                //     default:
+                //         return { uniqueVal: '\'' + item.attributes[field] + '\'' };
+                //         break;
+                // }
+                return item.properties[field];
+            });
+            this.serverSearch.layerFix = data;
+            if (this.serverSearch.layerFix.length > 0) {
+                div[1].innerText = ''
+            } else {
+                div[1].innerText = '字段无属性'
+            }
+            div[0].style.display = 'none'
+        }).catch(err => {
+            this.$message.error('获取唯一值失败');
         })
     }
 
     /**
      * 清除图层
     */
-    clearLayer(layer) {
-        if (layer && layer.removeAll) {
-            layer.removeAll();
+    clearLayer(layer: VectorLayer<VectorSource<any>>) {
+        if (layer) {
+            layer.getSource().clear();
         }
     }
 
@@ -2344,56 +2304,80 @@ export default class XjPlanManagement extends Vue {
         let mapView = this.mapV;
         let that = this;
         this.clearSearchLayer();
-        loadModules(["esri/views/draw/Draw", "esri/geometry/Polygon"], { url: esriConfig.baseUrl }).then(([Draw, Polygon]) => {
-            mapView.when(() => {
-                if (this.drawInfo.drawEvent) {
-                    this.drawInfo.drawEvent.reset();
-                }
-                this.drawInfo.drawEvent = new Draw({
-                    view: mapView
-                })
-                let action = this.drawInfo.drawEvent.create("polygon")
-                action.on("vertex-add", function (evt) {
-                    addPolygon(evt);
-                });
-                action.on("cursor-update", function (evt) {
-                    addPolygon(evt);
-                });
-                action.on("vertex-remove", function (evt) {
-                    addPolygon(evt);
-                });
-                action.on("draw-complete", function (evt) {
-                    //@ts-ignore
-                    that.$refs.mapBox.style.cursor = 'default'
-                    addPolygon(evt, true);
-                });
-                function addPolygon(evt, action?) {
-                    that.clearLayer(that.comLayerList.drawLayer);
-                    var symbol = {
-                        type: "simple-fill",
-                        color: that.drawInfo.drawColor,
-                        style: "solid",
-                        outline: {
-                            color: that.drawInfo.drawColor,
-                            width: 1
-                        }
-                    };
-                    let polygon = new Polygon({
-                        rings: [evt.vertices],
-                        spatialReference: that.mapV.spatialReference,
-                        type: "polygon"
-                    })
-                    let graphic = new that.data.mapView.TF_graphic({
-                        geometry: polygon,
-                        symbol: symbol
-                    });
-                    if (action) {
-                        that.drawEndHandle(graphic);
-                    }
-                    that.comLayerList.drawLayer.add(graphic);
-                }
-            })
+        const mapV = this.data.mapView;
+        const map = this.mapV;
+        if(this.draw){
+            this.mapV.removeInteraction(this.draw);
+            this.draw=null;
+          }
+          if (this.comLayerList.drawLayer) {
+            this.comLayerList.drawLayer.getSource().clear();
+          }
+        //this.isDrawEnd = false
+        this.draw = new Draw({
+            type: "POLYGON",
+            source: this.comLayerList.drawLayer.getSource()
         })
+        this.draw.on('drawend', (e) => {
+            const geometry = (e.feature as Feature<Polygon>).getGeometry();
+            console.log(geometry);
+            //记录组成线的点信息
+            let geometrys = geometry.getCoordinates();
+            //this.editInfo.geometry = JSON.stringify(geometrys);
+            map.removeInteraction(this.draw);
+            this.draw = null;
+        })
+        map.addInteraction(this.draw);
+        // loadModules(["esri/views/draw/Draw", "esri/geometry/Polygon"], { url: esriConfig.baseUrl }).then(([Draw, Polygon]) => {
+        //     mapView.when(() => {
+        //         if (this.drawInfo.drawEvent) {
+        //             this.drawInfo.drawEvent.reset();
+        //         }
+        //         this.drawInfo.drawEvent = new Draw({
+        //             view: mapView
+        //         })
+        //         let action = this.drawInfo.drawEvent.create("polygon")
+        //         action.on("vertex-add", function (evt) {
+        //             addPolygon(evt);
+        //         });
+        //         action.on("cursor-update", function (evt) {
+        //             addPolygon(evt);
+        //         });
+        //         action.on("vertex-remove", function (evt) {
+        //             addPolygon(evt);
+        //         });
+        //         action.on("draw-complete", function (evt) {
+        //             //@ts-ignore
+        //             that.$refs.mapBox.style.cursor = 'default'
+        //             addPolygon(evt, true);
+        //         });
+        //         function addPolygon(evt, action?) {
+        //             that.clearLayer(that.comLayerList.drawLayer);
+        //             var symbol = {
+        //                 type: "simple-fill",
+        //                 color: that.drawInfo.drawColor,
+        //                 style: "solid",
+        //                 outline: {
+        //                     color: that.drawInfo.drawColor,
+        //                     width: 1
+        //                 }
+        //             };
+        //             let polygon = new Polygon({
+        //                 rings: [evt.vertices],
+        //                 spatialReference: that.mapV.spatialReference,
+        //                 type: "polygon"
+        //             })
+        //             let graphic = new that.data.mapView.TF_graphic({
+        //                 geometry: polygon,
+        //                 symbol: symbol
+        //             });
+        //             if (action) {
+        //                 that.drawEndHandle(graphic);
+        //             }
+        //             that.comLayerList.drawLayer.add(graphic);
+        //         }
+        //     })
+        // })
     }
 
     /**
@@ -2407,7 +2391,70 @@ export default class XjPlanManagement extends Vue {
             }
         })
     }
+    /**
+         * 根据条件查询管网数据数据
+         * currentData 当前查询的管网数据（不传入的值，则会使用当前的显示的面板）
+        */
+    getGeoData2(searChPlan) {
+        let that = this;
+        let currentData = null;
+        if (!searChPlan.planInfo) {
+            currentData = this.getCurrentPlanTypeInfo();
+            currentData.planInfo.where = that.serverSearch.queText
+        } else {
+            currentData = searChPlan;
+        }
+        let currentPlane = this.getCurrentPlanTypeInfo();
+        if (currentPlane == currentData) {
+            currentData.planInfo.where = that.serverSearch.queText;
+        }
+        let data = {
+            where: currentData.planInfo.where,
+            returnGeometry: false,
+            returnIdsOnly: true,
+            f: "pjson",
+            geometry: null,
+            geometryType: ""
+        };
+        this.clearLayer(currentData.planInfo.layer);
+        this.clearLayer(this.comLayerList.highLayer);
+        currentData.planInfo.tableData = [];
+        currentData.planInfo.pageInfo.currentData = [];
+        currentData.planInfo.pageInfo.currentIndex = 1;
+        //求取片区与绘制区域的交集
+        // if (currentData.planInfo.drawGraphic && currentData.planInfo.drawGraphic.geometry) {
+        //     let dataGeo = null;
+        //     if (that.planModel.regionInfo.currentRegionGeo) {
+        //         dataGeo = that.arcgis.geometryEngine.intersect(currentData.planInfo.drawGraphic.geometry, that.planModel.regionInfo.currentRegionGeo);
+        //     } else {
+        //         dataGeo = currentData.planInfo.drawGraphic.geometry;
+        //     }
+        //     if (dataGeo) {
+        //         //that.selectGeo=dataGeo.toJSON();
+        //     } else {
+        //         this.$message({ type: "info", message: "未查询到数据" });
+        //         return;
+        //     }
+        //     //data.geometry=JSON.stringify(that.selectGeo);
+        //     data.geometryType = "esriGeometryPolygon";
+        // } else {
+        //     if (that.planModel.regionInfo.currentRegionGeo) {
+        //         data.geometry = JSON.stringify(that.planModel.regionInfo.currentRegionGeo);
+        //         data.geometryType = "esriGeometryPolygon";
+        //     }
+        // }
+        //查询
+        SuperMapService.queryByMapService({
+            url: appconfig.gisResource.business_map.config[0].url,
+            datasetNames: [currentData.layerNameEn],
+            whereclause: currentData.planInfo.where
+        }).then(result => {
+            console.log(result);
+        }).catch(err => {
+            this.$message.error('查询数据失败');
+        })
 
+    }
     /**
      * 根据条件查询管网数据数据
      * currentData 当前查询的管网数据（不传入的值，则会使用当前的显示的面板）
@@ -2439,27 +2486,27 @@ export default class XjPlanManagement extends Vue {
         currentData.planInfo.pageInfo.currentData = [];
         currentData.planInfo.pageInfo.currentIndex = 1;
         //求取片区与绘制区域的交集
-        if (currentData.planInfo.drawGraphic && currentData.planInfo.drawGraphic.geometry) {
-            let dataGeo = null;
-            if (that.planModel.regionInfo.currentRegionGeo) {
-                dataGeo = that.arcgis.geometryEngine.intersect(currentData.planInfo.drawGraphic.geometry, that.planModel.regionInfo.currentRegionGeo);
-            } else {
-                dataGeo = currentData.planInfo.drawGraphic.geometry;
-            }
-            if (dataGeo) {
-                //that.selectGeo=dataGeo.toJSON();
-            } else {
-                this.$message({ type: "info", message: "未查询到数据" });
-                return;
-            }
-            //data.geometry=JSON.stringify(that.selectGeo);
-            data.geometryType = "esriGeometryPolygon";
-        } else {
-            if (that.planModel.regionInfo.currentRegionGeo) {
-                data.geometry = JSON.stringify(that.planModel.regionInfo.currentRegionGeo);
-                data.geometryType = "esriGeometryPolygon";
-            }
-        }
+        // if (currentData.planInfo.drawGraphic && currentData.planInfo.drawGraphic.geometry) {
+        //     let dataGeo = null;
+        //     if (that.planModel.regionInfo.currentRegionGeo) {
+        //         dataGeo = that.arcgis.geometryEngine.intersect(currentData.planInfo.drawGraphic.geometry, that.planModel.regionInfo.currentRegionGeo);
+        //     } else {
+        //         dataGeo = currentData.planInfo.drawGraphic.geometry;
+        //     }
+        //     if (dataGeo) {
+        //         //that.selectGeo=dataGeo.toJSON();
+        //     } else {
+        //         this.$message({ type: "info", message: "未查询到数据" });
+        //         return;
+        //     }
+        //     //data.geometry=JSON.stringify(that.selectGeo);
+        //     data.geometryType = "esriGeometryPolygon";
+        // } else {
+        //     if (that.planModel.regionInfo.currentRegionGeo) {
+        //         data.geometry = JSON.stringify(that.planModel.regionInfo.currentRegionGeo);
+        //         data.geometryType = "esriGeometryPolygon";
+        //     }
+        // }
         //根据求取的交集查询交集区域内的设备或者管线的objectId
         that.queryServce(data, currentData.layerId, function (result) {
             if (searChPlan) {
@@ -2703,11 +2750,11 @@ export default class XjPlanManagement extends Vue {
                     "lat": item.geometry.paths[0][1][0],
                     "lng": item.geometry.paths[0][1][1],
                     "length": listitem.pipelength,
-                    "geometry": JSON.stringify({
-                        paths: item.geometry.paths,
-                        spatialReference: this.mapV.spatialReference,
-                        type: "polyline"
-                    }),
+                    // "geometry": JSON.stringify({
+                    //     paths: item.geometry.paths,
+                    //     spatialReference: this.mapV.spatialReference,
+                    //     type: "polyline"
+                    // }),
                 })
             }
         });
@@ -2746,19 +2793,13 @@ export default class XjPlanManagement extends Vue {
     rowSelectPlan(row) {
         if (row.geometry) {
             let geo = null;
-            if (row.geometry.paths) {
-                geo = row.geometry;
-            } else {
-                geo = JSON.parse(row.geometry);
-            }
-            if (geo.paths) {
-                let lines = geo.paths;
-                this.hLineToMap(lines);
-            };
+            geo = JSON.parse(row.geometry);
+            let lines = geo;
+            this.hLineToMap(lines);
             return;
         }
         if (row.lat && row.lng) {
-            this.highPointToMap([row.lat, row.lng]);
+            this.highPointToMap([row.lng, row.lat]);
         }
     }
 

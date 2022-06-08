@@ -99,15 +99,15 @@ import { settingDeviceTypeCols, settingDeviceTypeParamCols } from '@/views/monit
 import TypeForm from './TypeForm.vue'
 import ParamForm from './ParamForm.vue'
 import {
-  typesPage,
+  deviceTypesPage,
   IPagination,
-  typeParamsPage,
-  addType,
-  updateType,
-  deleteTypeBatch,
-  updateTypeParam,
-  addTypeParam,
-  deleteTypeParamBatch,
+  deviceTypeParamsPage,
+  addDeviceType,
+  updateDeviceType,
+  deleteDeviceTypeBatch,
+  updateDeviceTypeParam,
+  addDeviceTypeParam,
+  deleteDeviceTypeParamBatch,
   IDeviceType,
   IDeviceTypeParam
 } from '@/views/monitoring/api'
@@ -178,7 +178,7 @@ export default class DeviceTypes extends Vue {
     try {
       const {
         result: { records, size, total, current }
-      } = await typesPage({ ...this.pagination.type, ...query })
+      } = await deviceTypesPage({ ...this.pagination.type, ...query })
       this.pagination = { ...this.pagination, type: { current, size, total } }
       this.types = records || []
     } catch (error) {
@@ -194,7 +194,7 @@ export default class DeviceTypes extends Vue {
     try {
       const {
         result: { records, size, total, current }
-      } = await typeParamsPage({ typeId, ...this.pagination.param, ...query })
+      } = await deviceTypeParamsPage({ typeId, ...this.pagination.param, ...query })
       this.pagination = { ...this.pagination, param: { current, size, total } }
       this.params = records || []
     } catch (error) {
@@ -206,7 +206,7 @@ export default class DeviceTypes extends Vue {
   async onTypeSubmit(data) {
     this.loading.typeSubmitting = true
     try {
-      const { result } = await (data.id ? updateType(data) : addType(data))
+      const { result } = await (data.id ? updateDeviceType(data) : addDeviceType(data))
       this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}设备类型${result ? '成功!' : '失败!'}`)
       if (result) {
         this.visible.type = false
@@ -222,8 +222,8 @@ export default class DeviceTypes extends Vue {
     this.loading.paramSubmitting = true
     try {
       const { result } = await (data.id
-        ? updateTypeParam(data)
-        : addTypeParam({ ...data, typeId: this.current.type.id }))
+        ? updateDeviceTypeParam(data)
+        : addDeviceTypeParam({ ...data, typeId: this.current.type.id }))
       this.$message[result ? 'success' : 'error'](`${data.id ? '修改' : '新增'}参数${result ? '成功!' : '失败!'}`)
       if (result) {
         this.visible.param = false
@@ -243,7 +243,7 @@ export default class DeviceTypes extends Vue {
     })
     this.loading.typeDeleting = true
     try {
-      const { result } = await deleteTypeBatch(this.selected.type.map(({ id }) => id).join())
+      const { result } = await deleteDeviceTypeBatch(this.selected.type.map(({ id }) => id).join())
       this.$message[result ? 'success' : 'error'](`删除设备类型${result ? '成功!' : '失败!'}`)
       result && this.onTypeQuery()
     } catch (error) {
@@ -260,7 +260,7 @@ export default class DeviceTypes extends Vue {
     })
     this.loading.paramDeleting = true
     try {
-      const { result } = await deleteTypeParamBatch(this.selected.param.map(({ id }) => id).join())
+      const { result } = await deleteDeviceTypeParamBatch(this.selected.param.map(({ id }) => id).join())
       this.$message[result ? 'success' : 'error'](`删除设备参数${result ? '成功!' : '失败!'}`)
       result && this.onParamQuery()
     } catch (error) {

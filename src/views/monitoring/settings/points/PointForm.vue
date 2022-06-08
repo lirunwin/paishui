@@ -10,18 +10,29 @@
             <el-row type="flex" :gutter="10">
               <el-col>
                 <el-form-item label="关联设施" :prop="`${sectionName}.facility`">
-                  <el-input v-model="formData[sectionName]['facility']" placeholder="请选择排水设施" size="small" />
+                  <el-input
+                    v-model="formData[sectionName]['facility']"
+                    placeholder="请选择排水设施"
+                    size="small"
+                    disabled
+                  />
                 </el-form-item>
               </el-col>
               <el-col style="flex:0 0 5em;text-align:center">
-                <el-button type="primary" size="small">图上选点</el-button>
+                <el-button
+                  :type="enable.device ? 'warning' : 'primary'"
+                  @click="enable.device = !enable.device"
+                  :disabled="enable.coordinate || !formData.basis.coordiateX || !formData.basis.coordiateY"
+                  size="small"
+                  >图上选点</el-button
+                >
               </el-col>
             </el-row>
           </el-col>
           <el-col :span="24" />
           <el-col v-for="{ name, label } of items.filter((item) => item.type === 'txt')" :key="name" :span="8">
-            <el-form-item :label="label" :prop="name">
-              <span>asdsa</span>
+            <el-form-item :label="`${label}: `" :prop="name">
+              <span>{{ formData.siteFacility[name] }}</span>
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -35,7 +46,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row v-else :gutter="20" :key="`else-${sectionName}-items`">
+        <el-row v-else :gutter="20" :key="`else-${sectionName}-items`" type="flex">
           <el-col :span="12">
             <el-form-item
               v-for="{
@@ -63,7 +74,7 @@
                         v-model="formData[sectionName].coordiateX"
                         placeholder="经度"
                         v-bind="getDefalutNumberProp()"
-                        :precision="3"
+                        :precision="7"
                         :controls="false"
                       />
                     </el-form-item>
@@ -75,13 +86,19 @@
                         v-model="formData[sectionName].coordiateY"
                         placeholder="纬度"
                         v-bind="getDefalutNumberProp()"
-                        :precision="3"
+                        :precision="7"
                         :controls="false"
                       />
                     </el-form-item>
                   </el-col>
                   <el-col style="flex:0 0 5em;text-align:center">
-                    <el-button type="primary" size="small">图上选点</el-button>
+                    <el-button
+                      :type="enable.coordinate ? 'warning' : 'primary'"
+                      @click="enable.coordinate = !enable.coordinate"
+                      :disabled="enable.device"
+                      size="small"
+                      >图上选点</el-button
+                    >
                   </el-col>
                 </el-row>
               </template>
@@ -147,7 +164,13 @@
               </div>
             </template>
             <template v-else>
-              <div>this is a map</div>
+              <Map
+                @coordinate-change="onCoordinateChange"
+                @device-change="onDeviceChange"
+                :enableCoordinateSelect="enable.coordinate"
+                :enableDeviceSelect="enable.device"
+                :center="mapCenter"
+              />
             </template>
           </el-col>
         </el-row>
@@ -170,6 +193,8 @@ import { getDefalutNumberProp } from '@/views/monitoring/utils'
 import { telAndMobileReg } from '@/utils/constant'
 import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
 import { getRemoteImg } from '@/api/ftp'
+import Map from './Map.vue'
+import { Feature } from 'ol'
 
 interface FormItem {
   name?: string
@@ -197,20 +222,25 @@ const defaultFormData = () => ({
     address: '',
     note: ''
   },
-  siteFacility: { facility: '', facilityNote: '' },
+  siteFacility: { facility: '', facilityNote: '', facilityCode: '', facilityType: '', facilityRoadName: '' },
   bindDevice: { typeId: '', deviceId: '', installUser: '', installPhone: '', installTime: '' },
   fileList: []
 })
 
-@Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
+@Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable, Map } })
 export default class PointForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   $refs!: { form: ElForm }
+
   getDefalutNumberProp = getDefalutNumberProp
   get listeners() {
     const { submit, ...rest } = this.$listeners
     return rest
+  }
+
+  get mapView() {
+    return (this.$attrs.data as any).mapView
   }
   dialogVisible = false
   dialogImageUrl = ''
@@ -220,6 +250,10 @@ export default class PointForm extends Vue {
   } = defaultFormData()
 
   archives: IDevice[] = []
+
+  mapCenter: number[] = []
+
+  enable = { coordinate: false, device: false }
 
   get formItems(): FormItem[] {
     return [
@@ -342,15 +376,36 @@ export default class PointForm extends Vue {
     this.dialogVisible = true
   }
 
+  onCoordinateChange([coordiateX, coordiateY]) {
+    this.mapCenter = [Number(coordiateX), Number(coordiateY)]
+    this.formData.basis.coordiateX = Math.floor(coordiateX * 10000000) / 10000000
+    this.formData.basis.coordiateY = Math.floor(coordiateY * 10000000) / 10000000
+  }
+  onDeviceChange(geo) {
+    const {
+      geometry,
+      id,
+      properties: { ADDRESS, LNO, TYPE }
+    } = geo
+    this.formData.siteFacility = {
+      facility: id,
+      facilityGeometry: JSON.stringify(geometry),
+      facilityCode: LNO,
+      facilityType: TYPE,
+      facilityRoadName: ADDRESS
+    }
+  }
+
   @Watch('data', { immediate: true })
   setDefaultData(val: IPointConnectDevice) {
-    const { id, siteFacility = {}, bindDevice = {}, ...rest } = val || {}
+    const { id, siteFacility = {}, bindDevice = {}, coordiateX, coordiateY, ...rest } = val || {}
     const { filePathList, deviceVo } = bindDevice || {}
     const { type: typeId, id: deviceId } = deviceVo || {}
     typeId && this.onTypeChange(typeId, false)
+    if (coordiateX && coordiateY) this.mapCenter = [Number(coordiateX), Number(coordiateY)]
     this.formData = val.id
       ? {
-          basis: { id, ...rest },
+          basis: { id, coordiateX: coordiateX || undefined, coordiateY: coordiateY || undefined, ...rest },
           siteFacility: siteFacility || {},
           bindDevice: { ...(bindDevice || {}), typeId, deviceId },
           fileList: (filePathList || []).map((path, index) => ({

@@ -131,13 +131,9 @@ const actions = {
                 path: autoLink(item.type, item)
               }
             })
-            menus.some((item, i) => {
-              if (item.name === 'bigScreen') menus.splice(i, 1)
-            })
             commit('SET_NAVMENUS', menus)
             let routes = data.map((item) => item.childrens)
             routes = routes.flat()
-            // console.log(routes)
 
             const addRouter = packageRouter(routes)
             commit('SET_ROUTES', addRouter)

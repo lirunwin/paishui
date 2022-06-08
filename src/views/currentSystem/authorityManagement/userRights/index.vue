@@ -236,7 +236,7 @@
           <span>个性签名图片：</span>
           <el-image
             style="width: 100px; height: 100px"
-            :src="multipleSelection[0].esignature"
+            :src="imageByName(multipleSelection[0].esignature)"
             :preview-src-list="[multipleSelection[0].esignature]"
           >
           </el-image>
@@ -246,7 +246,7 @@
           <span>用户头像：</span>
           <el-image
             style="width: 100px; height: 100px"
-            :src="multipleSelection[0].avatar"
+            :src="imageByName(multipleSelection[0].avatar)"
             :preview-src-list="[multipleSelection[0].avatar]"
           >
           </el-image>
@@ -262,15 +262,15 @@
           <span>申请说明：</span><span>{{ multipleSelection[0].applystate }}</span>
         </div>
         <div>
-          <span>申请人：</span><span>{{ multipleSelection[0].createUserName }}</span>
+          <span>申请人：</span><span>{{ multipleSelection[0].applyer }}</span>
         </div>
         <div>
-          <span>申请时间：</span><span>{{ multipleSelection[0].createTime }}</span>
+          <span>申请时间：</span><span>{{ multipleSelection[0].applytime }}</span>
         </div>
       </div>
       <div class="audit-info">
         <span class="audit-title">审核信息</span>
-        <el-form ref="auditForm" :model="auditInfo" :rules="auditRules" label-position="right" label-width="100px">
+        <el-form ref="auditForm" :model="auditInfo" label-position="right" label-width="100px">
           <el-form-item style="margin-bottom: 15px" label="角色复制">
             <el-select
               v-model="copyRole"
@@ -285,7 +285,13 @@
               <el-option v-for="item in copyUsers" :key="item.id" :label="item.name" :value="item.id" />
             </el-select>
           </el-form-item>
-          <el-form-item label="角色：" prop="roles" style="margin-bottom: 20px">
+
+          <el-form-item
+            label="角色："
+            prop="roles"
+            style="margin-bottom: 20px"
+            :rules="[{ required: auditInfo.auditStatus === '2', validator: roleValidate, trigger: 'blur' }]"
+          >
             <el-select v-model="auditInfo.roles" style="width: 300px" multiple>
               <template v-for="item in role.optionsRole">
                 <template>
@@ -294,7 +300,12 @@
               </template>
             </el-select>
           </el-form-item>
-          <el-form-item label="审核状态：" prop="auditStatus" style="margin-bottom: 20px">
+          <el-form-item
+            label="审核状态："
+            prop="auditStatus"
+            style="margin-bottom: 20px"
+            :rules="[{ required: true, message: '审核状态不能为空', trigger: 'change' }]"
+          >
             <el-select v-model="auditInfo.auditStatus" style="width: 300px" placeholder="请选择审核状态">
               <el-option key="0" value="0" label="不同意" />
               <el-option key="2" value="2" label="同意" />
@@ -556,13 +567,14 @@ export default class UserRights extends Vue {
     {
       label: '创建时间',
       width: 160,
-      prop: 'createTime',
+      prop: 'applytime',
       sortable: true
     },
+
     {
       label: '创建人',
       width: 120,
-      prop: 'createUserName',
+      prop: 'applyer',
       sortable: true
     },
     {
@@ -657,10 +669,6 @@ export default class UserRights extends Vue {
     roleBind: false,
     roleName: '',
     optionsRole: []
-  }
-  auditRules = {
-    roles: [{ required: true, validator: this.roleValidate, trigger: 'blur' }],
-    auditStatus: [{ required: true, message: '审核状态不能为空', trigger: 'change' }]
   }
   // 审核信息
   auditInfo = {
@@ -789,8 +797,8 @@ export default class UserRights extends Vue {
     //     }
     //   })
     // })
-    this.multipleSelection[0].esignature = imageByName(this.multipleSelection[0].esignature)
-    this.multipleSelection[0].avatar = imageByName(this.multipleSelection[0].avatar)
+    // this.multipleSelection[0].esignature = imageByName(this.multipleSelection[0].esignature)
+    // this.multipleSelection[0].avatar = imageByName(this.multipleSelection[0].avatar)
 
     // 审核页面，默认同意
     this.auditInfo.auditStatus = '2'

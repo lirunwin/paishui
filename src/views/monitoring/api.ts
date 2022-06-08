@@ -70,6 +70,7 @@ const uris = {
       isConfigured: `${base}/monitorsiteindicate/validateOtherIndicate`,
       /** method: POST */
       submitSettings: `${base}/monitorsitepara/saveOrUpdateBatch`,
+      /** method: POST  获取配置信息 */
       configurations: `${base}/monitorsiteindicate/getByMonitorId`
     },
     /** 监测站管理 */
@@ -229,7 +230,7 @@ export interface IDeviceTypeParam extends ICreator {
   code?: string
   /** 参数缩写 */
   codeAbridge?: string
-  id?: number
+  id?: number | string
   /** 是否显示 0 false 1true */
   isDisplay?: boolean | number
   lrange?: string
@@ -247,9 +248,9 @@ export interface IDeviceTypeParam extends ICreator {
   /** 数据采集频率，单位分钟 */
   rate?: number
   /**量程下限 */
-  lrangeLow?: string
+  lrangeLow?: string | number
   /** 量程上限 */
-  lrangeUp?: string
+  lrangeUp?: string | number
 }
 
 export interface IDevice extends ICreator {
@@ -320,7 +321,7 @@ export interface IStandardParam extends ICreator {
   /** 是否特定阈值 */
   isSpecial?: boolean | number
   /** 特定阀值 */
-  specialVal?: number
+  specialVal?: number | string
   deviceTypeParaVo?: {
     code?: string | number
     codeAbridge?: string
@@ -442,9 +443,9 @@ export interface IPointParam {
   /** 是否展示 false true */
   isDisplay?: boolean | number
   /** 量程下限 */
-  lrangeLow?: number
+  lrangeLow?: number | string
   /** 量程上限 */
-  lrangeUp?: number
+  lrangeUp?: number | string
   /** 参数名称 */
   name?: string
   /** 备注 */
@@ -475,7 +476,7 @@ export interface IPointThreshold extends ICreator {
   /** 监测指标参数id 关联 设备基础配置信息id */
   paraId?: string | number
   /** 特殊阈值 */
-  specialVal?: string
+  specialVal?: string | number
   /** 有效时间开始 */
   start?: string
   /** 上限 */
@@ -562,45 +563,45 @@ export const getStream = (fileName: string) =>
   axios.request<IRes>({ url: uris.common.getStream, method: 'get', params: { fileName } })
 
 // 设备类型
-export const addType = (data: Omit<IDeviceType, 'id'>) =>
+export const addDeviceType = (data: Omit<IDeviceType, 'id'>) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.base, method: 'post', data })
 
-export const deleteType = (id: string) =>
+export const deleteDeviceType = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.settings.device.types.base}/${id}`, method: 'delete' })
 
-export const updateType = (data: IDeviceType) =>
+export const updateDeviceType = (data: IDeviceType) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.base, method: 'put', data })
 
-export const getType = (id: string) =>
+export const getDeviceType = (id: string) =>
   axios.request<IRes<IDeviceType>>({ url: `${uris.settings.device.types.base}/${id}`, method: 'get' })
 
-export const typesPage = (params: IDeviceType & IQueryCommon) =>
+export const deviceTypesPage = (params: IDeviceType & IQueryCommon) =>
   axios.request<IRes<IDeviceType[]>>({
     url: uris.settings.device.types.page,
     method: 'get',
     params
   })
 
-export const deleteTypeBatch = (ids: string) =>
+export const deleteDeviceTypeBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.del, method: 'delete', params: { ids } })
 
 // 设备类型参数
-export const addTypeParam = (data: Omit<IDeviceTypeParam, 'id'>) =>
+export const addDeviceTypeParam = (data: Omit<IDeviceTypeParam, 'id'>) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.params.base, method: 'post', data })
 
-export const deleteTypeParam = (id: string) =>
+export const deleteDeivceTypeParam = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.settings.device.types.params.base}/${id}`, method: 'delete' })
 
-export const updateTypeParam = (data: IDeviceTypeParam) =>
+export const updateDeviceTypeParam = (data: IDeviceTypeParam) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.params.base, method: 'put', data })
 
-export const getTypeParam = (id: string) =>
+export const getDeviceTypeParam = (id: string) =>
   axios.request<IRes<IDeviceTypeParam>>({ url: `${uris.settings.device.types.params.base}/${id}`, method: 'get' })
 
-export const typeParamsPage = (params: IDeviceTypeParam & IQueryCommon & { LRange?: string }) =>
+export const deviceTypeParamsPage = (params: IDeviceTypeParam & IQueryCommon & { LRange?: string }) =>
   axios.request<IRes<IDeviceTypeParam[]>>({ url: uris.settings.device.types.params.page, method: 'get', params })
 
-export const deleteTypeParamBatch = (ids: string) =>
+export const deleteDeviceTypeParamBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.params.del, method: 'delete', params: { ids } })
 
 // 设备档案

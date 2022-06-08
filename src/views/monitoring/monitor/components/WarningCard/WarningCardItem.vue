@@ -18,7 +18,7 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 
-@Component({ name: 'WarningCardItem', components: {} })
+@Component({ name: 'WarningCardItem' })
 export default class WarningCardItem extends Vue {}
 </script>
 
