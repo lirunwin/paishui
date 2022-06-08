@@ -115,7 +115,7 @@ export default class ParamForm extends Vue {
         rules: [
           { required: true, message: '参数代码不能为空！', trigger: 'blur' },
           { max: 20, message: '参数代码不超过20个字符' },
-          { pattern: /^[a-zA-Z][\w-]+$/, message: '字母开头,允许输入英文、数字', trigger: 'blur' }
+          { pattern: /^[a-zA-Z][\w-]*$/, message: '字母开头,允许输入英文、数字', trigger: 'blur' }
         ],
         size: 'small',
         required: true
@@ -126,7 +126,7 @@ export default class ParamForm extends Vue {
         rules: [
           { required: false, message: '参数简称不能为空！', trigger: 'blur' },
           { max: 20, message: '参数简称不超过20个字符' },
-          { pattern: /^[a-zA-Z][\w-]+$/, message: '字母开头,允许输入英文、数字', trigger: 'blur' }
+          { pattern: /^[a-zA-Z][\w-]*$/, message: '字母开头,允许输入英文、数字', trigger: 'blur' }
         ],
         size: 'small'
       },

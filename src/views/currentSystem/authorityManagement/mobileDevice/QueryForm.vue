@@ -106,7 +106,7 @@ import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
 import { getMobileDeviceUsers } from './api'
 import { mdAppVersion, mdAuditStataus, mdStatus } from './utils'
 
-@Component({ name: 'QueryForm', components: {} })
+@Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({ query: false, add: false, del: false, review: false }) })
   loading!: { query?: boolean; add?: boolean; del?: boolean; review?: boolean }

@@ -132,7 +132,7 @@ export interface IQuery {
   siteGroup?: string
 }
 
-@Component({ name: 'QueryForm', components: {} })
+@Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) loading!: ILoading
   @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]

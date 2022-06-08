@@ -66,7 +66,7 @@
 <script lang="ts">
 import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
 
-@Component({ name: 'QueryForm', components: {} })
+@Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({ query: false, add: false, update: false, del: false, export: false }) })
   loading!: { query?: boolean; add?: boolean; update?: boolean; del?: boolean; export?: boolean }

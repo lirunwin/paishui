@@ -38,7 +38,7 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
 
-@Component({ name: 'InfoCard', components: {} })
+@Component({ name: 'InfoCard' })
 export default class InfoCard extends Vue {
   @Prop({ type: Object, default: () => ({}) }) info!: {
     id?: string

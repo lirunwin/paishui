@@ -104,12 +104,8 @@
             >
               <el-select v-model="formData.threshold[index].paraId" placeholder="请选择参数名称">
                 <el-option
-                  v-for="param of standardParams"
-                  :label="
-                    param.deviceTypeParaVo
-                      ? `${param.deviceTypeParaVo.name} | ${param.deviceTypeParaVo.code}`
-                      : param.deviceTypeParaId
-                  "
+                  v-for="param of deviceTypePrams"
+                  :label="param.name"
                   :value="param.id"
                   :key="param.id"
                   :disabled="formData.threshold.filter((i) => i.paraId === param.id).length === levels.length"
@@ -134,9 +130,9 @@
               <el-option
                 v-for="level of levels"
                 :label="level.notes"
-                :value="level.id"
+                :value="level.codeValue"
                 :key="level.id"
-                :disabled="formData.threshold.some((i) => i.paraId === item.paraId && i.level === level.id)"
+                :disabled="formData.threshold.some((i) => String(i.level) === String(level.codeValue))"
               />
             </el-select>
           </el-form-item>
@@ -190,11 +186,8 @@
             label-width="0"
             style="margin-bottom: 0"
           >
-            <el-input-number
+            <el-input
               v-model="formData.threshold[index].specialVal"
-              :controls="false"
-              :min="0"
-              :precision="2"
               size="small"
               style="width: 60px"
               @change="() => onSpecialValChange(index)"
@@ -314,9 +307,11 @@ import {
   IPointParam,
   IPointThreshold,
   IStandard,
+  IDeviceTypeParam,
+  standardsPage,
+  deviceTypeParamsPage,
   IStandardParam,
-  standardParamsPage,
-  standardsPage
+  standardParamsPage
 } from '@/views/monitoring/api'
 
 interface IThreshold extends IPointThreshold {
@@ -330,15 +325,11 @@ export interface IPointThresholdFormData {
   indicateId?: string
 }
 
-const getDefaultThresholdValue = (
-  id: string | number = '',
-  value: { name?: string; paraId?: string } = { paraId: '' }
-): IThreshold =>
+const getDefaultThresholdValue = (id: string | number = '', value: IThreshold = { paraId: '' }): IThreshold =>
   Object.defineProperty(
     {
       //  name
       // paraId   // 监测指标参数id 关联 设备基础配置信息id
-      ...value,
       level: '',
       lower: undefined, // threshold
       upper: undefined, // threshold
@@ -349,15 +340,16 @@ const getDefaultThresholdValue = (
       specialVal: undefined,
       isPush: 1,
       isSpecial: false,
-      timeRange: [moment('00:00', format).toDate(), moment('23:59', format).toDate()]
+      timeRange: [moment('00:00', format).toDate(), moment('23:59', format).toDate()],
+      ...value
     },
     'id',
     { enumerable: false, configurable: true, value: id }
   )
 const getDefaultFormData = (): IPointThresholdFormData => ({ threshold: [], param: [], indicateId: '' })
 
-@Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable } })
-export default class PointForm extends Vue {
+@Component({ name: 'PointThresholdForm', components: { BaseDialog, BaseTitle, BaseTable } })
+export default class PointThresholdForm extends Vue {
   @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
   $refs!: { form: ElForm }
   $listeners!: { open?: Function; submit?: Function; closed: Function }
@@ -375,6 +367,8 @@ export default class PointForm extends Vue {
   fetching: boolean = false
 
   standards: IStandard[] = []
+
+  deviceTypePrams: IDeviceTypeParam[] = []
 
   standardParams: IStandardParam[] = []
 
@@ -437,39 +431,68 @@ export default class PointForm extends Vue {
   }
 
   async onStandardChange(indicateId: string, reset: boolean = true) {
+    const { type: typeId } = this.standards.find((item) => item.id === indicateId) || {}
+    if (!typeId) return
     this.fetching = true
     try {
       const {
-        result: { records }
-      } = await standardParamsPage({ indicateId, isUse: 1, current: 1, size: 999999 })
-      this.standardParams = records
+        result: { records: deviceTypePrams }
+      } = await deviceTypeParamsPage({ typeId, current: 1, size: 999999 })
+
+      this.deviceTypePrams = deviceTypePrams
+      const {
+        result: { records: standardParams }
+      } = await standardParamsPage({ indicateId, current: 1, size: 999999 })
+
+      this.standardParams = standardParams
       if (reset) {
         this.formData = {
           ...this.formData,
           // 缺deviceId 设备id 但有deviceTypeParaId， indicateId 监测体系id
-          param: records.map<IPointParam>(({ id, upper, lower, isSpecial, specialVal, deviceTypeParaVo }, index) => {
-            const { name, code, codeAbridge, unit } = deviceTypeParaVo || {}
+          param: deviceTypePrams.map<IPointParam>(({ id, lrangeUp, lrangeLow, ...rest }, index) => {
             return {
-              name,
-              code,
-              codeAbridge,
+              ...rest,
               deviceId: this.deviceId,
               indicateId,
-              indicateParaId: id,
-              unit,
+              indicateParaId: (
+                standardParams.find((item) => item.deviceTypeParaVo && item.deviceTypeParaVo.id === id) || {}
+              ).id,
               id: '__temp__' + id,
-              lrangeUp: upper, // 体系参数叫upper 存的时候叫  lrangeUp
-              lrangeLow: lower, // 体系参数叫lower 存的时候叫  lrangeLow
+              lrangeUp: lrangeUp || undefined,
+              lrangeLow: lrangeLow || undefined,
               sort: index + 1,
-              siteCode: '', //  后台是 number
+              siteCode: '',
               isDisplay: 1,
-              isSpecial,
-              specialVal
+              note: ''
             }
           }),
-          threshold: records.map<IPointThreshold>(({ id, deviceTypeParaVo }, index) => {
-            const { name, code } = deviceTypeParaVo || {}
-            return getDefaultThresholdValue(`__temp__${index}`, { name: `${name} | ${code}`, paraId: id })
+          threshold: deviceTypePrams.map<IPointThreshold>(({ id, name }, index) => {
+            const {
+              id: paraId,
+              lower,
+              upper,
+              lowerTolerance,
+              upperTolerance,
+              start,
+              end,
+              isSpecial,
+              specialVal,
+              level
+            } = standardParams.find((item) => item.deviceTypeParaVo && item.deviceTypeParaVo.id === id) || {}
+            return getDefaultThresholdValue(`__temp__${index}`, {
+              name,
+              paraId,
+              lower: lower || undefined,
+              upper: upper || undefined,
+              lowerTolerance: lowerTolerance || undefined,
+              upperTolerance: upperTolerance || undefined,
+              start,
+              end,
+              isSpecial,
+              specialVal,
+              level: String(level),
+              timeRange: [moment(start, format).toDate(), moment(end, format).toDate()]
+            })
           })
         }
       }
@@ -535,7 +558,19 @@ export default class PointForm extends Vue {
         indicateId,
         param: param.map(({ isDisplay, ...rest }) => ({ ...rest, isDisplay: Number(isDisplay) })),
         threshold: threshold.map(
-          ({ start, end, paraId, specialVal, lower, lowerTolerance, upper, upperTolerance, isPush, ...rest }) => {
+          ({
+            start,
+            end,
+            paraId,
+            specialVal,
+            lower,
+            lowerTolerance,
+            upper,
+            upperTolerance,
+            isPush,
+            level,
+            ...rest
+          }) => {
             return {
               ...rest,
               paraId,
@@ -546,7 +581,8 @@ export default class PointForm extends Vue {
               lowerTolerance: lowerTolerance || undefined,
               upper: upper || undefined,
               upperTolerance: upperTolerance || undefined,
-              isPush: Number(isPush)
+              isPush: Number(isPush),
+              level: String(level)
             }
           }
         )
@@ -565,7 +601,7 @@ export default class PointForm extends Vue {
   }
 
   onClosed() {
-    this.standardParams = []
+    this.deviceTypePrams = []
     this.formData = getDefaultFormData()
     this.$emit('closed')
   }

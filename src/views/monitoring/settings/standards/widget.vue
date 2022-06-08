@@ -115,7 +115,7 @@ import {
   IDeviceType,
   standardParamsPage,
   standardsPage,
-  typesPage,
+  deviceTypesPage,
   updateStandard,
   updateStandardParam
 } from '@/views/monitoring/api'
@@ -297,7 +297,7 @@ export default class MonitoringStandards extends Vue {
     try {
       const {
         result: { records }
-      } = await typesPage({ current: 1, size: 999999 })
+      } = await deviceTypesPage({ current: 1, size: 999999 })
       this.types = records || []
     } catch (error) {
       console.log(error)

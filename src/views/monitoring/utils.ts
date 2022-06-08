@@ -187,7 +187,7 @@ export const settingPointBasisCols: ColItem[] = [
   { type: 'index', label: '序号', width: '50px' },
   { prop: 'name', label: '参数名称', minWidth: '120px', ...alignLeft() },
   { prop: 'code', label: '参数代码', minWidth: '110px', ...alignLeft() },
-  { prop: 'unit', label: '参数单位', minWidth: '80px' },
+  { prop: 'unit', label: '参数单位', minWidth: '80px', formatter: ({ unit }: any) => unit || '-' },
   {
     prop: 'lower-upper',
     label: '量程',
@@ -209,8 +209,8 @@ export const settingPointBasisCols: ColItem[] = [
 /**监测点管理 - 监测参数阈值设置 */
 export const settingPointParamCols: ColItem[] = [
   { type: 'index', label: '序号', width: '50px' },
-  { prop: 'name', label: '参数名称', _slot: true, minWidth: '110px', ...alignLeft() },
-  { prop: 'level', label: '监测值判定', _slot: true, width: '100px' },
+  { prop: 'name', label: '参数名称', _slot: true, minWidth: '130px', ...alignLeft() },
+  { prop: 'level', label: '监测值判定', _slot: true, minWidth: '130px' },
   { prop: 'specialVal', label: '特定阈值', _slot: true, width: '80px' },
   { prop: 'threshold', label: '报警阈值', _slot: true, width: '190px' },
   { prop: 'allowance', label: '预警阈值', _slot: true, width: '190px' },

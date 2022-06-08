@@ -20,7 +20,7 @@ import { Vue, Component, Prop } from 'vue-property-decorator'
 import car from './car.svg'
 import user from './user.svg'
 
-@Component({ name: 'RouteCard', components: {} })
+@Component({ name: 'RouteCard' })
 export default class RouteCard extends Vue {
   @Prop({ type: Boolean }) backup!: boolean
   @Prop({ type: Object, default: () => ({}) }) plan!: {

@@ -84,7 +84,7 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
-import { IDeviceType, IDevice, typeParamsPage } from '@/views/monitoring/api'
+import { IDeviceType, IDevice, deviceTypeParamsPage } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
 import { getRemoteImg } from '@/api/ftp'
 import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
@@ -242,7 +242,7 @@ export default class TypeForm extends Vue {
     try {
       const {
         result: { records }
-      } = await typeParamsPage({ typeId, current: 1, size: 9999999 })
+      } = await deviceTypeParamsPage({ typeId, current: 1, size: 9999999 })
       this.formData = { ...this.formData, param: records.length ? records.map((item) => item.name).join(', ') : '无' }
     } catch (error) {
       console.log(error)

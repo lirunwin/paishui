@@ -46,7 +46,7 @@ import {
   updateDevice,
   addDevice,
   deleteDeviceBatch,
-  typesPage
+  deviceTypesPage
 } from '@/views/monitoring/api'
 
 import { getDefaultPagination } from '@/utils/constant'
@@ -155,7 +155,7 @@ export default class DeviceDeviceArchives extends Vue {
     try {
       const {
         result: { records }
-      } = await typesPage({ current: 1, size: 9999999 })
+      } = await deviceTypesPage({ current: 1, size: 9999999 })
       this.types = records || []
     } catch (error) {
       console.log(error)

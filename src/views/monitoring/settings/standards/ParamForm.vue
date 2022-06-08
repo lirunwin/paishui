@@ -52,7 +52,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { getDefalutNumberProp, settingDeviceTypeParamCols } from '@/views/monitoring/utils'
 import { ElForm } from 'element-ui/types/form'
-import { IDictionary, IStandardParam, IDeviceTypeParam, typeParamsPage } from '@/views/monitoring/api'
+import { IDictionary, IStandardParam, IDeviceTypeParam, deviceTypeParamsPage } from '@/views/monitoring/api'
 import { TableColumn } from 'element-ui/types/table-column'
 import moment from 'moment'
 
@@ -124,7 +124,6 @@ export default class ParamForm extends Vue {
         label: '是否特定阈值',
         name: 'isSpecial',
         type: 'switch',
-        rules: [{ required: true, message: '特定阈值不能为空' }],
         size: 'small',
         // trueLabel: 1,
         // falseLabel: 0,
@@ -135,11 +134,8 @@ export default class ParamForm extends Vue {
       {
         label: '特定阀值',
         name: 'specialVal',
-        type: 'number',
         rules: [{ required: true, message: '下限不能为空' }],
-        ...getDefalutNumberProp(),
-        controls: false,
-        precision: 2
+        size: 'small'
       },
       {
         label: '下限',
@@ -267,7 +263,7 @@ export default class ParamForm extends Vue {
     try {
       const {
         result: { records }
-      } = await typeParamsPage({ typeId, current: 1, size: 9999999 })
+      } = await deviceTypeParamsPage({ typeId, current: 1, size: 9999999 })
       this.typeParams = records || []
       const { deviceTypeParaId } = this.data
       deviceTypeParaId && this.onTypeParamChange(deviceTypeParaId)
@@ -278,7 +274,21 @@ export default class ParamForm extends Vue {
 
   @Watch('data', { immediate: true })
   setDefaultData(val: IStandardParam) {
-    const { id, isSpecial, isPush, isUse, level, lower, upper, start, end, deviceTypeParaVo, ...rest } = val || {}
+    const {
+      id,
+      isSpecial,
+      isPush,
+      isUse,
+      level,
+      lower,
+      upper,
+      lowerTolerance,
+      upperTolerance,
+      start,
+      end,
+      deviceTypeParaVo,
+      ...rest
+    } = val || {}
     const { id: deviceTypeParaId } = deviceTypeParaVo || {}
     this.formData = id
       ? {
@@ -289,6 +299,8 @@ export default class ParamForm extends Vue {
           isUse: Number(isUse),
           lower: lower || undefined,
           upper: upper || undefined,
+          lowerTolerance: lowerTolerance || undefined,
+          upperTolerance: upperTolerance || undefined,
           timeRange: [
             start ? moment(start, format).toDate() : undefined,
             end ? moment(end, format).toDate() : undefined
