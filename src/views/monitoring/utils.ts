@@ -66,7 +66,7 @@ export const settingDeviceArchiveCols: ColItem[] = [
     prop: 'status',
     label: '设备状态',
     width: '80px',
-    formatter: ({ status }: IDevice) => ({ 0: '正常', 1: '离线' }[String(status)])
+    formatter: ({ status }: IDevice) => ({ '0': '正常', '1': '离线', '2': '报警' }[String(status)])
   },
   { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft() }
 ]
@@ -176,7 +176,7 @@ export const settingIconCols: ColItem[] = [
 /**监测点管理 - 监控台 */
 export const settingMonitorCols: ColItem[] = [
   { type: 'index', label: '序号', width: '50px' },
-  { prop: 'siteGroup', label: '监测分组', width: '80px' },
+  { prop: 'siteGroup', label: '监测分组', width: '80px', showOverflowTooltip: true },
   { prop: 'name', label: '监测站点', minWidth: '120px', ...alignLeft() },
   { prop: 'address', label: '地址', minWidth: '150px', ...alignLeft() },
   { prop: 'action', fixed: 'right', label: '操作', width: '80px', _slot: true }

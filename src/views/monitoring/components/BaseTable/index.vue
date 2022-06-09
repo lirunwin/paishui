@@ -103,7 +103,7 @@ export default Vue.extend({
   }
 })
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 .base-table {
   flex: 1 1 100%;
   display: flex;
@@ -113,16 +113,21 @@ export default Vue.extend({
   padding: 15px 15px 0;
   background-color: #fff;
   z-index: 99;
+
+  >>> .el-table--striped {
+    /deep/ .el-table__body tr.el-table__row--striped.el-table__row--striped.el-table__row--striped td {
+      background-color: #f3f7fe;
+    }
+  }
   .table {
     flex: 1 1 auto;
     // min-height: 100%;
-    &.el-table--striped {
-      /deep/ .el-table__body tr.el-table__row--striped.el-table__row--striped.el-table__row--striped td {
-        background-color: #f3f7fe;
-      }
-    }
-    /deep/ td.el-table__cell {
+    >>> td.el-table__cell {
       border-color: rgba(#dedede, 0.6);
+    }
+    >>> .el-table__fixed,
+    >>> .el-table__fixed-right {
+      box-shadow: none;
     }
   }
   .pagination {

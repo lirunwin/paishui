@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="monitor">
     <el-form ref="form" :model="query" size="small" label-width="5em" class="form">
       <el-form-item label="监测分组">
         <el-select v-model="formData.siteGroup" placeholder="请选择分组" size="small" @change="onQueryChange">
@@ -21,44 +21,63 @@
           @keyup.enter.native="onQueryChange"
         />
       </el-form-item>
-      <el-form-item label="监测状态" size="small">
+      <el-form-item label="监测状态" size="small" class="status">
         <el-checkbox-group v-model="formData.monitorStatus" size="small" @change="onQueryChange">
           <el-checkbox v-for="status of statuses" :key="status.code" :label="status.code">
             {{ status.label }} {{ getTotal(status.code) }}
           </el-checkbox>
         </el-checkbox-group>
       </el-form-item>
-      <BaseTitle>
-        <el-row type="flex" justify="space-between">
-          监测点列表（共{{ pagination.total }}个）
-          <el-switch active-text="开启监测窗" v-model="monitoring" :active-value="1" :inactive-value="0" />
-        </el-row>
-      </BaseTitle>
-      <BaseTable
-        :columns="settingMonitorCols"
-        :data="monitorItems"
-        :row-style="rowStyle"
-        @current-change="onCurrentChange"
-        @page-change="onPageChange"
-        :pagination="{ ...pagination, pagerCount: 5, layout: 'total, sizes, prev, pager, next' }"
-        style="padding: 0"
-      >
-        <template v-for="(item, index) of monitorItems" v-slot:[`action-${index}`]>
-          <div :key="`index-${item.id}`">
-            <el-button type="text" icon="el-icon-location" />
-            <el-button type="text" icon="el-icon-data-analysis" />
-          </div>
-        </template>
-      </BaseTable>
     </el-form>
+    <BaseTitle>
+      <el-row type="flex" justify="space-between">
+        监测点列表（共{{ pagination.total }}个）
+        <el-switch
+          active-text="开启监测窗"
+          v-model="monitoring"
+          :active-value="1"
+          :inactive-value="0"
+          @change="onMonitoringChange"
+        />
+      </el-row>
+    </BaseTitle>
+    <BaseTable
+      :columns="settingMonitorCols"
+      :data="monitorItems"
+      :row-style="rowStyle"
+      @current-change="onCurrentChange"
+      @page-change="onPageChange"
+      :pagination="{ ...pagination, pagerCount: 5, layout: 'total, sizes, prev, pager, next' }"
+      style="padding: 0"
+    >
+      <template v-for="(item, index) of monitorItems" v-slot:[`action-${index}`]>
+        <div :key="`index-${item.id}`">
+          <el-button type="text" icon="el-icon-location" size="small" @click="() => onShowPopup(item)" />
+          <el-button type="text" icon="el-icon-data-analysis" size="small" />
+        </div>
+      </template>
+    </BaseTable>
+    <CommonPopup
+      v-for="key of popupIds"
+      :key="key"
+      :ref="`popup-${key}`"
+      :popupShow="popup[key].show"
+      :popupPosition="popup[key].coordinate"
+      :mapView="popup[key].map"
+      :isSetCenter="popup[key].center"
+    >
+      <InfoCard @distribute="onDistribute" :data="popup[key].data" />
+    </CommonPopup>
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingMonitorCols } from '@/views/monitoring/utils'
+import CommonPopup from '@/components/CommonPopup/index.vue'
+import InfoCard from '@/views/monitoring/monitor/components/InfoCard/index.vue'
 import {
   groups,
   IMonitorItem,
@@ -69,6 +88,7 @@ import {
   sections
 } from '@/views/monitoring/api'
 import { getDefaultPagination, monitorAutoRefreshInterval } from '@/utils/constant'
+import { Map } from 'ol'
 
 interface IQuery {
   siteGroup?: string
@@ -77,12 +97,15 @@ interface IQuery {
   psArea?: string
 }
 
-@Component({ name: 'Monitor', components: { BaseTitle, BaseTable } })
+@Component({ name: 'Monitor', components: { BaseTitle, BaseTable, CommonPopup, InfoCard } })
 export default class Monitor extends Vue {
+  @Prop({ type: Object }) view!: Map
   formData: IQuery = { monitorStatus: ['0', '1', '2'], siteGroup: '', psArea: '', queryStr: undefined }
   query: IQuery = {}
   monitoring: 1 | 0 = 0
   monitorStatusColor = { '0': 'rgba(51,51,51,0.6)', '1': '#333333', '2': '#F65252' }
+
+  popup: { [x: string]: { show: boolean; coordinate: number[]; map: Map; center: boolean; data: IMonitorItem } } = {}
 
   settingMonitorCols = settingMonitorCols
 
@@ -100,9 +123,14 @@ export default class Monitor extends Vue {
 
   timer = null
 
-  rowStyle({ row }) {
-    return { color: this.monitorStatusColor[String(row.status)] }
+  get popupIds() {
+    return Object.keys(this.popup)
   }
+
+  rowStyle({ row }: { row: IMonitorItem }) {
+    return { color: this.monitorStatusColor[row.isAlarm ? '2' : String(row.status)] }
+  }
+
   getTotal(code: string) {
     const total = (this.statuses.find((item) => item.code === code) || {}).total
     return Number(total) ? `: ${total}个` : ''
@@ -162,11 +190,44 @@ export default class Monitor extends Vue {
     this.onPageChange({ current: 1 })
   }
 
-  // @Watch('monitoring', { immediate: true })
-  // onMonitoringChange(val: 0 | 1) {
-  //   if (val) this.onQueryChange()
-  //   else if (this.timer) clearInterval(this.timer)
-  // }
+  closeAllPopups() {
+    this.popupIds.forEach((id) => {
+      const ref = (this.$refs[`popup-${id}`] as any) || {}
+      const { closePopup } = Array.isArray(ref) ? ref[0] : ref
+      closePopup && closePopup()
+    })
+  }
+
+  showAllPopups() {
+    this.monitorItems.forEach((item, index) => {
+      this.onShowPopup(item, this.monitorItems.length === index + 1)
+    })
+  }
+
+  onMonitoringChange(monitoring) {
+    console.log(this.$refs)
+    if (monitoring) {
+      this.showAllPopups()
+    } else {
+      this.closeAllPopups()
+    }
+  }
+
+  onShowPopup(row: IMonitorItem, center: boolean = true) {
+    const { coordiateX, coordiateY, id } = row || {}
+    this.popup = {
+      ...this.popup,
+      [String(id)]: {
+        map: this.view,
+        center,
+        coordinate: [Number(coordiateX), Number(coordiateY)],
+        data: { ...row },
+        show: true
+      }
+    }
+  }
+
+  onDistribute() {}
 
   mounted() {
     this.onQueryChange()
@@ -176,4 +237,32 @@ export default class Monitor extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.monitor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  >>> .el-form-item {
+    margin-block: 10px;
+  }
+  .status >>> {
+    .el-form-item__label {
+      line-height: 20px;
+    }
+    .el-form-item__content {
+      line-height: 20px;
+      .el-checkbox {
+        &-group {
+          display: flex;
+          justify-content: space-between;
+        }
+        &:not(:last-of-type) {
+          margin-right: 10px;
+        }
+        &__label {
+          padding-left: 5px;
+        }
+      }
+    }
+  }
+}
 </style>

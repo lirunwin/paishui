@@ -749,6 +749,7 @@ export interface IMonitorItem {
   psArea: string
   siteGroup: string
   status: string
+  isAlarm: boolean
 }
 export interface IMonitorItemDetail {
   monitorSiteVo: IPointConnectDevice
@@ -764,7 +765,7 @@ export interface IMonitorItemDetail {
 }
 
 export interface IMonitorItemSummary {
-  label: '在线' | '离线' | '报警'
+  label: string
   total: number
   code: string
 }
@@ -780,12 +781,12 @@ export const monitorItemsSummary = async (
     result: { data, title }
   } = await axios.request<
     IResult<{
-      data: { total: number; status: string }[]
-      title: { code: string; value: '在线' | '离线' | '报警' }[]
+      data: { [x: string]: number }
+      title: { code: string; value: string; text: string }[]
     }>
   >({ url: uris.monitor.index.summary, method: 'get', params })
-  return title.map(({ code, value: label }) => {
-    return { label, code, total: (data.find((item) => item.status === code) || {}).total || 0 }
+  return title.map(({ code, value: label, text }) => {
+    return { label, code, total: data[text] || 0 }
   })
 }
 
