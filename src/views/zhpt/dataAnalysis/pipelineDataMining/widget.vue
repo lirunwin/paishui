@@ -76,7 +76,6 @@ export default {
     this.data.that.clearMap()
   },
   beforeCreate() {
-    console.log('销毁echatrs')
     // document.getElementById('mainB').removeAttribute('_echarts_instance_')
   },
   methods: {
@@ -88,6 +87,8 @@ export default {
       let pipArr = res.pipeData // 管道列表
       let defectArr = res.defectData // 缺陷列表
 
+      console.log('得到的数据')
+
       // 缺陷等级统计图
       // 缺陷数量统计图
       // 处理方式统计图
@@ -98,41 +99,22 @@ export default {
       // 管道检测情况统计图
 
       // 缺陷类型统计图
-      defectArr.forEach((v) => {
-        // console.log('结构性缺陷循环', v.defectType)
-        // 结构性 列表
-        if (v.defectType == '结构性缺陷') {
-          this.defectTypeObj.funcArr.push(v)
-        }
-        // 功能性性 列表
-        if (v.defectType == '功能性缺陷') {
-          this.defectTypeObj.structArr.push(v)
-          // console.log('功能性缺陷', v)
-        }
-      })
+      let funcArr = defectArr.filter(v => v.defectType == '功能性缺陷')
+      let structArr = defectArr.filter(v => v.defectType === '结构性缺陷')
+      this.defectTypeObj.structArr = structArr
+      this.defectTypeObj.funcArr = funcArr
       this.loading = false
       this.redayY = true
       // console.log('this.defectTypeObj', this.defectTypeObj)
     },
-    // 绘制
-    drawFeature() {
-      this.$refs.myMap.draw((fea) => {
-        this.getDataFromExtent({}, fea).then((res) => {
-          // 联动时数据变化
-          if (this.linkage) {
-            this.getData(res)
-          }
-          console.log('绘制,过滤后', res)
-        })
-      })
-    },
     mapMoveEvent(extent) {
+      this.loading = true
       this.getDataFromExtent({}, extent).then((res) => {
+        this.loading = false
         // 联动时数据变化
         if (this.linkage) {
           this.getData(res)
         }
-        console.log('地图变化,过滤后', res)
       })
     },
     async getDataFromExtent(params, extent) {
@@ -143,19 +125,8 @@ export default {
       } else this.$message.error('请求数据出错')
     },
     // 根据条件获取缺陷数据
-    getPipeData(filter = {}) {
-      let params = {
-        startPoint: '',
-        endPoint: '',
-        funcClass: '',
-        structClass: '',
-        jcStartDate: '',
-        jcEndDate: '',
-        wordInfoState: "1",
-        checkSuggest: '修复计划',
-        ...filter
-      }
-      return getDefectDataBySE(params)
+    getPipeData() {
+      return getDefectDataBySE({ wordInfoState: "1" })
     }
   },
   computed: {

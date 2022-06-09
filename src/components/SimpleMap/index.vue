@@ -181,16 +181,17 @@ export default {
               features.push(feature)
             }
           }
-          if (item['structClass']) {
-            let findColor = colors.find((colorObj) => item['structClass'].includes(colorObj.level))
-            if (findColor) {
-              feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
-              for (let i in item) {
-                i !== 'geometry' && feature.set(i, item[i])
-              }
-              features.push(feature)
-            }
-          }
+
+          // if (item['structClass']) {
+          //   let findColor = colors.find((colorObj) => item['structClass'].includes(colorObj.level))
+          //   if (findColor) {
+          //     feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+          //     for (let i in item) {
+          //       i !== 'geometry' && feature.set(i, item[i])
+          //     }
+          //     features.push(feature)
+          //   }
+          // }
           
         }
       })
@@ -374,7 +375,7 @@ export default {
           }
           return fea
         })
-        return feas.filter((fea) => fea && turf.booleanContains(filterExtent, fea.geometry))
+        return feas.filter(fea => fea && turf.booleanContains(filterExtent, fea.geometry))
       }
     }
   },

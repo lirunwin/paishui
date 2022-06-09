@@ -63,50 +63,45 @@ export default {
   },
   methods: {
     setData() {
+      this.echartsData = this.paramData
+      this.funArr.forEach(item => { item.value = 0 })
+      this.staArr.forEach(item => { item.value = 0 })
+
       this.echartsData.funcArr.forEach((v) => {
         if (v.defectLevel == '一级') {
-          this.funArr[0].value += v.defectNum
+          this.funArr[0].value += 1
         } else if (v.defectLevel == '二级') {
-          this.funArr[1].value += v.defectNum
+          this.funArr[1].value += 1
         } else if (v.defectLevel == '三级') {
-          this.funArr[2].value += v.defectNum
+          this.funArr[2].value += 1
         } else if (v.defectLevel == '四级') {
-          this.funArr[3].value += v.defectNum
+          this.funArr[3].value += 1
         }
         // console.log("funcArr里面的等级",v);
       })
       this.echartsData.structArr.forEach((v) => {
         if (v.defectLevel == '一级') {
-          this.staArr[0].value += v.defectNum
+          this.staArr[0].value += 1
         } else if (v.defectLevel == '二级') {
-          this.staArr[1].value += v.defectNum
+          this.staArr[1].value += 1
         } else if (v.defectLevel == '三级') {
-          this.staArr[2].value += v.defectNum
+          this.staArr[2].value += 1
         } else if (v.defectLevel == '四级') {
-          this.staArr[3].value += v.defectNum
+          this.staArr[3].value += 1
         }
       })
-      // console.log('funArr', this.funArr)
-      // console.log('staArr', this.staArr)
-      // console.log('缺陷类型统计图echartsData', this.paramData)
+
     },
     //初始化数据(饼状图)
     initData() {
-      this.echartsData = this.paramData
       this.setData()
       // console.log('缺陷类型统计图', this.echartsData)
       let chartDom = document.getElementById('echartsTwo')
       let myChart = echarts.init(chartDom)
-      let option
-
       const seriesLabel = {
         show: true
       }
-      option = {
-        //     grid: {
-        //   left: '-54px',
-        //   containLabel: true
-        // },
+      let option = {
         tooltip: {
           trigger: 'axis',
           axisPointer: {
@@ -176,7 +171,7 @@ export default {
             name: '2级',
             type: 'bar',
             label: seriesLabel,
-            data: [this.funArr[1].value, this.staArr[2].value]
+            data: [this.funArr[1].value, this.staArr[1].value]
           },
           {
             name: '3级',

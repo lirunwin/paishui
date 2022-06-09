@@ -9,7 +9,7 @@
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
                 <el-date-picker
-                  v-model="searchValue.startDate"
+                  v-model="searchValue.jcStartDate"
                   type="date"
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
@@ -21,7 +21,7 @@
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
-                  v-model="searchValue.finishDate"
+                  v-model="searchValue.jcEndDate"
                   type="date"
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
@@ -95,8 +95,8 @@ export default {
       sOpition: {
         disabledDate: (time) => {
           time = time.getTime()
-          if (this.searchValue.finishDate) {
-            return time > new Date(this.searchValue.finishDate).getTime()
+          if (this.searchValue.jcEndDate) {
+            return time > new Date(this.searchValue.jcEndDate).getTime()
           }
           return time > new Date().getTime()
         }
@@ -104,16 +104,16 @@ export default {
       eOpition: {
         disabledDate: (time) => {
           time = time.getTime()
-          if (this.searchValue.startDate) {
-            return time < new Date(this.searchValue.startDate).getTime() || time > new Date().getTime()
+          if (this.searchValue.jcStartDate) {
+            return time < new Date(this.searchValue.jcStartDate).getTime() || time > new Date().getTime()
           }
           return time > new Date().getTime()
         }
       },
 
       searchValue: {
-        startDate: '',
-        finishDate: '',
+        jcStartDate: '',
+        jcEndDate: '',
         startPoint: '',
         endPoint: '',
         defectType: '',
@@ -182,23 +182,16 @@ export default {
   async created() {
     await this.getData()
     await this.initData()
-    console.log('created生效了吗?')
   },
   mounted() {
-    console.log('mounted生效了吗?')
-  },
-  beforeCreate() {
-    console.log('销毁echatrs')
-    document.getElementById('mainE').removeAttribute('_echarts_instance_')
   },
   computed: {
     returnTabel() {
-      let obj = {
+      return {
         defectQuantityStatisticsA: this.defectQuantityStatisticsA,
         defectQuantityStatisticsB: this.defectQuantityStatisticsB,
         defectSumObj: this.defectSumObj
       }
-      return obj
     }
   },
   watch: {
@@ -275,27 +268,25 @@ export default {
         return obj
       }, [])
 
-      console.log('echartsDataArr', echartsDataArr)
       this.echartsTitle = echartsDataArr.map((titleV) => {
         return titleV.name
       })
       this.echartsData = echartsDataArr
-      console.log(' this.echartsData ', this.echartsData)
       this.initData()
     }
   },
   methods: {
     sDateChange (t) {
-      if (!this.searchValue.finishDate) {
+      if (!this.searchValue.jcEndDate) {
         this.$nextTick(() => {
-          this.searchValue.finishDate = this.searchValue.startDate
+          this.searchValue.jcEndDate = this.searchValue.jcStartDate
         })
       }
     },
     eDateChange (t) {
-      if (!this.searchValue.startDate) {
+      if (!this.searchValue.jcStartDate) {
         this.$nextTick(() => {
-          this.searchValue.startDate = this.searchValue.finishDate
+          this.searchValue.jcStartDate = this.searchValue.jcEndDate
         })
       }
     },
@@ -305,11 +296,11 @@ export default {
     },
     async getData(params) {
       this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }
-      // {jcStartDate:检测开始日期,jcEndDate:检测结束日期,startPoint：起始井号", "endPoint：终止井号,defectType:缺陷类型，defectName：缺陷名称}
+      // {jcjcStartDate:检测开始日期,jcEndDate:检测结束日期,startPoint：起始井号", "endPoint：终止井号,defectType:缺陷类型，defectName：缺陷名称}
       let data = {}
       if (params) {
-        data.startDate = params.startDate
-        data.finishDate = params.finishDate
+        data.jcStartDate = params.jcStartDate
+        data.jcEndDate = params.jcEndDate
         data.startPoint = params.startPoint
         data.endPoint = params.endPoint
         data.defectType = params.defectType
@@ -317,7 +308,23 @@ export default {
       }
       data.wordInfoState = '1'
       let res = await getPipeDefectsTypeCountMap(data)
-      console.log('管道缺陷评价统计', res)
+      
+      this.defectQuantityStatisticsA.forEach(item => {
+        item['oneValue'] = 0
+        item['twoValue'] = 0
+        item['threeValue'] = 0
+        item['fourValue'] = 0
+      })
+      this.defectQuantityStatisticsB.forEach(item => {
+        item['oneValue'] = 0
+        item['twoValue'] = 0
+        item['threeValue'] = 0
+        item['fourValue'] = 0
+      })
+      for (let k in this.defectSumObj) {
+        this.defectSumObj[k] = 0
+      }
+      
       this.pageData = res.result
       if (this.pageData) {
         this.pageData.forEach((resValue) => {
@@ -326,18 +333,13 @@ export default {
             if (resValue.defectCode == sumValue.type) {
               if (resValue.defectLevel == '一级') {
                 sumValue.oneValue = resValue.defectNum * 1
-                return
               } else if (resValue.defectLevel == '二级') {
                 sumValue.twoValue = resValue.defectNum * 1
-                return
               } else if (resValue.defectLevel == '三级') {
                 sumValue.threeValue = resValue.defectNum * 1
-                return
               } else if (resValue.defectLevel == '四级') {
                 sumValue.fourValue = resValue.defectNum * 1
-                return
               }
-              console.log('defectQuantityStatisticsA', this.defectQuantityStatisticsA)
             }
           })
 
@@ -345,16 +347,12 @@ export default {
             if (resValue.defectCode == sumValue.type) {
               if (resValue.defectLevel == '一级') {
                 sumValue.oneValue = resValue.defectNum
-                return
               } else if (resValue.defectLevel == '二级') {
                 sumValue.twoValue = resValue.defectNum
-                return
               } else if (resValue.defectLevel == '三级') {
                 sumValue.threeValue = resValue.defectNum
-                return
               } else if (resValue.defectLevel == '四级') {
                 sumValue.fourValue = resValue.defectNum
-                return
               }
             }
           })
@@ -376,10 +374,12 @@ export default {
           this.defectSumObj.fourSum += v.fourValue
           this.defectSumObj.total += v.value
         })
+        console.log('计算后的数据', this.returnTabel)
       }
     },
     //初始化数据
     initData() {
+      document.getElementById('mainE').removeAttribute('_echarts_instance_')
       // 基于准备好的dom，初始化echarts实例
       let myChart = echarts.init(document.getElementById('mainE'))
       // 绘制图表

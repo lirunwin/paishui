@@ -410,7 +410,6 @@ export default {
       vectorLayer: null,
       map: null,
       lightLayer: null,
-      searchLayer: null,
       clickEvent: null,
       projUtil: null, // 坐标系工具
       currentDataProjName: 'proj43', // 当前坐标系
@@ -613,14 +612,12 @@ export default {
     },
 
     init() {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), visible: false })
-      this.searchLayer = new VectorLayer({ source: new VectorSource() })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
         style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)')
       })
       this.map.addLayer(this.vectorLayer)
-      this.map.addLayer(this.searchLayer)
       this.map.addLayer(this.lightLayer)
       this.clickEvent = this.map.on('click', (evt) => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
@@ -634,7 +631,6 @@ export default {
       this.getPipeDefectData()
     },
     clearAll() {
-      this.searchLayer && this.map.removeLayer(this.searchLayer)
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
@@ -648,14 +644,12 @@ export default {
             let reportInfo = res.result[0] ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
-            this.searchLayer.getSource().clear()
             this.lightLayer.getSource().clear()
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               let view = this.map.getView()
               view.setCenter(center)
               view.animate({ zoom: 13 })
-              this.searchLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               this.vectorLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures])
             }
             this.hasLoad = true
@@ -870,7 +864,7 @@ export default {
         this.map.addOverlay(this.popup)
         this.popup.setPosition(position)
         this.currentInfoCard = true
-      }
+      } else this.$message.warning('该管段无位置信息')
     },
 
     // 详情
@@ -898,25 +892,30 @@ export default {
     searchApi() {
       this.pagination.current = 1
       this.getDate()
-      // this.searchMap({
-      //   funcClass: this.searchValue.funcClass,
-      //   structClass: this.searchValue.structClass,
-      //   queryText: this.searchValue.queryParams,
-      //   endDate: this.searchValue.testTime.finishDate,
-      //   startDate: this.searchValue.testTime.startDate,
-      // })
-      // console.log(this.searchValue.testTime)
+      this.searchMap({
+        funcClass: this.searchValue.funcClass,
+        structClass: this.searchValue.structClass,
+        queryText: this.searchValue.queryParams,
+        endDate: this.searchValue.testTime.finishDate,
+        startDate: this.searchValue.testTime.startDate,
+      })
+      console.log(this.searchValue.testTime)
     },
+    
     // 搜索地图
     searchMap (filterObj) {
       console.log('过滤条件', filterObj)
       let features = this.vectorLayer.getSource().getFeatures()
-      features = features.filter(fea => filter(fea)).map(fea => fea.clone())
+      features = features.filter(fea => filter(fea)).map(fea => new Feature({ geometry: fea.getGeometry().clone() }))
 
-      let source = this.searchLayer.getSource()
+      let source = this.lightLayer.getSource()
       source.clear()
       source.addFeatures(features)
 
+      let center = mapUtil.getCenter(features[0])
+      let view = this.map.getView()
+      view.setCenter(center)
+      view.setZoom(17)
       function filter (fea) {
         if (!fea.get('expNo').includes(filterObj.queryText) && !fea.get('material').includes(filterObj.queryText)) return false
 

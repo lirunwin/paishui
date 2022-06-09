@@ -9,7 +9,7 @@
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
                 <el-date-picker
-                  v-model="searchValue.startDate"
+                  v-model="searchValue.jcStartDate"
                   type="date"
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
@@ -21,7 +21,7 @@
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
-                  v-model="searchValue.finishDate"
+                  v-model="searchValue.jcEndDate"
                   type="date"
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
@@ -166,25 +166,25 @@ export default {
       sOpition: {
         disabledDate: (time) => {
           time = time.getTime()
-          if (this.searchValue.finishDate) {
-            return time > new Date(this.searchValue.finishDate).getTime()
+          if (this.searchValue.jcEndDate) {
+            return time >= new Date(this.searchValue.jcEndDate).getTime()
           }
-          return time > new Date().getTime()
+          return time >= new Date().getTime()
         }
       },
       eOpition: {
         disabledDate: (time) => {
           time = time.getTime()
-          if (this.searchValue.startDate) {
-            return time < new Date(this.searchValue.startDate).getTime() || time > new Date().getTime()
+          if (this.searchValue.jcStartDate) {
+            return time <= new Date(this.searchValue.jcStartDate).getTime() || time > new Date().getTime()
           }
-          return time > new Date().getTime()
+          return time >= new Date().getTime()
         }
       },
 
       searchValue: {
-        startDate: '',
-        finishDate: '',
+        jcStartDate: '',
+        jcEndDate: '',
         startPoint: '',
         endPoint: '',
         defectType: '',
@@ -326,26 +326,26 @@ export default {
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     sDateChange(t) {
-      if (!this.searchValue.finishDate) {
+      if (!this.searchValue.jcEndDate) {
         this.$nextTick(() => {
-          this.searchValue.finishDate = this.searchValue.startDate
+          this.searchValue.jcEndDate = this.searchValue.jcStartDate
         })
       }
     },
     eDateChange(t) {
-      if (!this.searchValue.startDate) {
+      if (!this.searchValue.jcStartDate) {
         this.$nextTick(() => {
-          this.searchValue.startDate = this.searchValue.finishDate
+          this.searchValue.jcStartDate = this.searchValue.jcEndDate
         })
       }
     },
     async getData(params) {
-      // {jcStartDate:检测开始日期,jcEndDate:检测结束日期,startPoint：起始井号", "endPoint：终止井号,defectType:缺陷类型，defectName：缺陷名称}
+      // {jcjcStartDate:检测开始日期,jcEndDate:检测结束日期,startPoint：起始井号", "endPoint：终止井号,defectType:缺陷类型，defectName：缺陷名称}
       let data = {}
       data.wordInfoState = '1'
       if (params) {
-        data.startDate = params.startDate
-        data.finishDate = params.finishDate
+        data.jcStartDate = params.jcStartDate
+        data.jcEndDate = params.jcEndDate
         data.startPoint = params.startPoint
         data.endPoint = params.endPoint
         data.defectType = params.defectType

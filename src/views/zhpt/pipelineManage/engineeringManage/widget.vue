@@ -454,7 +454,7 @@ export default {
   },
   methods: {
     uploadSuccess (file, fileList) {
-      if (fileList.response.result[0].flag === 'fail') {
+      if (file.result[0].flag === 'fail') {
         this.$message.error(fileList.response.result[0].msg)
       }
     },

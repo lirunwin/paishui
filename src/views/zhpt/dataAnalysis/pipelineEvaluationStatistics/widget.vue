@@ -28,8 +28,8 @@
                       placeholder="选择开始日期"
                       value-format="yyyy-MM-dd"
                       size="small"
-                      :picker-options="eOpition"
-                      @change="eDateChange"
+                      :picker-options="sOpition"
+                      @change="sDateChange"
                     ></el-date-picker>
                   </el-col>
                   <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
@@ -40,8 +40,8 @@
                       placeholder="选择结束日期"
                       value-format="yyyy-MM-dd"
                       size="small"
-                      :picker-options="sOpition"
-                      @change="sDateChange"
+                      :picker-options="eOpition"
+                      @change="eDateChange"
                     ></el-date-picker>
                   </el-col>
                 </el-row>
@@ -49,9 +49,9 @@
             </div>
             <div class="serch-engineering">
               <div class="title">整改建议：</div>
-              <el-select size="small" v-model="searchValue.fixSuggest" clearable placeholder="选择建议">
+              <el-select size="small" v-model="searchValue.checkSuggest" clearable placeholder="选择建议">
                 <el-option
-                  v-for="item in fixSuggestList"
+                  v-for="item in checkSuggestList"
                   :key="item.codeValue"
                   :label="item.codeValue"
                   :value="item.codeValue"
@@ -140,7 +140,7 @@ export default {
   data() {
     return {
       loading: true, // 加载
-      fixSuggestList: [],
+      checkSuggestList: [],
       pipNum: true,
       pipLen: true,
       pipNumShow: 1,
@@ -171,7 +171,7 @@ export default {
       searchValue: {
         jcStartDate: '',
         jcEndDate: '',
-        fixSuggest: ''
+        checkSuggest: ''
         // 检测日期
       },
       // 日期选择器规则
@@ -228,12 +228,15 @@ export default {
       this.$refs.myMap.clearDraw()
     },
     // 获取字典
-    async getParamsId() {
+    getParamsId() {
       // 获取字典
       // check_suggest
-      let checkSuggest = await queryDictionariesId({ keys: 'check_suggest' })
-      this.fixSuggestList = checkSuggest.result.check_suggest
-      console.log('checkSuggest', checkSuggest.result.check_suggest)
+      console.log('获取整改建议')
+      queryDictionariesId({ keys: 'check_suggest' }).then(res => {
+        if (res.code === 1) {
+          this.checkSuggestList = res.result.check_suggest
+        } else this.$message.error('获取整改建议字典失败！')
+      })
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
     sDateChange(t) {
@@ -306,11 +309,6 @@ export default {
     },
     // 查询
     search() {
-      this.filter = {
-        jcStartDate: this.searchValue.jcStartDate,
-        jcEndDate: this.searchValue.jcEndDate,
-        checkSuggest: this.searchValue.fixSuggest
-      }
       this.getDataFromExtent().then((res) => {
         console.log('这是查询的数据', res)
         this.getMapData(res)
