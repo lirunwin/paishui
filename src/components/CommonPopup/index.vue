@@ -1,5 +1,9 @@
 <template>
-    <div ref="commonPopup" class="common-popup" v-show="isShow">
+    <div ref="commonPopup" class="common-popup" 
+    v-show="isShow" 
+    @mouseenter="setPanActive(false)" 
+    @mouseleave="setPanActive(true)"
+    @click="reload()">
         <div class="popup-header"  :style="headerStyle" v-show="isHeaderShow">
             <div class="popup-title">{{ title || ' ' }}</div>
             <div class="popup-operation">
@@ -15,12 +19,12 @@
 
 <script>
 import Overlay from 'ol/Overlay';
+import DragPan from 'ol/interaction/DragPan'//先在项目中引用此包
 export default {
     name:"commonPopup",//公共地图信息弹窗
     props: {
         mapView:{required:true},//地图对象
         popupPosition: { type: Array },//弹窗位置(经纬度)
-        popupShow: { type: Boolean },//弹窗显示
         popupTitle: {type: String },//弹窗标题
         isHeaderShow:{type: Boolean},//是否显示头部
         headerStyle: {type: String,default:"border-bottom:1px solid #cccccc"},//头部样式
@@ -30,9 +34,10 @@ export default {
     data() {
         return {
             dialogOverlay: null,//组件Overlay
-            isShow: true,       //弹窗显示
+            isShow: false,       //弹窗显示
             title:"",           //弹窗标题
             center:null,        //是否设置定位
+            pan:null,
         }
     },
     watch:{
@@ -44,25 +49,35 @@ export default {
         },
         popupPosition: {
             handler () {
-                this.showPopup()
+                this.isShow=true
+                this.$nextTick(()=>{
+                    this.showPopup()
+                })
             },
             deep: true
         },
-        popupShow:{
-            handler(val){
-                this.isShow = val
-            },
-            deep: true,
-            immediate: true
-        }
+    },
+    mounted(){
     },
     methods:{
+        getPan() {
+            this.mapView.getInteractions().forEach(element => {
+                if (element instanceof DragPan) {
+                    this.pan = element
+                }
+            })
+        },
+        setPanActive(bool){
+            this.getPan();
+            this.pan.setActive(bool)
+        },
         //显示弹窗
         showPopup(){
             if(this.dialogOverlay) {
                 this.mapView.removeOverlay(this.dialogOverlay)
             }
             this.dialogOverlay= new Overlay({
+                id:window.id,
                 element: this.$refs.commonPopup,
                 stopEvent: false,
                 offset: [0, 0],
@@ -71,6 +86,7 @@ export default {
                         duration: 250,
                     },
                 },
+                insertFirst:false
             });
             this.mapView.addOverlay(this.dialogOverlay)
             this.dialogOverlay.setPosition(this.popupPosition)
@@ -81,11 +97,23 @@ export default {
             this.mapView.getView().setCenter(this.popupPosition)
             this.mapView.getView().setZoom(20)
         },
+        reload(){
+            this.mapView.removeOverlay(this.dialogOverlay)
+            this.mapView.addOverlay(this.dialogOverlay)
+            this.dialogOverlay.setPosition(this.popupPosition)
+        },
         //弹窗关闭
         closePopup(){
+            this.reset();
             this.dialogOverlay.setPosition(undefined);
             this.mapView.removeOverlay(this.dialogOverlay)
+            this.$emit('close')
             return false;
+        },
+        //变量清除
+        reset(){
+            this.isShow=false;
+            this.pan.setActive(true)
         },
         //右上角图标操作
         operationClick(item){

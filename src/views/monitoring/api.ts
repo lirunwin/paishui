@@ -153,12 +153,10 @@ const uris = {
   monitor: {
     /** 监控台 */
     index: {
-      /** method: POST, DELETE ,PUT, GET, */
-      base: `${base}/placeholder`,
-      /** method: DELETE */
-      del: `${base}/placeholder/deleteByIds`,
-      /** method: GET */
-      page: `${base}/placeholder/page`
+      page: `${base}//mstation/list`,
+      summary: `${base}//mstation/getSiteSumByStatus`,
+      getById: `${base}//mstation/siteCurrent`,
+      getByIdBatch: `${base}//mstation/siteCurrentBySiteIds`
     },
     /** 站点实时监控 */
     sites: {
@@ -734,3 +732,70 @@ export const getPointConfigurations = (monitorId: string | number) =>
       siteDeviceParas: IPointThreshold[]
     }>
   >({ url: uris.settings.points.configurations, method: 'get', params: { monitorId } })
+
+export interface IMonitorItem {
+  address: string
+  code: string
+  coordiate: string
+  coordiateX: string
+  coordiateY: string
+  createTime: string
+  createUser: number | string
+  deviceStatus: string
+  id: number | string
+  name: string
+  no: string
+  note: string
+  psArea: string
+  siteGroup: string
+  status: string
+  isAlarm: boolean
+}
+export interface IMonitorItemDetail {
+  monitorSiteVo: IPointConnectDevice
+  paraVoList: {
+    collectTime: string
+    direction: number
+    name: string
+    siteDeviceParaVo: IDeviceTypeParam[]
+    value: string
+  }[]
+  siteId: number
+  status: string
+}
+
+export interface IMonitorItemSummary {
+  label: string
+  total: number
+  code: string
+}
+
+export const monitorItemsPage = (
+  params: Partial<IMonitorItem & IQueryCommon & { monitorStatus: string; queryStr: string }>
+) => axios.request<IRes<IMonitorItem[]>>({ url: uris.monitor.index.page, method: 'get', params })
+
+export const monitorItemsSummary = async (
+  params: Partial<IMonitorItem & IQueryCommon & { monitorStatus: string; queryStr: string }>
+): Promise<IMonitorItemSummary[]> => {
+  const {
+    result: { data, title }
+  } = await axios.request<
+    IResult<{
+      data: { [x: string]: number }
+      title: { code: string; value: string; text: string }[]
+    }>
+  >({ url: uris.monitor.index.summary, method: 'get', params })
+  return title.map(({ code, value: label, text }) => {
+    return { label, code, total: data[text] || 0 }
+  })
+}
+
+export const getMonitorItemById = (siteId: string) =>
+  axios.request<IResult<IMonitorItemDetail>>({ url: uris.monitor.index.getById, method: 'get', params: { siteId } })
+
+export const getMonitorItemByIdBatch = (siteIds: string[]) =>
+  axios.request<IResult<IMonitorItemDetail[]>>({
+    url: uris.monitor.index.getByIdBatch,
+    method: 'get',
+    params: { siteIds: siteIds.join() }
+  })
