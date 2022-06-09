@@ -48,13 +48,16 @@ export default {
             deep: true
         },
         popupPosition: {
-            handler () {
-                this.isShow=true
-                this.$nextTick(()=>{
-                    this.showPopup()
-                })
+            handler (n,o) {
+                if(n){
+                    this.isShow=true
+                    this.$nextTick(()=>{
+                        this.showPopup()
+                    })
+                }
             },
-            deep: true
+            deep: true,
+            immediate:true
         },
     },
     mounted(){
@@ -95,19 +98,22 @@ export default {
         //设置视图定位
         setCenter(){
             this.mapView.getView().setCenter(this.popupPosition)
-            this.mapView.getView().setZoom(20)
+            this.mapView.getView().setZoom(19)
         },
         //重新加载弹窗
         reload(){
-            this.mapView.removeOverlay(this.dialogOverlay)
-            this.mapView.addOverlay(this.dialogOverlay)
-            this.dialogOverlay.setPosition(this.popupPosition)
+            if(this.dialogOverlay){
+                this.mapView.removeOverlay(this.dialogOverlay)
+                this.mapView.addOverlay(this.dialogOverlay)
+                this.dialogOverlay.setPosition(this.popupPosition)
+            }
         },
         //弹窗关闭
         closePopup(){
             this.reset();
             this.dialogOverlay.setPosition(undefined);
             this.mapView.removeOverlay(this.dialogOverlay)
+            this.dialogOverlay=null
             this.$emit('close')
             return false;
         },
