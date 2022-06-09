@@ -19,7 +19,7 @@
 
 <script>
 import Overlay from 'ol/Overlay';
-import DragPan from 'ol/interaction/DragPan'//先在项目中引用此包
+import DragPan from 'ol/interaction/DragPan'
 export default {
     name:"commonPopup",//公共地图信息弹窗
     props: {
@@ -97,6 +97,7 @@ export default {
             this.mapView.getView().setCenter(this.popupPosition)
             this.mapView.getView().setZoom(20)
         },
+        //重新加载弹窗
         reload(){
             this.mapView.removeOverlay(this.dialogOverlay)
             this.mapView.addOverlay(this.dialogOverlay)
@@ -113,7 +114,7 @@ export default {
         //变量清除
         reset(){
             this.isShow=false;
-            this.pan.setActive(true)
+            if(this.pan) this.pan.setActive(true)
         },
         //右上角图标操作
         operationClick(item){
