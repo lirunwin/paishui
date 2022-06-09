@@ -153,10 +153,10 @@ const uris = {
   monitor: {
     /** 监控台 */
     index: {
-      page: `${base}//mstation/list`,
-      summary: `${base}//mstation/getSiteSumByStatus`,
-      getById: `${base}//mstation/siteCurrent`,
-      getByIdBatch: `${base}//mstation/siteCurrentBySiteIds`
+      page: `${base}/mstation/list`,
+      summary: `${base}/mstation/getSiteSumByStatus`,
+      getById: `${base}/mstation/siteCurrent`,
+      getByIdBatch: `${base}/mstation/siteCurrentBySiteIds`
     },
     /** 站点实时监控 */
     sites: {
@@ -169,12 +169,7 @@ const uris = {
     },
     /** 指标实时监控 */
     points: {
-      /** method: POST, DELETE ,PUT, GET, */
-      base: `${base}/placeholder`,
-      /** method: DELETE */
-      del: `${base}/placeholder/deleteByIds`,
-      /** method: GET */
-      page: `${base}/placeholder/page`
+      watch: `${base}/mstation/getIndicateCurrent`
     }
   }
 }
@@ -467,6 +462,7 @@ export interface IPointThreshold extends ICreator {
   isSpecial?: boolean | number
   /** 关联字典表 优质、轻度、中度、严重 */
   level?: string | number
+  levelName?: string
   /** 下限 */
   lower?: number
   /** 下限容差 */
@@ -529,18 +525,29 @@ export const getDictKeys = async (keys: string = monitorStandardLevelKey.codeKey
     method: 'get',
     params: { keys }
   })
-
   if (!keys.includes(',')) {
-    const { [keys]: values } = result
-    if (values.length === 0) {
+    const { [keys]: values = [] } = result
+    if (values.length === 0 && keys === monitorStandardLevelKey.codeKey) {
       const { username: creater = '' }: { username: string } = store.state.user || {}
+      const { codeKey, codeRemark } = monitorStandardLevelKey
       await Promise.all([
         addDictionary({ ...monitorStandardLevelKey, ulevel: 1, creater }),
         ...defaultValuesForMonitorStandardLevel.map((item) =>
           addDictionary({ ulevel: 2, ...monitorStandardLevelKey, creater, ...item })
+        ),
+        addDictionary({ codeKey: `${codeKey}_colors`, codeRemark: `${codeRemark}颜色值`, ulevel: 1, creater }),
+        ...defaultValuesForMonitorStandardLevel.map((item) =>
+          addDictionary({
+            ulevel: 2,
+            codeKey: `${codeKey}_colors`,
+            codeRemark: `${codeRemark}颜色值-${item.notes}`,
+            creater,
+            ...item,
+            notes: item.color
+          })
         )
       ])
-      const temp = (await getDictKeys(keys)) as IDictionary[]
+      const temp = (await getDictKeys()) as IDictionary[]
       return temp
     }
     return values || []
@@ -757,17 +764,39 @@ export interface IMonitorItemDetail {
     collectTime: string
     direction: number
     name: string
-    siteDeviceParaVo: IDeviceTypeParam[]
+    siteDeviceParaVo: IPointThreshold
     value: string
+    unit: string
   }[]
   siteId: number
   status: string
+  isAlarm: boolean
 }
 
 export interface IMonitorItemSummary {
   label: string
   total: number
   code: string
+}
+
+export interface IPointMonitoringItem {
+  siteId: string | number
+  siteName: string
+  address: string
+  siteGroup: string
+  scadaTime: string
+  paraName: string
+  itstrVal: string
+  unit: string
+  levelName: string
+  shreshold: string
+}
+
+export interface IPointMonitoringQuery {
+  indicateNames: string
+  levelName: string
+  queryLike: string
+  siteGroup: string
 }
 
 export const monitorItemsPage = (
@@ -790,12 +819,15 @@ export const monitorItemsSummary = async (
   })
 }
 
-export const getMonitorItemById = (siteId: string) =>
+export const getMonitorItemCurrentInfoById = (siteId: string) =>
   axios.request<IResult<IMonitorItemDetail>>({ url: uris.monitor.index.getById, method: 'get', params: { siteId } })
 
-export const getMonitorItemByIdBatch = (siteIds: string[]) =>
+export const getMonitorItemCurrentInfoByIdBatch = (siteIds: string[]) =>
   axios.request<IResult<IMonitorItemDetail[]>>({
     url: uris.monitor.index.getByIdBatch,
     method: 'get',
     params: { siteIds: siteIds.join() }
   })
+
+export const pointsMonitoring = (params: Partial<IPointMonitoringQuery>) =>
+  axios.request<IResult<IPointMonitoringItem[]>>({ url: uris.monitor.points.watch, method: 'get', params })

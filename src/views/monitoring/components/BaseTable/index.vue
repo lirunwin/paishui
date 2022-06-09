@@ -66,16 +66,16 @@ export default Vue.extend({
     return {
       pageSizes,
       defaultAttrs: {
-        toolTipEffect: 'light',
-        showOverflowTooltip: true,
+        'tool-tip-effect': 'light',
+        'show-overflow-tooltip': true,
         size: 'medium',
         stripe: true,
-        headerCellStyle: {
+        'header-cell-style': {
           background: '#Eaf1Fd',
           color: 'rgb(50,59,65)',
           height: '46px'
         },
-        cellStyle: {
+        'cell-style': {
           height: '40px'
         }
         // highlightCurrentRow: true

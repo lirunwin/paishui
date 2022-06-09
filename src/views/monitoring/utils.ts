@@ -1,6 +1,6 @@
 import { ElTableColumn } from 'element-ui/types/table-column'
 import { IDictionary, IStandardParam, IDevice, IDeviceTypeParam } from '@/views/monitoring/api'
-import { getIntervalValue, translate } from '@/utils/constant'
+import { getIntervalValue, pointState, translate } from '@/utils/constant'
 
 interface ColItem extends Partial<ElTableColumn> {
   _slot?: boolean
@@ -66,7 +66,7 @@ export const settingDeviceArchiveCols: ColItem[] = [
     prop: 'status',
     label: '设备状态',
     width: '80px',
-    formatter: ({ status }: IDevice) => ({ '0': '正常', '1': '离线', '2': '报警' }[String(status)])
+    formatter: ({ status }: IDevice) => pointState[String(status)]
   },
   { prop: 'note', label: '备注', minWidth: '150px', ...alignLeft() }
 ]
@@ -222,19 +222,16 @@ export const settingPointParamCols: ColItem[] = [
 export const monitorPointsCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号' },
-  { prop: 'name', label: '监测分区' },
-  { prop: 'name', label: '监测站点' },
-  { prop: 'name', label: '地址' },
-  { prop: 'name', label: '数据采集时间' },
-  // 距离当前（分钟，当前时刻-数据时间）
-  { prop: 'name', label: '距离当前（分钟）' },
-  { prop: 'name', label: '监测指标' },
-  { prop: 'name', label: '监测值' },
-  { prop: 'name', label: '单位' },
-  //判定结果（正常、优质、轻度、中度、严重、无效，超出量程的数据即为无效数据）
-  { prop: 'name', label: '判定结果' },
-  // 例如：10℃~40℃
-  { prop: 'name', label: '监测阈值' },
+  { prop: 'siteGroup', label: '监测分组', minWidth: '110px', ...alignLeft() },
+  { prop: 'siteName', label: '监测站点', minWidth: '130px', ...alignLeft() },
+  { prop: 'address', label: '地址', minWidth: '130px', ...alignLeft() },
+  { prop: 'scadaTime', label: '数据采集时间', width: '170px' },
+  { prop: 'minute', label: '距离当前（分钟）', width: '150px' },
+  { prop: 'paraName', label: '监测指标', minWidth: '130px', ...alignLeft() },
+  { prop: 'itstrVal', label: '监测值', width: '120px' },
+  { prop: 'unit', label: '单位', width: '90px' },
+  { prop: 'levelName', label: '判定结果', width: '100px' },
+  { prop: 'shreshold', label: '监测阈值', width: '120px', ...alignLeft() },
   { prop: 'action', label: '操作', _slot: true }
 ]
 
