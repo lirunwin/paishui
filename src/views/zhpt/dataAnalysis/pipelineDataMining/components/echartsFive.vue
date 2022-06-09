@@ -23,9 +23,7 @@ export default {
   watch: {
     paramData: {
       handler(nv, ov) {
-        this.echartsData = nv
-        console.log('缺陷等级统计图新的echartsData', this.paramData)
-        this.initData()
+        this.setDefectData()
       },
       deep: true
     }
@@ -33,36 +31,31 @@ export default {
   computed: {},
   created() {},
   mounted() {
-    this.initData()
+    this.setDefectData()
   },
   methods: {
     // 处理缺陷数据
     setDefectData() {
       this.echartsData = this.paramData
-      let arr = this.echartsData.map((v) => {
-        return {
-          name: v.checkSuggest,
-          value: v.defectNum
+      this.echatrsArr = []
+      let dataArr = new Map(), arr = []
+      this.echartsData.map(v => v.checkSuggest).forEach(item => {
+        if (dataArr.has(item)) {
+          dataArr.set(item, dataArr.get(item) + 1)
+        } else {
+          dataArr.set(item, 1)
         }
       })
-
-      arr = arr.reduce((obj, item) => {
-        let find = obj.find((i) => i.name === item.name)
-        let _d = {
-          ...item,
-          frequency: 1
-        }
-        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
-        return obj
-      }, [])
-
+      dataArr.forEach((value, name) => {
+        arr.push({ value, name })
+      })
       this.echatrsArr = arr
-      console.log('渲染管道检测情况统计图arr', arr)
+      this.initData()
     },
 
     //初始化数据(饼状图)
     initData() {
-      this.setDefectData()
+      
       // console.log('渲染管道检测情况统计图')
       let chartDom = document.getElementById('echartsFive')
       let myChart = echarts.init(chartDom)

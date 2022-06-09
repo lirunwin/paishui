@@ -17,71 +17,64 @@ export default {
   data() {
     return {
       echartsData: [],
-      defectArr: []
+      defectArr: [],
+      titleArr: []
     }
   },
   watch: {
     paramData: {
       handler(nv, ov) {
-        this.echartsData = nv
-        console.log('缺陷等级统计图新的echartsData', this.paramData)
-        this.initData()
+        this.setDefectData()
       },
-      deep: true,
-      immediate: true
+      deep: true
     }
   },
   computed: {},
   created() {},
   mounted() {
-    this.initData()
+    this.setDefectData()
   },
   methods: {
     // 处理缺陷数据
     setDefectData() {
-      // console.log('this.echartsData', this.echartsData)
-
-      let echartsDataArr = this.echartsData.map((v) => {
+      this.titleArr = []
+      this.defectArr = []
+      this.echartsData = this.paramData
+      let echartsDataArr = this.echartsData.map(v => {
         return {
           type: v.defectCode,
-          name: v.defectName,
-          value: v.defectNum
+          name: v.defectName
         }
       })
-      console.log('echartsDataArr1', echartsDataArr)
-
-      echartsDataArr = echartsDataArr.reduce((obj, item) => {
-        let find = obj.find((i) => i.type === item.type)
-        let _d = {
-          ...item,
-          frequency: 1
+      let defectArr = new Map()
+      echartsDataArr.forEach(defect => {
+        let { type, name } = defect
+        let codename = `${name} (${type})`
+        if (defectArr.has(codename)) {
+          defectArr.set(codename, defectArr.get(codename) + 1)
+        } else {
+          defectArr.set(codename, 1)
         }
-        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
-        return obj
-      }, [])
-
-      console.log('echartsDataArr2', echartsDataArr)
-      this.defectArr = echartsDataArr
-      this.titleArr = echartsDataArr.map((v) => {
-        return v.name
       })
+
+      defectArr.forEach((value, codename) => {
+        this.titleArr.push(codename)
+        this.defectArr.push({ value })
+      })
+      this.initData()
     },
     //初始化数据(饼状图)
-    async initData() {
-      // console.log('缺陷数量统计图 110',this.paramData)
-      // this.echartsData = this.paramData
-      await this.setDefectData()
+    initData() {
       let chartDom = document.getElementById('echartsFour')
       let myChart = echarts.init(chartDom)
-      let option
-
-      option = {
+      let option = {
         tooltip: {
           trigger: 'axis',
           axisPointer: {
             type: 'shadow'
           }
         },
+        label: { show: true },
         grid: {
           left: '3%',
           right: '4%',

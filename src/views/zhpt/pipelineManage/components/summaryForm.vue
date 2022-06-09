@@ -47,8 +47,44 @@
 <script>
 export default {
   props: ['tabelData'],
+  data () {
+    return {
+      // 管道缺陷定级标准
+      filter: [
+        { title: '支管暗接', except: ['fourValue'] },
+        { title: '异物穿入', except: ['fourValue'] },
+        { title: '腐蚀', except: ['fourValue'] },
+        { title: '接口材料脱落', except: ['threeValue', 'fourValue'] },
+        { title: '浮渣', except: ['fourValue'] },
+      ]
+    }
+  },
   created() {
-    console.log('汇总组件', this.tabelData)
+    // this.filterData()
+  },
+  mounted () {
+  },
+  watch: {
+  },
+  methods: {
+    filterData () {
+      this.tabelData.defectQuantityStatisticsA.forEach(item => {
+        if (this.filter.some(filter => item.title.includes(filter.title))) {
+          let findItem = this.filter.find(filter => item.title.includes(filter.title))
+          findItem.except.forEach(except => {
+            item[except] = '/'
+          })
+        }
+      })
+      this.tabelData.defectQuantityStatisticsB.forEach(item => {
+        if (this.filter.some(filter => item.title.includes(filter.title))) {
+          let findItem = this.filter.find(filter => item.title.includes(filter.title))
+          findItem.except.forEach(except => {
+            item[except] = '/'
+          })
+        }
+      })
+    },
   }
 }
 </script>

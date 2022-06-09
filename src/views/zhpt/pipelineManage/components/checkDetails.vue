@@ -377,13 +377,11 @@ export default {
     // 获取视频url
     getVideoUrl(url) {
       let address = baseAddress + '/psjc/file' + url
-      console.log('address', address)
       return address
     },
     // 获取文件url
     getImgUrl(url) {
       let address = baseAddress + '/psjc/file' + url
-      console.log('address', address)
       return address
     },
     //   关闭弹框
@@ -394,7 +392,6 @@ export default {
     async openDetails() {
       console.log('管道检测开始', this.checkParam)
       if (this.checkParam) {
-        // console.log('走了有id的方法')
         let res = await assessmentDetails(this.checkParam)
         if (!res.result) {
           this.$message.error('管道详情数据为空!')
@@ -402,32 +399,33 @@ export default {
           return false
         }
         this.DetailsForm = res.result
-        let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, { value: '终点' + this.DetailsForm.endPoint }]
-        let seriesXArr = [this.DetailsForm.startDepth + '', this.DetailsForm.endDepth + '']
-        // let seriesXArr = []
-        for (let i = 0; i < this.DetailsForm.pipeDefects.length - 1; i++) {
-          nullArr.splice(1, 0, '')
-          seriesXArr.splice(
-            1,
-            0,
-            (((this.DetailsForm.startDepth + this.DetailsForm.endDepth) / 2) * (i + 1)).toFixed(4)
-          )
-        }
 
-        // 折线图计算
-        let ecArr = res.result.pipeDefects.map((v, i) => {
-          // seriesXArr.push(v.distanceStartPoint)
-          return {
-            type: v.defectCode,
-            name: v.defectName,
-            value: seriesXArr[i],
-            distance: v.distanceStartPoint
-          }
+        // 处理剖面图所用数据
+        let num = 10 // 粒度
+        let length = this.DetailsForm.pipeLength
+        let startDepth = this.DetailsForm.startDepth
+        let endDepth = this.DetailsForm.endDepth
+        let height = (this.DetailsForm.endDepth - this.DetailsForm.startDepth).toFixed(2)
+        let zn = endDepth > startDepth ? 1 : -1 // 正向 逆向
+        let dir = this.DetailsForm.detectDir.includes("顺流") // 检测方向
+        // X轴
+        let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, ...new Array(num - 1).fill(""), { value: '起点' + this.DetailsForm.startPoint }]
+        // 管线位置
+        let pipeArr = nullArr.map((item, index) => {
+          let relHeight = index / num * height
+          return { value: startDepth + zn * relHeight }
+        })
+        // 缺陷位置
+        let defectsArr = this.DetailsForm.pipeDefects.map(defects => {
+          let startLength = dir ? defects.distanceStartPoint : length - defects.distanceStartPoint
+          let x = (startLength / length).toFixed(3) * 10
+          let y = startDepth + (Math.abs(height) * (defects.distanceStartPoint / length)).toFixed(2) * zn
+          return [x, y, defects.defectCode, defects.defectName, defects.distanceStartPoint]
         })
 
         this.nullArr = nullArr
-        this.seriesXArr = seriesXArr
-        this.echartsArr = ecArr
+        this.seriesXArr = pipeArr
+        this.echartsArr = defectsArr
         // 缺陷信息分类
         console.log('缺陷信息分类')
         this.funcDefectArr = []
@@ -509,8 +507,8 @@ export default {
       if (myChart == null) {
         myChart = echarts.init(this.$refs.profile_echatrs)
       }
-      let option
-      option = {
+      console.log('绘制剖面图')
+      let option = {
         xAxis: {
           type: 'category',
           data: this.nullArr,
@@ -542,6 +540,8 @@ export default {
           {
             data: this.seriesXArr,
             type: 'line',
+            symbol: 'none',
+            symbolSize: 7,
             color: '#CFCCCC',
             markLine: {
               symbol: ['none', 'none'],
@@ -555,24 +555,27 @@ export default {
               },
               data: [
                 { xAxis: 0, name: this.DetailsForm.startDepth + '' },
-                { xAxis: this.DetailsForm.pipeDefects.length * 1, name: this.DetailsForm.endDepth + '' }
+                { xAxis: 10, name: this.DetailsForm.endDepth + '' }
               ]
             }
           },
 
           {
             data: this.echartsArr,
-            type: 'line',
+            type: 'scatter',
             symbol: 'triangle',
             symbolSize: 10,
             symbolOffset: [0, -20],
             itemStyle: {
               normal: {
                 label: {
+                  position: 'top',
+                  offset: [0, -10],
                   // formatter: '（CJ）{b}[0]，{c}m   ',
                   formatter: function (a) {
+                    let [x, y, code, name, length] = a.data
                     console.log('标题参数', a)
-                    return `（${a['data']['type']}）${a['data']['name']},${a['data']['distance']}m   `
+                    return `（${code}）${name},${length}m ` 
                   },
                   backgroundColor: '#fff',
                   borderColor: '#8C8D8E',

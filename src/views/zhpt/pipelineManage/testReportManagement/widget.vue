@@ -1303,9 +1303,7 @@ export default {
                 layer.getSource().clear()
                 map.getView().setCenter(center)
                 map.getView().setZoom(12)
-                if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
-                  layer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
-                }
+                layer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
               }
               if (id) {
                 map.getView().setZoom(18)
@@ -1780,8 +1778,6 @@ export default {
     },
     // 上传触发的方法
     handleAvatarSuccess(res, file, fileList) {
-      console.log('报告上传中')
-      // this.imageUrl = URL.createObjectURL(file.raw)
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
       if (res.result == null || res.result.length == 0) {
         file.status = 'error'
@@ -1811,7 +1807,6 @@ export default {
       let arrState = fileList.every((v) => v.status != 'ready' && v.status != 'uploading')
       if (res.result == null || res.result.length == 0) {
         file.status = 'error'
-        // this.$message.error('《' + file.name + '》上传失败,请检查文件格式')
       }
       if (arrState) {
         this.$message({
@@ -1819,32 +1814,7 @@ export default {
           message: '文件上传结束'
         })
         this.loadingBool = false
-        // let timeId = setTimeout(() => {
-        //   this.dialogFormVisible2 = false
-        //   this.form.name = ''
-        //   clearTimeout(timeId)
-        // }, 1500)
       }
-      // fileList.forEach((v) => {
-      //   if (v.status == 'ready' || v.status == 'uploading') {
-      //     return false
-      //   } else {
-      //     if (res.result.length != 0) {
-      //       this.$message({
-      //         message: '上传成功',
-      //         type: 'success'
-      //       })
-      //       this.getDate()
-      //     } else {
-      //       this.$message.error('上传文件失败,请检查文件格式')
-      //     }
-      //     let timeId = setTimeout(() => {
-      //       this.dialogFormVisible2 = false
-      //       this.form.name = ''
-      //       clearTimeout(timeId)
-      //     }, 2000)
-      //   }
-      // })
     },
     beforeUpload(event, file, fileList) {
       let num = 1024.0 //byte

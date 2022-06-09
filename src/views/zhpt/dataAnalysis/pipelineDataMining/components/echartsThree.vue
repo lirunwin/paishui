@@ -11,6 +11,7 @@
 
 <script>
 import * as echarts from 'echarts'
+
 export default {
   props: ['paramData'],
   components: {},
@@ -44,7 +45,6 @@ export default {
   watch: {
     paramData: {
       handler(nv, ov) {
-        this.echartsData = nv
         this.setDefectData()
       },
       deep: true
@@ -58,37 +58,19 @@ export default {
   methods: {
     // 处理缺陷数据
     setDefectData() {
-      console.log('走了setDefectData')
+      this.echartsData = this.paramData
       if (this.echartsData.length != 0) {
-        this.echartsData.forEach((ev) => {
-          this.allArr.forEach((av) => {
-            // console.log('ev', ev.defectLevel)
-            // console.log('av', av.Lname)
-            if (ev.defectLevel == av.Lname) {
-              av.value += ev.defectNum
-            }
-          })
-          // if (v.defectLevel == '一级') {
-          //   this.allArr[0].value += v.defectNum
-          // } else if (v.defectLevel == '二级') {
-          //   this.allArr[1].value += v.defectNum
-          // } else if (v.defectLevel == '三级') {
-          //   this.allArr[2].value += v.defectNum
-          // } else if (v.defectLevel == '四级') {
-          //   this.allArr[3].value += v.defectNum
-          // }
+        this.allArr.forEach(item => { item.value = 0 }) // 清空
+        this.echartsData.forEach(ev => {
+          let findItem = this.allArr.find(av => av.Lname === ev.defectLevel)
+          if (findItem) { findItem.value += 1 }
         })
       }
-
       this.initData()
       // console.log('this.allArr', this.allArr)
     },
     //初始化数据(饼状图)
     initData() {
-      console.log(' this.allArr', this.allArr)
-      // this.echartsData = this.paramData
-      // this.setDefectData()
-      // console.log('缺陷等级统计图', this.paramData)
       let chartDom = document.getElementById('echartsThree')
       let myChart = echarts.init(chartDom)
       let option
