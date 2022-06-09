@@ -9,6 +9,7 @@
       @row-dblclick="onDblClick"
       @selection-change="onSelectionChange"
       :row-style="rowStyle"
+      :row-key="({ siteName, paraName }) => `${siteName}-${paraName}`"
     />
   </div>
 </template>

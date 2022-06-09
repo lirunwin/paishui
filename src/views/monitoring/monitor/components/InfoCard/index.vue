@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import { monitorStatusColor, pointState } from '@/utils/constant'
+import { monitorAutoRefreshInterval, monitorStatusColor, pointState } from '@/utils/constant'
 import { getMonitorItemCurrentInfoById, IDictionary, IMonitorItem, IMonitorItemDetail } from '@/views/monitoring/api'
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 
@@ -39,6 +39,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 export default class InfoCard extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IMonitorItem
   @Prop({ type: Array, default: () => [] }) colors!: IDictionary[]
+  @Prop({ type: Boolean, default: false }) monitoring!: boolean
   arrow = { '1': '&uarr;', '0': '', '-1': '&darr;' }
 
   detail: Partial<IMonitorItemDetail> = {}
@@ -56,12 +57,42 @@ export default class InfoCard extends Vue {
     }, {})
   }
 
-  @Watch('data')
-  async onDataChange(data) {
-    if (!data) return
-    const { id } = data || {}
+  async fetchDetail() {
+    const { id } = this.data || {}
     const { result } = await getMonitorItemCurrentInfoById(id)
     this.detail = result
+  }
+
+  timer = null
+
+  stopInterval() {
+    if (this.timer) clearInterval(this.timer)
+  }
+
+  startInterval() {
+    this.stopInterval()
+    this.fetchDetail()
+    this.timer = setInterval(() => {
+      this.fetchDetail()
+    }, monitorAutoRefreshInterval * 2)
+  }
+
+  @Watch('data', { immediate: true })
+  onDataChange(data) {
+    if (data) {
+      this.startInterval()
+    } else {
+      this.stopInterval()
+    }
+  }
+
+  @Watch('monitoring')
+  onMonitoringChange(monitoring) {
+    if (!monitoring) this.stopInterval()
+  }
+
+  beforeDestroy() {
+    this.stopInterval()
   }
 }
 </script>

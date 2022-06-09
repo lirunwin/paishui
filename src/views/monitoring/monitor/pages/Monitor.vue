@@ -64,8 +64,14 @@
       :popupPosition="popup[key].coordinate"
       :mapView="popup[key].map"
       :isSetCenter="popup[key].center"
+      @close="() => onPopupClose(key)"
     >
-      <InfoCard @distribute="onDistribute" :data="popup[key].data" :colors="levelColors" />
+      <InfoCard
+        @distribute="onDistribute"
+        :data="popup[key].data"
+        :colors="levelColors"
+        :monitoring="Boolean(monitoring)"
+      />
     </CommonPopup>
   </div>
 </template>
@@ -95,7 +101,6 @@ import {
   monitorStatusColor
 } from '@/utils/constant'
 import { Map } from 'ol'
-import { ElTableColumn } from 'element-ui/types/table-column'
 
 interface IQuery {
   siteGroup?: string
@@ -164,6 +169,11 @@ export default class Monitor extends Vue {
 
   onCurrentChange(row) {
     this.current = { ...row }
+  }
+
+  onPopupClose(id) {
+    const { [id]: closedItem, ...rest } = this.popup
+    this.popup = rest
   }
 
   async getGroupsAndSections() {

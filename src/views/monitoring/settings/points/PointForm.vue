@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" width="876px" top="7vh">
+  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" @closed="onClosed" width="876px" top="7vh">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" :rules="rules">
       <template v-for="{ name: sectionName, title, items } of formItems">
         <template>
@@ -18,7 +18,7 @@
                   />
                 </el-form-item>
               </el-col>
-              <el-col style="flex:0 0 5em;text-align:center">
+              <el-col style="flex: 0 0 5em; text-align: center">
                 <el-button
                   :type="enable.device ? 'warning' : 'primary'"
                   @click="enable.device = !enable.device"
@@ -79,7 +79,7 @@
                       />
                     </el-form-item>
                   </el-col>
-                  <el-col style="flex:0 0 1em;text-align:center"> ~ </el-col>
+                  <el-col style="flex: 0 0 1em; text-align: center"> ~ </el-col>
                   <el-col>
                     <el-form-item :prop="`${sectionName}.coordiateY`">
                       <el-input-number
@@ -91,7 +91,7 @@
                       />
                     </el-form-item>
                   </el-col>
-                  <el-col style="flex:0 0 5em;text-align:center">
+                  <el-col style="flex: 0 0 5em; text-align: center">
                     <el-button
                       :type="enable.coordinate ? 'warning' : 'primary'"
                       @click="enable.coordinate = !enable.coordinate"
@@ -125,7 +125,7 @@
                   :placeholder="`请选择${label}`"
                   :disabled="disabled"
                   size="small"
-                  style="width:100%"
+                  style="width: 100%"
                   value-format="yyyy-MM-dd"
                   clearable
                 />
@@ -143,9 +143,9 @@
           </el-col>
           <el-col :span="12">
             <template v-if="sectionName === 'bindDevice'">
-              <div style="line-height:32px;margin-bottom:20px">
+              <div style="line-height: 32px; margin-bottom: 20px">
                 现场安装照片
-                <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
+                <span style="margin-left: 5px; color: #ccc">(最多上传9张)</span>
               </div>
               <div class="upload">
                 <el-upload
@@ -235,7 +235,7 @@ export default class PointForm extends Vue {
 
   getDefalutNumberProp = getDefalutNumberProp
   get listeners() {
-    const { submit, ...rest } = this.$listeners
+    const { submit, closed, ...rest } = this.$listeners
     return rest
   }
 
@@ -415,6 +415,13 @@ export default class PointForm extends Vue {
           }))
         }
       : defaultFormData()
+  }
+
+  onClosed() {
+    this.enable = { coordinate: false, device: false }
+    this.archives = []
+    this.mapCenter = []
+    this.$emit('closed')
   }
 }
 </script>

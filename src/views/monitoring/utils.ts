@@ -220,7 +220,7 @@ export const settingPointParamCols: ColItem[] = [
 ]
 
 export const monitorPointsCols: ColItem[] = [
-  { type: 'selection', width: '50px' },
+  { type: 'selection', width: '50px', reserveSelection: true },
   { type: 'index', label: '序号' },
   { prop: 'siteGroup', label: '监测分组', minWidth: '110px', ...alignLeft() },
   { prop: 'siteName', label: '监测站点', minWidth: '130px', ...alignLeft() },

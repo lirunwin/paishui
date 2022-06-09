@@ -819,7 +819,7 @@ export const monitorItemsSummary = async (
   })
 }
 
-export const getMonitorItemCurrentInfoById = (siteId: string) =>
+export const getMonitorItemCurrentInfoById = (siteId: string | number) =>
   axios.request<IResult<IMonitorItemDetail>>({ url: uris.monitor.index.getById, method: 'get', params: { siteId } })
 
 export const getMonitorItemCurrentInfoByIdBatch = (siteIds: string[]) =>
