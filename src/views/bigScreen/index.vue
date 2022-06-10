@@ -1,7 +1,7 @@
 <template>
   <div class="widget-bigScreen" >
     <!--背景地图模块-->
-    <BaseMap />
+    <BaseMap  v-on:fontSize="fontSize" />
     <MapLegend :show="showMonitoringCenter"/>
     <LayerControl :show="showMonitoringCenter"/>
     <MonitorTree />
@@ -56,13 +56,13 @@ export default {
     }
   },
   mounted(){
-    // console.log('vuex',this.$store.state.routeSetting.addRoutes)
+    
   },
   methods:{
     change(){
 
     },
-    //字体自适配函数
+    //图表字体自适配函数
     fontSize(res) {
       let docEl = document.documentElement,
         clientWidth =
@@ -75,6 +75,9 @@ export default {
       return res * fontSize;
     }
   },
+  destroyed(){
+    console.log('大屏实例销毁')
+  }
 }
 </script>
 

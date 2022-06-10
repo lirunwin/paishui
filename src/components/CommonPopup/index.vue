@@ -111,9 +111,11 @@ export default {
         //弹窗关闭
         closePopup(){
             this.reset();
-            this.dialogOverlay.setPosition(undefined);
-            this.mapView.removeOverlay(this.dialogOverlay)
-            this.dialogOverlay=null
+            if(this.dialogOverlay){
+                this.dialogOverlay.setPosition(undefined);
+                this.mapView.removeOverlay(this.dialogOverlay)
+                this.dialogOverlay=null
+            }
             this.$emit('close')
             return false;
         },
