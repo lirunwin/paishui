@@ -416,16 +416,45 @@ export default {
           return { value: startDepth + zn * relHeight }
         })
         // 缺陷位置
-        let defectsArr = this.DetailsForm.pipeDefects.map(defects => {
-          let startLength = dir ? defects.distanceStartPoint : length - defects.distanceStartPoint
-          let x = (startLength / length).toFixed(3) * 10
-          let y = startDepth + (Math.abs(height) * (defects.distanceStartPoint / length)).toFixed(2) * zn
-          return [x, y, defects.defectCode, defects.defectName, defects.distanceStartPoint]
+        let defectsArr = this.DetailsForm.pipeDefects.map(defect => {
+          let startLength = dir ? defect.distanceStartPoint : length - defect.distanceStartPoint
+          let x = Math.round((startLength / length) * 10)
+          let y = startDepth + (Math.abs(height) * (defect.distanceStartPoint / length)).toFixed(2) * zn
+          return [x, y, defect.defectCode, defect.defectName, defect.distanceStartPoint]
         })
+        // 环纵向
+        let defectsLine = this.DetailsForm.pipeDefects.map(defect => {
+          let pipeNote = defect.pipeNote
+          let position = defect.distanceStartPoint
+          if (pipeNote.includes('纵向长度')) {
+            let data = [...pipeArr], empty = new Array(11).fill('')
+            let defectLength = pipeNote.match(/.*纵向长度(.*)m/)[1]
+            let spliceIndex, line, startIndex, startLength, spliceLength
+            // 逆向
+            if (!dir) {
+              startLength = length - position 
+              startIndex = Math.round((startLength / length) * 10)
+              spliceLength = Math.round(Number(defectLength) / length * 10) + 1
+              line = data.splice((11 - spliceLength), spliceLength)
+              let data1 = [...empty, ...line, ...empty].splice(startIndex + 1, 11)
+              return data1
+            } else {
+              startLength = position
+              startIndex = Math.round((startLength / length) * 10)
+              spliceLength = Math.round(Number(defectLength) / length * 10) + 1
+              line = data.splice(startIndex, spliceLength)
+              return [...empty, ...line, ...empty].splice(11 - startIndex, 11)
+            }
+          } else {
+            return null
+          }
+        }).filter(item => item)
 
         this.nullArr = nullArr
         this.seriesXArr = pipeArr
         this.echartsArr = defectsArr
+        this.echartsLine = defectsLine
+
         // 缺陷信息分类
         console.log('缺陷信息分类')
         this.funcDefectArr = []
@@ -507,6 +536,15 @@ export default {
       if (myChart == null) {
         myChart = echarts.init(this.$refs.profile_echatrs)
       }
+      let defectLine = this.echartsLine.map(lineData => {
+        return {
+            data: lineData,
+            type: 'line',
+            symbol: 'none',
+            symbolSize: 7,
+            color: 'red'
+          }
+      })
       console.log('绘制剖面图')
       let option = {
         xAxis: {
@@ -537,6 +575,7 @@ export default {
           scale: false
         },
         series: [
+          // 管线
           {
             data: this.seriesXArr,
             type: 'line',
@@ -559,7 +598,8 @@ export default {
               ]
             }
           },
-
+          // 缺陷纵向
+          ...defectLine,
           {
             data: this.echartsArr,
             type: 'scatter',
