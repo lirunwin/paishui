@@ -117,7 +117,6 @@ export default class MapView extends Vue {
       })
     }).then(()=>{
       this.initVectorLayer()
-      if(this.center) this.showDevicePosition(this.center)
     })
   }
   showDevicePosition(position){
