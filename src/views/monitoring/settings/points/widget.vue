@@ -75,6 +75,7 @@
       :selected="selected"
       :visible.sync="visible.setting"
       :loading="loading.setting"
+      :levels="levels"
       @submit="onBind"
     />
   </div>
@@ -109,7 +110,9 @@ import {
   bindStandardAndSettings,
   submitPointSettings,
   IPointParam,
-  IPointThreshold
+  IPointThreshold,
+  getDictKeys,
+  IDictionary
 } from '@/views/monitoring/api'
 
 @Component({
@@ -128,6 +131,8 @@ export default class MonitoringPoints extends Vue {
   types: IDeviceType[] = []
 
   points: IPoint[] = []
+
+  levels: IDictionary[] = []
 
   loading: ILoading = {
     query: false,
@@ -194,11 +199,11 @@ export default class MonitoringPoints extends Vue {
     try {
       const { result: baseSettings } = await bindStandardAndSettings(param)
       this.$message[baseSettings ? 'success' : 'error'](`监测点基础配置${baseSettings ? '成功!' : '失败!'}`)
-
       const { result } = await submitPointSettings(
-        threshold.map<IPointThreshold>(({ paraId, ...rest }) => {
-          const oldParam = baseSettings.find((item) => item.indicateParaId === paraId)
-          return { ...rest, paraId: oldParam ? oldParam.id : paraId }
+        threshold.map<IPointThreshold>(({ id, paraId, ...rest }) => {
+          const { id: newParaId } =
+            baseSettings.find((item) => item.indicateParaId === paraId || item.id === paraId) || {}
+          return { ...rest, id, paraId: newParaId || paraId }
         })
       )
 
@@ -325,9 +330,18 @@ export default class MonitoringPoints extends Vue {
       console.log(error)
     }
   }
+  async getLevels() {
+    try {
+      const values = await getDictKeys()
+      this.levels = (values as IDictionary[]) || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   mounted() {
     this.doQuery()
+    this.getLevels()
     this.getAllTypes()
     this.getGroupsAndSections()
   }

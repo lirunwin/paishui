@@ -9,7 +9,8 @@
       @row-dblclick="onDblClick"
       @selection-change="onSelectionChange"
       :row-style="rowStyle"
-      :row-key="({ siteName, paraName }) => `${siteName}-${paraName}`"
+      :row-key="'collectId'"
+      @page-change="onPageChange"
     />
   </div>
 </template>
@@ -20,7 +21,12 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { monitorPointsCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 import { pointsMonitoring, IPointMonitoringQuery, IPointMonitoringItem } from '@/views/monitoring/api'
-import { defaultValuesForMonitorStandardLevel, monitorAutoRefreshInterval } from '@/utils/constant'
+import {
+  defaultValuesForMonitorStandardLevel,
+  getDefaultPagination,
+  monitorAutoRefreshInterval
+} from '@/utils/constant'
+import { IPagination } from '@/views/currentSystem/authorityManagement/mobileDevice/api'
 
 @Component({ name: 'PointsMonitor', components: { BaseTable, QueryForm } })
 export default class PointsMonitor extends Vue {
@@ -30,6 +36,8 @@ export default class PointsMonitor extends Vue {
   loading: boolean = false
   points: IPointMonitoringItem[] = []
   selected: IPointMonitoringItem[] = []
+  pagination: IPagination = getDefaultPagination()
+
   timer = null
   onExport(ids) {
     console.log(ids)
@@ -44,11 +52,20 @@ export default class PointsMonitor extends Vue {
     this.startInterval()
   }
 
+  onPageChange(pagination) {
+    this.pagination = { ...this.pagination, ...pagination }
+    this.startInterval()
+  }
+
   async doQuery(query = {}) {
     this.loading = true
     try {
-      const { result } = await pointsMonitoring({ ...this.query, ...query })
-      this.points = result || []
+      const {
+        result: { records, size, total, current }
+      } = await pointsMonitoring({ ...this.query, ...this.pagination, ...query })
+      this.pagination = { current, size, total }
+
+      this.points = records || []
     } catch (error) {
       console.log(error)
     }

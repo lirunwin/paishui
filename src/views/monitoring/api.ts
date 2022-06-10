@@ -464,19 +464,20 @@ export interface IPointThreshold extends ICreator {
   level?: string | number
   levelName?: string
   /** 下限 */
-  lower?: number
+  lower?: number | ''
   /** 下限容差 */
-  lowerTolerance?: number
+  lowerTolerance?: number | ''
   /** 监测指标参数id 关联 设备基础配置信息id */
   paraId?: string | number
+  paraName?: string
   /** 特殊阈值 */
   specialVal?: string | number
   /** 有效时间开始 */
   start?: string
   /** 上限 */
-  upper?: number
+  upper?: number | ''
   /** 上限容差 */
-  upperTolerance?: number
+  upperTolerance?: number | ''
 }
 
 export interface IDictionary {
@@ -829,5 +830,5 @@ export const getMonitorItemCurrentInfoByIdBatch = (siteIds: string[]) =>
     params: { siteIds: siteIds.join() }
   })
 
-export const pointsMonitoring = (params: Partial<IPointMonitoringQuery>) =>
-  axios.request<IResult<IPointMonitoringItem[]>>({ url: uris.monitor.points.watch, method: 'get', params })
+export const pointsMonitoring = (params: Partial<IPointMonitoringQuery & IQueryCommon>) =>
+  axios.request<IRes<IPointMonitoringItem[]>>({ url: uris.monitor.points.watch, method: 'get', params })

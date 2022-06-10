@@ -94,7 +94,7 @@
       </BaseTitle>
       <BaseTable :columns="settingPointParamCols" :data="formData.threshold" v-loading="fetching" border>
         <template v-for="(item, index) of formData.threshold" v-slot:[`name-${index}`]>
-          <template v-if="String(item.id).startsWith('__new__')">
+          <template v-if="String(item.id).startsWith(idPrefix)">
             <el-form-item
               :key="`name-${item.id}`"
               :prop="`threshold[${index}].id`"
@@ -104,17 +104,20 @@
             >
               <el-select v-model="formData.threshold[index].paraId" placeholder="请选择参数名称">
                 <el-option
-                  v-for="param of deviceTypePrams"
+                  v-for="param of formData.param"
                   :label="param.name"
-                  :value="param.id"
+                  :value="String(param.id).startsWith(idPrefix) ? param.indicateParaId : param.id"
                   :key="param.id"
-                  :disabled="formData.threshold.filter((i) => i.paraId === param.id).length === levels.length"
+                  :disabled="
+                    formData.threshold.filter((i) => i.paraId === param.id || i.paraId === param.indicateParaId)
+                      .length === levels.length
+                  "
                 />
               </el-select>
             </el-form-item>
           </template>
           <template v-else>
-            {{ item.name }}
+            {{ item.paraName }}
           </template>
         </template>
 
@@ -126,7 +129,15 @@
             style="margin-bottom: 0"
             :rules="getRequiredRule(item.name, true, true)"
           >
-            <el-select v-model="formData.threshold[index].level" placeholder="请选择监测值判定" clearable>
+            <el-select
+              v-model="formData.threshold[index].level"
+              placeholder="请选择监测值判定"
+              clearable
+              :disabled="
+                !formData.threshold[index].paraId || !String(formData.threshold[index].id).startsWith(idPrefix)
+              "
+              @change="($event) => onThresholdLevelChange(index, $event)"
+            >
               <el-option
                 v-for="level of levels"
                 :label="level.notes"
@@ -138,47 +149,6 @@
           </el-form-item>
         </template>
 
-        <template v-for="(item, index) of formData.threshold" v-slot:[`threshold-${index}`]>
-          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`threshold-${item.id}`">
-            <el-col>
-              <el-form-item
-                :prop="`threshold[${index}].lower`"
-                label-width="0"
-                style="margin-bottom: 0"
-                :rules="getRequiredRule(item.name, !formData.threshold[index].specialVal)"
-              >
-                <el-input-number
-                  :controls="false"
-                  :min="0"
-                  :max="formData.threshold[index].upper - 0.01"
-                  v-model="formData.threshold[index].lower"
-                  :precision="2"
-                  size="small"
-                  style="width: 70px"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col style="flex: 0 0 1em">~</el-col>
-            <el-col>
-              <el-form-item
-                :prop="`threshold[${index}].upper`"
-                label-width="0"
-                style="margin-bottom: 0"
-                :rules="getRequiredRule(item.name, !formData.threshold[index].specialVal)"
-              >
-                <el-input-number
-                  v-model="formData.threshold[index].upper"
-                  :controls="false"
-                  :disabled="!formData.threshold[index].lower"
-                  :min="formData.threshold[index].lower + 0.01"
-                  :precision="2"
-                  size="small"
-                  style="width: 70px"
-                />
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </template>
         <template v-for="(item, index) of formData.threshold" v-slot:[`specialVal-${index}`]>
           <el-form-item
             :key="`specialVal-${item.id}`"
@@ -194,20 +164,55 @@
             />
           </el-form-item>
         </template>
+
+        <template v-for="(item, index) of formData.threshold" v-slot:[`threshold-${index}`]>
+          <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`threshold-${item.id}`">
+            <el-col>
+              <el-form-item
+                :prop="`threshold[${index}].lower`"
+                label-width="0"
+                style="margin-bottom: 0"
+                :rules="getRequiredRule(item.name, !formData.threshold[index].specialVal)"
+              >
+                <el-input-number
+                  :controls="false"
+                  :min="0"
+                  :max="Number(formData.threshold[index].upper) - 0.01"
+                  v-model="formData.threshold[index].lower"
+                  :precision="2"
+                  size="small"
+                  style="width: 70px"
+                  @change="() => onWarningChange(index)"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col style="flex: 0 0 1em">~</el-col>
+            <el-col>
+              <el-form-item
+                :prop="`threshold[${index}].upper`"
+                label-width="0"
+                style="margin-bottom: 0"
+                :rules="getRequiredRule(item.name, !formData.threshold[index].specialVal)"
+              >
+                <el-input-number
+                  v-model="formData.threshold[index].upper"
+                  :controls="false"
+                  :disabled="!(formData.threshold[index].lower >= 0)"
+                  :min="Number(formData.threshold[index].lower) + 0.01"
+                  :precision="2"
+                  size="small"
+                  style="width: 70px"
+                  @change="() => onWarningChange(index)"
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </template>
+
         <template v-for="(item, index) of formData.threshold" v-slot:[`allowance-${index}`]>
           <el-row type="flex" align="middle" justify="space-between" :gutter="10" :key="`allowance-${item.id}`">
             <el-col>
-              <el-form-item
-                :prop="`threshold[${index}].lowerTolerance`"
-                label-width="0"
-                style="margin-bottom: 0"
-                :rules="
-                  getRequiredRule(
-                    item.name,
-                    !formData.threshold[index].upperTolerance && !formData.threshold[index].specialVal
-                  )
-                "
-              >
+              <el-form-item :prop="`threshold[${index}].lowerTolerance`" label-width="0" style="margin-bottom: 0">
                 <el-input-number
                   v-model="formData.threshold[index].lowerTolerance"
                   :controls="false"
@@ -215,23 +220,13 @@
                   :precision="2"
                   size="small"
                   style="width: 70px"
-                  @change="() => onEarlyWarningChange(index, 'upperTolerance')"
+                  @change="() => onWarningChange(index, 'upperTolerance')"
                 />
               </el-form-item>
             </el-col>
             <el-col style="flex: 0 0 1em">~</el-col>
             <el-col>
-              <el-form-item
-                :prop="`threshold[${index}].upperTolerance`"
-                label-width="0"
-                style="margin-bottom: 0"
-                :rules="
-                  getRequiredRule(
-                    item.name,
-                    !formData.threshold[index].lowerTolerance && !formData.threshold[index].specialVal
-                  )
-                "
-              >
+              <el-form-item :prop="`threshold[${index}].upperTolerance`" label-width="0" style="margin-bottom: 0">
                 <el-input-number
                   v-model="formData.threshold[index].upperTolerance"
                   :controls="false"
@@ -239,7 +234,7 @@
                   :precision="2"
                   size="small"
                   style="width: 70px"
-                  @change="() => onEarlyWarningChange(index, 'lowerTolerance')"
+                  @change="() => onWarningChange(index, 'lowerTolerance')"
                 />
               </el-form-item>
             </el-col>
@@ -299,7 +294,6 @@ import moment from 'moment'
 const format = 'HH:mm'
 const thresholdKeys = ['upper', 'lower', 'upperTolerance', 'lowerTolerance']
 import {
-  getDictKeys,
   getPointConfigurations,
   IDictionary,
   IPoint,
@@ -344,13 +338,16 @@ const getDefaultThresholdValue = (id: string | number = '', value: IThreshold = 
       ...value
     },
     'id',
-    { enumerable: false, configurable: true, value: id }
+    { enumerable: false, configurable: true, value: id, writable: true }
   )
 const getDefaultFormData = (): IPointThresholdFormData => ({ threshold: [], param: [], indicateId: '' })
+
+const idPrefix = '__temp__'
 
 @Component({ name: 'PointThresholdForm', components: { BaseDialog, BaseTitle, BaseTable } })
 export default class PointThresholdForm extends Vue {
   @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
+  @Prop({ type: Array, default: () => [] }) levels!: IDictionary[]
   $refs!: { form: ElForm }
   $listeners!: { open?: Function; submit?: Function; closed: Function }
   dialogVisible = false
@@ -358,7 +355,7 @@ export default class PointThresholdForm extends Vue {
   formData: IPointThresholdFormData = getDefaultFormData()
   settingPointBasisCols = settingPointBasisCols
   settingPointParamCols = settingPointParamCols
-
+  idPrefix = idPrefix
   rules = {
     indicateId: [{ required: true, message: '请选择体系！', trigger: 'blur' }],
     pointId: [{ required: true, message: '请选择检测点', trigger: 'blur' }]
@@ -374,8 +371,6 @@ export default class PointThresholdForm extends Vue {
 
   points: IPoint[] = []
 
-  levels: IDictionary[] = []
-
   deviceId: string | number = ''
 
   get listeners() {
@@ -388,24 +383,34 @@ export default class PointThresholdForm extends Vue {
       if (valid) {
         const { indicateId, threshold, param } = this.formData
         // console.log(JSON.stringify(this.formData, null, 2))
-        this.$emit('submit', {
+        const data = {
           indicateId,
           param: param.map<IPointParam>(({ id, ...rest }) => {
             return {
               ...rest,
-              id: String(id).startsWith('__new__') || String(id).startsWith('__temp__') ? undefined : id
+              id: String(id).startsWith(idPrefix) ? undefined : id
             }
           }),
-          threshold: threshold.map<IPointThreshold>(({ name, id, timeRange, ...rest }) => {
-            const [start, end] = timeRange || []
-            return {
-              ...rest,
-              start: moment(start, format).format(format),
-              end: moment(end, format).format(format),
-              id: String(id).startsWith('__new__') || String(id).startsWith('__temp__') ? undefined : id
+          threshold: threshold.map<IPointThreshold>(
+            ({ name, id, timeRange, isSpecial, specialVal, lower, upper, lowerTolerance, upperTolerance, ...rest }) => {
+              const [start, end] = timeRange || []
+              return {
+                ...rest,
+                isSpecial,
+                specialVal,
+                lower: isSpecial ? '' : lower,
+                upper: isSpecial ? '' : upper,
+                lowerTolerance: isSpecial ? '' : lowerTolerance,
+                upperTolerance: isSpecial ? '' : upperTolerance,
+                start: moment(start, format).format(format),
+                end: moment(end, format).format(format),
+                id: String(id).startsWith(idPrefix) ? undefined : id
+              }
             }
-          })
-        })
+          )
+        }
+        console.log(JSON.stringify(data, null, 2))
+        this.$emit('submit', data)
       }
     })
   }
@@ -430,6 +435,47 @@ export default class PointThresholdForm extends Vue {
     }
   }
 
+  onThresholdLevelChange(index: number, level: string) {
+    const { paraId } = this.formData.threshold[index]
+    const param = this.standardParams.find((item) => String(item.level) === String(level))
+
+    if (param)
+      this.formData.threshold[index] = Object.assign(
+        this.formData.threshold[index],
+        this.setupNewThreshold(param, { paraId, level: String(level) })
+      )
+  }
+
+  setupNewThreshold(param: IStandardParam = {}, addtional: Partial<IThreshold> = {}): IThreshold {
+    const {
+      id: paraId,
+      lower,
+      upper,
+      lowerTolerance,
+      upperTolerance,
+      start,
+      end,
+      isSpecial,
+      specialVal,
+      level = ''
+    } = param
+
+    return {
+      paraId,
+      lower: lower || undefined,
+      upper: upper || undefined,
+      lowerTolerance: lowerTolerance || undefined,
+      upperTolerance: upperTolerance || undefined,
+      start,
+      end,
+      isSpecial,
+      specialVal,
+      level: String(level),
+      timeRange: [moment(start, format).toDate(), moment(end, format).toDate()],
+      ...addtional
+    }
+  }
+
   async onStandardChange(indicateId: string, reset: boolean = true) {
     const { type: typeId } = this.standards.find((item) => item.id === indicateId) || {}
     if (!typeId) return
@@ -450,50 +496,35 @@ export default class PointThresholdForm extends Vue {
           ...this.formData,
           // 缺deviceId 设备id 但有deviceTypeParaId， indicateId 监测体系id
           param: deviceTypePrams.map<IPointParam>(({ id, lrangeUp, lrangeLow, ...rest }, index) => {
-            return {
-              ...rest,
-              deviceId: this.deviceId,
-              indicateId,
-              indicateParaId: (
-                standardParams.find((item) => item.deviceTypeParaVo && item.deviceTypeParaVo.id === id) || {}
-              ).id,
-              id: '__temp__' + id,
-              lrangeUp: lrangeUp || undefined,
-              lrangeLow: lrangeLow || undefined,
-              sort: index + 1,
-              siteCode: '',
-              isDisplay: 1,
-              note: ''
-            }
+            return Object.defineProperty(
+              {
+                ...rest,
+                deviceId: this.deviceId,
+                indicateId,
+                indicateParaId: (
+                  standardParams.find((item) => item.deviceTypeParaVo && item.deviceTypeParaVo.id === id) || {}
+                ).id,
+                lrangeUp: lrangeUp || undefined,
+                lrangeLow: lrangeLow || undefined,
+                sort: index + 1,
+                siteCode: '',
+                isDisplay: 1,
+                note: ''
+              },
+              'id',
+              { enumerable: false, configurable: true, value: idPrefix + id, writable: true }
+            )
           }),
-          threshold: deviceTypePrams.map<IPointThreshold>(({ id, name }, index) => {
-            const {
-              id: paraId,
-              lower,
-              upper,
-              lowerTolerance,
-              upperTolerance,
-              start,
-              end,
-              isSpecial,
-              specialVal,
-              level
-            } = standardParams.find((item) => item.deviceTypeParaVo && item.deviceTypeParaVo.id === id) || {}
-            return getDefaultThresholdValue(`__temp__${index}`, {
-              name,
-              paraId,
-              lower: lower || undefined,
-              upper: upper || undefined,
-              lowerTolerance: lowerTolerance || undefined,
-              upperTolerance: upperTolerance || undefined,
-              start,
-              end,
-              isSpecial,
-              specialVal,
-              level: String(level),
-              timeRange: [moment(start, format).toDate(), moment(end, format).toDate()]
-            })
-          })
+
+          threshold: deviceTypePrams.map<IPointThreshold>(({ id, name }, index) =>
+            getDefaultThresholdValue(
+              `${idPrefix}${index}`,
+              this.setupNewThreshold(
+                this.standardParams.find((item) => item.deviceTypeParaVo && item.deviceTypeParaVo.id === id) || {},
+                { name }
+              )
+            )
+          )
         }
       }
     } catch (error) {
@@ -502,20 +533,10 @@ export default class PointThresholdForm extends Vue {
     this.fetching = false
   }
 
-  /** 获取体系指标判定 */
-  async getLevels() {
-    try {
-      const values = await getDictKeys()
-      this.levels = (values as IDictionary[]) || []
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   onParamAdd() {
     this.formData = {
       ...this.formData,
-      threshold: [...this.formData.threshold, getDefaultThresholdValue('__new__' + new Date())]
+      threshold: [...this.formData.threshold, getDefaultThresholdValue(idPrefix + new Date())]
     }
   }
 
@@ -526,15 +547,17 @@ export default class PointThresholdForm extends Vue {
     }
   }
 
-  onEarlyWarningChange(index: number, key: string) {
-    this.formData.threshold[index][key] = undefined
+  onWarningChange(index: number, key: string = '') {
+    if (key) {
+      this.formData.threshold[index][key] = undefined
+      setTimeout(() => {
+        this.$refs.form.validateField(`threshold[${index}].${key}`)
+      }, 100)
+    }
     this.formData.threshold[index].specialVal = undefined
     this.formData.threshold[index].isSpecial = false
-
-    setTimeout(() => {
-      this.$refs.form.validateField(`threshold[${index}].${key}`)
-    }, 100)
   }
+
   onSpecialValChange(index: number) {
     this.formData.threshold[index].isSpecial = true
     thresholdKeys.forEach((key) => {
@@ -568,13 +591,12 @@ export default class PointThresholdForm extends Vue {
             upper,
             upperTolerance,
             isPush,
-            level,
+            level = '',
             ...rest
           }) => {
             return {
               ...rest,
               paraId,
-              name: (param.find((item) => item.id === paraId) || {}).name,
               timeRange: [moment(start, format).toDate(), moment(end, format).toDate()],
               specialVal: specialVal || undefined,
               lower: lower || undefined,
@@ -596,7 +618,6 @@ export default class PointThresholdForm extends Vue {
   onOpen() {
     this.getSettings()
     this.onStandardQuery()
-    this.getLevels()
     this.$emit('open')
   }
 

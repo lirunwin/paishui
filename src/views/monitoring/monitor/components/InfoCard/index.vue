@@ -45,8 +45,8 @@ export default class InfoCard extends Vue {
   detail: Partial<IMonitorItemDetail> = {}
   monitorStatusColor = monitorStatusColor
   get noticeType() {
-    const { status } = this.detail
-    return pointState[String(status)]
+    const { status, isAlarm } = this.detail
+    return pointState[isAlarm ? '2' : String(status)]
   }
 
   get levelColors() {

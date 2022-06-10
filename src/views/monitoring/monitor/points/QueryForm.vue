@@ -18,9 +18,9 @@
     <el-form-item label="判定结果" prop="levelName">
       <el-select v-model="formData.levelName" multiple placeholder="请选择判定结果" size="small" clearable>
         <!-- <el-option value="" label="全部" /> -->
-        <el-option value="" label="正常" />
+        <el-option value="正常" label="正常" />
         <el-option v-for="item of levels" :value="item.notes" :label="item.notes" :key="item.codeValue" />
-        <el-option value="" label="无效" />
+        <el-option value="无效" label="无效" />
       </el-select>
     </el-form-item>
     <el-form-item>
