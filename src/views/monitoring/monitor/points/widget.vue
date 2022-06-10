@@ -8,6 +8,8 @@
       :data="points"
       @row-dblclick="onDblClick"
       @selection-change="onSelectionChange"
+      :row-style="rowStyle"
+      :row-key="({ siteName, paraName }) => `${siteName}-${paraName}`"
     />
   </div>
 </template>
@@ -17,38 +19,68 @@ import { Vue, Component } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { monitorPointsCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
+import { pointsMonitoring, IPointMonitoringQuery, IPointMonitoringItem } from '@/views/monitoring/api'
+import { defaultValuesForMonitorStandardLevel, monitorAutoRefreshInterval } from '@/utils/constant'
 
 @Component({ name: 'PointsMonitor', components: { BaseTable, QueryForm } })
 export default class PointsMonitor extends Vue {
   monitorPointsCols = monitorPointsCols
 
-  visible = false
-
-  current = {}
-
-  selected = []
-
-  points = [
-    { id: '1', name: '测试', code: '1231', time: ['00:00', '23:59'] },
-    { id: '2', name: '测试1', code: '1232', time: ['00:00', '23:59'] },
-    { id: '3', name: '测试2', code: '1233', time: ['00:00', '23:59'] }
-  ]
-
-  onQuery(query) {
-    console.log(query)
-  }
-
+  query: Partial<IPointMonitoringQuery> = {}
+  loading: boolean = false
+  points: IPointMonitoringItem[] = []
+  selected: IPointMonitoringItem[] = []
+  timer = null
   onExport(ids) {
     console.log(ids)
   }
 
-  onDblClick(row) {
-    this.current = { ...row }
-    this.visible = true
-  }
-
   onSelectionChange(selections) {
     this.selected = [...selections]
+  }
+
+  onQuery(query) {
+    this.query = { ...query }
+    this.startInterval()
+  }
+
+  async doQuery(query = {}) {
+    this.loading = true
+    try {
+      const { result } = await pointsMonitoring({ ...this.query, ...query })
+      this.points = result || []
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading = false
+  }
+
+  rowStyle({ row }) {
+    const { level } = row
+    const { color } = defaultValuesForMonitorStandardLevel.find((item) => item.codeValue === String(level)) || {}
+    return { color }
+  }
+
+  onDblClick(row) {}
+
+  mounted() {
+    this.startInterval()
+  }
+
+  stopInterval() {
+    if (this.timer) clearInterval(this.timer)
+  }
+
+  startInterval() {
+    this.stopInterval()
+    this.doQuery()
+    this.timer = setInterval(() => {
+      this.doQuery()
+    }, monitorAutoRefreshInterval)
+  }
+
+  beforeDestroy() {
+    this.stopInterval()
   }
 }
 </script>

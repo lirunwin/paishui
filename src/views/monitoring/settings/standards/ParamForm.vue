@@ -265,7 +265,7 @@ export default class ParamForm extends Vue {
         result: { records }
       } = await deviceTypeParamsPage({ typeId, current: 1, size: 9999999 })
       this.typeParams = records || []
-      const { deviceTypeParaId } = this.data
+      const { id: deviceTypeParaId } = (this.data || {}).deviceTypeParaVo || {}
       deviceTypeParaId && this.onTypeParamChange(deviceTypeParaId)
     } catch (error) {
       console.log(error)

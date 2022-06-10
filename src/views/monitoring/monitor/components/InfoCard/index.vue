@@ -1,56 +1,99 @@
 <template>
   <el-card class="info-card" :body-style="{ fontSize: '14px', padding: '15px' }">
     <div slot="header" class="info-card-title">
-      <span>童家河入河口水质监测点</span>
+      <span>{{ (detail.monitorSiteVo || {}).name }}</span>
       <div>
         <el-button type="text" icon="el-icon-map-location" style="height: 1.2em; padding: 0" />
         <el-button
           type="text"
           icon="el-icon-s-tools"
-          @click="() => $emit('distribute', info)"
+          @click="() => $emit('distribute', data)"
           style="height: 1.2em; padding: 0"
         />
         <el-button type="text" icon="el-icon-data-line" style="height: 1.2em; padding: 0" />
       </div>
     </div>
-    <h3 class="type">报警</h3>
-
-    <div class="text">采集时间: 2022-03-01 09:03:03</div>
-    <div class="item">
-      <span class="text">温度【达标: 10-40】</span>
-      <span>12.5 ℃ {{ arrow.up }}</span>
-    </div>
-    <div class="item">
-      <span class="text">电导率【达标: 40-60】</span>
-      <span>59 ms/m {{ arrow.down }}</span>
-    </div>
-    <div class="item">
-      <span class="text">浊度【达标: 200-300】</span>
-      <span>211.76 NTU {{ arrow.up }}</span>
-    </div>
-    <div class="item">
-      <span class="text">化学需氧量【严重报警: 90-100】</span>
-      <span>97.13 mg/L {{ arrow.down }}</span>
+    <h3 :style="`color:${monitorStatusColor[detail.isAlarm ? '2' : detail.status]}`">{{ noticeType }}</h3>
+    <div class="item" v-for="item of detail.paraVoList" :key="item.name">
+      <span class="param-name">
+        {{ item.name }} 【{{ (item.siteDeviceParaVo || {}).levelName }}: {{ (item.siteDeviceParaVo || {}).lower }}-{{
+          (item.siteDeviceParaVo || {}).upper
+        }}】
+      </span>
+      <span>
+        <span :style="`color:${levelColors[String((item.siteDeviceParaVo || {}).level)]}`"
+          >{{ item.value }} {{ item.unit }}</span
+        >
+        <span v-html="arrow[String(item.direction)]" />
+      </span>
     </div>
   </el-card>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator'
+import { monitorAutoRefreshInterval, monitorStatusColor, pointState } from '@/utils/constant'
+import { getMonitorItemCurrentInfoById, IDictionary, IMonitorItem, IMonitorItemDetail } from '@/views/monitoring/api'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 
 @Component({ name: 'InfoCard' })
 export default class InfoCard extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) info!: {
-    id?: string
-    type?: string
-    name?: string
-    dep?: string
-    tel?: string
-    distance?: string
-    address?: string
-    car?: string
+  @Prop({ type: Object, default: () => ({}) }) data!: IMonitorItem
+  @Prop({ type: Array, default: () => [] }) colors!: IDictionary[]
+  @Prop({ type: Boolean, default: false }) monitoring!: boolean
+  arrow = { '1': '&uarr;', '0': '', '-1': '&darr;' }
+
+  detail: Partial<IMonitorItemDetail> = {}
+  monitorStatusColor = monitorStatusColor
+  get noticeType() {
+    const { status } = this.detail
+    return pointState[String(status)]
   }
-  arrow = { up: '&uarr;', down: '&darr;' }
+
+  get levelColors() {
+    return this.colors.reduce<{ [x: string]: string }>((data, current) => {
+      const { notes: color, codeValue } = current
+      data[codeValue] = color
+      return data
+    }, {})
+  }
+
+  async fetchDetail() {
+    const { id } = this.data || {}
+    const { result } = await getMonitorItemCurrentInfoById(id)
+    this.detail = result
+  }
+
+  timer = null
+
+  stopInterval() {
+    if (this.timer) clearInterval(this.timer)
+  }
+
+  startInterval() {
+    this.stopInterval()
+    this.fetchDetail()
+    this.timer = setInterval(() => {
+      this.fetchDetail()
+    }, monitorAutoRefreshInterval * 2)
+  }
+
+  @Watch('data', { immediate: true })
+  onDataChange(data) {
+    if (data) {
+      this.startInterval()
+    } else {
+      this.stopInterval()
+    }
+  }
+
+  @Watch('monitoring')
+  onMonitoringChange(monitoring) {
+    if (!monitoring) this.stopInterval()
+  }
+
+  beforeDestroy() {
+    this.stopInterval()
+  }
 }
 </script>
 
@@ -68,6 +111,7 @@ export default class InfoCard extends Vue {
   &-title {
     display: flex;
     align-items: center;
+    font-weight: 600;
     > span {
       flex: 1 1 auto;
       text-overflow: ellipsis;
@@ -78,13 +122,10 @@ export default class InfoCard extends Vue {
     }
   }
   .type {
-    color: $--color-danger;
     margin-top: 0;
     font-size: 16px;
   }
-  .text {
-    color: rgba(#333, 0.6);
-  }
+
   .item {
     margin-top: 10px;
     display: flex;
@@ -93,6 +134,9 @@ export default class InfoCard extends Vue {
     > span:last-child {
       font-weight: 600;
     }
+  }
+  .param-name {
+    color: rgba(#333, 60%);
   }
 }
 </style>

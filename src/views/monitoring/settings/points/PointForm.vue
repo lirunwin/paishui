@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" width="876px" top="7vh">
+  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" @closed="onClosed" width="876px" top="7vh">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" :rules="rules">
       <template v-for="{ name: sectionName, title, items } of formItems">
         <template>
@@ -18,7 +18,7 @@
                   />
                 </el-form-item>
               </el-col>
-              <el-col style="flex:0 0 5em;text-align:center">
+              <el-col style="flex: 0 0 5em; text-align: center">
                 <el-button
                   :type="enable.device ? 'warning' : 'primary'"
                   @click="enable.device = !enable.device"
@@ -56,6 +56,7 @@
                 type = 'text',
                 disabled = false,
                 options,
+                optionDisabledKey,
                 onChange,
                 formatter
               } of items"
@@ -79,7 +80,7 @@
                       />
                     </el-form-item>
                   </el-col>
-                  <el-col style="flex:0 0 1em;text-align:center"> ~ </el-col>
+                  <el-col style="flex: 0 0 1em; text-align: center"> ~ </el-col>
                   <el-col>
                     <el-form-item :prop="`${sectionName}.coordiateY`">
                       <el-input-number
@@ -91,7 +92,7 @@
                       />
                     </el-form-item>
                   </el-col>
-                  <el-col style="flex:0 0 5em;text-align:center">
+                  <el-col style="flex: 0 0 5em; text-align: center">
                     <el-button
                       :type="enable.coordinate ? 'warning' : 'primary'"
                       @click="enable.coordinate = !enable.coordinate"
@@ -115,6 +116,9 @@
                     :key="item.id"
                     :value="item.id"
                     :label="formatter ? formatter(item) : item.name"
+                    :disabled="
+                      data.id ? data[sectionName][name] !== item.id && item[optionDisabledKey] : item[optionDisabledKey]
+                    "
                   >
                   </el-option>
                 </el-select>
@@ -125,7 +129,7 @@
                   :placeholder="`请选择${label}`"
                   :disabled="disabled"
                   size="small"
-                  style="width:100%"
+                  style="width: 100%"
                   value-format="yyyy-MM-dd"
                   clearable
                 />
@@ -143,9 +147,9 @@
           </el-col>
           <el-col :span="12">
             <template v-if="sectionName === 'bindDevice'">
-              <div style="line-height:32px;margin-bottom:20px">
+              <div style="line-height: 32px; margin-bottom: 20px">
                 现场安装照片
-                <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
+                <span style="margin-left: 5px; color: #ccc">(最多上传9张)</span>
               </div>
               <div class="upload">
                 <el-upload
@@ -194,7 +198,6 @@ import { telAndMobileReg } from '@/utils/constant'
 import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
 import { getRemoteImg } from '@/api/ftp'
 import Map from './Map.vue'
-import { Feature } from 'ol'
 
 interface FormItem {
   name?: string
@@ -206,6 +209,7 @@ interface FormItem {
     disabled?: boolean
     required?: boolean
     options?: any[]
+    optionDisabledKey?: string
     onChange?: (val: any) => void
     formatter?: (row: { [x: string]: any }) => string
   }[]
@@ -227,15 +231,20 @@ const defaultFormData = () => ({
   fileList: []
 })
 
+interface IFormData extends IPointConnectDevice {
+  basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'>
+  fileList?: Partial<ElUploadInternalFileDetail>[]
+}
+
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable, Map } })
 export default class PointForm extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) data!: object
+  @Prop({ type: Object, default: () => ({}) }) data!: IFormData
   @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   $refs!: { form: ElForm }
 
   getDefalutNumberProp = getDefalutNumberProp
   get listeners() {
-    const { submit, ...rest } = this.$listeners
+    const { submit, closed, ...rest } = this.$listeners
     return rest
   }
 
@@ -244,10 +253,7 @@ export default class PointForm extends Vue {
   }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: IPointConnectDevice & {
-    basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'>
-    fileList?: Partial<ElUploadInternalFileDetail>[]
-  } = defaultFormData()
+  formData: IFormData = defaultFormData()
 
   archives: IDevice[] = []
 
@@ -292,6 +298,7 @@ export default class PointForm extends Vue {
             name: 'deviceId',
             type: 'select',
             options: this.archives,
+            optionDisabledKey: 'hasBindMonitor',
             formatter: ({ sn, name }) => (sn ? `${sn} | ${name}` : name || '')
           },
           { label: '安装负责人', name: 'installUser' },
@@ -415,6 +422,13 @@ export default class PointForm extends Vue {
           }))
         }
       : defaultFormData()
+  }
+
+  onClosed() {
+    this.enable = { coordinate: false, device: false }
+    this.archives = []
+    this.mapCenter = []
+    this.$emit('closed')
   }
 }
 </script>

@@ -7,12 +7,12 @@
           <el-option v-for="group of groups" :key="group" :label="group" :value="group" />
         </el-select>
       </el-form-item>
-      <el-form-item label="排水分区">
+      <!-- <el-form-item label="排水分区">
         <el-select v-model="formData.psArea" placeholder="请选择分组" size="small" @change="onQueryChange">
           <el-option label="全部" value="" />
           <el-option v-for="section of sections" :key="section" :label="section" :value="section" />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="关键字">
         <el-input
           v-model="formData.queryStr"
@@ -44,7 +44,7 @@
     <BaseTable
       :columns="settingMonitorCols"
       :data="monitorItems"
-      :row-style="rowStyle"
+      :cell-style="cellStyle"
       @current-change="onCurrentChange"
       @page-change="onPageChange"
       :pagination="{ ...pagination, pagerCount: 5, layout: 'total, sizes, prev, pager, next' }"
@@ -61,12 +61,17 @@
       v-for="key of popupIds"
       :key="key"
       :ref="`popup-${key}`"
-      :popupShow="popup[key].show"
       :popupPosition="popup[key].coordinate"
       :mapView="popup[key].map"
       :isSetCenter="popup[key].center"
+      @close="() => onPopupClose(key)"
     >
-      <InfoCard @distribute="onDistribute" :data="popup[key].data" />
+      <InfoCard
+        @distribute="onDistribute"
+        :data="popup[key].data"
+        :colors="levelColors"
+        :monitoring="Boolean(monitoring)"
+      />
     </CommonPopup>
   </div>
 </template>
@@ -79,7 +84,9 @@ import { settingMonitorCols } from '@/views/monitoring/utils'
 import CommonPopup from '@/components/CommonPopup/index.vue'
 import InfoCard from '@/views/monitoring/monitor/components/InfoCard/index.vue'
 import {
+  getDictKeys,
   groups,
+  IDictionary,
   IMonitorItem,
   IMonitorItemSummary,
   IPagination,
@@ -87,7 +94,12 @@ import {
   monitorItemsSummary,
   sections
 } from '@/views/monitoring/api'
-import { getDefaultPagination, monitorAutoRefreshInterval } from '@/utils/constant'
+import {
+  getDefaultPagination,
+  monitorAutoRefreshInterval,
+  monitorStandardLevelKey,
+  monitorStatusColor
+} from '@/utils/constant'
 import { Map } from 'ol'
 
 interface IQuery {
@@ -103,9 +115,8 @@ export default class Monitor extends Vue {
   formData: IQuery = { monitorStatus: ['0', '1', '2'], siteGroup: '', psArea: '', queryStr: undefined }
   query: IQuery = {}
   monitoring: 1 | 0 = 0
-  monitorStatusColor = { '0': 'rgba(51,51,51,0.6)', '1': '#333333', '2': '#F65252' }
 
-  popup: { [x: string]: { show: boolean; coordinate: number[]; map: Map; center: boolean; data: IMonitorItem } } = {}
+  popup: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IMonitorItem } } = {}
 
   settingMonitorCols = settingMonitorCols
 
@@ -121,14 +132,18 @@ export default class Monitor extends Vue {
 
   statuses: IMonitorItemSummary[] = []
 
+  levelColors: IDictionary[] = []
+
   timer = null
 
   get popupIds() {
     return Object.keys(this.popup)
   }
 
-  rowStyle({ row }: { row: IMonitorItem }) {
-    return { color: this.monitorStatusColor[row.isAlarm ? '2' : String(row.status)] }
+  cellStyle({ row, column }: { row: IMonitorItem; column: any }) {
+    return column.property === 'name'
+      ? { height: '40px', color: monitorStatusColor[row.isAlarm ? '2' : String(row.status)] }
+      : { height: '40px' }
   }
 
   getTotal(code: string) {
@@ -156,6 +171,11 @@ export default class Monitor extends Vue {
     this.current = { ...row }
   }
 
+  onPopupClose(id) {
+    const { [id]: closedItem, ...rest } = this.popup
+    this.popup = rest
+  }
+
   async getGroupsAndSections() {
     try {
       const { result } = await groups()
@@ -171,10 +191,22 @@ export default class Monitor extends Vue {
     }
   }
 
-  startInterval() {
-    if (this.timer) clearInterval(this.timer)
-    this.onQuery()
+  async getLevelColors() {
+    try {
+      const values = await getDictKeys(`${monitorStandardLevelKey.codeKey}_colors`)
+      this.levelColors = (values as IDictionary[]) || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
+  stopInterval() {
+    if (this.timer) clearInterval(this.timer)
+  }
+
+  startInterval() {
+    this.stopInterval()
+    this.onQuery()
     this.timer = setInterval(() => {
       this.onQuery()
     }, monitorAutoRefreshInterval)
@@ -221,8 +253,7 @@ export default class Monitor extends Vue {
         map: this.view,
         center,
         coordinate: [Number(coordiateX), Number(coordiateY)],
-        data: { ...row },
-        show: true
+        data: { ...row }
       }
     }
   }
@@ -232,6 +263,12 @@ export default class Monitor extends Vue {
   mounted() {
     this.onQueryChange()
     this.getGroupsAndSections()
+    this.getLevelColors()
+  }
+
+  beforeDestroy() {
+    this.stopInterval()
+    this.closeAllPopups()
   }
 }
 </script>

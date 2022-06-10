@@ -46,9 +46,7 @@
           v-bind="rest"
           clearable
         >
-          <template slot="suffix" v-if="name === 'rate'">
-            分钟
-          </template>
+          <template slot="suffix" v-if="name === 'rate'"> 分钟 </template>
         </el-input>
       </el-form-item>
     </el-form>
@@ -221,6 +219,7 @@ export default class ParamForm extends Vue {
           lrangeLow: lrangeLow || undefined,
           lrangeUp: lrangeUp || undefined,
           isDisplay: Number(isDisplay),
+          id,
           ...rest
         }
       : getDefaultData()

@@ -19,7 +19,7 @@
 
 <script>
 import Overlay from 'ol/Overlay';
-import DragPan from 'ol/interaction/DragPan'//先在项目中引用此包
+import DragPan from 'ol/interaction/DragPan'
 export default {
     name:"commonPopup",//公共地图信息弹窗
     props: {
@@ -48,13 +48,16 @@ export default {
             deep: true
         },
         popupPosition: {
-            handler () {
-                this.isShow=true
-                this.$nextTick(()=>{
-                    this.showPopup()
-                })
+            handler (n,o) {
+                if(n){
+                    this.isShow=true
+                    this.$nextTick(()=>{
+                        this.showPopup()
+                    })
+                }
             },
-            deep: true
+            deep: true,
+            immediate:true
         },
     },
     mounted(){
@@ -95,25 +98,29 @@ export default {
         //设置视图定位
         setCenter(){
             this.mapView.getView().setCenter(this.popupPosition)
-            this.mapView.getView().setZoom(20)
+            this.mapView.getView().setZoom(19)
         },
+        //重新加载弹窗
         reload(){
-            this.mapView.removeOverlay(this.dialogOverlay)
-            this.mapView.addOverlay(this.dialogOverlay)
-            this.dialogOverlay.setPosition(this.popupPosition)
+            if(this.dialogOverlay){
+                this.mapView.removeOverlay(this.dialogOverlay)
+                this.mapView.addOverlay(this.dialogOverlay)
+                this.dialogOverlay.setPosition(this.popupPosition)
+            }
         },
         //弹窗关闭
         closePopup(){
             this.reset();
             this.dialogOverlay.setPosition(undefined);
             this.mapView.removeOverlay(this.dialogOverlay)
+            this.dialogOverlay=null
             this.$emit('close')
             return false;
         },
         //变量清除
         reset(){
             this.isShow=false;
-            this.pan.setActive(true)
+            if(this.pan) this.pan.setActive(true)
         },
         //右上角图标操作
         operationClick(item){
