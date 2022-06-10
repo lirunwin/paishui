@@ -56,6 +56,7 @@
                 type = 'text',
                 disabled = false,
                 options,
+                optionDisabledKey,
                 onChange,
                 formatter
               } of items"
@@ -115,6 +116,9 @@
                     :key="item.id"
                     :value="item.id"
                     :label="formatter ? formatter(item) : item.name"
+                    :disabled="
+                      data.id ? data[sectionName][name] !== item.id && item[optionDisabledKey] : item[optionDisabledKey]
+                    "
                   >
                   </el-option>
                 </el-select>
@@ -194,7 +198,6 @@ import { telAndMobileReg } from '@/utils/constant'
 import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
 import { getRemoteImg } from '@/api/ftp'
 import Map from './Map.vue'
-import { Feature } from 'ol'
 
 interface FormItem {
   name?: string
@@ -206,6 +209,7 @@ interface FormItem {
     disabled?: boolean
     required?: boolean
     options?: any[]
+    optionDisabledKey?: string
     onChange?: (val: any) => void
     formatter?: (row: { [x: string]: any }) => string
   }[]
@@ -227,9 +231,14 @@ const defaultFormData = () => ({
   fileList: []
 })
 
+interface IFormData extends IPointConnectDevice {
+  basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'>
+  fileList?: Partial<ElUploadInternalFileDetail>[]
+}
+
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable, Map } })
 export default class PointForm extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) data!: object
+  @Prop({ type: Object, default: () => ({}) }) data!: IFormData
   @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
   $refs!: { form: ElForm }
 
@@ -244,10 +253,7 @@ export default class PointForm extends Vue {
   }
   dialogVisible = false
   dialogImageUrl = ''
-  formData: IPointConnectDevice & {
-    basis: Omit<IPointConnectDevice, 'siteFacility' | 'bindDevice'>
-    fileList?: Partial<ElUploadInternalFileDetail>[]
-  } = defaultFormData()
+  formData: IFormData = defaultFormData()
 
   archives: IDevice[] = []
 
@@ -292,6 +298,7 @@ export default class PointForm extends Vue {
             name: 'deviceId',
             type: 'select',
             options: this.archives,
+            optionDisabledKey: 'hasBindMonitor',
             formatter: ({ sn, name }) => (sn ? `${sn} | ${name}` : name || '')
           },
           { label: '安装负责人', name: 'installUser' },
