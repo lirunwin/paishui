@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingDeviceArchiveCols } from '@/views/monitoring/utils'
 import QueryForm, { ILoading, IQuery } from './QueryForm.vue'
@@ -53,6 +53,7 @@ import { getDefaultPagination } from '@/utils/constant'
 
 @Component({ name: 'DeviceDeviceArchives', components: { BaseTable, QueryForm, DeviceForm } })
 export default class DeviceDeviceArchives extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   settingDeviceArchiveCols = settingDeviceArchiveCols
 
   visible = false
@@ -150,7 +151,6 @@ export default class DeviceDeviceArchives extends Vue {
     this.selected = [...selections]
   }
 
-  /** 没有查询全部类型的接口, 暂用分页接口 */
   async getAllTypes() {
     try {
       const {
@@ -165,6 +165,13 @@ export default class DeviceDeviceArchives extends Vue {
   mounted() {
     this.doQuery()
     this.getAllTypes()
+  }
+
+  @Watch('isActive')
+  refetchData(active: boolean) {
+    if (active) {
+      this.getAllTypes()
+    }
   }
 }
 </script>

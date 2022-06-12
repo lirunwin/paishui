@@ -61,14 +61,14 @@
       v-for="key of popupIds"
       :key="key"
       :ref="`popup-${key}`"
-      :popupPosition="popup[key].coordinate"
-      :mapView="popup[key].map"
-      :isSetCenter="popup[key].center"
+      :popupPosition="popups[key].coordinate"
+      :mapView="popups[key].map"
+      :isSetCenter="popups[key].center"
       @close="() => onPopupClose(key)"
     >
       <InfoCard
         @distribute="onDistribute"
-        :data="popup[key].data"
+        :data="popups[key].data"
         :colors="levelColors"
         :monitoring="Boolean(monitoring)"
       />
@@ -77,7 +77,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingMonitorCols } from '@/views/monitoring/utils'
@@ -111,12 +111,13 @@ interface IQuery {
 
 @Component({ name: 'Monitor', components: { BaseTitle, BaseTable, CommonPopup, InfoCard } })
 export default class Monitor extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   @Prop({ type: Object }) view!: Map
   formData: IQuery = { monitorStatus: ['0', '1', '2'], siteGroup: '', psArea: '', queryStr: undefined }
   query: IQuery = {}
   monitoring: 1 | 0 = 0
 
-  popup: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IMonitorItem } } = {}
+  popups: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IMonitorItem } } = {}
 
   settingMonitorCols = settingMonitorCols
 
@@ -139,7 +140,7 @@ export default class Monitor extends Vue {
   fetchCount: number = 0
 
   get popupIds() {
-    return Object.keys(this.popup)
+    return Object.keys(this.popups)
   }
 
   cellStyle({ row, column }: { row: IMonitorItem; column: any }) {
@@ -179,8 +180,8 @@ export default class Monitor extends Vue {
   }
 
   onPopupClose(id) {
-    const { [id]: closedItem, ...rest } = this.popup
-    this.popup = rest
+    const { [id]: closedItem, ...rest } = this.popups
+    this.popups = rest
   }
 
   async getGroupsAndSections() {
@@ -254,8 +255,8 @@ export default class Monitor extends Vue {
 
   onShowPopup(row: IMonitorItem, center: boolean = true) {
     const { coordiateX, coordiateY, id } = row || {}
-    this.popup = {
-      ...this.popup,
+    this.popups = {
+      ...this.popups,
       [String(id)]: {
         map: this.view,
         center,
@@ -267,10 +268,14 @@ export default class Monitor extends Vue {
 
   onDistribute() {}
 
-  mounted() {
-    this.onQueryChange()
+  preparing() {
     this.getGroupsAndSections()
     this.getLevelColors()
+  }
+
+  mounted() {
+    this.onQueryChange()
+    this.preparing()
   }
 
   beforeDestroy() {
@@ -278,8 +283,11 @@ export default class Monitor extends Vue {
     this.closeAllPopups()
   }
 
-  activated() {
-    console.log('activated')
+  @Watch('isActive')
+  refetchData(active: boolean) {
+    if (active) {
+      this.preparing()
+    }
   }
 }
 </script>

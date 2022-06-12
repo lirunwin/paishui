@@ -1,7 +1,16 @@
 <template>
   <div class="page-container">
     <div class="actions">
-      <QueryForm :selected="selected" @query="onQuery" @export="onExport" :loading="loading" />
+      <QueryForm
+        :selected="selected"
+        @query="onQuery"
+        @export="onExport"
+        :loading="loading"
+        :groups="groups"
+        :setions="sections"
+        :levels="levels"
+        :paramNames="paramNames"
+      />
     </div>
     <BaseTable
       :columns="monitorWarningReportCols"
@@ -14,12 +23,21 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { monitorWarningReportCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 import { getDefaultPagination } from '@/utils/constant'
-import { IPagination, IWarningReport, warningReports } from '@/views/monitoring/api'
+import {
+  IPagination,
+  IWarningReport,
+  warningReports,
+  IDictionary,
+  groups,
+  sections,
+  getDictKeys,
+  deviceTypeParamsPage
+} from '@/views/monitoring/api'
 
 type IQuery = Record<
   'queryLike' | 'siteGroup' | 'beginTime' | 'endTime' | 'indicateNames' | 'levelName' | 'warnType',
@@ -28,6 +46,7 @@ type IQuery = Record<
 
 @Component({ name: 'ReportWarnings', components: { BaseTable, QueryForm } })
 export default class ReportWarnings extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   monitorWarningReportCols = monitorWarningReportCols
 
   selected = []
@@ -39,6 +58,11 @@ export default class ReportWarnings extends Vue {
   query: Partial<IQuery> = {}
 
   reports: IWarningReport[] = []
+
+  groups: string[] = []
+  sections: string[] = []
+  levels: IDictionary[] = []
+  paramNames: string[] = []
 
   onQuery(query) {
     this.query = { ...query }
@@ -73,7 +97,56 @@ export default class ReportWarnings extends Vue {
   }
 
   mounted() {
+    this.preparing()
     this.doQuery()
+  }
+
+  async getGroupsAndSections() {
+    try {
+      const { result } = await groups()
+      this.groups = (result || []).filter((item) => !!item)
+    } catch (error) {
+      console.log(error)
+    }
+    try {
+      const { result } = await sections()
+      this.sections = (result || []).filter((item) => !!item)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async getLevels() {
+    try {
+      const values = await getDictKeys()
+      this.levels = (values as IDictionary[]) || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async getAllParamNames() {
+    try {
+      const {
+        result: { records }
+      } = await deviceTypeParamsPage({ current: 1, size: 9999999 })
+      this.paramNames = [...new Set(records.map((item) => item.name))]
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  preparing() {
+    this.getGroupsAndSections()
+    this.getLevels()
+    this.getAllParamNames()
+  }
+
+  @Watch('isActive')
+  refetchData(active: boolean) {
+    if (active) {
+      this.preparing()
+    }
   }
 }
 </script>

@@ -13,7 +13,14 @@
       @tab-click="clickTab"
     >
       <el-tab-pane v-for="item in panels" :key="item.com" :label="item.title" :name="item.com">
-        <component :is="Comps[item.com]" class="halfitems" :param="item.param" :data="data" :name="item.com" />
+        <component
+          :is="Comps[item.com]"
+          class="halfitems"
+          :param="item.param"
+          :data="data"
+          :name="item.com"
+          :isActive="editableTabsValue === item.com"
+        />
       </el-tab-pane>
     </el-tabs>
     <div ref="dragline" class="dragline" />

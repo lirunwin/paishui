@@ -67,7 +67,7 @@
               :inactive-value="false"
               :value="row.isDisplay"
               size="small"
-              style="user-select:none"
+              style="user-select: none"
               @change="($event) => onParamSubmit({ ...row, isDisplay: $event })"
             />
           </template>

@@ -148,14 +148,14 @@ export const settingPointCols: ColItem[] = [
 export const settingSiteCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号' },
-  { prop: 'name', label: '监测断面编号' },
-  { prop: 'name', label: '监测断面编码' },
-  { prop: 'name', label: '监测断面名称' },
-  { prop: 'name', label: '绑定监测点名称' },
-  { prop: 'name', label: '监测点状态' },
-  { prop: 'name', label: '安装日期' },
-  { prop: 'name', label: '首次数据采集时间' },
-  { prop: 'name', label: '最近数据采集时间' }
+  { prop: 'name1', label: '监测断面编号' },
+  { prop: 'name2', label: '监测断面编码' },
+  { prop: 'name3', label: '监测断面名称' },
+  { prop: 'name4', label: '绑定监测点名称' },
+  { prop: 'name5', label: '监测点状态' },
+  { prop: 'name6', label: '安装日期' },
+  { prop: 'name7', label: '首次数据采集时间' },
+  { prop: 'name8', label: '最近数据采集时间' }
 ]
 
 /**图标管理 */
@@ -238,19 +238,19 @@ export const monitorPointsCols: ColItem[] = [
 export const monitorSiteCols: ColItem[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号' },
-  { prop: 'name', label: '监测分组' },
-  { prop: 'name', label: '监测站点' },
-  { prop: 'name', label: '地址' },
-  { prop: 'name', label: '监测状态' },
+  { prop: 'name1', label: '监测分组' },
+  { prop: 'name2', label: '监测站点' },
+  { prop: 'name3', label: '地址' },
+  { prop: 'name4', label: '监测状态' },
   // 数据时间（指数据归集时间）
-  { prop: 'name', label: '数据采集时间' },
+  { prop: 'name5', label: '数据采集时间' },
   // 距离当前（分钟，当前时刻-数据时间）
-  { prop: 'name', label: '距离当前（分钟）' },
-  { prop: 'name', label: '温度（℃）' },
-  { prop: 'name', label: '浊度（NTU）化学需氧量（mg/L）' },
-  { prop: 'name', label: '溶解氧（mg/L）' },
-  { prop: 'name', label: '悬浮物（mg/L）' },
-  { prop: 'name', label: '操作' }
+  { prop: 'name6', label: '距离当前（分钟）' },
+  { prop: 'name7', label: '温度（℃）' },
+  { prop: 'name8', label: '浊度（NTU）化学需氧量（mg/L）' },
+  { prop: 'name9', label: '溶解氧（mg/L）' },
+  { prop: 'name10', label: '悬浮物（mg/L）' },
+  { prop: 'name11', label: '操作' }
 ]
 
 export const monitorPointReportCols: ColItem[] = [

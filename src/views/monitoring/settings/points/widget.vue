@@ -82,7 +82,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingPointCols as cols } from '@/views/monitoring/utils'
 import QueryForm, { ILoading, IQuery } from './QueryForm.vue'
@@ -120,6 +120,7 @@ import {
   components: { BaseTable, QueryForm, PointForm, PointThresholdForm, EnableForm, DismountForm }
 })
 export default class MonitoringPoints extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   cols = cols
 
   visible = { base: false, setting: false, enable: false, dismount: false }
@@ -187,6 +188,7 @@ export default class MonitoringPoints extends Vue {
       if (result) {
         this.visible.base = false
         this.doQuery()
+        this.preparing()
       }
     } catch (error) {
       console.log(error)
@@ -339,11 +341,22 @@ export default class MonitoringPoints extends Vue {
     }
   }
 
-  mounted() {
-    this.doQuery()
+  preparing() {
     this.getLevels()
     this.getAllTypes()
     this.getGroupsAndSections()
+  }
+
+  mounted() {
+    this.preparing()
+    this.doQuery()
+  }
+
+  @Watch('isActive')
+  refetchData(active: boolean) {
+    if (active) {
+      this.preparing()
+    }
   }
 }
 </script>

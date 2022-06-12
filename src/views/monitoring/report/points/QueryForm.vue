@@ -5,7 +5,7 @@
     </el-form-item>
     <el-form-item label="监测分组" prop="siteGroup">
       <el-select v-model="formData.siteGroup" placeholder="请选择监测分组" size="small" clearable multiple>
-        <el-option value="" label="全部" />
+        <el-option v-for="group of groups" :value="group" :key="group" :label="group" />
       </el-select>
     </el-form-item>
     <el-form-item label="数据时间" prop="time">
@@ -24,13 +24,13 @@
     </el-form-item>
 
     <el-form-item label="监测指标" prop="indicateNames">
-      <el-select v-model="formData.indicateNames" placeholder="请选择监测指标" size="small" clearable>
-        <el-option value="" label="全部" />
+      <el-select v-model="formData.indicateNames" placeholder="请选择监测指标" size="small" clearable multiple>
+        <el-option v-for="param of paramNames" :value="param" :key="param" :label="param" />
       </el-select>
     </el-form-item>
     <el-form-item label="判定结果" prop="levelName">
-      <el-select v-model="formData.levelName" placeholder="请选择判定结果" size="small" clearable>
-        <el-option value="" label="全部" />
+      <el-select v-model="formData.levelName" placeholder="请选择判定结果" size="small" clearable multiple>
+        <el-option v-for="level of levels" :value="level.notes" :label="level.notes" :key="level.notes" />
       </el-select>
     </el-form-item>
     <el-form-item>
@@ -58,12 +58,18 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
+import { IDictionary } from '../../api'
 
 @Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({ query: false, export: false }) })
   loading!: { query?: boolean; export?: boolean }
+
+  @Prop({ type: Array, default: () => [] }) groups!: string[]
+  @Prop({ type: Array, default: () => [] }) sections!: string[]
+  @Prop({ type: Array, default: () => [] }) paramNames!: string[]
+  @Prop({ type: Array, default: () => [] }) levels!: IDictionary[]
 
   @Prop({ type: Array, default: () => [] }) selected!: { id?: string }[]
 
@@ -76,13 +82,9 @@ export default class QueryForm extends Vue {
   } = { queryLike: '', siteGroup: [], time: [], indicateNames: [], levelName: [] }
 
   onSubmit() {
-    const {
-      queryLike,
-      siteGroup,
-      time: [beginTime, endTime],
-      indicateNames,
-      levelName
-    } = this.formData
+    const { queryLike, siteGroup, time, indicateNames, levelName } = this.formData
+    const [beginTime, endTime] = time || []
+
     this.$emit('query', {
       queryLike,
       siteGroup: siteGroup.join(),

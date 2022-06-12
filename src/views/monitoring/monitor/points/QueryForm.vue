@@ -49,7 +49,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
-import { getDictKeys, groups, sections, IDictionary, IMonitorItem } from '@/views/monitoring/api'
+import { IDictionary, IMonitorItem } from '@/views/monitoring/api'
 
 @Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
@@ -57,11 +57,9 @@ export default class QueryForm extends Vue {
   loading!: { query?: boolean; export?: boolean }
 
   @Prop({ type: Array, default: () => [] }) selected!: IMonitorItem[]
-
-  levels: IDictionary[] = []
-
-  groups: string[] = []
-  sections: string[] = []
+  @Prop({ type: Array, default: () => [] }) groups!: string[]
+  @Prop({ type: Array, default: () => [] }) sections!: string[]
+  @Prop({ type: Array, default: () => [] }) levels!: IDictionary[]
 
   formData: { levelName: string[]; queryLike: string; siteGroup: string[] } = {
     levelName: [],
@@ -80,34 +78,6 @@ export default class QueryForm extends Vue {
       levelName: levelName.join(),
       siteGroup: siteGroup.join()
     })
-  }
-
-  async getLevels() {
-    try {
-      const values = await getDictKeys()
-      this.levels = (values as IDictionary[]) || []
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  async getGroupsAndSections() {
-    try {
-      const { result } = await groups()
-      this.groups = (result || []).filter((item) => !!item)
-    } catch (error) {
-      console.log(error)
-    }
-    try {
-      const { result } = await sections()
-      this.sections = (result || []).filter((item) => !!item)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  mounted() {
-    this.getGroupsAndSections()
-    this.getLevels()
   }
 }
 </script>
