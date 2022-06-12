@@ -19,7 +19,7 @@
           size="small"
           filterable
           clearable
-          style="width:200px"
+          style="width: 200px"
           :disabled="(selected[0] || {}).isConfigured"
           @change="onStandardChange"
         >
@@ -40,7 +40,7 @@
               :controls="false"
               :min="0"
               :precision="0"
-              style="width:100%"
+              style="width: 100%"
             />
           </el-form-item>
         </template>
@@ -86,13 +86,18 @@
           @click="onParamAdd"
           :disabled="
             !formData.param ||
-              !formData.param.length ||
-              formData.threshold.length >= formData.param.length * levels.length
+            !formData.param.length ||
+            formData.threshold.length >= formData.param.length * levels.length
           "
           >添加</el-button
         >
       </BaseTitle>
-      <BaseTable :columns="settingPointParamCols" :data="formData.threshold" v-loading="fetching" border>
+      <BaseTable
+        :columns="settingPointParamCols"
+        :data="formData.threshold"
+        v-loading="fetching || deletingParam"
+        border
+      >
         <template v-for="(item, index) of formData.threshold" v-slot:[`name-${index}`]>
           <template v-if="String(item.id).startsWith(idPrefix)">
             <el-form-item
@@ -305,7 +310,8 @@ import {
   standardsPage,
   deviceTypeParamsPage,
   IStandardParam,
-  standardParamsPage
+  standardParamsPage,
+  deleteConfiguredPointParam
 } from '@/views/monitoring/api'
 
 interface IThreshold extends IPointThreshold {
@@ -362,6 +368,8 @@ export default class PointThresholdForm extends Vue {
   }
 
   fetching: boolean = false
+
+  deletingParam = false
 
   standards: IStandard[] = []
 
@@ -540,11 +548,20 @@ export default class PointThresholdForm extends Vue {
     }
   }
 
-  onParamDel({ id }: IThreshold) {
-    this.formData = {
-      ...this.formData,
-      threshold: this.formData.threshold.filter((item) => item.id !== id)
+  async onParamDel({ id }: IThreshold) {
+    this.deletingParam = true
+    try {
+      const { result } = await deleteConfiguredPointParam(id)
+      if (result) this.$message[result ? 'success' : 'error'](`参数阈值配置删除${result ? '成功!' : '失败!'}`)
+      if (result)
+        this.formData = {
+          ...this.formData,
+          threshold: this.formData.threshold.filter((item) => item.id !== id)
+        }
+    } catch (error) {
+      console.log(error)
     }
+    this.deletingParam = false
   }
 
   onWarningChange(index: number, key: string = '') {

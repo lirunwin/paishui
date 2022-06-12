@@ -71,7 +71,8 @@ const uris = {
       /** method: POST */
       submitSettings: `${base}/monitorsitepara/saveOrUpdateBatch`,
       /** method: POST  获取配置信息 */
-      configurations: `${base}/monitorsiteindicate/getByMonitorId`
+      configurations: `${base}/monitorsiteindicate/getByMonitorId`,
+      deleteParam: `${base}/monitorsitepara`
     },
     /** 监测站管理 */
     sites: {
@@ -86,6 +87,7 @@ const uris = {
     standards: {
       /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/deviceindicate`,
+
       /** method: DELETE */
       del: `${base}/deviceindicate/deleteByIds`,
       /** method: GET */
@@ -733,6 +735,9 @@ export const getPointConfigurations = (monitorId: string | number) =>
       siteDeviceParas: IPointThreshold[]
     }>
   >({ url: uris.settings.points.configurations, method: 'get', params: { monitorId } })
+
+export const deleteConfiguredPointParam = (id: string | number) =>
+  axios.request<IRes<boolean>>({ url: `${uris.settings.points.deleteParam}/${id}`, method: 'delete' })
 
 export interface IMonitorItem {
   address: string
