@@ -20,13 +20,12 @@ import { Vue, Component } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { monitorPointsCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
-import { pointsMonitoring, IPointMonitoringQuery, IPointMonitoringItem } from '@/views/monitoring/api'
+import { pointsMonitoring, IPointMonitoringQuery, IPointMonitoringItem, IPagination } from '@/views/monitoring/api'
 import {
   defaultValuesForMonitorStandardLevel,
   getDefaultPagination,
   monitorAutoRefreshInterval
 } from '@/utils/constant'
-import { IPagination } from '@/views/currentSystem/authorityManagement/mobileDevice/api'
 
 @Component({ name: 'PointsMonitor', components: { BaseTable, QueryForm } })
 export default class PointsMonitor extends Vue {

@@ -1,13 +1,14 @@
 <template>
   <div class="page-container">
     <div class="actions">
-      <QueryForm :selected="selected" @query="onQuery" @export="onExport" />
+      <QueryForm :selected="selected" @query="onQuery" @export="onExport" :loading="loading" />
     </div>
     <BaseTable
       :columns="monitorWarningReportCols"
-      :data="points"
-      @row-dblclick="onDblClick"
+      :data="reports"
+      :selected="selected"
       @selection-change="onSelectionChange"
+      :pagination="pagination"
     />
   </div>
 </template>
@@ -17,51 +18,62 @@ import { Vue, Component } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { monitorWarningReportCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
+import { getDefaultPagination } from '@/utils/constant'
+import { IPagination, IWarningReport, warningReports } from '@/views/monitoring/api'
+
+type IQuery = Record<
+  'queryLike' | 'siteGroup' | 'beginTime' | 'endTime' | 'indicateNames' | 'levelName' | 'warnType',
+  string
+>
 
 @Component({ name: 'ReportWarnings', components: { BaseTable, QueryForm } })
 export default class ReportWarnings extends Vue {
   monitorWarningReportCols = monitorWarningReportCols
 
-  visible = false
-
-  current = {}
-
   selected = []
 
-  points = [
-    { id: '1', name: '测试', code: '1231', time: ['00:00', '23:59'] },
-    { id: '2', name: '测试1', code: '1232', time: ['00:00', '23:59'] },
-    { id: '3', name: '测试2', code: '1233', time: ['00:00', '23:59'] }
-  ]
+  loading = { query: false, export: false }
+
+  pagination: IPagination = getDefaultPagination()
+
+  query: Partial<IQuery> = {}
+
+  reports: IWarningReport[] = []
 
   onQuery(query) {
-    console.log(query)
+    this.query = { ...query }
+    this.doQuery({ current: 1 })
+  }
+
+  async doQuery(query = {}) {
+    this.loading.query = true
+    try {
+      const {
+        result: { records, size, total, current }
+      } = await warningReports({ ...this.pagination, ...this.query, ...query })
+      this.pagination = { current, size, total }
+      this.reports = records || []
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading.query = false
+  }
+
+  onPageChange(pagination) {
+    this.pagination = { ...this.pagination, ...pagination }
+    this.doQuery()
   }
 
   onExport(ids) {
     console.log(ids)
   }
 
-  onDblClick(row) {
-    this.current = { ...row }
-    this.visible = true
-  }
-
   onSelectionChange(selections) {
     this.selected = [...selections]
   }
+
+  mounted() {
+    this.doQuery()
+  }
 }
 </script>
-
-<style scoped>
-.actions {
-  padding: 22px 15px 0;
-  margin-bottom: 15px;
-  background: #fff;
-}
-
-.table-container {
-  padding: 15px;
-  background-color: #fff;
-}
-</style>

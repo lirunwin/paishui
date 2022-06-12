@@ -1,41 +1,42 @@
 <template>
   <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData" inline>
-    <el-form-item label="关键字" prop="no">
-      <el-input v-model="formData.no" placeholder="请输入指标标准名称" size="small" clearable />
+    <el-form-item label="关键字" prop="queryLike">
+      <el-input v-model="formData.queryLike" placeholder="请输入关键字" size="small" clearable />
     </el-form-item>
-    <el-form-item label="监测分组" prop="type">
-      <el-select v-model="formData.type" placeholder="请选择设备类型" size="small" clearable>
+    <el-form-item label="监测分组" prop="siteGroup">
+      <el-select v-model="formData.siteGroup" placeholder="请选择监测分组" size="small" clearable>
         <el-option value="" label="全部" />
       </el-select>
     </el-form-item>
-    <el-form-item label="数据时间" prop="type">
+    <el-form-item label="数据时间" prop="time">
       <el-date-picker
-        v-model="formData.value1"
+        v-model="formData.time"
         type="daterange"
         range-separator="到"
         start-placeholder="开始日期"
         end-placeholder="结束日期"
         size="small"
-        style="width:230px"
+        style="width: 230px"
         clearable
         value-format="yyyy-MM-dd"
       >
       </el-date-picker>
     </el-form-item>
 
-    <el-form-item label="监测指标" prop="type">
-      <el-select v-model="formData.type" placeholder="请选择监测指标" size="small" clearable>
+    <el-form-item label="监测指标" prop="indicateNames">
+      <el-select v-model="formData.indicateNames" placeholder="请选择监测指标" size="small" clearable>
         <el-option value="" label="全部" />
       </el-select>
     </el-form-item>
 
-    <el-form-item label="类型" prop="type">
-      <el-select v-model="formData.type" placeholder="请选择类型" size="small" clearable>
-        <el-option value="" label="全部" />
+    <el-form-item label="类型" prop="warnType">
+      <el-select v-model="formData.warnType" placeholder="请选择类型" size="small" clearable>
+        <el-option value="1" label="报警" />
+        <el-option value="2" label="预警" />
       </el-select>
     </el-form-item>
-    <el-form-item label="类别" prop="type">
-      <el-select v-model="formData.type" placeholder="请选择类别" size="small" clearable>
+    <el-form-item label="类别" prop="levelName">
+      <el-select v-model="formData.levelName" placeholder="请选择类别" size="small" clearable>
         <el-option value="" label="全部" />
       </el-select>
     </el-form-item>
@@ -46,7 +47,7 @@
         :loading="loading.query"
         :disabled="loading.query"
         icon="el-icon-search"
-        @click="$emit('query', { ...formData })"
+        @click="onSubmit"
         >查询</el-button
       >
 
@@ -68,12 +69,46 @@ import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
 
 @Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
-  @Prop({ type: Object, default: () => ({ query: false, add: false, update: false, del: false, export: false }) })
-  loading!: { query?: boolean; add?: boolean; update?: boolean; del?: boolean; export?: boolean }
+  @Prop({ type: Object, default: () => ({ query: false, export: false }) })
+  loading!: { query?: boolean; export?: boolean }
 
   @Prop({ type: Array, default: () => [] }) selected!: { id?: string }[]
 
-  formData: { [x: string]: string } = {}
+  formData: {
+    queryLike: string
+    siteGroup: string[]
+    time: Date[]
+    indicateNames: string[]
+    warnType: string
+    levelName: string[]
+  } = {
+    queryLike: '',
+    siteGroup: [],
+    time: [],
+    indicateNames: [],
+    warnType: '',
+    levelName: []
+  }
+
+  onSubmit() {
+    const {
+      queryLike,
+      siteGroup,
+      time: [beginTime, endTime],
+      indicateNames,
+      levelName,
+      warnType
+    } = this.formData
+    this.$emit('query', {
+      queryLike,
+      siteGroup: siteGroup.join(),
+      beginTime,
+      endTime,
+      indicateNames: indicateNames.join(),
+      warnType,
+      levelName: levelName.join()
+    })
+  }
 
   get ids() {
     return this.selected.map((item) => item.id)

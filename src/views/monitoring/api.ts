@@ -123,24 +123,17 @@ const uris = {
     },
     /** 指标监测台账 */
     points: {
-      /** method: POST, DELETE ,PUT, GET, */
-      base: `${base}/placeholder`,
-      /** method: DELETE */
-      del: `${base}/placeholder/deleteByIds`,
-      /** method: GET */
-      page: `${base}/placeholder/page`
+      base: `${base}/stationLedger/history`
     },
-    /** 站点监测台账 */
-    sites: {
-      /** method: POST, DELETE ,PUT, GET, */
-      base: `${base}/placeholder`,
-      /** method: DELETE */
-      del: `${base}/placeholder/deleteByIds`,
-      /** method: GET */
-      page: `${base}/placeholder/page`
-    },
+
     /** 监测报警台账 */
     warnings: {
+      /** method: POST, DELETE ,PUT, GET, */
+      base: `${base}/stationLedger/warnHistory`
+    },
+
+    /** 站点监测台账 */
+    sites: {
       /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
       /** method: DELETE */
@@ -832,3 +825,41 @@ export const getMonitorItemCurrentInfoByIdBatch = (siteIds: string[]) =>
 
 export const pointsMonitoring = (params: Partial<IPointMonitoringQuery & IQueryCommon>) =>
   axios.request<IRes<IPointMonitoringItem[]>>({ url: uris.monitor.points.watch, method: 'get', params })
+
+export interface IPointReport {
+  address: string
+  collectId: number | string
+  isValid: boolean
+  itstrVal: string
+  level: number | string
+  levelName: string
+  minute: number | string
+  paraName: string
+  scadaTime: string
+  shreshold: string
+  siteGroup: string
+  siteId: number | string
+  siteName: string
+  unit: string
+}
+export interface IWarningReport {
+  address: string
+  id: number | string
+  itCd: string
+  itVal: string
+  levelName: string
+  paraName: string
+  scadaTime: string
+  siteGroup: string
+  siteName: string
+  sn: string
+  unit: string
+  vptVal: string
+  warnType: string
+}
+
+export const pointReports = (params: Partial<IPointReport & IQueryCommon>) =>
+  axios.request<IRes<IPointReport[]>>({ url: uris.report.points.base, method: 'get', params })
+
+export const warningReports = (params: Partial<IWarningReport & IQueryCommon>) =>
+  axios.request<IRes<IWarningReport[]>>({ url: uris.report.warnings.base, method: 'get', params })
