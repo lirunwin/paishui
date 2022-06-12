@@ -98,5 +98,3 @@ export default class QueryForm extends Vue {
   }
 }
 </script>
-6261842166eaa29abf08cee723889eca876fb5c0
-828ca8f8b200fb5e6dd786a34a3f84574158aa63

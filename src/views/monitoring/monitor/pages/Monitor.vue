@@ -136,6 +136,8 @@ export default class Monitor extends Vue {
 
   timer = null
 
+  fetchCount: number = 0
+
   get popupIds() {
     return Object.keys(this.popup)
   }
@@ -161,8 +163,13 @@ export default class Monitor extends Vue {
       } = await monitorItemsPage({ ...queryCombine, monitorStatus: monitorStatus.join() })
       this.pagination = { current, size, total }
       this.monitorItems = records || []
+      this.fetchCount = 0
     } catch (error) {
       console.log(error)
+      if (this.fetchCount > 3) {
+        this.stopInterval()
+      }
+      this.fetchCount += 1
     }
     this.loading = false
   }
@@ -269,6 +276,10 @@ export default class Monitor extends Vue {
   beforeDestroy() {
     this.stopInterval()
     this.closeAllPopups()
+  }
+
+  activated() {
+    console.log('activated')
   }
 }
 </script>

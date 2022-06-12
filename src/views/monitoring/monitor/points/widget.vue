@@ -36,6 +36,7 @@ export default class PointsMonitor extends Vue {
   points: IPointMonitoringItem[] = []
   selected: IPointMonitoringItem[] = []
   pagination: IPagination = getDefaultPagination()
+  fetchCount: number = 0
 
   timer = null
   onExport(ids) {
@@ -63,10 +64,14 @@ export default class PointsMonitor extends Vue {
         result: { records, size, total, current }
       } = await pointsMonitoring({ ...this.query, ...this.pagination, ...query })
       this.pagination = { current, size, total }
-
       this.points = records || []
+      this.fetchCount = 0
     } catch (error) {
       console.log(error)
+      if (this.fetchCount > 3) {
+        this.stopInterval()
+      }
+      this.fetchCount += 1
     }
     this.loading = false
   }

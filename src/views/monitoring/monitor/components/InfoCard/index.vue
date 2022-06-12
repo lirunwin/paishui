@@ -44,6 +44,8 @@ export default class InfoCard extends Vue {
 
   detail: Partial<IMonitorItemDetail> = {}
   monitorStatusColor = monitorStatusColor
+  fetchCount: number = 0
+
   get noticeType() {
     const { status, isAlarm } = this.detail
     return pointState[isAlarm ? '2' : String(status)]
@@ -59,8 +61,17 @@ export default class InfoCard extends Vue {
 
   async fetchDetail() {
     const { id } = this.data || {}
-    const { result } = await getMonitorItemCurrentInfoById(id)
-    this.detail = result
+    try {
+      const { result } = await getMonitorItemCurrentInfoById(id)
+      this.detail = result
+      this.fetchCount = 0
+    } catch (error) {
+      console.log(error)
+      if (this.fetchCount > 3) {
+        this.stopInterval()
+      }
+      this.fetchCount += 1
+    }
   }
 
   timer = null
