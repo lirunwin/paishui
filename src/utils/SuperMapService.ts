@@ -5,6 +5,65 @@ import { SuperMap } from '@supermap/iclient-common'
  */
 class SuperMapService {
     /**
+     * 生成超图iserver点
+     * @param point [经度，纬度]
+     * @returns 
+     */
+    static convertPoint(point):SuperMap.Geometry.Point {
+        if (!point) {
+            return undefined;
+        }
+        var lng = point[0];
+        var lat = point[1]
+        if (lng && lng) {
+            return new SuperMap.Geometry.Point(lng, lat);
+        }
+        return undefined;
+    }
+    /**
+     * 生成超图iserver线
+     */
+    static convertPolyline(polyline:number[][]):SuperMap.Geometry.LineString {
+        if (!polyline) {
+            throw undefined;
+        }
+        var points = polyline;
+        if (points && points instanceof Array && points.length >= 2) {
+            var arr = [];
+            for (var i = 0, j = points.length; i < j; i++) {
+                var point = this.convertPoint(points[i]);
+                if (point) {
+                    arr.push(point);
+                }
+            }
+            return new SuperMap.Geometry.LineString(arr);
+        }
+        return undefined;
+    }
+    /**
+     * 生成超图iserver面
+     * @param polygon 
+     * @returns 
+     */
+    static convertPolygon(polygon:number[][][]):SuperMap.Geometry.Polygon {
+        if (!polygon) {
+            throw undefined;
+        }
+        var points = polygon[0];
+        if (points && points instanceof Array && points.length >= 3) {
+            var arr = [];
+            for (var i = 0, j = points.length; i < j; i++) {
+                var point = this.convertPoint(points[i]);
+                if (point) {
+                    arr.push(point);
+                }
+            }
+            var linearRing = new SuperMap.Geometry.LinearRing(arr);
+            return new SuperMap.Geometry.Polygon(linearRing);
+        }
+        return undefined;
+    }
+    /**
      * 该方法用于使用地图服务获取图层字段集
      * @param options 
      * @param options.url 服务地址

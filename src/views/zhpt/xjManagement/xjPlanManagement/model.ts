@@ -29,7 +29,8 @@ import { Geometry, LineString, MultiPoint, Point, Polygon } from 'ol/geom';
 import { Icon, Stroke, Style } from 'ol/style';
 import locationIcon from '@/assets/images/map/location.png'
 import SuperMapService from '@/utils/SuperMapService'
-import { Draw } from 'ol/interaction';
+import { Draw, DoubleClickZoom } from 'ol/interaction';
+import { getLength } from 'ol/sphere';
 @Component({
     name: 'XjPlanManagement',
     components: { tfTableLegend, tfLegend }
@@ -42,6 +43,8 @@ export default class XjPlanManagement extends Vue {
         editButton: string,//是否展示编辑按钮
         flag: 1//共享人的id
     }
+    //表格加载状态
+    tableLoading=true;
     tempEvent = null;
     percentageShow = false;//进度条
     percentage = 0;//查询进度
@@ -152,7 +155,7 @@ export default class XjPlanManagement extends Vue {
         input: {//制定计划时输入的内容
             planType: "",//巡检类型数据
             planTypeInfo: [],//巡检类型数据的详细信息
-            currentPlanTypeName: 0,//当前展示的巡检类型数据的名称
+            currentPlanTypeName: "0",//当前展示的巡检类型数据的名称
             chooseWorker: "",//人员数据
             chooseGroup: "",//部门数据
             period: "",//巡检周期
@@ -238,7 +241,7 @@ export default class XjPlanManagement extends Vue {
     }
     mapV: Map = null
     view = null;
-    draw:Draw=null;
+    draw: Draw = null;
     get watchMonthId() {
         if (this.acceptData) {
             return this.acceptData.monthId
@@ -434,7 +437,7 @@ export default class XjPlanManagement extends Vue {
             }
             this.planModel.optionData.chooseGroup = tool.copyValue(planWorkerAndGroup);
             //获取片区图形信息
-            this.getAllRegions();
+            //this.getAllRegions();
             this.$nextTick(() => {
                 this.getData();
             })
@@ -445,6 +448,7 @@ export default class XjPlanManagement extends Vue {
      * 获取首页表单数据
      */
     getData() {
+        this.tableLoading=true;
         //this.dataT1 = [];
         //将修改和删除按钮重置为不可操作
         tool.setVaule(this.buttonControl, true);
@@ -487,6 +491,7 @@ export default class XjPlanManagement extends Vue {
         queryTaskArrange(data).then(res => {
             this.searchModel.getData.allRow = res.result.records
             this.searchModel.getData.tableTotal = res.result.total
+            this.tableLoading=false
         }).catch(err => {
             console.log(err);
         })
@@ -670,44 +675,44 @@ export default class XjPlanManagement extends Vue {
      * 获取根据巡检组获取片区
     */
     getRegionIds() {
-        let data = {
-            current: 1,
-            size: 10000,
-            respGroup: parseInt(this.planModel.input.chooseGroup)
-        };
-        //详情页面不需要,当巡检组是空的时候，将当前巡检片区设置为空
-        if (this.planModel.input.chooseGroup) {
-            queryRegionRelation(data).then(res => {
-                let dataInfo = [];
-                res.result.records.forEach(item => {
-                    let index = this.planModel.regionInfo.allRegions.findIndex(item2 => { return (item2.id + "") == item.regionId })
-                    let index2 = dataInfo.findIndex(item3 => { return item3.id == item.regionId });
-                    if (index != -1 && index2 == -1) {
-                        dataInfo.push({ id: item.regionId, geometry: this.planModel.regionInfo.allRegions[index].geometry, geometry2: this.planModel.regionInfo.allRegions[index].geometry2, name: item.regionName })
-                    }
-                });
-                //如果没查询到则将其重置为空的数组
-                if (dataInfo.length == 0) {
-                    this.planModel.regionInfo.currentRegion = null;
-                    this.planModel.regionInfo.currentRegionGeo = null;
-                } else {
-                    this.planModel.regionInfo.currentRegion = dataInfo;
-                }
-                if (this.hasGroup) {
-                    this.planModel.regionInfo.singleRegin = this.planModel.regionInfo.currentRegion;
-                };
-                this.drawRegion();
-                if (!this.hasGroup) {
-                    this.resetHandlePage();
-                }
-            });
-        } else {
-            //如果直接设置为全区域则将其置为null
-            this.planModel.regionInfo.currentRegion = null;
-            this.planModel.regionInfo.currentRegionGeo = null;
-            this.comLayerList.regionLayer.removeAll();
-            this.resetHandlePage();
-        }
+        // let data = {
+        //     current: 1,
+        //     size: 10000,
+        //     respGroup: parseInt(this.planModel.input.chooseGroup)
+        // };
+        // //详情页面不需要,当巡检组是空的时候，将当前巡检片区设置为空
+        // if (this.planModel.input.chooseGroup) {
+        //     queryRegionRelation(data).then(res => {
+        //         let dataInfo = [];
+        //         res.result.records.forEach(item => {
+        //             let index = this.planModel.regionInfo.allRegions.findIndex(item2 => { return (item2.id + "") == item.regionId })
+        //             let index2 = dataInfo.findIndex(item3 => { return item3.id == item.regionId });
+        //             if (index != -1 && index2 == -1) {
+        //                 dataInfo.push({ id: item.regionId, geometry: this.planModel.regionInfo.allRegions[index].geometry, geometry2: this.planModel.regionInfo.allRegions[index].geometry2, name: item.regionName })
+        //             }
+        //         });
+        //         //如果没查询到则将其重置为空的数组
+        //         if (dataInfo.length == 0) {
+        //             this.planModel.regionInfo.currentRegion = null;
+        //             this.planModel.regionInfo.currentRegionGeo = null;
+        //         } else {
+        //             this.planModel.regionInfo.currentRegion = dataInfo;
+        //         }
+        //         if (this.hasGroup) {
+        //             this.planModel.regionInfo.singleRegin = this.planModel.regionInfo.currentRegion;
+        //         };
+        //         this.drawRegion();
+        //         if (!this.hasGroup) {
+        //             this.resetHandlePage();
+        //         }
+        //     });
+        // } else {
+        //     //如果直接设置为全区域则将其置为null
+        //     this.planModel.regionInfo.currentRegion = null;
+        //     this.planModel.regionInfo.currentRegionGeo = null;
+        //     this.comLayerList.regionLayer.removeAll();
+        //     this.resetHandlePage();
+        // }
     }
 
     /**
@@ -1080,14 +1085,14 @@ export default class XjPlanManagement extends Vue {
         }
         let messageInfo = '';
         //首先循环巡检计划数组，清理是否存在sid缺失的管网设备，如果存在，则不能下达巡检计划
-        for (let i = 0; i < planTypeInfo.length; i++) {
-            let data = planTypeInfo[i];
-            if (!data.planInfo.sidExist.exist) {
-                this.pageShow.endSend = false;
-                this.$message({ type: "info", message: data.planInfo.sidExist.layerName + "设备缺少SID设备编码，不能派发任务，请联系管理员处理管网设备数据" });
-                return;
-            }
-        }
+        // for (let i = 0; i < planTypeInfo.length; i++) {
+        //     let data = planTypeInfo[i];
+        //     if (!data.planInfo.sidExist.exist) {
+        //         this.pageShow.endSend = false;
+        //         this.$message({ type: "info", message: data.planInfo.sidExist.layerName + "设备缺少SID设备编码，不能派发任务，请联系管理员处理管网设备数据" });
+        //         return;
+        //     }
+        // }
         //处理巡检计划的点及线
         planTypeInfo.forEach(item => {
             if (!item.planInfo.sidExist.exist) {
@@ -1137,14 +1142,14 @@ export default class XjPlanManagement extends Vue {
                 if (planInfo.selectData.length > 0) {
                     let polylines = [];
                     planInfo.selectData.forEach(value => {
-                        planInfo.sendInfo.totalLength += parseFloat(value.length);
+                        planInfo.sendInfo.totalLength += isNaN(value.length) ? parseFloat(value.length) : value.length;
                         planInfo.containReg.push(value.regionId);
                         planInfo.containRegNames.push(value.regionName);
                         planInfo.getQueryResult.allSidIds.push(value.id);
                         let geo = JSON.parse(value.geometry);
-                        for (let i = 0; i < geo.paths.length; i++) {
+                        for (let i = 0; i < (geo.length - 1); i++) {
                             let itemGeometry = {
-                                paths: [geo.paths[i]],
+                                paths: [geo[i], geo[i + 1]],
                                 // spatialReference: this.mapV.spatialReference,
                                 type: "polyline"
                             }
@@ -1153,7 +1158,7 @@ export default class XjPlanManagement extends Vue {
                     })
                     this.mathLength({ polylines: polylines }, item);
                 }
-            } else if (item.layerName == '管线') {
+            } else if (item.layerName == '排水管道') {
                 this.conductPipe(item);
             } else {
                 this.conductPoint(item);//其它节点
@@ -1440,7 +1445,10 @@ export default class XjPlanManagement extends Vue {
             this.$refs.mapBox1.appendChild(this.$refs.cctvMap);
             //@ts-ignore
             this.$refs.cctvMap.style.display = '';
-            //this.mapV.extent = this.data.mapView.extent;
+            //地图容器初始隐藏，需要更新size
+            if (this.mapV) {
+                this.mapV.updateSize()
+            }
             //获取计划详情
             queryDetail(e.id).then(res => {
                 if (res.code == 1) {
@@ -1547,122 +1555,172 @@ export default class XjPlanManagement extends Vue {
         let sendInfo = planItem.planInfo.sendInfo;
         data.pointTempList = [];
         if (!data.polylines || data.polylines.length == 0) {
-            return;
-        }
-        if (
-            !appconfig.gisResource.geometry ||
-            !appconfig.gisResource.geometry.config[0] ||
-            !appconfig.gisResource.geometry.config[0].url
-        ) {
-            url =
-                "http://192.168.2.245:6080/arcgis/rest/services/Utilities/Geometry/GeometryServer";
-        } else {
-            url = appconfig.gisResource.geometry.config[0].url;
-        }
-        let geometryService = new this.arcgis.GeometryService(url);
-        let lengthsParameters = new this.arcgis.LengthsParameters({
-            geodesic: true,
-            polylines: data.polylines,
-            lengthUnit: this.arcgis.GeometryService.UNIT_METER
-        });
-        geometryService.lengths(lengthsParameters).then(res => {
-            if (planItem.layerName == '管线') {
-                if (res && res.lengths && res.lengths.length > 0) {
-                    res.lengths.forEach((item, index) => {
-                        sendInfo.pointTempList.push({
-                            "inspectTypeId": planItem.typeId,
-                            "layerName": planItem.layerName,
-                            "lat": data.polylines[index].paths[0][1][1],
-                            "lng": data.polylines[index].paths[0][1][0],
-                            "length": item,
-                            "geometry": JSON.stringify(data.polylines[index]),
-                        })
-                    })
-                }
-            } else if (planItem.layerName == '巡检线') {
-                if (res && res.lengths && res.lengths.length > 0) {
-                    sendInfo.pointTempList.push({
-                        "inspectTypeId": planItem.typeId,
-                        "layerName": planItem.layerName,
-                        "lat": data.polylines[0].paths[0][0][1],
-                        "lng": data.polylines[0].paths[0][0][0],
-                        "length": 0,
-                        "geometry": JSON.stringify(data.polylines[0]),
-                    });
-                    res.lengths.forEach((item, index) => {
-                        sendInfo.pointTempList.push({
-                            "inspectTypeId": planItem.typeId,
-                            "layerName": planItem.layerName,
-                            "lat": data.polylines[index].paths[0][1][1],
-                            "lng": data.polylines[index].paths[0][1][0],
-                            "length": item,
-                            "geometry": JSON.stringify(data.polylines[index]),
-                        })
-                    })
-                }
+            if (sendInfo.pointTempList.length > 0) {
+                sendInfo.totalCount = sendInfo.pointTempList.length;
+                planItem.planInfo.isComplete = true;//表示该类型在提交前完成计算
+            } else {
+                return;
             }
-            sendInfo.totalCount = sendInfo.pointTempList.length;
-            planItem.planInfo.isComplete = true;//表示该类型在提交前完成计算
-        });
+        }
+
+        if (planItem.layerName.indexOf('管道') >= 0) {
+            // if (res && res.lengths && res.lengths.length > 0) {
+            //     res.lengths.forEach((item, index) => {
+            //         sendInfo.pointTempList.push({
+            //             "inspectTypeId": planItem.typeId,
+            //             "layerName": planItem.layerName,
+            //             "lat": data.polylines[index].paths[0][1][1],
+            //             "lng": data.polylines[index].paths[0][1][0],
+            //             "length": item,
+            //             "geometry": JSON.stringify(data.polylines[index]),
+            //         })
+            //     })
+            // }
+        } else if (planItem.layerName == '巡检线') {
+            //if (res && res.lengths && res.lengths.length > 0) {
+            sendInfo.pointTempList.push({
+                "inspectTypeId": planItem.typeId,
+                "layerName": planItem.layerName,
+                "lat": data.polylines[0].paths[0][1],
+                "lng": data.polylines[0].paths[0][0],
+                "length": 0,
+                "geometry": JSON.stringify(data.polylines[0]),
+            });
+            data.polylines.forEach((item, index) => {
+                sendInfo.pointTempList.push({
+                    "inspectTypeId": planItem.typeId,
+                    "layerName": planItem.layerName,
+                    "lat": data.polylines[index].paths[1][1],
+                    "lng": data.polylines[index].paths[1][0],
+                    "length": this.calculateLength(data.polylines[index].paths),
+                    "geometry": JSON.stringify(data.polylines[index]),
+                })
+            })
+            //}
+        }
+        sendInfo.totalCount = sendInfo.pointTempList.length;
+        planItem.planInfo.isComplete = true;//表示该类型在提交前完成计算
+
+        // if (
+        //     !appconfig.gisResource.geometry ||
+        //     !appconfig.gisResource.geometry.config[0] ||
+        //     !appconfig.gisResource.geometry.config[0].url
+        // ) {
+        //     url =
+        //         "http://192.168.2.245:6080/arcgis/rest/services/Utilities/Geometry/GeometryServer";
+        // } else {
+        //     url = appconfig.gisResource.geometry.config[0].url;
+        // }
+        // let geometryService = new this.arcgis.GeometryService(url);
+        // let lengthsParameters = new this.arcgis.LengthsParameters({
+        //     geodesic: true,
+        //     polylines: data.polylines,
+        //     lengthUnit: this.arcgis.GeometryService.UNIT_METER
+        // });
+        // geometryService.lengths(lengthsParameters).then(res => {
+        //     if (planItem.layerName == '管线') {
+        //         if (res && res.lengths && res.lengths.length > 0) {
+        //             res.lengths.forEach((item, index) => {
+        //                 sendInfo.pointTempList.push({
+        //                     "inspectTypeId": planItem.typeId,
+        //                     "layerName": planItem.layerName,
+        //                     "lat": data.polylines[index].paths[0][1][1],
+        //                     "lng": data.polylines[index].paths[0][1][0],
+        //                     "length": item,
+        //                     "geometry": JSON.stringify(data.polylines[index]),
+        //                 })
+        //             })
+        //         }
+        //     } else if (planItem.layerName == '巡检线') {
+        //         if (res && res.lengths && res.lengths.length > 0) {
+        //             sendInfo.pointTempList.push({
+        //                 "inspectTypeId": planItem.typeId,
+        //                 "layerName": planItem.layerName,
+        //                 "lat": data.polylines[0].paths[0][0][1],
+        //                 "lng": data.polylines[0].paths[0][0][0],
+        //                 "length": 0,
+        //                 "geometry": JSON.stringify(data.polylines[0]),
+        //             });
+        //             res.lengths.forEach((item, index) => {
+        //                 sendInfo.pointTempList.push({
+        //                     "inspectTypeId": planItem.typeId,
+        //                     "layerName": planItem.layerName,
+        //                     "lat": data.polylines[index].paths[0][1][1],
+        //                     "lng": data.polylines[index].paths[0][1][0],
+        //                     "length": item,
+        //                     "geometry": JSON.stringify(data.polylines[index]),
+        //                 })
+        //             })
+        //         }
+        //     }
+        //     sendInfo.totalCount = sendInfo.pointTempList.length;
+        //     planItem.planInfo.isComplete = true;//表示该类型在提交前完成计算
+        // });
     }
 
     /**
      * 打断线并求取长度
     */
     breakLine(currentData) {
-        // let overlengthPipe = currentData.planInfo.overlengthPipe;
-        // var cnum = overlengthPipe.paths.length;
-        // let lengths = overlengthPipe.lengths;
-        // let polylines = [];
-        // let d = this.breakLength;
-        // for (var i = 0; i < cnum; i++) {
-        //     var len = lengths[i];
-        //     let path = overlengthPipe.paths[i];
-        //     let pointOne = path[0];
-        //     let pointTwo = path[1];
-        //     let prePoint = path[0];
-        //     if (len > d) {//大于规定距离
-        //         var count = Math.floor(len / d) - 1;
-        //         if (count > 0) {
-        //             var pt1 = pointOne, pt2 = pointTwo;
-        //             var k = (pt2[1] - pt1[1]) / (pt2[0] - pt1[0]);
-        //             var mlen = Math.sqrt((pt2[1] - pt1[1]) * (pt2[1] - pt1[1]) + (pt2[0] - pt1[0]) * (pt2[0] - pt1[0]));
-        //             var md = mlen / (count + 1);
-        //             var sqk = Math.sqrt(1 + k * k);
-        //             var dd = md;
-        //             let x, y;
-        //             for (var j = 0; j < count; j++) {
-        //                 x = (dd / sqk) + pt1[0];
-        //                 y = (k * dd / sqk) + pt1[1];
-        //                 if ((x > pt1[0] && x > pt2[0]) || (x < pt1[0] && x < pt2[0])) {
-        //                     x = pt1[0] - (dd / sqk);
-        //                 }
-        //                 if ((y > pt1[1] && y > pt2[1]) || (y < pt1[1] && y < pt2[1])) {
-        //                     y = pt1[1] - (k * dd / sqk);
-        //                 }
-        //                 dd = dd + md;
-        //                 polylines.push({
-        //                     paths: [[prePoint, [x, y]]],
-        //                     spatialReference: this.mapV.spatialReference,
-        //                     type: "polyline"
-        //                 });
-        //                 prePoint = [x, y];
-        //             }
-        //             polylines.push({
-        //                 paths: [[[x, y], pointTwo]],
-        //                 spatialReference: this.mapV.spatialReference,
-        //                 type: "polyline"
-        //             })
-        //         } else {
-        //             polylines.push({
-        //                 paths: [path],
-        //                 spatialReference: this.mapV.spatialReference,
-        //                 type: "polyline"
-        //             })
-        //         }
-        //     }
-        // }
-        // this.mathLength({ polylines: polylines }, currentData)
+        let overlengthPipe = currentData.planInfo.overlengthPipe;
+        var cnum = overlengthPipe.paths.length;
+        let lengths = overlengthPipe.lengths;
+        let polylines = [];
+        let d = this.breakLength;
+        for (var i = 0; i < cnum; i++) {
+            var len = lengths[i];
+            let path = overlengthPipe.paths[i];
+            let pointOne = path[0];
+            let pointTwo = path[1];
+            let prePoint = path[0];
+            if (len > d) {//大于规定距离
+                var count = Math.floor(len / d) - 1;
+                if (count > 0) {
+                    var pt1 = pointOne, pt2 = pointTwo;
+                    var k = (pt2[1] - pt1[1]) / (pt2[0] - pt1[0]);
+                    var mlen = Math.sqrt((pt2[1] - pt1[1]) * (pt2[1] - pt1[1]) + (pt2[0] - pt1[0]) * (pt2[0] - pt1[0]));
+                    var md = mlen / (count + 1);
+                    var sqk = Math.sqrt(1 + k * k);
+                    var dd = md;
+                    let x, y;
+                    for (var j = 0; j < count; j++) {
+                        x = (dd / sqk) + pt1[0];
+                        y = (k * dd / sqk) + pt1[1];
+                        if ((x > pt1[0] && x > pt2[0]) || (x < pt1[0] && x < pt2[0])) {
+                            x = pt1[0] - (dd / sqk);
+                        }
+                        if ((y > pt1[1] && y > pt2[1]) || (y < pt1[1] && y < pt2[1])) {
+                            y = pt1[1] - (k * dd / sqk);
+                        }
+                        dd = dd + md;
+                        polylines.push({
+                            paths: [[prePoint, [x, y]]],
+                            type: "polyline"
+                        });
+                        prePoint = [x, y];
+                    }
+                    polylines.push({
+                        paths: [[[x, y], pointTwo]],
+                        type: "polyline"
+                    })
+                } else {
+                    polylines.push({
+                        paths: [path],
+                        type: "polyline"
+                    })
+                }
+            }
+        }
+        this.mathLength({ polylines: polylines }, currentData)
+    }
+    /**
+     * 该方法用于计算长度
+     * @param points 
+     */
+    calculateLength(points: number[][]) {
+        const geometry = new LineString(points);
+        const length = getLength(geometry, { projection: "EPSG:4326" });
+        return length
     }
     //处理巡检点数据
     planPoint(saveData) {
@@ -2152,6 +2210,7 @@ export default class XjPlanManagement extends Vue {
                 }
             }).catch(err => {
                 this.$message.error('获取图层字段失败');
+                console.log(err);
             })
         } else {
             this.pageShow.showSQLPage = false
@@ -2165,12 +2224,12 @@ export default class XjPlanManagement extends Vue {
         //选项卡减少过会，如果当前值大于实际值将其设置为实际值
         if ((parseInt(this.planModel.input.currentPlanTypeName.toString()) + 1) > this.planModel.input.planTypeInfo.length) {
             if (this.planModel.input.planTypeInfo.length == 0) {
-                //this.planModel.input.currentPlanTypeName=0+"";
+                this.planModel.input.currentPlanTypeName=0+"";
             } else {
-                //this.planModel.input.currentPlanTypeName=(this.planModel.input.planTypeInfo.length-1)+"";
+                this.planModel.input.currentPlanTypeName=(this.planModel.input.planTypeInfo.length-1)+"";
             }
         }
-        if (this.planModel.input.currentPlanTypeName >= 0) {
+        if (parseInt(this.planModel.input.currentPlanTypeName) >= 0) {
             return this.planModel.input.planTypeInfo[this.planModel.input.currentPlanTypeName];
         } else {
             return null;
@@ -2231,6 +2290,7 @@ export default class XjPlanManagement extends Vue {
             div[0].style.display = 'none'
         }).catch(err => {
             this.$message.error('获取唯一值失败');
+            console.log(err);
         })
     }
 
@@ -2291,40 +2351,51 @@ export default class XjPlanManagement extends Vue {
             this.drawInfo.drawEvent.reset();
         }
         this.clearLayer(this.comLayerList.drawLayer);
-        //@ts-ignore
-        this.$refs.mapBox.style.cursor = 'default'
+
     }
 
     /**
      * 绘制范围进行空间查询
     */
     drawAndQuery() {
-        //@ts-ignore
-        this.$refs.mapBox.style.cursor = 'crosshair';
-        let mapView = this.mapV;
-        let that = this;
         this.clearSearchLayer();
         const mapV = this.data.mapView;
         const map = this.mapV;
-        if(this.draw){
+        if (this.draw) {
             this.mapV.removeInteraction(this.draw);
-            this.draw=null;
-          }
-          if (this.comLayerList.drawLayer) {
+            this.draw = null;
+        }
+        if (this.comLayerList.drawLayer) {
             this.comLayerList.drawLayer.getSource().clear();
-          }
+        }
         //this.isDrawEnd = false
         this.draw = new Draw({
-            type: "POLYGON",
+            type: "Polygon",
             source: this.comLayerList.drawLayer.getSource()
+        })
+        //地图默认的双击事件
+        const dblclickevt = map.getInteractions().getArray().find(interaction => {
+            return interaction instanceof DoubleClickZoom;
+        })
+        console.log(dblclickevt)
+        this.draw.on('drawstart', (e) => {
+            //删除默认的双击事件，防止双击完成绘制时放大地图
+            map.removeInteraction(dblclickevt);
         })
         this.draw.on('drawend', (e) => {
             const geometry = (e.feature as Feature<Polygon>).getGeometry();
-            console.log(geometry);
+
             //记录组成线的点信息
             let geometrys = geometry.getCoordinates();
+            console.log(geometrys);
+            const geo = SuperMapService.convertPolygon(geometrys);
+            this.drawEndHandle(geo)
             //this.editInfo.geometry = JSON.stringify(geometrys);
             map.removeInteraction(this.draw);
+            //延时开启地图双击放大事件
+            setTimeout(() => {
+                map.addInteraction(dblclickevt);
+            }, 100)
             this.draw = null;
         })
         map.addInteraction(this.draw);
@@ -2383,11 +2454,11 @@ export default class XjPlanManagement extends Vue {
     /**
      *绘制完成,对可以进行空间查询的数据进行graphic赋值
     */
-    drawEndHandle(graphic) {
+    drawEndHandle(geometry: any) {
         this.planModel.input.planTypeInfo.forEach(item => {
             if (item.planInfo.isServer) {
-                item.planInfo.drawGraphic = graphic.clone();
-                this.getGeoData(item);
+                item.planInfo.drawGraphic = geometry;
+                this.getGeoData2(item);
             }
         })
     }
@@ -2396,17 +2467,16 @@ export default class XjPlanManagement extends Vue {
          * currentData 当前查询的管网数据（不传入的值，则会使用当前的显示的面板）
         */
     getGeoData2(searChPlan) {
-        let that = this;
         let currentData = null;
         if (!searChPlan.planInfo) {
             currentData = this.getCurrentPlanTypeInfo();
-            currentData.planInfo.where = that.serverSearch.queText
+            currentData.planInfo.where = this.serverSearch.queText
         } else {
             currentData = searChPlan;
         }
         let currentPlane = this.getCurrentPlanTypeInfo();
         if (currentPlane == currentData) {
-            currentData.planInfo.where = that.serverSearch.queText;
+            currentData.planInfo.where = this.serverSearch.queText;
         }
         let data = {
             where: currentData.planInfo.where,
@@ -2446,12 +2516,20 @@ export default class XjPlanManagement extends Vue {
         //查询
         SuperMapService.queryByMapService({
             url: appconfig.gisResource.business_map.config[0].url,
+            geometry: currentData.planInfo.drawGraphic,
             datasetNames: [currentData.layerNameEn],
             whereclause: currentData.planInfo.where
-        }).then(result => {
+        }).then((result: any) => {
             console.log(result);
+            const features = result.result.recordsets[0].features.features;
+            if (searChPlan) {
+                this.groupGetInfo(features, currentData);
+            } else {
+                this.groupGetInfo(features);
+            }
         }).catch(err => {
             this.$message.error('查询数据失败');
+            console.log(err)
         })
 
     }
@@ -2510,9 +2588,9 @@ export default class XjPlanManagement extends Vue {
         //根据求取的交集查询交集区域内的设备或者管线的objectId
         that.queryServce(data, currentData.layerId, function (result) {
             if (searChPlan) {
-                that.groupGetInfo(result.objectIds, currentData.layerId, currentData);
+                that.groupGetInfo(currentData.layerId, currentData);
             } else {
-                that.groupGetInfo(result.objectIds, currentData.layerId);
+                that.groupGetInfo(currentData.layerId);
             }
 
         }.bind(that));
@@ -2521,67 +2599,68 @@ export default class XjPlanManagement extends Vue {
     /**
      * 分组求取管网信息
     */
-    groupGetInfo(ids, layerid, updata?) {
-        let that = this;
+    groupGetInfo(resultFeatures, updata?) {
         let currentData = null;
         if (updata) {
             currentData = updata;
         } else {
-            currentData = that.getCurrentPlanTypeInfo()
+            currentData = this.getCurrentPlanTypeInfo()
         }
         let overlengthPipe = currentData.planInfo.overlengthPipe;
         let getQueryResult = currentData.planInfo.getQueryResult
         tool.setVaule(overlengthPipe, []);
         tool.setVaule(getQueryResult, []);
-        getQueryResult.allObjectIds = [].concat(ids);
+        getQueryResult.resultInfo = resultFeatures;
+        this.conductServerResult(currentData);
+        //getQueryResult.allObjectIds = [].concat(ids);
         //将获取的objecids每1000进行数据重组
-        if (ids && ids.length > 0) {
-            if (ids.length <= that.splitMonth) {
-                getQueryResult.groupObjectIds.push([getQueryResult.allObjectIds]);
-            } else {
-                let index = Math.floor(ids.length / that.splitMonth);
-                let index2 = ids.length % that.splitMonth;
-                for (let i = 0; i < index; i++) {
-                    let startIndex = that.splitMonth * i;
-                    let endIndex = that.splitMonth * (i + 1);
-                    getQueryResult.groupObjectIds.push(getQueryResult.allObjectIds.slice(startIndex, endIndex));
-                    if (i == index - 1 && index2 != 0) {
-                        getQueryResult.groupObjectIds.push(getQueryResult.allObjectIds.slice(endIndex, ids.length));
-                    }
-                }
-            }
-        } else {
-            this.$message({ type: "info", message: "未查询到数据" });
-            return;
-        }
+        // if (ids && ids.length > 0) {
+        //     if (ids.length <= that.splitMonth) {
+        //         getQueryResult.groupObjectIds.push([getQueryResult.allObjectIds]);
+        //     } else {
+        //         let index = Math.floor(ids.length / that.splitMonth);
+        //         let index2 = ids.length % that.splitMonth;
+        //         for (let i = 0; i < index; i++) {
+        //             let startIndex = that.splitMonth * i;
+        //             let endIndex = that.splitMonth * (i + 1);
+        //             getQueryResult.groupObjectIds.push(getQueryResult.allObjectIds.slice(startIndex, endIndex));
+        //             if (i == index - 1 && index2 != 0) {
+        //                 getQueryResult.groupObjectIds.push(getQueryResult.allObjectIds.slice(endIndex, ids.length));
+        //             }
+        //         }
+        //     }
+        // } else {
+        //     this.$message({ type: "info", message: "未查询到数据" });
+        //     return;
+        // }
 
-        let copyValue = null;
-        copyValue = tool.copyValue(getQueryResult);
-        /**
-         * 根据重组的数据进行数据请求获取矢量信息
-        */
-        getQueryResult.groupObjectIds.forEach(item => {
-            let data = {
-                objectIds: item.join(','),
-                returnGeometry: true,
-                returnIdsOnly: false,
-                outFields: '*',
-                f: "pjson"
-            }
-            that.queryServce(data, layerid, function (result) {
-                if (getQueryResult.allObjectIds.length == 0 && result.features.length != 0) {
-                    for (item in getQueryResult) {
-                        getQueryResult[item] = copyValue[item];
-                    }
-                }
-                getQueryResult.resultInfo.push.apply(getQueryResult.resultInfo, result.features);
-                //判断是否已异步请求完毕所有数据
-                //if(getQueryResult.resultInfo.length==getQueryResult.allObjectIds.length||getQueryResult.resultInfo.length==ids.length){
-                if (getQueryResult.resultInfo.length == getQueryResult.allObjectIds.length) {
-                    that.conductServerResult(currentData);
-                };
-            }.bind(this))
-        })
+        // let copyValue = null;
+        // copyValue = tool.copyValue(getQueryResult);
+        // /**
+        //  * 根据重组的数据进行数据请求获取矢量信息
+        // */
+        // getQueryResult.groupObjectIds.forEach(item => {
+        //     let data = {
+        //         objectIds: item.join(','),
+        //         returnGeometry: true,
+        //         returnIdsOnly: false,
+        //         outFields: '*',
+        //         f: "pjson"
+        //     }
+        //     that.queryServce(data, layerid, function (result) {
+        //         if (getQueryResult.allObjectIds.length == 0 && result.features.length != 0) {
+        //             for (item in getQueryResult) {
+        //                 getQueryResult[item] = copyValue[item];
+        //             }
+        //         }
+        //         getQueryResult.resultInfo.push.apply(getQueryResult.resultInfo, result.features);
+        //         //判断是否已异步请求完毕所有数据
+        //         //if(getQueryResult.resultInfo.length==getQueryResult.allObjectIds.length||getQueryResult.resultInfo.length==ids.length){
+        //         if (getQueryResult.resultInfo.length == getQueryResult.allObjectIds.length) {
+        //             that.conductServerResult(currentData);
+        //         };
+        //     }.bind(this))
+        // })
     }
 
     /***
@@ -2612,21 +2691,36 @@ export default class XjPlanManagement extends Vue {
         }
         let currentIndex = 0;
         let objectids = [];
+        //临时判断为点还是线
         queryArr.forEach(item => {
+            const where = data.layerName.indexOf('管道') >= 0 ? 'lno in (' + item.join(',') + ')' : 'exp_no in (' + item.join(',') + ')';
             let senddata = {
-                where: 'sid in (' + item.join(',') + ')',
+                where: where,
                 returnGeometry: false,
                 returnIdsOnly: true,
                 f: "pjson"
             };
-            //根据求取的交集查询交集区域内的设备或者管线的objectId
-            this.queryServce(senddata, data.layerId, function (result) {
-                objectids = objectids.concat(result.objectIds);
-                currentIndex++;
-                if (currentIndex == queryArr.length) {
-                    this.groupGetInfo(objectids, data.layerId, data);
-                }
-            }.bind(this));
+            //查询
+            SuperMapService.queryByMapService({
+                url: appconfig.gisResource.business_map.config[0].url,
+                datasetNames: [data.layerNameEn],
+                whereclause: where
+            }).then((result: any) => {
+                console.log(result);
+                const features = result.result.recordsets[0].features.features;
+                this.groupGetInfo(features, data);
+            }).catch(err => {
+                this.$message.error('查询数据失败');
+                console.log(err)
+            })
+            // //根据求取的交集查询交集区域内的设备或者管线的objectId
+            // this.queryServce(senddata, data.layerId, function (result) {
+            //     objectids = objectids.concat(result.objectIds);
+            //     currentIndex++;
+            //     if (currentIndex == queryArr.length) {
+            //         this.groupGetInfo(objectids, data.layerId, data);
+            //     }
+            // }.bind(this));
         })
     }
 
@@ -2639,25 +2733,35 @@ export default class XjPlanManagement extends Vue {
         let geometry = null;
         let symbol = null;
         let dataList = [];
+
+        currentData.planInfo.tableData = dataList;
+        currentData.planInfo.pageInfo.currentData = dataList.slice(0, 10);
+        currentData.planInfo.total = dataList.length;
+
         if (getQueryResult.resultInfo.length > 0) {
             let ids = [];
-            if (getQueryResult.resultInfo[0].geometry.paths) {
+            if (getQueryResult.resultInfo[0].geometry.type === "LineString") {
                 symbol = {
                     color: this.comColorList.planColor,
                     width: "2px",
                     type: "simple-line",
                 };
                 getQueryResult.resultInfo.forEach((item, index) => {
-                    geo.push.apply(geo, item.geometry.paths);
-                    let listitem = JSON.parse(JSON.stringify(item.attributes).toLowerCase());
-                    listitem.geometry = { paths: null };
-                    listitem.geometry.paths = item.geometry.paths;
-                    listitem.pipelength = listitem.pipelength.toFixed(2);
+
+                    const coordinates = item.geometry.coordinates.map(coordinate => {
+                        return [coordinate[0], coordinate[1]];
+                    })
+                    geo.push(coordinates);
+                    let listitem = JSON.parse(JSON.stringify(item.properties).toLowerCase());
+                    listitem.geometry = coordinates;
+                    //listitem.geometry.paths = item.geometry.paths;
+                    listitem.pipelength = parseFloat(listitem.pipelength).toFixed(2);
+                    listitem.sid = listitem["lno"];
                     dataList.push(listitem);
-                    ids.push(listitem.objectid);
+                    ids.push(listitem["lno"]);
                 });
                 geometry = {
-                    type: "polyline",
+                    type: "LineString",
                     paths: geo,
                     spatialReference: this.data.mapView.spatialReference
                 };
@@ -2673,14 +2777,16 @@ export default class XjPlanManagement extends Vue {
                 };
                 getQueryResult.resultInfo.forEach(item => {
                     geo.push([item.geometry.x, item.geometry.y]);
-                    let listitem = JSON.parse(JSON.stringify(item.attributes).toLowerCase());
-                    listitem.lat = item.geometry.y;
-                    listitem.lng = item.geometry.x;
+                    let listitem = JSON.parse(JSON.stringify(item.properties).toLowerCase());
+                    listitem.lng = item.geometry.coordinates[0];
+                    listitem.lat = item.geometry.coordinates[1];
+                    listitem.sid = listitem["exp_no"];
+                    geo.push([listitem.lng, listitem.lat]);
                     dataList.push(listitem);
-                    ids.push(listitem.objectid);
+                    ids.push(listitem["exp_no"]);
                 });
                 geometry = {
-                    type: "multipoint",
+                    type: "MultiPoint",
                     points: geo,
                     spatialReference: this.data.mapView.spatialReference
                 }
@@ -2697,17 +2803,17 @@ export default class XjPlanManagement extends Vue {
             currentData.planInfo.tableData = dataList;
             currentData.planInfo.pageInfo.currentData = dataList.slice(0, 10);
             currentData.planInfo.total = dataList.length;
-            let graphic = new this.data.mapView.TF_graphic({
-                geometry: geometry,
-                symbol: symbol
-            });
+            // let graphic = new this.data.mapView.TF_graphic({
+            //     geometry: geometry,
+            //     symbol: symbol
+            // });
             currentData.planInfo.inspectContents = JSON.stringify({
                 geometryInfo: geometry,
                 type: currentData.layerId,
                 ids: ids.join(','),
                 where: currentData.where
             });
-            currentData.planInfo.layer.add(graphic);
+            //currentData.planInfo.layer.add(graphic);
         }
     }
 
@@ -2738,7 +2844,10 @@ export default class XjPlanManagement extends Vue {
             this.$message({ type: "info", message: "请绘制或者查询管线，获取管线信息" });
         }
         getQueryResult.resultInfo.forEach((item, index) => {
-            let listitem = JSON.parse(JSON.stringify(item.attributes).toLowerCase());
+            let listitem = JSON.parse(JSON.stringify(item.properties).toLowerCase());
+            const coordinates = item.geometry.coordinates.map(coordinate => {
+                return [coordinate[0], coordinate[1]];
+            })
             data.totalLength += parseFloat(listitem.pipelength);
             if (listitem.pipelength > this.breakLength) {
                 overlengthPipe.paths.push(item.geometry.paths[0]);
@@ -2747,18 +2856,18 @@ export default class XjPlanManagement extends Vue {
                 data.pointTempList.push({
                     "inspectTypeId": currentData.typeId,
                     "layerName": currentData.layerName,
-                    "lat": item.geometry.paths[0][1][0],
-                    "lng": item.geometry.paths[0][1][1],
+                    "lat": item.geometry.coordinates[0][1],
+                    "lng": item.geometry.coordinates[0][0],
                     "length": listitem.pipelength,
-                    // "geometry": JSON.stringify({
-                    //     paths: item.geometry.paths,
-                    //     spatialReference: this.mapV.spatialReference,
-                    //     type: "polyline"
-                    // }),
+                    "geometry": JSON.stringify({
+                        paths: coordinates,
+                        spatialReference: null,
+                        type: "polyline"
+                    }),
                 })
             }
         });
-        this.currentDarwRe(currentData);
+        //this.currentDarwRe(currentData);
         this.breakLine(currentData);
     }
     //处理选择的管点:
@@ -2769,20 +2878,20 @@ export default class XjPlanManagement extends Vue {
             data.pointTempList.push({
                 "inspectTypeId": currentData.typeId,
                 "layerName": currentData.layerName,
-                "lat": item.geometry.y,
-                "lng": item.geometry.x,
+                "lat": item.geometry.coordinates[1],
+                "lng": item.geometry.coordinates[0],
                 "length": 0,
                 "geometry": JSON.stringify({
                     type: "point",
-                    latitude: item.geometry.y,
-                    longitude: item.geometry.x,
-                    spatialReference: this.data.mapView.spatialReference
+                    latitude: item.geometry.coordinates[1],
+                    longitude: item.geometry.coordinates[0],
+                    spatialReference: null
                 }),
             })
         });
         data.totalCount = data.pointTempList.length;
         data.totalLength = 0;
-        this.currentDarwRe(currentData);
+        //this.currentDarwRe(currentData);
         currentData.planInfo.isComplete = true;//表示该类型在提交前完成计算
     }
     //点击清空按钮执行事件
@@ -2793,7 +2902,11 @@ export default class XjPlanManagement extends Vue {
     rowSelectPlan(row) {
         if (row.geometry) {
             let geo = null;
-            geo = JSON.parse(row.geometry);
+            if (typeof (row.geometry) === "string") {
+                geo = JSON.parse(row.geometry);
+            } else {
+                geo = row.geometry;
+            }
             let lines = geo;
             this.hLineToMap(lines);
             return;

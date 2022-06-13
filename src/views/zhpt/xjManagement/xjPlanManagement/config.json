@@ -28,14 +28,14 @@
             {"label": "创建时间","value":"createTime"}
         ],
         "pipeLine":[
-            {"label": "编号","value":"sid"},
+            {"label": "编号","value":"lno"},
             {"label": "地址","value":"address"},
             {"label": "材质","value":"material"},
-            {"label": "管径","value":"diameter"},
+            {"label": "管径","value":"psize"},
             {"label": "长度","value":"pipelength"}
         ],
         "pipePoint":[
-            {"label": "编号","value":"sid"},
+            {"label": "编号","value":"exp_no"},
             {"label": "地址","value":"address"},
             {"label": "材质","value":"material"},
             {"label": "管径","value":"diameter"}
