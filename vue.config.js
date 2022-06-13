@@ -91,7 +91,6 @@ module.exports = {
         staticPub: resolve('public')
       }
     },
-    devtool: process.env.NODE_ENV === 'development'?'source-map':'',
     plugins: [
       // 压缩代码
       new CompressionWebpackPlugin({
