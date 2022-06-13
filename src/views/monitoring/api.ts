@@ -339,6 +339,7 @@ export interface IPoint extends ICreator {
   /** coordiateY */
   coordiateY?: string | number
   delFlag?: string
+  deviceTypeId?: string | number
   /** 分组 */
   siteGroup?: string
   /** 分区 */
@@ -863,8 +864,101 @@ export interface IWarningReport {
   warnType: string
 }
 
+export interface IReportDetailQuery {
+  siteId: string | number
+  indexCode: string
+  startTime: string
+  endTime: string
+  /** 0：实时监测 1：15分钟平均值 2：1小时平均值 */
+  status: '0' | '1' | '2'
+}
+
+export interface IReportDetail {
+  id: string | number
+  /** 设备编号 */
+  deviceCode: string
+  /** 指标编号 */
+  itCd: string
+  /** 当前指标值 */
+  itVal: string
+  /** 检测值数字型 */
+  itnumVal: number
+  /** 监测值字符型 */
+  itstrVal: string
+  /** 监测点数据质量192=good,0=bad */
+  qua: number | string
+  /** 设备监测时间 */
+  scadaTime: string
+  /** 创建时间 */
+  createTime: string
+  /** 指标名称*/
+  itcdName: string
+  /**监测点名称*/
+  siteName: string
+}
+
 export const pointReports = (params: Partial<IPointReport & IQueryCommon>) =>
   axios.request<IRes<IPointReport[]>>({ url: uris.report.points.base, method: 'get', params })
 
 export const warningReports = (params: Partial<IWarningReport & IQueryCommon>) =>
   axios.request<IRes<IWarningReport[]>>({ url: uris.report.warnings.base, method: 'get', params })
+
+export const fetchReportDetail = (params: Partial<IReportDetailQuery>) =>
+  axios.request<IRes<{ [x: string]: IReportDetail[] }>>({ url: uris.report.points.base, method: 'get', params })
+
+// ""1-液位监测"": [
+//   {
+//     "id": null,
+//     "deviceCode": null,
+//     "itCd": "z",
+//     "itVal": "1.31",
+//     "itnumVal": null,
+//     "itstrVal": null,
+//     "qua": 0,
+//     "scadaTime": "2022-06-07 16:30:00",
+//     "createTime": null,
+//     "direction": null,
+//     "itcdName": "液位高度",
+//     "siteName": "1-液位监测",
+//     "isValid": null
+//   },
+//   {
+//     "id": null,
+//     "deviceCode": null,
+//     "itCd": "z",
+//     "itVal": "1.31",
+//     "itnumVal": null,
+//     "itstrVal": null,
+//     "qua": 0,
+//     "scadaTime": "2022-06-07 16:45:00",
+//     "createTime": null,
+//     "direction": null,
+//     "itcdName": "液位高度",
+//     "siteName": "1-液位监测",
+//     "isValid": null
+//   },
+
+// ""2-监测点2"": [
+//   {
+//     "id": 33,
+//     "paraId": 53,
+//     "lower": 1,
+//     "lowerTolerance": 0.1,
+//     "upper": 2,
+//     "upperTolerance": null,
+//     "start": "00:00",
+//     "end": "23:59",
+//     "isPush": true,
+//     "level": 3,
+//     "levelName": "严重",
+//     "createUser": 458,
+//     "createUserName": "王准",
+//     "isSpecial": false,
+//     "specialVal": null,
+//     "createTime": "2022-06-09 02:08:48",
+//     "delFlag": "0",
+//     "siteName": "2-监测点2",
+//     "itcd": "status",
+//     "itcdName": "液位高度"
+//   }
+// ],

@@ -18,6 +18,7 @@
       :selected="selected"
       @selection-change="onSelectionChange"
       :pagination="pagination"
+      @page-change="onPageChange"
     />
   </div>
 </template>

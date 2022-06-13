@@ -18,7 +18,14 @@
       :row-style="rowStyle"
       :row-key="'collectId'"
       @page-change="onPageChange"
-    />
+      :pagination="pagination"
+    >
+      <template v-for="(item, index) of points" v-slot:[`actions-${index}`]>
+        <div :key="`index-${item.siteId}`">
+          <el-button type="text" icon="icon iconfont icontjfx" size="small" @click="() => goTo(item)" />
+        </div>
+      </template>
+    </BaseTable>
 
     <CommonPopup
       v-for="key of popupIds"
@@ -50,7 +57,8 @@ import {
   sections,
   getDictKeys,
   IDictionary,
-  IMonitorItem
+  IMonitorItem,
+  getMonitorItemCurrentInfoById
 } from '@/views/monitoring/api'
 import {
   defaultValuesForMonitorStandardLevel,
@@ -60,10 +68,11 @@ import {
 } from '@/utils/constant'
 import { Map } from 'ol'
 
+type IPopupParam = Record<'id' | 'coordiateX' | 'coordiateY', string | number>
+
 @Component({ name: 'PointsMonitor', components: { BaseTable, QueryForm, CommonPopup, InfoCard } })
 export default class PointsMonitor extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
-  @Prop({ type: Object }) view!: Map
   monitorPointsCols = monitorPointsCols
 
   query: Partial<IPointMonitoringQuery> = {}
@@ -77,11 +86,12 @@ export default class PointsMonitor extends Vue {
   sections: string[] = []
   levels: IDictionary[] = []
   levelColors: IDictionary[] = []
-  popups: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IMonitorItem } } = {}
+  popups: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IPopupParam } } = {}
   get popupIds() {
     return Object.keys(this.popups)
   }
   timer = null
+  view = null
   onExport(ids) {
     console.log(ids)
   }
@@ -105,6 +115,20 @@ export default class PointsMonitor extends Vue {
   onPageChange(pagination) {
     this.pagination = { ...this.pagination, ...pagination }
     this.startInterval()
+  }
+
+  goTo(item) {
+    const { siteId } = item || {}
+    this.$store.dispatch('map/changeMethod', {
+      id: '/monitoring/report/detail',
+      type: 'gis',
+      widgetid: 'FullPanel',
+      label: '监测详情查看',
+      meta: {
+        title: '监测详情查看'
+      },
+      param: { siteId }
+    })
   }
 
   async doQuery(query = {}) {
@@ -132,11 +156,14 @@ export default class PointsMonitor extends Vue {
     return { color }
   }
 
-  onDblClick(row) {
-    this.onShowPopup(row)
+  async onDblClick(row: IPointMonitoringItem) {
+    const { result } = await getMonitorItemCurrentInfoById(row.siteId)
+    const { id, coordiateX, coordiateY } = result.monitorSiteVo || {}
+    this.onShowPopup({ id, coordiateX, coordiateY })
   }
 
   mounted() {
+    this.view = (this.$attrs.data as any).mapView
     this.startInterval()
   }
 
@@ -157,7 +184,7 @@ export default class PointsMonitor extends Vue {
     this.closeAllPopups()
   }
 
-  onShowPopup(row: IMonitorItem, center: boolean = true) {
+  onShowPopup(row: IPopupParam, center: boolean = true) {
     const { coordiateX, coordiateY, id } = row || {}
     this.popups = {
       ...this.popups,
@@ -216,6 +243,7 @@ export default class PointsMonitor extends Vue {
     this.getLevels()
     this.getLevelColors()
   }
+
   @Watch('isActive')
   refetchData(active: boolean) {
     if (active) {

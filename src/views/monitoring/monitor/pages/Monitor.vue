@@ -52,8 +52,8 @@
     >
       <template v-for="(item, index) of monitorItems" v-slot:[`action-${index}`]>
         <div :key="`index-${item.id}`">
-          <el-button type="text" icon="el-icon-location" size="small" @click="() => onShowPopup(item)" />
-          <el-button type="text" icon="el-icon-data-analysis" size="small" />
+          <el-button type="text" icon="iconfont icondingwei1" size="small" @click="() => onShowPopup(item)" />
+          <el-button type="text" icon="iconfont icontjfx" size="small" @click="() => goTo(item)" />
         </div>
       </template>
     </BaseTable>
@@ -281,6 +281,20 @@ export default class Monitor extends Vue {
   beforeDestroy() {
     this.stopInterval()
     this.closeAllPopups()
+  }
+
+  goTo(item) {
+    const { id: siteId, code: indexCode } = item || {}
+    this.$store.dispatch('map/changeMethod', {
+      id: '/monitoring/report/detail',
+      type: 'gis',
+      widgetid: 'FullPanel',
+      label: '监测详情查看',
+      meta: {
+        title: '监测详情查看'
+      },
+      param: { siteId, indexCode }
+    })
   }
 
   @Watch('isActive')

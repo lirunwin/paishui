@@ -232,7 +232,7 @@ export const monitorPointsCols: ColItem[] = [
   { prop: 'unit', label: '单位', width: '90px' },
   { prop: 'levelName', label: '判定结果', width: '100px' },
   { prop: 'shreshold', label: '监测阈值', width: '120px', ...alignLeft() },
-  { prop: 'action', label: '操作', _slot: true }
+  { prop: 'actions', label: '操作', _slot: true, fixed: 'right' }
 ]
 
 export const monitorSiteCols: ColItem[] = [

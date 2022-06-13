@@ -86,8 +86,8 @@
           @click="onParamAdd"
           :disabled="
             !formData.param ||
-            !formData.param.length ||
-            formData.threshold.length >= formData.param.length * levels.length
+              !formData.param.length ||
+              formData.threshold.length >= formData.param.length * levels.length
           "
           >添加</el-button
         >
@@ -564,7 +564,7 @@ export default class PointThresholdForm extends Vue {
     this.deletingParam = false
   }
 
-  onWarningChange(index: number, key: string = '') {
+  onWarningChange(index: number | string, key: string = '') {
     if (key) {
       this.formData.threshold[index][key] = undefined
       setTimeout(() => {
