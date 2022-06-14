@@ -9,7 +9,7 @@
     <Header/>
     <!--监测中心模块-->
     <ELPWLMStatistic :show="showMonitoringCenter" :fontSize="fontSize"/><!--左侧模块-->
-    <PNLLMonitoring :show="showMonitoringCenter" />                     <!--底部模块-->
+    <PNLLMonitoring :show="showMonitoringCenter" v-on:fontSize="fontSize"/> <!--底部模块-->
     <ELPVmonitoring :show="showMonitoringCenter" />                     <!--右侧模块-->
     <MMIStatistic :show="showMonitoringCenter" />                       <!--中部模块-->
     <!--数据总览模块-->
@@ -86,5 +86,21 @@ export default {
   width: 100%;
   height: 100%;
   position: fixed;
+  /* 设置滚动条的样式 */
+  ::-webkit-scrollbar {
+      width:5px;
+  }
+  /* 滚动槽 */
+  ::-webkit-scrollbar-track {
+      background-color: transparent;
+      box-shadow:inset 0 0 6px rgba(0,0,0,0.3);
+      border-radius:10px;
+  }
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+      border-radius:10px;
+      background:#0F669A;
+      box-shadow:inset 0 0 6px rgba(0,0,0,0.5);
+  }
 }
 </style>>

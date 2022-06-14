@@ -60,14 +60,6 @@ export default {
         FloodReportCard,
         FloodProneVideoCard
     },
-    props:{
-        fontSize:{
-            type:Function,
-            default:()=>{
-                return Function
-            }
-        }
-    },
     data(){
         return{
             view:null,
