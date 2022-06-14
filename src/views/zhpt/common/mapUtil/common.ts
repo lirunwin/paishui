@@ -7,6 +7,8 @@ import { comSymbol } from '@/utils/comSymbol';
 import { getFieldByLayerName, getUniqueValueByFiled } from '@/api/sysmap/drain'
 import { Style, Fill, Stroke } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
+import { TileSuperMapRest, SuperMap, LayerInfoService } from '@supermap/iclient-ol'
+import { TF_Layer } from './layer';
 
 export class mapUtil {
 
@@ -206,11 +208,6 @@ export class mapUtil {
         })
     }
 
-    // 设置子图层显隐
-    setSublayerVisible(subLayerNames, visible) {
-
-    }
-
     // 
     static getAllSubLayerNames(parentLayerName, type) {
         let layers = appconfig.gisResource['iserver_resource'].layerService.layers
@@ -255,5 +252,46 @@ export class mapUtil {
         let view = this.map.getView()
         view.setZoom(zoom)
         view.setCenter(center)
+    }
+
+    
+    /**
+      * 超图图层组子图层显隐, 只适合图层组, 会修改 config 公共配置
+      * @param layersVisble 子图层显隐 eg: [{ name: "", visible:  }]
+      * @param parentName 父级
+      */
+    setGroupLayerVisible(parentName, layersVisble) {
+        let layers =  appconfig.gisResource['iserver_resource'].layerService.layers
+        let parentLayer = layers.find(layer => layer.type === 'smlayergroup')
+        let ids = [], idsStr = ''
+        let url = parentLayer.url
+        parentLayer.sublayers.forEach(group => {
+            group.sublayers.forEach(sub => {
+                if (parentName && group.name === parentName && layersVisble.some(layer => layer.name === sub.name)) {
+                    sub.visible = layersVisble.find(layer => layer.name === sub.name).visible
+                }
+                if (sub.visible) { ids.push(sub.id) }
+            })
+        })
+        let findLayer = this.map.getLayers().getArray().find(layer => layer.get('type') === 'smlayergroup')
+        if (ids.length === 0) {
+            idsStr = '[]'
+            findLayer.setVisible(false)
+        } else { 
+            idsStr = `[0:${ids.join(",")}]`
+            let source = new TileSuperMapRest({ url, layersID: idsStr, cacheEnabled: false, crossOrigin: 'anonymous', wrapX: true })
+            findLayer.setSource(source)
+            findLayer.setVisible(true)
+        }
+    }
+
+    setSingleLayerVisible() {
+        let layers =  appconfig.gisResource['iserver_resource'].layerService.layers
+        let parentLayer = layers.find(layer => layer.type === 'smlayer')
+        new TF_Layer().createLayers([parentLayer]).then(layers => {
+            let layerInMap = this.map.getLayers().getArray().find(layer => layer.get('name') === parentLayer.name)
+            this.map.removeLayer(layerInMap)
+            this.map.addLayer(layers[0])
+        })
     }
 }

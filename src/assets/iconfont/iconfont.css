@@ -1629,3 +1629,25 @@
   content: "\e641";
 }
 
+.iconother::before {
+  content: "\e644"
+}
+
+.icontool::before {
+  content: "\e683"
+}
+
+.iconmeasure::before {
+  content: "\e699"
+}
+
+.iconlist::before {
+  content: "\e774"
+}
+
+.iconlayerlist::before {
+  content: "\e698";
+}
+.iconfontlegend::before {
+  content: '\e774';
+}

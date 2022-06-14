@@ -38,7 +38,7 @@ export default {
         //图层添加
         addLayers(){
             let layersSource = appconfig.gisResource['iserver_resource'].layerService.layers
-            // console.log("图层源",layersSource)
+            console.log("图层源",layersSource)
             new TF_Layer().createLayers(layersSource).then(layers => {
                 // console.log(layers)
                 layers.forEach(layer => {

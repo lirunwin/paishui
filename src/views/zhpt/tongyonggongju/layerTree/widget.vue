@@ -1,5 +1,5 @@
 <template>
-    <div class="tree_box">
+    <div class="tree_box" style="max-height: 800px">
       <el-tree
         ref="tree"
         :data="layersData"
@@ -17,6 +17,7 @@
 import { Vector } from "ol/layer"
 import { appconfig } from 'staticPub/config'
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
+import { mapUtil } from '../../common/mapUtil/common'
 
 export default {
     props: {
@@ -26,92 +27,109 @@ export default {
         return {
             layersData: [],
             defaultCheckedKeys: [],
-
+            treeTitle: '', // 显示的图例, 
+            type: '' // 加载图例类型
         }
+    },
+    created () {
+        console.log('图层树设置')
+        let [layerName, type] = appconfig.initLayers.split('&&')
+        this.treeTitle = layerName
+        this.type = type
     },
     methods: {
         initTree () {
-            let layerIds = this.$store.state.gis.ids, ids = [], id = 0
             let layers = appconfig.gisResource['iserver_resource'].layerService.layers
-            let showlayers = layers.filter(layer => layer.type === 'smlayer')
+            let showlayers = layers.filter(layer => layer.name === this.treeTitle)
+            let ids = [], id = 0
             this.layersData = showlayers.map(parentlayer => {
-                let parentId = id++
                 let parentName = parentlayer.name
-                ids.push({ id: parentId, name: parentName, isParent: true })
                 let sublayers = parentlayer.sublayers.map(sublayer => {
-                    let layerId = id++
-                    ids.push({ id: layerId, name: sublayer.title, isParent: false })
-                    return { id: layerId, label: sublayer.title, parentName }
+                    id++
+                    if (sublayer.visible) { ids.push(id) }
+                    return { id, label: sublayer.title, name: sublayer.name, parentName }
                 })
-                return { id: parentId, label: parentlayer.name, children: sublayers }
+                id++
+                return { id, label: parentlayer.title, name: parentName, children: sublayers }
             })
-            if (!this.$store.state.gis.hasLoadIds) {
-                // 第一次加载
-                this.$store.state.gis.ids = ids
-                this.$store.state.gis.hasLoadIds = true
-            }
-            let checkedIDs = this.$store.state.gis.ids.filter(obj => {
-                if (ids.length > this.$store.state.gis.ids.length) {
-                    return !obj.isParent
-                }
-                return true
-            })
-            this.defaultCheckedKeys = checkedIDs.map(obj => obj.id)
+            this.defaultCheckedKeys = ids
         },
         setLayerVisible (row, check) {
-            let visible = check.checkedKeys.includes(row.id)
-            // 保存/删除当前 id
-            let ids = this.$store.state.gis.ids
-            if (!visible) {
-                let index = ids.findIndex(obj => obj.id === row.id)
-                ids.splice(index, 1)
+            if (this.type === 'group') {
+                this.setLayerGroupVisible(row, check)
             } else {
-                ids.push({ id: row.id, name: row.label })
+                this.setSingleVisible(row, check)
             }
-            // 确认父子图层
-            let isParent, parentLayerName = ''
-            if ('children' in row) {
-                isParent = true
-                parentLayerName = row.label
-            } else {
-                isParent = false
-                parentLayerName = row.parentName
-            }
-            // 筛选选择的图层
+        },
+        // 图层组
+        initTree2 () {
             let layers = appconfig.gisResource['iserver_resource'].layerService.layers
-            let showlayers = layers.filter(layer => layer.type === 'smlayer')
-            let filterLayer = showlayers.find(layer => layer.name = parentLayerName)
-            // 设置子图层显隐
-            let findLayer = null
-            if (filterLayer) {
-                let tempSublayers = filterLayer.sublayers.map(layer => {
-                    return { ...layer }
+            let layer = layers.find(layer => layer.name === this.treeTitle)
+            let ids = [], id = 0
+            this.layersData = layer.sublayers.map(layer => {
+                let sublayers = layer.sublayers.map(sub => {
+                    id++
+                    if (sub.visible) { ids.push(id) }
+                    return { id, label: sub.title, name: sub.name, parentName: layer.name }
                 })
-                findLayer = { ...filterLayer, sublayers: [ ...tempSublayers ] }
-                findLayer.sublayers.forEach(l => {
+                id++
+                return { id, label: layer.title, name: layer.name, children: sublayers }
+            })
+            this.defaultCheckedKeys = ids
+        },
+        setSingleVisible (row, check) {
+            let visible = check.checkedKeys.includes(row.id)
+            let isParent = !row.parentName, parentName, layerName
+            if (isParent) { 
+                parentName = row.name 
+            } else { 
+                parentName = row.parentName
+                layerName = row.name
+            }
+            let parentLayer = appconfig.gisResource['iserver_resource'].layerService.layers.find(layer => layer.name === this.treeTitle)
+            parentLayer.sublayers.forEach(sublayer => {
+                if (isParent) {
+                    sublayer.visible = visible
+                } else {
+                    if(layerName === sublayer.name) { sublayer.visible = visible }
+                }
+            })
+            new mapUtil(this.data.mapView).setSingleLayerVisible()
+        },
+        // 图层显隐设置
+        setLayerGroupVisible (row, check) {
+            let visible = check.checkedKeys.includes(row.id)
+            let isParent = !row.parentName, parentName, layerName, layersVisible
+            if (isParent) { 
+                parentName = row.name 
+            } else { 
+                parentName = row.parentName
+                layerName = row.name
+            }
+            
+            // 修改配置项
+            let layers = appconfig.gisResource['iserver_resource'].layerService.layers.find(layer => layer.name === this.treeTitle)
+            layers.sublayers.forEach(layerGroup => {
+                let groupName = layerGroup.name
+                let sublayers = layerGroup.sublayers
+                sublayers.forEach(layer => {
                     if (isParent) {
-                        l.visible = visible
+                        if (groupName === parentName) { layer.visible = visible }
                     } else {
-                        let visible = ids.find(obj => obj.name === l.title)
-                        l.visible = !!visible
+                        if (groupName === parentName && layerName === layer.name) { layer.visible = visible }
                     }
                 })
-            }
-
-            if (!findLayer) return
-            // 删掉原有图层，添加新图层
-            new TF_Layer().createLayers([findLayer]).then(layers => {
-                let layerInMap = this.data.mapView.getLayers().getArray().find(layer => layer.get('name') === findLayer.name)
-                this.data.mapView.addLayer(layers[0])
-                setTimeout(() => {
-                    this.data.mapView.removeLayer(layerInMap)
-                }, 1000)
             })
-            
+            new mapUtil(this.data.mapView).setGroupLayerVisible()
         }
     },
     mounted () {
-        this.initTree()
+        // TODO 图层服务发布尽量一致
+        if (this.type !== 'group') {
+            this.initTree()
+        } else {
+            this.initTree2()
+        }
     }
     
 }

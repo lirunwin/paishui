@@ -124,6 +124,7 @@ export default {
             })
         },
         rowClick(row, column, event) {
+            this.$emit('rowClick',row)
             const findRow = this.selectionRow.find(c => c.rowIndex == row.rowIndex)
             if (findRow) {
                 this.$refs.specificTable.toggleRowSelection(row, false)

@@ -16,8 +16,13 @@
                 :column="column" 
                 :tableData="tableData" 
                 :cellStyle="cellStyle"
-                isScroll/>
+                isScroll
+                @rowClick="rowClick"
+                />
             </div>
+            <infoDialog :visible="dialogVisible" :title="title">
+                <historyInfo v-on="$listeners"/>
+            </infoDialog>
         </div>
     </transition>
 </template>
@@ -25,10 +30,14 @@
 <script>
 import Config from './config.json'
 import specificTable from './components/specificTable.vue'
+import infoDialog from './components/infoDialog.vue'
+import historyInfo from './components/historyInfo.vue'
 export default {
     name:"PNLLMonitoring",//管网液位监测
     components:{
-        specificTable
+        specificTable,
+        infoDialog,
+        historyInfo
     },
     props:{
         show:{},
@@ -139,6 +148,8 @@ export default {
                 
             ],
             column:[],
+            dialogVisible:false,
+            title:"",
         }
     },
     computed:{
@@ -164,6 +175,11 @@ export default {
                 textAlign: 'center',
                 'border-bottom':'1px solid rgba(236, 236, 236, 0.3)'
             }
+        },
+        rowClick(row){
+            console.log("点击结果",row)
+            this.dialogVisible=true
+            this.title=row.outfalltype+"-"+"监测数据"
         },
     }
 }

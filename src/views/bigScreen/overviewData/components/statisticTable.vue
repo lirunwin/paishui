@@ -34,6 +34,7 @@
         :label="item.label"
         :width="item.width"
     >
+        <!-- 通过 slot-Scoped 可以获取到 row, column, $index 和 store（table 内部的状态管理）的数据-->
         <template slot-scope="data">
             <div style="display:flex;align-items:center">
                 <div style="border-radius:50%;height:5px;width:5px;" 
