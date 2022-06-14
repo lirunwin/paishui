@@ -438,14 +438,12 @@ export default class BaseMap extends Vue {
     })
     this.panels.mapView = this.view = this.$store.state.gis.map = map
     this.addLayers(layerResource)
-    this.$store.state.gis.hasLoadIds = false
 
     this.loading = false
     this.$store.commit('map/LOADING', false)
     this.$nextTick(this.controlToolDisplay)
     // 触发地图视野变化
-    let timer = null,
-      time = 500
+    let timer = null, time = 500
     this.view.getView().on('change', (evt) => {
       // console.log('级别变化', this.view)
       timer && clearTimeout(timer)
@@ -508,10 +506,16 @@ export default class BaseMap extends Vue {
   }
   // 加载图层
   addLayers(layersSource) {
-    new TF_Layer().createLayers(layersSource).then((layers) => {
-      layers.forEach((layer) => {
+    new TF_Layer().createLayers(layersSource).then(layers => {
+      layers.forEach(layer => {
         layer && this.view.addLayer(layer)
       })
+      // new mapUtil(this.view).setGroupLayerVisible("LayerGroup#1", [
+      //     { name: "TF_TXDX_PIPE_B@tofly", visible: false },
+      //     { name: "TF_DLLD_PIPE_B@tofly", visible: false },
+      //     { name: "TF_RQTQ_PIPE_B@tofly", visible: false }
+      //   ]
+      // )
     })
   }
 
@@ -599,16 +603,24 @@ export default class BaseMap extends Vue {
                 isOnline = false //异常返回
               })
               .finally(() => {
-                console.log('替换服务')
-                const repItems = ['地图配置服务', '图层服务', '数据服务']
+                // 服务配置名称
+                const MAP_CONFIG = { 
+                  mapService: '地图配置服务', 
+                  layerService: '图层服务', 
+                  dataService: '数据服务',
+                  analysisService: '分析服务'
+                }
+                // 替换服务
+                const repItems = [MAP_CONFIG.mapService, MAP_CONFIG.layerService, MAP_CONFIG.dataService]
                 res.forEach((service) => {
                   let resData = service.child,
                     source = null
                   if (repItems.includes(service.name) && resData && resData.length !== 0) {
-                    if (service.name === '图层服务') {
+                    if (service.name === MAP_CONFIG.layerService) {
                       source = resource.layerService.layers
+                      console.log('图层服务配置')
                       resData.forEach((data) => {
-                        let findItem = source.find((sourceItem) => {
+                        let findItem = source.find(sourceItem => {
                           if (sourceItem.name.includes('底图')) {
                             return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
                           } else {
@@ -619,7 +631,7 @@ export default class BaseMap extends Vue {
                           findItem.url = data.cval
                         }
                       })
-                    } else if (service.name === '地图配置服务') {
+                    } else if (service.name === MAP_CONFIG.mapService) {
                       source = appconfig
                       resData.forEach((item) => {
                         if (item.ckey === 'center') {
@@ -631,50 +643,12 @@ export default class BaseMap extends Vue {
                     } else if (service.name === '网络分析服务') {
                       source = resource.netAnalysisService
                       source.url = resData[0].cval
-                    } else if (service.name === '数据服务') {
+                    } else if (service.name === MAP_CONFIG.dataService) {
                       source = resource.dataService
                       source.url = resData[0].cval
                     }
                   }
                 })
-                // for (var i = 0, ii = res.length; i < ii; i++) {
-                //   var dr = res[i]
-                //   if (resource.hasOwnProperty(dr.code)) {
-                //     //天地图相关的编码
-                //     let replaceItems = [
-                //       'tian_online_vector',
-                //       'tian_online_raster',
-                //       'tian_online_vector_label',
-                //       'tian_online_raster_label'
-                //     ]
-                //     //离线状况下替换天地图地址
-                //     if (!isOnline) {
-                //       if (replaceItems.some(valItem => valItem == dr.code)) {
-                //         let index2 = res.findIndex(item => item.code === dr.code + '_dl')
-                //         if (index2 !== -1) {
-                //           let dataItem = res[index2]
-                //           var odr = resource[dr.code]
-                //           odr.type = dataItem.type
-                //           odr.groupname = dataItem.name
-                //           if (dataItem.child) {
-                //             odr.config = dataItem.child.map(e => {
-                //               return { name: e.name, url: e.cval }
-                //             })
-                //           }
-                //         }
-                //         continue
-                //       }
-                //     }
-                //     var odr = resource[dr.code]
-                //     odr.type = dr.type
-                //     odr.groupname = dr.name
-                //     if (dr.child) {
-                //       odr.config = dr.child.map((e) => {
-                //         return { name: e.name, url: e.cval }
-                //       })
-                //     }
-                //   }
-                // }
                 nextDo()
               })
           }

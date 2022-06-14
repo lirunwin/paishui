@@ -25,7 +25,10 @@ export const appconfig = {
   // 地图初始视角中心
   // 'initCenter': { 'x': 104.44483, 'y': 30.85523 },
   // 临时使用
-  'initCenter': [101.724022,26.580702],
+  'initCenter': [101.724022, 26.580702], 
+  // [101.724022, 26.580702] 攀枝花
+  // [104.1958, 30.0181] 仁寿
+  'initLayers': 'psmap&&single', // 用于配置图层树 pipemap&&group
   // 地图初始视角级别
   'initZoom': 15,
   // token
@@ -75,7 +78,7 @@ export const appconfig = {
             'visible': false
           },
           {
-            'parentname': "底图", 
+            'parentname': "底图",
             'name': '矢量标注',
             'type': 'wmtslayer',
             'url': 'http://t0.tianditu.gov.cn/cva_c/wmts?tk=',
@@ -112,8 +115,8 @@ export const appconfig = {
           //   "id": 4
           // },
           { 
-            'parentname': '管线',
-            'name': '排水管线',
+            'name': 'psmap',
+            'title': '排水管线',
             'type': 'smlayer',
             'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/psmap',
             'visible': true,
@@ -212,7 +215,16 @@ export const appconfig = {
               },
             
             ]
-          }
+          },
+          // {
+          //   'name': 'pipemap',
+          //   'title': '综合管网',
+          //   'type': 'smlayergroup',
+          //   'url': iserverConfig.baseUrl + 'services/map-tf_rsps-2/rest/maps/pipemap',
+          //   'visible': true,
+          //   // 'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/psmap/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
+          //   'sublayers': []
+          // }
         ]
       }
     },

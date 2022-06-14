@@ -8,8 +8,6 @@ const state = {
 
   // 保存一些业务数据,方便与其他组件交互
   pipeId: null,
-  hasLoadIds: false,
-  ids: [] // 图层树勾选的管线图层
 }
 
 const mutations = {

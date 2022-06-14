@@ -5,7 +5,7 @@ import { WMTS } from 'ol/source'
 import * as olExtent from 'ol/extent'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import * as olProj from 'ol/proj'
-import { TileSuperMapRest, SuperMap, LayerInfoService } from '@supermap/iclient-ol'
+import { TileSuperMapRest, SuperMap, LayerInfoService, SetLayerStatusParameters, LayerStatus, SetLayersInfoParameters, SetLayerStatusService } from '@supermap/iclient-ol'
 
 import { appconfig } from 'staticPub/config';
 
@@ -47,11 +47,13 @@ export class TF_Layer {
     // 超图图层异步加载
     createLayers(layerSources) {
         let promises = layerSources.map(layersource => {
-            let { name, parentname, id, type, visible, sublayers, url } = layersource
-            let properties = { id, name, parentname }
+            let { name, type, visible, sublayers, url, title } = layersource
+            let properties = { type, name, title }
             let layer = null
             switch (type) {
                 case "smlayer": layer = this.SM_Layer(url, sublayers, visible, properties)
+                    break
+                case 'smlayergroup': layer = this.SM_layerGroup(url, visible, properties)
                     break
                 case "tdtlayer": layer = this.TDT_Layer(url)
                     break
@@ -72,6 +74,47 @@ export class TF_Layer {
             return layer
         })
         return Promise.all(promises)
+    }
+
+    // 超图 图层组
+    SM_layerGroup (url = '', visible = true, properties = {}) {
+        let layerInfo = new LayerInfoService(url)
+        return new Promise(resolve => {
+            layerInfo.getLayersInfo(res => {
+                let layer = null
+                if (res) {
+                    this.setLayerConfig(res.result)
+                    let source = new TileSuperMapRest({ url, cacheEnabled: false, crossOrigin: 'anonymous', wrapX: true })
+                    let layer = new TileLayer({ source, properties: { projection: this.projection } })
+                    //
+                    for (let i in properties) {
+                        layer.set(i, properties[i])
+                    }
+                    layer.setVisible(visible)
+                    resolve(layer)
+                } else resolve(layer)
+                
+            })
+        })
+    }
+    // 配置子图层服务
+    setLayerConfig (layerData) {
+        let layerConfig = appconfig.gisResource['iserver_resource'].layerService.layers
+        let layerGroups = layerData.subLayers.layers,
+            parentName = layerData.name
+            
+        layerConfig.forEach(parentlayer => {
+            if (parentlayer.name === parentName) {
+                parentlayer.sublayers = layerGroups.map((groups, pi) => {
+                    let layers = groups.subLayers.layers
+                    let sublayers = layers.map((layer, si) => {
+                        return { title: layer.caption, visible: true, id: `${pi}.${si}`, name: layer.name }
+                    })
+                    return { name: groups.name, visible: true, sublayers, title: groups.caption }
+                })
+            }
+        })
+        console.log('修改后的图层服务', layerConfig)
     }
     // 超图切片图层
     // 设置临时图层
