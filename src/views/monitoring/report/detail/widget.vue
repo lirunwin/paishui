@@ -5,7 +5,7 @@
         <div class="query">
           <div class="form">
             <base-title>查看设置</base-title>
-            <query-form @query="onQuery" />
+            <query-form @query="onQuery" :defaultQuery="param" :deviceTypes="deviceTypes" :points="points" />
           </div>
           <div class="map">
             <base-title>
@@ -55,182 +55,6 @@
               style="width:100%"
             />
           </div>
-          <div style="padding: 10px 0">
-            <!-- <el-row type="flex" justify="space-between">
-              <span>某楼盘销售情况</span>
-              <span>
-                <el-button type="text" icon="el-icon-s-grid" />
-                <el-button type="text" icon="el-icon-pie-chart" />
-                <el-button type="text" icon="el-icon-data-analysis" />
-                <el-button type="text" icon="el-icon-download" />
-              </span>
-            </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
-          </div>
-          <div style="padding: 10px 0">
-            <!-- <el-row type="flex" justify="space-between">
-              <span>某楼盘销售情况</span>
-              <span>
-                <el-button type="text" icon="el-icon-s-grid" />
-                <el-button type="text" icon="el-icon-pie-chart" />
-                <el-button type="text" icon="el-icon-data-analysis" />
-                <el-button type="text" icon="el-icon-download" />
-              </span>
-            </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
-          </div>
-          <div style="padding: 10px 0">
-            <!-- <el-row type="flex" justify="space-between">
-              <span>某楼盘销售情况</span>
-              <span>
-                <el-button type="text" icon="el-icon-s-grid" />
-                <el-button type="text" icon="el-icon-pie-chart" />
-                <el-button type="text" icon="el-icon-data-analysis" />
-                <el-button type="text" icon="el-icon-download" />
-              </span>
-            </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
-          </div>
-          <div style="padding: 10px 0">
-            <!-- <el-row type="flex" justify="space-between">
-              <span>某楼盘销售情况</span>
-              <span>
-                <el-button type="text" icon="el-icon-s-grid" />
-                <el-button type="text" icon="el-icon-pie-chart" />
-                <el-button type="text" icon="el-icon-data-analysis" />
-                <el-button type="text" icon="el-icon-download" />
-              </span>
-            </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
-          </div>
-          <div style="padding: 10px 0">
-            <!-- <el-row type="flex" justify="space-between">
-              <span>某楼盘销售情况</span>
-              <span>
-                <el-button type="text" icon="el-icon-s-grid" />
-                <el-button type="text" icon="el-icon-pie-chart" />
-                <el-button type="text" icon="el-icon-data-analysis" />
-                <el-button type="text" icon="el-icon-download" />
-              </span>
-            </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
-          </div>
-          <div style="padding: 10px 0">
-            <!-- <el-row type="flex" justify="space-between">
-              <span>某楼盘销售情况</span>
-              <span>
-                <el-button type="text" icon="el-icon-s-grid" />
-                <el-button type="text" icon="el-icon-pie-chart" />
-                <el-button type="text" icon="el-icon-data-analysis" />
-                <el-button type="text" icon="el-icon-download" />
-              </span>
-            </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
-          </div>
-          <div style="padding: 10px 0">
-            <!-- <el-row type="flex" justify="space-between">
-              <span>某楼盘销售情况</span>
-              <span>
-                <el-button type="text" icon="el-icon-s-grid" />
-                <el-button type="text" icon="el-icon-pie-chart" />
-                <el-button type="text" icon="el-icon-data-analysis" />
-                <el-button type="text" icon="el-icon-download" />
-              </span>
-            </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
-          </div>
-          <div style="padding: 10px 0">
-            <!-- <el-row type="flex" justify="space-between">
-              <span>某楼盘销售情况</span>
-              <span>
-                <el-button type="text" icon="el-icon-s-grid" />
-                <el-button type="text" icon="el-icon-pie-chart" />
-                <el-button type="text" icon="el-icon-data-analysis" />
-                <el-button type="text" icon="el-icon-download" />
-              </span>
-            </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
-          </div>
         </div>
       </el-col>
     </el-row>
@@ -238,16 +62,44 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import QueryForm from './QueryForm.vue'
 import BaseTitle from '../../components/BaseTitle/index.vue'
+import {
+  deviceTypeParamsPage,
+  deviceTypesPage,
+  fetchReportDetail,
+  IDeviceTypeParam,
+  IPoint,
+  IReportDetailQuery,
+  pointsPage
+} from '../../api'
+import { defaultValuesForMonitorStandardLevel } from '@/utils/constant'
 
 @Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle } })
 export default class ReportDetail extends Vue {
+  @Prop({ type: Object, default: () => ({}) }) param!: IReportDetailQuery
+  @Prop({ type: Boolean }) isActive!: boolean
   display = []
   merge = []
-  onQuery(query) {
-    console.log(query)
+
+  get markLine() {
+    return defaultValuesForMonitorStandardLevel.map(({ notes: name, color, codeValue }) => {
+      return {
+        yAxis: '1000',
+        lineStyle: { color },
+        label: {
+          color: '#fff',
+          formatter: '严重>1000',
+          fontSize: 12,
+          backgroundColor: color,
+          padding: 5,
+          distance: 1,
+          position: 'insideEndTop',
+          borderRadius: 2
+        }
+      }
+    })
   }
 
   lines = {
@@ -371,6 +223,57 @@ export default class ReportDetail extends Vue {
         }
       }
     ]
+  }
+  query = {}
+  points: IPoint[] = []
+  loading = false
+  detail = {}
+  deviceTypes: IDeviceTypeParam[] = []
+
+  async doQuery() {
+    console.log(JSON.stringify(this.query, null, 2))
+    this.loading = true
+    try {
+      const {
+        result: { records }
+      } = await fetchReportDetail(this.query)
+      this.detail = records
+    } catch (error) {
+      console.log(error)
+    }
+    this.loading = false
+  }
+
+  async getAllDeviceTypes() {
+    try {
+      const {
+        result: { records }
+      } = await deviceTypesPage({ current: 1, size: 9999999 })
+      this.deviceTypes = records
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  preparing() {
+    this.getAllDeviceTypes()
+  }
+
+  mounted() {
+    this.preparing()
+  }
+
+  @Watch('isActive')
+  refetchData(active: boolean) {
+    if (active) {
+      this.preparing()
+    }
+  }
+
+  @Watch('param', { immediate: true })
+  onQuery(param) {
+    this.query = { ...param }
+    this.doQuery()
   }
 }
 </script>

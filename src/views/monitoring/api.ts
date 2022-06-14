@@ -71,7 +71,8 @@ const uris = {
       /** method: POST */
       submitSettings: `${base}/monitorsitepara/saveOrUpdateBatch`,
       /** method: POST  获取配置信息 */
-      configurations: `${base}/monitorsiteindicate/getByMonitorId`
+      configurations: `${base}/monitorsiteindicate/getByMonitorId`,
+      deleteParam: `${base}/monitorsitepara`
     },
     /** 监测站管理 */
     sites: {
@@ -86,6 +87,7 @@ const uris = {
     standards: {
       /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/deviceindicate`,
+
       /** method: DELETE */
       del: `${base}/deviceindicate/deleteByIds`,
       /** method: GET */
@@ -123,24 +125,17 @@ const uris = {
     },
     /** 指标监测台账 */
     points: {
-      /** method: POST, DELETE ,PUT, GET, */
-      base: `${base}/placeholder`,
-      /** method: DELETE */
-      del: `${base}/placeholder/deleteByIds`,
-      /** method: GET */
-      page: `${base}/placeholder/page`
+      base: `${base}/stationLedger/history`
     },
-    /** 站点监测台账 */
-    sites: {
-      /** method: POST, DELETE ,PUT, GET, */
-      base: `${base}/placeholder`,
-      /** method: DELETE */
-      del: `${base}/placeholder/deleteByIds`,
-      /** method: GET */
-      page: `${base}/placeholder/page`
-    },
+
     /** 监测报警台账 */
     warnings: {
+      /** method: POST, DELETE ,PUT, GET, */
+      base: `${base}/stationLedger/warnHistory`
+    },
+
+    /** 站点监测台账 */
+    sites: {
       /** method: POST, DELETE ,PUT, GET, */
       base: `${base}/placeholder`,
       /** method: DELETE */
@@ -344,6 +339,7 @@ export interface IPoint extends ICreator {
   /** coordiateY */
   coordiateY?: string | number
   delFlag?: string
+  deviceTypeId?: string | number
   /** 分组 */
   siteGroup?: string
   /** 分区 */
@@ -464,19 +460,20 @@ export interface IPointThreshold extends ICreator {
   level?: string | number
   levelName?: string
   /** 下限 */
-  lower?: number
+  lower?: number | ''
   /** 下限容差 */
-  lowerTolerance?: number
+  lowerTolerance?: number | ''
   /** 监测指标参数id 关联 设备基础配置信息id */
   paraId?: string | number
+  paraName?: string
   /** 特殊阈值 */
   specialVal?: string | number
   /** 有效时间开始 */
   start?: string
   /** 上限 */
-  upper?: number
+  upper?: number | ''
   /** 上限容差 */
-  upperTolerance?: number
+  upperTolerance?: number | ''
 }
 
 export interface IDictionary {
@@ -740,6 +737,9 @@ export const getPointConfigurations = (monitorId: string | number) =>
     }>
   >({ url: uris.settings.points.configurations, method: 'get', params: { monitorId } })
 
+export const deleteConfiguredPointParam = (id: string | number) =>
+  axios.request<IRes<boolean>>({ url: `${uris.settings.points.deleteParam}/${id}`, method: 'delete' })
+
 export interface IMonitorItem {
   address: string
   code: string
@@ -829,5 +829,136 @@ export const getMonitorItemCurrentInfoByIdBatch = (siteIds: string[]) =>
     params: { siteIds: siteIds.join() }
   })
 
-export const pointsMonitoring = (params: Partial<IPointMonitoringQuery>) =>
-  axios.request<IResult<IPointMonitoringItem[]>>({ url: uris.monitor.points.watch, method: 'get', params })
+export const pointsMonitoring = (params: Partial<IPointMonitoringQuery & IQueryCommon>) =>
+  axios.request<IRes<IPointMonitoringItem[]>>({ url: uris.monitor.points.watch, method: 'get', params })
+
+export interface IPointReport {
+  address: string
+  collectId: number | string
+  isValid: boolean
+  itstrVal: string
+  level: number | string
+  levelName: string
+  minute: number | string
+  paraName: string
+  scadaTime: string
+  shreshold: string
+  siteGroup: string
+  siteId: number | string
+  siteName: string
+  unit: string
+}
+export interface IWarningReport {
+  address: string
+  id: number | string
+  itCd: string
+  itVal: string
+  levelName: string
+  paraName: string
+  scadaTime: string
+  siteGroup: string
+  siteName: string
+  sn: string
+  unit: string
+  vptVal: string
+  warnType: string
+}
+
+export interface IReportDetailQuery {
+  siteId: string | number
+  indexCode: string
+  startTime: string
+  endTime: string
+  /** 0：实时监测 1：15分钟平均值 2：1小时平均值 */
+  status: '0' | '1' | '2'
+}
+
+export interface IReportDetail {
+  id: string | number
+  /** 设备编号 */
+  deviceCode: string
+  /** 指标编号 */
+  itCd: string
+  /** 当前指标值 */
+  itVal: string
+  /** 检测值数字型 */
+  itnumVal: number
+  /** 监测值字符型 */
+  itstrVal: string
+  /** 监测点数据质量192=good,0=bad */
+  qua: number | string
+  /** 设备监测时间 */
+  scadaTime: string
+  /** 创建时间 */
+  createTime: string
+  /** 指标名称*/
+  itcdName: string
+  /**监测点名称*/
+  siteName: string
+}
+
+export const pointReports = (params: Partial<IPointReport & IQueryCommon>) =>
+  axios.request<IRes<IPointReport[]>>({ url: uris.report.points.base, method: 'get', params })
+
+export const warningReports = (params: Partial<IWarningReport & IQueryCommon>) =>
+  axios.request<IRes<IWarningReport[]>>({ url: uris.report.warnings.base, method: 'get', params })
+
+export const fetchReportDetail = (params: Partial<IReportDetailQuery>) =>
+  axios.request<IRes<{ [x: string]: IReportDetail[] }>>({ url: uris.report.points.base, method: 'get', params })
+
+// ""1-液位监测"": [
+//   {
+//     "id": null,
+//     "deviceCode": null,
+//     "itCd": "z",
+//     "itVal": "1.31",
+//     "itnumVal": null,
+//     "itstrVal": null,
+//     "qua": 0,
+//     "scadaTime": "2022-06-07 16:30:00",
+//     "createTime": null,
+//     "direction": null,
+//     "itcdName": "液位高度",
+//     "siteName": "1-液位监测",
+//     "isValid": null
+//   },
+//   {
+//     "id": null,
+//     "deviceCode": null,
+//     "itCd": "z",
+//     "itVal": "1.31",
+//     "itnumVal": null,
+//     "itstrVal": null,
+//     "qua": 0,
+//     "scadaTime": "2022-06-07 16:45:00",
+//     "createTime": null,
+//     "direction": null,
+//     "itcdName": "液位高度",
+//     "siteName": "1-液位监测",
+//     "isValid": null
+//   },
+
+// ""2-监测点2"": [
+//   {
+//     "id": 33,
+//     "paraId": 53,
+//     "lower": 1,
+//     "lowerTolerance": 0.1,
+//     "upper": 2,
+//     "upperTolerance": null,
+//     "start": "00:00",
+//     "end": "23:59",
+//     "isPush": true,
+//     "level": 3,
+//     "levelName": "严重",
+//     "createUser": 458,
+//     "createUserName": "王准",
+//     "isSpecial": false,
+//     "specialVal": null,
+//     "createTime": "2022-06-09 02:08:48",
+//     "delFlag": "0",
+//     "siteName": "2-监测点2",
+//     "itcd": "status",
+//     "itcdName": "液位高度"
+//   }
+// ],

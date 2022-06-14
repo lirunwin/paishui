@@ -24,7 +24,13 @@
     <div class="cus-tab-container">
       <div class="cus-header">
         <div class="cus-header-list">
-          <div v-for="item in splitList.outer" :key="item.com" class="cus-header-item" :class="currentTab === item.com ? 'active' : ''" @click="clickTab(item)">
+          <div
+            v-for="item in splitList.outer"
+            :key="item.com"
+            class="cus-header-item"
+            :class="currentTab === item.com ? 'active' : ''"
+            @click="clickTab(item)"
+          >
             <span>{{ item.title }}</span>
             <i class="el-icon-close" @click.stop="removeTab(item)" />
           </div>
@@ -34,7 +40,13 @@
             <transition name="fade">
               <div v-show="restListShow" class="tools-viewed-list">
                 <div class="list-container">
-                  <div v-for="item in splitList.rest" :key="item.com" :class="currentTab === item.com ? 'active' : ''" class="tools-item" @click="clickTab(item)">
+                  <div
+                    v-for="item in splitList.rest"
+                    :key="item.com"
+                    :class="currentTab === item.com ? 'active' : ''"
+                    class="tools-item"
+                    @click="clickTab(item)"
+                  >
                     <span>{{ item.title }}</span>
                     <span>
                       <i class="el-icon-close" @click.stop="removeTab(item)" />
@@ -50,7 +62,18 @@
       </div>
       <div class="cus-content">
         <template v-for="item in panels">
-          <component :is="Comps[item.com]" v-show="item.com === currentTab" :key="item.com" class="items" :param="item.param" :data="data" :name="item.com" />
+          <template>
+            <component
+              :is="Comps[item.com]"
+              v-show="item.com === currentTab"
+              :key="item.com"
+              class="items"
+              :param="item.param"
+              :data="data"
+              :name="item.com"
+              :isActive="item.com === currentTab"
+            />
+          </template>
         </template>
       </div>
     </div>
@@ -59,7 +82,7 @@
 
 <script>
 import Comps from './loadComps'
-import { log } from 'util';
+import { log } from 'util'
 export default {
   name: 'SidePanels',
   components: {},
@@ -92,7 +115,7 @@ export default {
         if (index > 1) return item
         else return
       })
-      if (rest.length === 0) this.restListShow = false;
+      if (rest.length === 0) this.restListShow = false
       return { outer, rest }
     }
   },
@@ -109,7 +132,7 @@ export default {
       }
     },
     panelVisible(val) {
-      if(val) {
+      if (val) {
         this.$store.dispatch('map/delAllFull')
       }
     }
@@ -200,11 +223,11 @@ export default {
     align-items: center;
     height: 40px;
     border-bottom: 1px solid #eaeaee;
-    .cus-header-list{
+    .cus-header-list {
       display: flex;
       width: 86%;
       height: 100%;
-      .cus-header-item{
+      .cus-header-item {
         padding: 0 10px;
         margin: 0 1px;
         box-sizing: border-box;
@@ -218,7 +241,7 @@ export default {
         cursor: pointer;
         box-sizing: border-box;
         font-size: 14px;
-        &.active{
+        &.active {
           color: blue;
           background: #fff;
           border: 1px solid #eaeaea;
@@ -226,14 +249,14 @@ export default {
         }
       }
     }
-    .cus-tab-operations{
+    .cus-tab-operations {
       flex: 1;
       display: flex;
       justify-content: space-between;
-      .tools-viewed-trigger{
+      .tools-viewed-trigger {
         position: relative;
         cursor: pointer;
-        .tools-viewed-list{
+        .tools-viewed-list {
           z-index: 3;
           position: absolute;
           top: 28px;
@@ -247,7 +270,7 @@ export default {
           box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
           display: flex;
           flex-direction: column;
-          .list-container{
+          .list-container {
             height: 90%;
             overflow-x: hidden;
             &::-webkit-scrollbar {
@@ -270,27 +293,27 @@ export default {
               background-color: #cccccc;
             }
           }
-          .close-rest-list{
+          .close-rest-list {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
           }
-          .tools-item{
+          .tools-item {
             padding: 10px;
             display: flex;
             justify-content: space-evenly;
             cursor: pointer;
-            >span{
-              &:nth-of-type(1){
+            > span {
+              &:nth-of-type(1) {
                 width: 100px;
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 overflow: hidden;
               }
             }
-            &.active{
+            &.active {
               color: blue;
               background: #ecf2fe;
             }
@@ -305,8 +328,9 @@ export default {
     overflow: hidden;
   }
 }
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;

@@ -75,13 +75,14 @@
       :selected="selected"
       :visible.sync="visible.setting"
       :loading="loading.setting"
+      :levels="levels"
       @submit="onBind"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingPointCols as cols } from '@/views/monitoring/utils'
 import QueryForm, { ILoading, IQuery } from './QueryForm.vue'
@@ -109,7 +110,9 @@ import {
   bindStandardAndSettings,
   submitPointSettings,
   IPointParam,
-  IPointThreshold
+  IPointThreshold,
+  getDictKeys,
+  IDictionary
 } from '@/views/monitoring/api'
 
 @Component({
@@ -117,6 +120,7 @@ import {
   components: { BaseTable, QueryForm, PointForm, PointThresholdForm, EnableForm, DismountForm }
 })
 export default class MonitoringPoints extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   cols = cols
 
   visible = { base: false, setting: false, enable: false, dismount: false }
@@ -128,6 +132,8 @@ export default class MonitoringPoints extends Vue {
   types: IDeviceType[] = []
 
   points: IPoint[] = []
+
+  levels: IDictionary[] = []
 
   loading: ILoading = {
     query: false,
@@ -182,6 +188,7 @@ export default class MonitoringPoints extends Vue {
       if (result) {
         this.visible.base = false
         this.doQuery()
+        this.preparing()
       }
     } catch (error) {
       console.log(error)
@@ -194,11 +201,11 @@ export default class MonitoringPoints extends Vue {
     try {
       const { result: baseSettings } = await bindStandardAndSettings(param)
       this.$message[baseSettings ? 'success' : 'error'](`监测点基础配置${baseSettings ? '成功!' : '失败!'}`)
-
       const { result } = await submitPointSettings(
-        threshold.map<IPointThreshold>(({ paraId, ...rest }) => {
-          const oldParam = baseSettings.find((item) => item.indicateParaId === paraId)
-          return { ...rest, paraId: oldParam ? oldParam.id : paraId }
+        threshold.map<IPointThreshold>(({ id, paraId, ...rest }) => {
+          const { id: newParaId } =
+            baseSettings.find((item) => item.indicateParaId === paraId || item.id === paraId) || {}
+          return { ...rest, id, paraId: newParaId || paraId }
         })
       )
 
@@ -325,11 +332,31 @@ export default class MonitoringPoints extends Vue {
       console.log(error)
     }
   }
+  async getLevels() {
+    try {
+      const values = await getDictKeys()
+      this.levels = (values as IDictionary[]) || []
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
-  mounted() {
-    this.doQuery()
+  preparing() {
+    this.getLevels()
     this.getAllTypes()
     this.getGroupsAndSections()
+  }
+
+  mounted() {
+    this.preparing()
+    this.doQuery()
+  }
+
+  @Watch('isActive')
+  refetchData(active: boolean) {
+    if (active) {
+      this.preparing()
+    }
   }
 }
 </script>

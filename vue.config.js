@@ -91,7 +91,6 @@ module.exports = {
         staticPub: resolve('public')
       }
     },
-    // devtool: '#eval-source-map',
     plugins: [
       // 压缩代码
       new CompressionWebpackPlugin({

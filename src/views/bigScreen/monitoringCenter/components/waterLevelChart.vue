@@ -15,7 +15,9 @@ export default {
         }
     },
     mounted(){
-        this.showChart()
+        this.$nextTick(()=>{
+            this.showChart()
+        })
     },
     methods:{
         showChart(){

@@ -1,50 +1,215 @@
 <template>
     <div class="widget-bigScreenBaseMap">
-        <div class="mapView" :id="mapTarget"></div>
+        <MapView />
+        <!--巡查人员信息弹窗-->
+        <InfoPopup
+            ref="inspectorsPopup"
+            :mapView="view"
+            :popupPosition="inspectorsPosition"
+            :styleData="inspectorsCardStyle"
+        >
+            <InspectorsCard />
+        </InfoPopup>
+        <!--汛情上报信息弹窗-->
+        <InfoPopup
+            ref="floodReportPopup"
+            :mapView="view"
+            :popupPosition="floodReportPosition"
+            :styleData="floodReportCardStyle"
+        >
+            <FloodReportCard />
+        </InfoPopup>
+        <!--易涝点视频信息弹窗-->
+        <InfoPopup
+            ref="floodProneVideoPopup"
+            :mapView="view"
+            :popupPosition="videoPosition"
+            :styleData="floodProneVideoCardStyle"
+        >
+            <FloodProneVideoCard v-on="$listeners"/>
+        </InfoPopup>
     </div>
 </template>
 
 <script>
-import Map from 'ol/Map'
-import View from 'ol/View'
-import { appconfig } from 'staticPub/config'
-import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
+import { Vector as VectorSource } from "ol/source";
+import { Vector as VectorLayer } from "ol/layer";
+import Feature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import {
+  Style,
+  Circle,
+  Icon,
+  Fill,
+  RegularShape,
+  Stroke,
+  Text
+} from 'ol/style';
+import MapView from './components/mapView.vue'
+import InfoPopup from './components/infoPopup.vue'
+import InspectorsCard from './components/infoCard/inspectorsCard.vue'
+import FloodReportCard from './components/infoCard/floodReportCard.vue'
+import FloodProneVideoCard from './components/infoCard/floodProneVideoCard.vue'
+import config from './config.json'
 export default {
     name:'bigScreenBaseMap',//大屏背景地图
+    components:{
+        MapView,
+        InfoPopup,
+        InspectorsCard,
+        FloodReportCard,
+        FloodProneVideoCard
+    },
+    props:{
+        fontSize:{
+            type:Function,
+            default:()=>{
+                return Function
+            }
+        }
+    },
     data(){
         return{
             view:null,
-            mapTarget:'bigScreenBaseMap',
+            mapEvent:"",//地图事件
+
+            vectorSource:null,
+            vectorLayer:null,
+            featureList:[
+                {
+                    type:"工程车辆",
+                    position:[
+                        101.71269021536666,
+                        26.584189390793085
+                    ],
+                    info:{}
+                },
+                {
+                    type:"巡检人员",
+                    position:[
+                        101.72248091953819,
+                        26.58450934844575
+                    ],
+                    info:{}
+                },
+                {
+                    type:"视频",
+                    position:[
+                        101.71708430046324,
+                        26.580627195593422
+                    ],
+                    info:{}
+                },
+            ],
+            //弹窗位置
+            inspectorsPosition:null,
+            floodReportPosition:null,
+            videoPosition:null,
+            //信息卡弹窗样式
+            inspectorsCardStyle:config.inspectorsCardStyle,
+            floodReportCardStyle:config.floodReportCardStyle,
+            floodProneVideoCardStyle:config.floodProneVideoCardStyle,
+        }
+    },
+    watch:{
+        view(){
+            this.initMapEvent();
+            this.initVectorLayer();
         }
     },
     mounted(){
-        this.$nextTick(()=>{
-            this.initMap()
-        })
+
     },
     methods:{
-        initMap(){
-            let { initCenter, initZoom } = appconfig
-            this.view = new Map({
-                target: this.mapTarget,
-                view: new View({
-                    center: initCenter,
-                    zoom: initZoom,
-                    maxZoom: 20,
-                    minZoom: 9,
-                    projection: 'EPSG:4326'
-                })
-            })
-            this.$parent.view=this.view
-            this.addLayers();
+        //初始化地图事件
+        initMapEvent(){
+            //地图单击事件
+            let gl = this;
+            this.mapEvent=this.view.on('singleclick', function (evt) {
+                let pixel = gl.view.getEventPixel(evt.originalEvent)
+                gl.view.forEachFeatureAtPixel(pixel,function(feature){
+                    gl.handleClick(feature.getProperties())
+                });
+            });
         },
-        addLayers(){
-            let layersSource = appconfig.gisResource['iserver_resource'].layerService.layers
-            new TF_Layer().createLayers(layersSource).then(layers => {
-                layers.forEach(layer => {
-                    layer && this.view.addLayer(layer)
-                })
+        //初始化矢量图层源
+        initVectorLayer(){
+            // 矢量图层源
+            this.vectorSource = new VectorSource({
+                wrapX: false,
+            });
+            //创建矢量层
+            this.vectorLayer = new VectorLayer({
+                source: this.vectorSource
+            });
+            //将图层添加到地图中
+            this.view.addLayer(this.vectorLayer);
+            this.showMapFeatureInfo()
+        },
+        //显示地图要素
+        showMapFeatureInfo(){
+            this.featureList.forEach((item)=>{
+                const {type,position,info}=item
+                this.showPointSymbol(type,position,info)
             })
+        },
+        //显示点符号
+        showPointSymbol(type,position,info){
+            // this.vectorSource.clear()
+            //创建Feature，并添加进矢量容器中
+            const feature = new Feature({
+                geometry: new Point(position),
+                name:type,
+                info
+            });
+            //创建标记的样式
+            feature.setStyle(this.setFeatureStyle(type));
+            this.vectorSource.addFeature(feature);
+        },
+        //地图点击回调 @data 要素信息
+        handleClick(data){
+            const {geometry,info,name}=data;
+            switch(name){
+                case '工程车辆':
+                    this.inspectorsPosition=[...geometry.flatCoordinates];
+                    break;
+                case '巡检人员':
+                    this.floodReportPosition=[...geometry.flatCoordinates];
+                    break;
+                case '视频':
+                    this.videoPosition=[...geometry.flatCoordinates];
+                    break;
+            }
+        },
+        //为要素设置样式
+        setFeatureStyle(type) {
+            switch(type){
+                case '工程车辆':return new Style({
+                            image: new Icon({
+                                anchor: [0.5, 0.7],
+                                scale:0.7,
+                                //图标的url
+                                src: require('@/views/bigScreen/baseMap/images/工程车辆.png')
+                            })
+                        });
+                case '巡检人员':return new Style({
+                            image: new Icon({
+                                anchor: [0.5, 0.7],
+                                scale:0.7,
+                                //图标的url
+                                src: require('@/views/bigScreen/baseMap/images/巡查人员.png')
+                            })
+                        });
+                case '视频':return new Style({
+                            image: new Icon({
+                                anchor: [0.5, 0.7],
+                                scale:0.7,
+                                //图标的url
+                                src: require('@/views/bigScreen/baseMap/images/视频.png')
+                            })
+                        });
+            }
+
         },
     }
 }
@@ -60,18 +225,5 @@ export default {
     top: 0;
     left: 0;
     // background: #000;
-    filter: invert(100%) hue-rotate(180deg);//实现天地图从白色变成暗黑模式的地图服务
-    -webkit-filter: invert(100%) hue-rotate(180deg);
-    .mapView{
-        height: 100%;
-        width: 100%;
-        /**地图控件隐藏 */
-        /deep/ .ol-zoom {
-            display: none !important;
-        }
-        /deep/ .ol-attribution {
-            display: none !important;
-        }
-    }
 }
 </style>

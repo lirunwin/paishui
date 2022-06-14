@@ -69,7 +69,7 @@ export default {
     $size20:.104167rem /* 20/192 */;
     z-index: 2;
     //position
-    top:.677083rem /* 130/192 */;
+    top:.505208rem /* 97/192 */;
     margin-right: 2.34375rem /* 450/192 */;
     position: absolute;
     right: 0;
@@ -121,6 +121,7 @@ export default {
                     font-size: .083333rem /* 16/192 */;
                     font-weight: 500;
                     color: #2BA7FF;
+                    white-space: nowrap;
                 }
                 .close{
                     display: flex;

@@ -1,30 +1,57 @@
 <template>
   <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData">
-    <el-form-item label="监测站点" prop="no">
+    <el-form-item label="设备类型" prop="indicateNames">
+      <el-select
+        v-model="formData.deviceType"
+        placeholder="请选择设备类型"
+        size="small"
+        clearable
+        @change="onDeviceTypeChange"
+      >
+        <el-option v-for="param of deviceTypes" :value="param.id" :key="param.id" :label="param.name" />
+      </el-select>
+    </el-form-item>
+    <el-form-item label="监测站点" prop="siteId">
       <el-row type="flex">
         <el-col>
-          <el-input v-model="formData.sites" placeholder="请输入监测站点" size="small" clearable />
+          <el-select v-model="formData.siteId" placeholder="请选监测点" size="small" clearable multiple>
+            <el-option v-for="point of points" :value="point.id" :key="point.id" :label="point.name">
+              {{ point.name }} | {{ point.code }}
+            </el-option>
+          </el-select>
         </el-col>
-        <div><el-button type="warning" size="small" style="margin-left:1em">图上选点</el-button></div>
+        <div>
+          <el-button type="warning" size="small" style="margin-left:1em">图上选点</el-button>
+        </div>
       </el-row>
     </el-form-item>
-    <el-form-item label="指标参数" prop="param">
-      <el-input v-model="formData.param" placeholder="请输入指标参数" size="small" clearable />
+    <el-form-item label="监测指标" prop="indicateNames">
+      <el-select v-model="formData.indexCode" placeholder="请选择监测指标" size="small" clearable multiple>
+        <el-option v-for="param of params" :value="param.code" :key="param.id" :label="param.name">
+          {{ param.name }} | {{ param.code }}
+        </el-option>
+      </el-select>
     </el-form-item>
     <el-form-item label="采集时间" prop="date">
       <el-date-picker
         v-model="formData.date"
-        placeholder="请选择采集时间"
+        type="daterange"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+        range-separator="~"
+        style="width: 100%"
+        format="yyyy-MM-dd"
         size="small"
+        arrow-control
         clearable
         value-format="yyyy-MM-dd"
       />
     </el-form-item>
     <el-form-item label="统计方式" prop="type">
-      <el-radio-group v-model="formData.type">
-        <el-radio :label="3">实时监测</el-radio>
-        <el-radio :label="6">按每15分钟均值</el-radio>
-        <el-radio :label="9">按每小时均值</el-radio>
+      <el-radio-group v-model="formData.status">
+        <el-radio label="0">实时监测</el-radio>
+        <el-radio label="1">按每15分钟均值</el-radio>
+        <el-radio label="2">按每小时均值</el-radio>
       </el-radio-group>
     </el-form-item>
     <el-form-item label="统计图剔除" class="besides">
@@ -76,31 +103,42 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { Vue, Component, Prop, Emit, Watch } from 'vue-property-decorator'
+import { IDeviceType, IPoint, IReportDetailQuery, pointsPage } from '../../api'
 interface IBesides {
   from: string
   to: string
   checked: boolean
 }
+
+interface IFormData {
+  besides: [IBesides, IBesides][]
+  date: string[]
+  siteId: number[] | string[]
+  indexCode: string[]
+  status: string
+  deviceType: (number | string)[]
+}
+
 @Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
   @Prop({ type: Boolean, default: false }) loading!: boolean
-
-  @Prop({ type: Array, default: () => [] }) selected!: { id?: string }[]
+  @Prop({ type: Object, default: () => ({}) }) defaultQuery!: IReportDetailQuery
+  @Prop({ type: Array, default: () => [] }) points!: IPoint[]
+  @Prop({ type: Array, default: () => [] }) deviceTypes!: IDeviceType[]
 
   getDefaultBeside(): [IBesides, IBesides] {
     return [{ from: '', to: '', checked: true }, { from: '', to: '', checked: true }]
   }
 
-  formData: {
-    besides: [IBesides, IBesides][]
-    [key: string]: any
-  } = {
-    besides: [this.getDefaultBeside()]
-  }
+  params = []
 
-  get ids() {
-    return this.selected.map((item) => item.id)
+  formData: Partial<IFormData> = {
+    besides: [this.getDefaultBeside()],
+    date: [],
+    siteId: [],
+    indexCode: [],
+    status: '0'
   }
 
   onQuery() {
@@ -116,11 +154,36 @@ export default class QueryForm extends Vue {
     this.$emit('query', data)
   }
 
+  async onDeviceTypeChange(deviceTypeId: number | string, asd) {
+    console.log(deviceTypeId, asd)
+    try {
+      const {
+        result: { records }
+      } = await pointsPage({ deviceTypeId, current: 1, size: 9999999 })
+      this.points = records
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   onAdd(rowIndex) {
     if (rowIndex === this.formData.besides.length - 1) {
       this.formData = { ...this.formData, besides: [...this.formData.besides, this.getDefaultBeside()] }
     } else {
       this.formData = { ...this.formData, besides: this.formData.besides.filter((_, index) => index !== rowIndex) }
+    }
+  }
+
+  @Watch('defaultQuery')
+  onDefaultQuery(query) {
+    const { beginTime, siteId, indexCode, endTime, status } = query
+    this.formData = {
+      ...this.defaultQuery,
+      date: [beginTime || '', endTime || ''],
+      siteId: siteId ? [String(siteId)] : [],
+      indexCode: indexCode ? [String(indexCode)] : [],
+      status: String(status || '') || '0',
+      besides: [...this.formData.besides]
     }
   }
 }
@@ -140,6 +203,9 @@ export default class QueryForm extends Vue {
       min-width: 180px;
       max-width: calc(100% - 20px);
     }
+  }
+  >>> .el-form-item {
+    margin-bottom: 15px;
   }
 }
 </style>

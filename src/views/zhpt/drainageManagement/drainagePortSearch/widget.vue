@@ -81,7 +81,6 @@
     <common-popup 
     ref="commonPopup"
     :mapView="view"
-    :popupShow="popupShow" 
     :popupPosition="popupPosition"
     :popupTitle="popupTitle"
     :headerStyle="hstyle"
@@ -89,6 +88,7 @@
     :isSetCenter="true"
     :operationGroup="operationGroup"
     @detail="detailInfo()"
+    @close="closePopup()"
     >
     <div class="drainagePortInfo">
         <div class="infoTerm"><div>排放口编码</div><div>{{detail.prjNo}}</div></div>
@@ -169,7 +169,6 @@ export default {
             expXls:'/psjc/outfall/export',
             //地图弹窗
             mapEvent:null,
-            popupShow:false,
             popupPosition:null,
             popupTitle:null,
             view:null,
@@ -332,7 +331,6 @@ export default {
             this.showPointSymbol(info,center)
         },
         showInfoPop(info,center){
-            this.popupShow=true
             this.popupPosition=center
             this.popupTitle=`（${info.type}排放口）${info.address}`;
             let dinfo={};
@@ -382,6 +380,9 @@ export default {
         },
         detailInfo(){
             
+        },
+        closePopup(){
+            console.log('关闭弹窗')
         }
     },
     beforeDestroy(){

@@ -52,8 +52,8 @@
     >
       <template v-for="(item, index) of monitorItems" v-slot:[`action-${index}`]>
         <div :key="`index-${item.id}`">
-          <el-button type="text" icon="el-icon-location" size="small" @click="() => onShowPopup(item)" />
-          <el-button type="text" icon="el-icon-data-analysis" size="small" />
+          <el-button type="text" icon="iconfont icondingwei1" size="small" @click="() => onShowPopup(item)" />
+          <el-button type="text" icon="iconfont icontjfx" size="small" @click="() => goTo(item)" />
         </div>
       </template>
     </BaseTable>
@@ -61,14 +61,14 @@
       v-for="key of popupIds"
       :key="key"
       :ref="`popup-${key}`"
-      :popupPosition="popup[key].coordinate"
-      :mapView="popup[key].map"
-      :isSetCenter="popup[key].center"
+      :popupPosition="popups[key].coordinate"
+      :mapView="popups[key].map"
+      :isSetCenter="popups[key].center"
       @close="() => onPopupClose(key)"
     >
       <InfoCard
         @distribute="onDistribute"
-        :data="popup[key].data"
+        :data="popups[key].data"
         :colors="levelColors"
         :monitoring="Boolean(monitoring)"
       />
@@ -77,7 +77,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingMonitorCols } from '@/views/monitoring/utils'
@@ -111,12 +111,13 @@ interface IQuery {
 
 @Component({ name: 'Monitor', components: { BaseTitle, BaseTable, CommonPopup, InfoCard } })
 export default class Monitor extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   @Prop({ type: Object }) view!: Map
   formData: IQuery = { monitorStatus: ['0', '1', '2'], siteGroup: '', psArea: '', queryStr: undefined }
   query: IQuery = {}
   monitoring: 1 | 0 = 0
 
-  popup: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IMonitorItem } } = {}
+  popups: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IMonitorItem } } = {}
 
   settingMonitorCols = settingMonitorCols
 
@@ -136,8 +137,10 @@ export default class Monitor extends Vue {
 
   timer = null
 
+  fetchCount: number = 0
+
   get popupIds() {
-    return Object.keys(this.popup)
+    return Object.keys(this.popups)
   }
 
   cellStyle({ row, column }: { row: IMonitorItem; column: any }) {
@@ -161,8 +164,13 @@ export default class Monitor extends Vue {
       } = await monitorItemsPage({ ...queryCombine, monitorStatus: monitorStatus.join() })
       this.pagination = { current, size, total }
       this.monitorItems = records || []
+      this.fetchCount = 0
     } catch (error) {
       console.log(error)
+      if (this.fetchCount > 3) {
+        this.stopInterval()
+      }
+      this.fetchCount += 1
     }
     this.loading = false
   }
@@ -172,8 +180,8 @@ export default class Monitor extends Vue {
   }
 
   onPopupClose(id) {
-    const { [id]: closedItem, ...rest } = this.popup
-    this.popup = rest
+    const { [id]: closedItem, ...rest } = this.popups
+    this.popups = rest
   }
 
   async getGroupsAndSections() {
@@ -247,8 +255,8 @@ export default class Monitor extends Vue {
 
   onShowPopup(row: IMonitorItem, center: boolean = true) {
     const { coordiateX, coordiateY, id } = row || {}
-    this.popup = {
-      ...this.popup,
+    this.popups = {
+      ...this.popups,
       [String(id)]: {
         map: this.view,
         center,
@@ -260,15 +268,40 @@ export default class Monitor extends Vue {
 
   onDistribute() {}
 
-  mounted() {
-    this.onQueryChange()
+  preparing() {
     this.getGroupsAndSections()
     this.getLevelColors()
+  }
+
+  mounted() {
+    this.onQueryChange()
+    this.preparing()
   }
 
   beforeDestroy() {
     this.stopInterval()
     this.closeAllPopups()
+  }
+
+  goTo(item) {
+    const { id: siteId, code: indexCode } = item || {}
+    this.$store.dispatch('map/changeMethod', {
+      id: '/monitoring/report/detail',
+      type: 'gis',
+      widgetid: 'FullPanel',
+      label: '监测详情查看',
+      meta: {
+        title: '监测详情查看'
+      },
+      param: { siteId, indexCode }
+    })
+  }
+
+  @Watch('isActive')
+  refetchData(active: boolean) {
+    if (active) {
+      this.preparing()
+    }
   }
 }
 </script>

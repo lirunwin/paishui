@@ -9,14 +9,27 @@
                 <div class="title">
                     <div class="icon"></div>
                     <span class="site-info">易漏点水位监测统计</span>
-                    <el-select v-model="value" placeholder="请选择" size="mini">
+                    <el-select v-model="value" placeholder="请选择" size="mini" ref="date-select" > 
                         <el-option
                         v-for="item in options"
                         :key="item.value"
                         :label="item.label"
-                        :value="item.value">
+                        :value="item.label"
+                        @click.native="showDatePicker(item)">
                         </el-option>
                     </el-select>
+                    <div class="datePicker" v-if="isShowDatePicker">
+                        <el-date-picker
+                        size="mini"
+                        v-model="value2"
+                        type="daterange"
+                        align="right"
+                        unlink-panels
+                        range-separator="-"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期">
+                        </el-date-picker>
+                    </div>
                 </div>
             </div>
             <div class="content-info">
@@ -49,14 +62,27 @@ export default {
     },
     data(){
         return{
-            options: [{
+            isShowDatePicker:false,
+            options: [
+            {
                 value: '选项1',
                 label: '近24小时'
-            }, {
+            }, 
+            {
                 value: '选项2',
-                label: '近48小时'
-            }],
+                label: '近一周'
+            },
+            {
+                value: '选项3',
+                label: '最近一年'
+            },
+            {
+                value: '选项4',
+                label: '自定义'
+            },
+            ],
             value: '近24小时',
+            value2: [],
             siteList:[
                 {
                     name:'(1)',
@@ -78,12 +104,32 @@ export default {
                     })
                 }
             }
+        },
+        value2:{
+            handler(n,o){
+                if(n){
+                    // this.isShowDatePicker=false
+                }
+            },
         }
     },
     mounted(){
 
     },
     methods:{
+        showDatePicker(item){
+            this.isShowDatePicker=(item.label==='自定义')?true:false
+        },
+        //时间转换
+        timeConversion(date){
+            let time = new Date(date);
+            //getMonth()的返回值是0-11也就是从0开始而不是从1开始。所以一般都需要加一个1 才能达到1-12月。否则就成了0-11月了
+            return time.getFullYear()+'-'+this.formatTen((time.getMonth()+1))+'-'+this.formatTen(time.getDate())
+        },
+        //时间取0位
+        formatTen(num) { 
+            return num > 9 ? (num + "") : ("0" + num); 
+        }, 
     }
 }
 </script>
@@ -154,6 +200,18 @@ export default {
                     background: url("./images/三角下.png") no-repeat center center;
                     background-size: 100% 100%;
                     transform: rotate(180deg);
+                }
+            }
+            .datePicker{
+                position: absolute;
+                left: 1.041667rem /* 200/192 */;
+                top: .182292rem /* 35/192 */;
+                .el-range-editor--mini.el-input__inner {
+                    width: 1.041667rem /* 200/192 */;
+                    height: .145833rem /* 28/192 */;
+                }
+                /deep/ .el-date-editor .el-range-input{
+                    width: 100%;    
                 }
             }
         }

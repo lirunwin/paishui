@@ -1,5 +1,13 @@
 <template>
-  <BaseDialog width="450px" v-bind="$attrs" v-on="listeners" @submit="onSubmit" @open="onOpen" top="8vh">
+  <BaseDialog
+    width="450px"
+    v-bind="$attrs"
+    v-on="listeners"
+    @submit="onSubmit"
+    @open="onOpen"
+    @closed="onClosed"
+    top="8vh"
+  >
     <el-form class="form" ref="form" v-bind="{ labelWidth: '10em', size: 'medium' }" :model="formData">
       <el-form-item
         v-for="{ name, label, type, required = true, disabled, rules, on = {}, options, ...rest } of formItems"
@@ -81,6 +89,7 @@ export default class ParamForm extends Vue {
 
   $refs!: { form: ElForm }
   $listeners: { submit: Function; open: Function }
+  fetchingTypePrams = false
 
   get listeners() {
     const { submit, open, ...rest } = this.$listeners
@@ -104,7 +113,8 @@ export default class ParamForm extends Vue {
         rules: [{ required: true, message: '请选择参数名称', trigger: 'blur' }],
         size: 'small',
         options: this.typeParams.map(({ id: value, name, code }) => ({ value, label: `${name} | ${code}` })),
-        on: { change: this.onTypeParamChange }
+        on: { change: this.onTypeParamChange },
+        loading: this.fetchingTypePrams
       },
       {
         label: '单位',
@@ -258,18 +268,24 @@ export default class ParamForm extends Vue {
     })
   }
 
-  async onOpen(typeId = '') {
+  async onOpen() {
     if (!this.typeId) return
+    this.fetchingTypePrams = true
     try {
       const {
         result: { records }
-      } = await deviceTypeParamsPage({ typeId, current: 1, size: 9999999 })
+      } = await deviceTypeParamsPage({ typeId: this.typeId, current: 1, size: 9999999 })
       this.typeParams = records || []
       const { id: deviceTypeParaId } = (this.data || {}).deviceTypeParaVo || {}
       deviceTypeParaId && this.onTypeParamChange(deviceTypeParaId)
     } catch (error) {
       console.log(error)
     }
+    this.fetchingTypePrams = false
+  }
+  onClosed() {
+    this.typeParams = []
+    this.$emit('closed')
   }
 
   @Watch('data', { immediate: true })
