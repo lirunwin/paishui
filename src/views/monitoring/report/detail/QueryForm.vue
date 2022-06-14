@@ -1,13 +1,7 @@
 <template>
   <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData">
     <el-form-item label="设备类型" prop="indicateNames">
-      <el-select
-        v-model="formData.deviceType"
-        placeholder="请选择设备类型"
-        size="small"
-        clearable
-        @change="onDeviceTypeChange"
-      >
+      <el-select v-model="formData.deviceType" placeholder="请选择设备类型" size="small" clearable>
         <el-option v-for="param of deviceTypes" :value="param.id" :key="param.id" :label="param.name" />
       </el-select>
     </el-form-item>
@@ -27,9 +21,7 @@
     </el-form-item>
     <el-form-item label="监测指标" prop="indicateNames">
       <el-select v-model="formData.indexCode" placeholder="请选择监测指标" size="small" clearable multiple>
-        <el-option v-for="param of params" :value="param.code" :key="param.id" :label="param.name">
-          {{ param.name }} | {{ param.code }}
-        </el-option>
+        <el-option v-for="name of thresholdNames" :value="name" :key="name" :label="name" />
       </el-select>
     </el-form-item>
     <el-form-item label="采集时间" prop="date">
@@ -92,7 +84,7 @@
       type="primary"
       size="small"
       :loading="loading"
-      :disabled="loading"
+      :disabled="loading || !formData.siteId.length"
       icon="el-icon-search"
       @click="onQuery"
       style="width:100%"
@@ -103,8 +95,9 @@
 </template>
 
 <script lang="ts">
+import moment from 'moment'
 import { Vue, Component, Prop, Emit, Watch } from 'vue-property-decorator'
-import { IDeviceType, IPoint, IReportDetailQuery, pointsPage } from '../../api'
+import { configuredPointParamPage, IDeviceType, IPointConnectDevice, IReportDetailQuery, pointsPage } from '../../api'
 interface IBesides {
   from: string
   to: string
@@ -113,50 +106,79 @@ interface IBesides {
 
 interface IFormData {
   besides: [IBesides, IBesides][]
-  date: string[]
+  date: string[] | Date[]
   siteId: number[] | string[]
   indexCode: string[]
   status: string
   deviceType: (number | string)[]
 }
 
-@Component({ name: 'QueryForm' })
-export default class QueryForm extends Vue {
-  @Prop({ type: Boolean, default: false }) loading!: boolean
-  @Prop({ type: Object, default: () => ({}) }) defaultQuery!: IReportDetailQuery
-  @Prop({ type: Array, default: () => [] }) points!: IPoint[]
-  @Prop({ type: Array, default: () => [] }) deviceTypes!: IDeviceType[]
+const format = 'YYYY-MM-DD HH:mm:ss'
+const getDefaultBeside = (): [IBesides, IBesides] => {
+  return [{ from: '', to: '', checked: true }, { from: '', to: '', checked: true }]
+}
 
-  getDefaultBeside(): [IBesides, IBesides] {
-    return [{ from: '', to: '', checked: true }, { from: '', to: '', checked: true }]
-  }
-
-  params = []
-
-  formData: Partial<IFormData> = {
-    besides: [this.getDefaultBeside()],
-    date: [],
+const getDefaultFormData = (): Partial<IFormData> => {
+  return {
+    besides: [getDefaultBeside()],
+    date: [
+      moment()
+        .add(-7, 'day')
+        .startOf('day')
+        .toDate(),
+      moment()
+        .endOf('day')
+        .toDate()
+    ],
     siteId: [],
     indexCode: [],
     status: '0'
   }
+}
+
+@Component({ name: 'QueryForm' })
+export default class QueryForm extends Vue {
+  @Prop({ type: Boolean, default: false }) loading!: boolean
+  @Prop({ type: Object, default: () => ({}) }) defaultQuery!: IReportDetailQuery
+  @Prop({ type: Array, default: () => [] }) deviceTypes!: IDeviceType[]
+
+  params = []
+
+  formData: Partial<IFormData> = getDefaultFormData()
+  thresholdNames: string[] = []
+  points: IPointConnectDevice[] = []
 
   onQuery() {
-    const data = {
-      ...this.formData,
-      besides: this.formData.besides
-        .flat()
-        .filter(({ checked }) => {
-          return checked !== false
-        })
-        .map(({ from, to }) => `${from || 0},${to}`)
+    const { date, siteId, indexCode, status } = this.formData
+    const [startTime, endTime] = date || []
+    const query = {
+      siteId: siteId.join(),
+      indexCode: indexCode.join(),
+      status,
+      startTime: moment(startTime)
+        .startOf('day')
+        .format(format),
+      endTime: moment(endTime)
+        .endOf('day')
+        .format(format)
     }
-    this.$emit('query', data)
+    // const data = {
+    //   ...this.formData,
+    //   besides: this.formData.besides
+    //     .flat()
+    //     .filter(({ checked }) => {
+    //       return checked !== false
+    //     })
+    //     .map(({ from, to }) => `${from || 0},${to}`)
+    // }
+    this.$emit('query', query)
   }
 
-  async onDeviceTypeChange(deviceTypeId: number | string, asd) {
-    console.log(deviceTypeId, asd)
+  @Watch('formData.deviceType')
+  async onDeviceTypeChange(deviceTypeId: number | string) {
     try {
+      this.formData.siteId = []
+      this.formData.indexCode = []
       const {
         result: { records }
       } = await pointsPage({ deviceTypeId, current: 1, size: 9999999 })
@@ -166,9 +188,35 @@ export default class QueryForm extends Vue {
     }
   }
 
+  pointParamTimer = null
+  @Watch('formData.siteId')
+  onSiteIdChange(ids: (string | number)[]) {
+    try {
+      if (this.pointParamTimer) clearTimeout(this.pointParamTimer)
+      this.formData.indexCode = []
+
+      const deviceIds = this.points
+        .filter((item) => ids.map((i) => String(i)).includes(String(item.id)))
+        .map((point) => {
+          const { id } = (point.bindDevice || {}).deviceVo || {}
+          return id
+        })
+        .join()
+
+      this.pointParamTimer = setTimeout(async () => {
+        const {
+          result: { records }
+        } = await configuredPointParamPage({ deviceIds, current: 1, size: 9999999 })
+        this.thresholdNames = [...new Set(records.map((item) => item.name))]
+      }, 500)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   onAdd(rowIndex) {
     if (rowIndex === this.formData.besides.length - 1) {
-      this.formData = { ...this.formData, besides: [...this.formData.besides, this.getDefaultBeside()] }
+      this.formData = { ...this.formData, besides: [...this.formData.besides, getDefaultBeside()] }
     } else {
       this.formData = { ...this.formData, besides: this.formData.besides.filter((_, index) => index !== rowIndex) }
     }
@@ -177,14 +225,15 @@ export default class QueryForm extends Vue {
   @Watch('defaultQuery')
   onDefaultQuery(query) {
     const { beginTime, siteId, indexCode, endTime, status } = query
-    this.formData = {
-      ...this.defaultQuery,
-      date: [beginTime || '', endTime || ''],
-      siteId: siteId ? [String(siteId)] : [],
-      indexCode: indexCode ? [String(indexCode)] : [],
-      status: String(status || '') || '0',
-      besides: [...this.formData.besides]
-    }
+    if (siteId)
+      this.formData = {
+        ...this.defaultQuery,
+        date: [beginTime || '', endTime || ''],
+        siteId: siteId ? [String(siteId)] : [],
+        indexCode: indexCode ? [String(indexCode)] : [],
+        status: String(status || '') || '0',
+        besides: [...this.formData.besides]
+      }
   }
 }
 </script>

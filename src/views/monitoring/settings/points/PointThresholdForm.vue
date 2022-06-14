@@ -311,7 +311,7 @@ import {
   deviceTypeParamsPage,
   IStandardParam,
   standardParamsPage,
-  deleteConfiguredPointParam
+  deleteConfiguredPointThreshold
 } from '@/views/monitoring/api'
 
 interface IThreshold extends IPointThreshold {
@@ -551,7 +551,7 @@ export default class PointThresholdForm extends Vue {
   async onParamDel({ id }: IThreshold) {
     this.deletingParam = true
     try {
-      const { result } = await deleteConfiguredPointParam(id)
+      const { result } = await deleteConfiguredPointThreshold(id)
       if (result) this.$message[result ? 'success' : 'error'](`参数阈值配置删除${result ? '成功!' : '失败!'}`)
       if (result)
         this.formData = {

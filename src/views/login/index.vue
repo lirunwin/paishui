@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="company-name">
-      攀枝花城市排水综合管网管理平台
+      仁寿县管线管理信息平台
       <!-- <img src="./images/logo.png" /> -->
     </div>
     <div class="fill-container">

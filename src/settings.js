@@ -1,5 +1,4 @@
 module.exports = {
-
   /**
    * @type {boolean} true | false
    * @description 是否固定页眉
@@ -49,5 +48,5 @@ module.exports = {
   settings: true,
 
   // 系统名称
-  sysTitle: '攀枝花城市排水综合管网管理平台'
+  sysTitle: '仁寿县管线管理信息平台'
 }

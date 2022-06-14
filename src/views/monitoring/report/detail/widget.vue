@@ -5,16 +5,34 @@
         <div class="query">
           <div class="form">
             <base-title>查看设置</base-title>
-            <query-form @query="onQuery" :defaultQuery="param" :deviceTypes="deviceTypes" :points="points" />
+            <QueryForm
+              @query="onQuery"
+              :defaultQuery="{
+                ...param,
+                data: [
+                  $moment()
+                    .add(-7, 'day')
+                    .startOf('day')
+                    .toDate(),
+                  $moment()
+                    .endOf('day')
+                    .toDate()
+                ]
+              }"
+              :deviceTypes="deviceTypes"
+              :points="points"
+            />
           </div>
           <div class="map">
             <base-title>
               <el-row type="flex" justify="space-between" align="middle">
                 <span>监测站点地图</span>
-                <el-checkbox-group v-model="display">
-                  <el-checkbox label="all">显示所有监测点</el-checkbox>
-                  <el-checkbox label="selected">显示选中监测点</el-checkbox>
-                </el-checkbox-group>
+                <div class="map-checkbox">
+                  <el-checkbox-group v-model="display">
+                    <el-checkbox label="all">显示所有监测点</el-checkbox>
+                    <el-checkbox label="selected">显示选中监测点</el-checkbox>
+                  </el-checkbox-group>
+                </div>
               </el-row>
             </base-title>
           </div>
@@ -26,10 +44,12 @@
             <base-title>
               <el-row type="flex" align="middle">
                 <span style="margin-right:40px;">监测曲线</span>
-                <el-checkbox-group v-model="merge">
-                  <el-checkbox label="point">按监测点融合展示</el-checkbox>
-                  <el-checkbox label="param">按指标融合展示</el-checkbox>
-                </el-checkbox-group>
+                <div cla>
+                  <el-checkbox-group v-model="merge">
+                    <el-checkbox label="point">按监测点融合展示</el-checkbox>
+                    <el-checkbox label="param">按指标融合展示</el-checkbox>
+                  </el-checkbox-group>
+                </div>
               </el-row>
             </base-title>
           </div>
@@ -55,6 +75,9 @@
               style="width:100%"
             />
           </div>
+          <pre>
+            {{ JSON.stringify(detail, null, 2) }}
+          </pre>
         </div>
       </el-col>
     </el-row>
@@ -66,22 +89,52 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import QueryForm from './QueryForm.vue'
 import BaseTitle from '../../components/BaseTitle/index.vue'
 import {
-  deviceTypeParamsPage,
   deviceTypesPage,
   fetchReportDetail,
   IDeviceTypeParam,
   IPoint,
-  IReportDetailQuery,
-  pointsPage
+  IReportDetail,
+  IReportDetailQuery
 } from '../../api'
 import { defaultValuesForMonitorStandardLevel } from '@/utils/constant'
+
+interface IDetail {
+  info?: {
+    id: string
+    name: string
+  }
+  data?: {
+    [x: string]: (IReportDetail & { siteId: string })[]
+  }
+}
+
+const getDefaultMapData = ({ title, names }: { title: string; names: string[] }) => {
+  return {
+    title: { text: title },
+    tooltip: { trigger: 'axis' },
+    calculable: true,
+    yAxis: [{ type: 'value' }],
+    xAxis: [{ type: 'category', boundaryGap: false }],
+    legend: { data: names },
+    toolbox: {
+      show: true,
+      feature: {
+        mark: { show: true },
+        dataView: { show: true, readOnly: false },
+        magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
+        restore: { show: true },
+        saveAsImage: { show: true }
+      }
+    }
+  }
+}
 
 @Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle } })
 export default class ReportDetail extends Vue {
   @Prop({ type: Object, default: () => ({}) }) param!: IReportDetailQuery
   @Prop({ type: Boolean }) isActive!: boolean
-  display = []
-  merge = []
+  display: ('all' | 'selected')[] = ['all', 'selected']
+  merge: ('point' | 'param')[] = ['point', 'param']
 
   get markLine() {
     return defaultValuesForMonitorStandardLevel.map(({ notes: name, color, codeValue }) => {
@@ -102,142 +155,83 @@ export default class ReportDetail extends Vue {
     })
   }
 
-  lines = {
-    title: {
-      text: '化学需氧量（单位：mg/L）'
-      // subtext: '纯属虚构'
-    },
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: 'rgba(50,50,50,0.7)'
-    },
-    legend: {
-      data: ['意向', '预购', '成交']
-    },
-    toolbox: {
-      show: true,
-      feature: {
-        mark: { show: true },
-        dataView: { show: true, readOnly: false },
-        magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
-        restore: { show: true },
-        saveAsImage: { show: true }
+  get lines() {
+    /** 按监测点融合展示, 按指标融合展示: 多监测点, 多指标 */
+    if (this.merge.includes('point') && this.merge.includes('param')) {
+      return {
+        ...getDefaultMapData({ title: '', names: [] }),
+        dataset: {
+          dimensions: ['scadaTime', 'itstrVal'],
+          source: Object.keys(this.detail)
+            .map((key) => {
+              return this.detail[key].map(({ itcdName, ...rest }) => {
+                return { ...rest, itcdName: `${String(key).split('-')[1]}-${itcdName}` }
+              })
+            })
+            .flat()
+        },
+        series: [{ type: 'line' }]
       }
-    },
-    calculable: true,
-    xAxis: [
-      {
-        type: 'category',
-        boundaryGap: false,
-        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-      }
-    ],
-    yAxis: [{ type: 'value' }],
-    series: [
-      {
-        name: '成交',
-        type: 'line',
-        smooth: true,
-        itemStyle: { normal: { areaStyle: { type: 'default' } } },
-        data: [10, 12, 21, 54, 260, 830, 710]
-      },
-      {
-        name: '预购',
-        type: 'line',
-        smooth: true,
-        itemStyle: { normal: { areaStyle: { type: 'default' } } },
-        data: [30, 182, 434, 791, 390, 30, 10]
-      },
-      {
-        name: '意向',
-        type: 'line',
-        smooth: true,
-        itemStyle: { normal: { areaStyle: { type: 'default' } } },
-        data: [1320, 1132, 601, 234, 120, 90, 20],
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          lineStyle: {
-            type: 'dashed',
-            color: '#ccc',
-            width: 1
-          },
-          data: [
-            {
-              yAxis: '1000',
-              lineStyle: { color: '#F65252' },
-              label: {
-                color: '#fff',
-                formatter: '严重>1000',
-                fontSize: 12,
-                backgroundColor: '#F65252',
-                padding: 5,
-                distance: 1,
-                position: 'insideEndTop',
-                borderRadius: 2
-              }
-            },
-            {
-              yAxis: '800',
-              lineStyle: { color: '#f25fff' },
-              label: {
-                color: '#fff',
-                formatter: '中度>800',
-                fontSize: 12,
-                backgroundColor: '#f25fff',
-                padding: 5,
-                distance: 1,
-                position: 'insideEndTop',
-                borderRadius: 2
-              }
-            },
-            {
-              yAxis: '400',
-              lineStyle: { color: '#E6A23C' },
-              label: {
-                color: '#fff',
-                formatter: '轻度>400',
-                fontSize: 12,
-                backgroundColor: '#E6A23C',
-                padding: 5,
-                distance: 1,
-                position: 'insideEndTop',
-                borderRadius: 2
-              }
-            },
-            {
-              yAxis: '200',
-              lineStyle: { color: '#67C23A' },
-              label: {
-                color: '#fff',
-                formatter: '优质>200',
-                fontSize: 12,
-                backgroundColor: '#67C23A',
-                padding: 5,
-                distance: 1,
-                position: 'insideEndTop',
-                borderRadius: 2
-              }
-            }
-          ]
+    } else if (this.merge.includes('point')) {
+      // 按监测点融合展示: 多监测点, 1指标
+    } else if (this.merge.includes('param')) {
+      // 按指标融合展示: 1监测点 多指标
+    }
+    return {
+      ...getDefaultMapData({ title: '', names: [] }),
+      series: [
+        {
+          name: '成交',
+          type: 'line',
+          smooth: true,
+          itemStyle: { normal: { areaStyle: { type: 'default' } } },
+          data: [10, 12, 21, 54, 260, 830, 710],
+          markLine: {}
+        },
+        {
+          name: '预购',
+          type: 'line',
+          smooth: true,
+          itemStyle: { normal: { areaStyle: { type: 'default' } } },
+          data: [30, 182, 434, 791, 390, 30, 10],
+          markLine: {}
+        },
+        {
+          name: '意向',
+          type: 'line',
+          smooth: true,
+          itemStyle: { normal: { areaStyle: { type: 'default' } } },
+          data: [1320, 1132, 601, 234, 120, 90, 20],
+          markLine: {}
         }
-      }
-    ]
+      ]
+    }
   }
   query = {}
   points: IPoint[] = []
   loading = false
-  detail = {}
+  detail: IDetail[] = []
+
   deviceTypes: IDeviceTypeParam[] = []
 
   async doQuery() {
-    console.log(JSON.stringify(this.query, null, 2))
     this.loading = true
     try {
-      const {
-        result: { records }
-      } = await fetchReportDetail(this.query)
-      this.detail = records
+      const { result } = await fetchReportDetail(this.query)
+      this.detail = Object.keys(result).map<IDetail>((key) => {
+        const [id, name] = String(key).split('-')
+        return {
+          info: { id, name },
+          data: result[key].reduce<IDetail['data']>((acc, current) => {
+            const { deviceCode, itcdName, siteName: temp, ...rest } = current
+            const [siteId, siteName] = String(temp).split('-')
+            const dataKey = `${deviceCode}-${itcdName}`
+            acc[dataKey] = [...(acc[dataKey] || []), { ...rest, deviceCode, itcdName, siteId, siteName }]
+            return acc
+          }, {})
+        }
+      })
+      console.log(this.detail)
     } catch (error) {
       console.log(error)
     }
@@ -272,8 +266,15 @@ export default class ReportDetail extends Vue {
 
   @Watch('param', { immediate: true })
   onQuery(param) {
-    this.query = { ...param }
-    this.doQuery()
+    if (param.siteId) {
+      this.query = { ...param }
+      this.doQuery()
+    }
+  }
+
+  @Watch('lines', { immediate: true })
+  log(lines) {
+    console.log(this.detail, lines)
   }
 }
 </script>
@@ -299,6 +300,20 @@ export default class ReportDetail extends Vue {
     .map {
       margin-top: 20px;
       white-space: nowrap;
+    }
+    .map-checkbox {
+      flex: 1 1 auto;
+      text-align: right;
+      >>> .el-checkbox-group {
+        margin-left: 10px;
+        display: inline-flex;
+        flex-wrap: wrap;
+        margin-top: -10px;
+        margin-bottom: -10px;
+        .el-checkbox {
+          margin-right: 10px;
+        }
+      }
     }
   }
   .chart {
