@@ -9,15 +9,7 @@
               @query="onQuery"
               :defaultQuery="{
                 ...param,
-                data: [
-                  $moment()
-                    .add(-7, 'day')
-                    .startOf('day')
-                    .toDate(),
-                  $moment()
-                    .endOf('day')
-                    .toDate()
-                ]
+                data: [$moment().add(-7, 'day').startOf('day').toDate(), $moment().endOf('day').toDate()]
               }"
               :deviceTypes="deviceTypes"
               :points="points"
@@ -43,7 +35,7 @@
           <div class="title">
             <base-title>
               <el-row type="flex" align="middle">
-                <span style="margin-right:40px;">监测曲线</span>
+                <span style="margin-right: 40px">监测曲线</span>
                 <div cla>
                   <el-checkbox-group v-model="merge">
                     <el-checkbox label="point">按监测点融合展示</el-checkbox>
@@ -63,17 +55,7 @@
                 <el-button type="text" icon="el-icon-download" />
               </span>
             </el-row> -->
-            <v-chart
-              :options="lines"
-              autoresize
-              theme="ovilia-green"
-              :loading-options="{
-                text: 'Loading…',
-                color: '#4ea397',
-                maskColor: 'rgba(255, 255, 255, 0.4)'
-              }"
-              style="width:100%"
-            />
+            <v-chart :options="lines" autoresize style="width: 100%" />
           </div>
           <pre>
             {{ JSON.stringify(detail, null, 2) }}
@@ -88,6 +70,7 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import QueryForm from './QueryForm.vue'
 import BaseTitle from '../../components/BaseTitle/index.vue'
+import Echarts from '../../components/Echarts/index.vue'
 import {
   deviceTypesPage,
   fetchReportDetail,
@@ -108,14 +91,18 @@ interface IDetail {
   }
 }
 
-const getDefaultMapData = ({ title, names }: { title: string; names: string[] }) => {
+const getDefaultMapData = ({ title, names }: { title: string; names?: string[] }) => {
   return {
     title: { text: title },
     tooltip: { trigger: 'axis' },
     calculable: true,
     yAxis: [{ type: 'value' }],
     xAxis: [{ type: 'category', boundaryGap: false }],
-    legend: { data: names },
+    dataZoom: [
+      { type: 'inside', start: 0, end: 100 },
+      { start: 0, end: 100 }
+    ],
+    // legend: { data: names },
     toolbox: {
       show: true,
       feature: {
@@ -129,7 +116,7 @@ const getDefaultMapData = ({ title, names }: { title: string; names: string[] })
   }
 }
 
-@Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle } })
+@Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle, Echarts } })
 export default class ReportDetail extends Vue {
   @Prop({ type: Object, default: () => ({}) }) param!: IReportDetailQuery
   @Prop({ type: Boolean }) isActive!: boolean
@@ -159,18 +146,35 @@ export default class ReportDetail extends Vue {
     /** 按监测点融合展示, 按指标融合展示: 多监测点, 多指标 */
     if (this.merge.includes('point') && this.merge.includes('param')) {
       return {
-        ...getDefaultMapData({ title: '', names: [] }),
-        dataset: {
-          dimensions: ['scadaTime', 'itstrVal'],
-          source: Object.keys(this.detail)
-            .map((key) => {
-              return this.detail[key].map(({ itcdName, ...rest }) => {
-                return { ...rest, itcdName: `${String(key).split('-')[1]}-${itcdName}` }
-              })
+        ...getDefaultMapData({ title: '' }),
+        dataset: this.detail
+          .map(({ info: { name }, data }) => {
+            return Object.keys(data).map((key) => {
+              return {
+                id: `${name}-${key}`,
+                dimensions: ['scadaTime', 'itstrVal'],
+                source: data[key]
+              }
             })
-            .flat()
-        },
-        series: [{ type: 'line' }]
+          })
+          .flat(),
+        series: this.detail
+          .map(({ info: { name }, data }) => {
+            return Object.keys(data).map((key) => {
+              return {
+                name: `${name}-${key}`,
+                type: 'line',
+                symbol: 'none'
+              }
+            })
+          })
+          .flat()
+          .map((item, index) => {
+            return {
+              datasetIndex: index,
+              ...item
+            }
+          })
       }
     } else if (this.merge.includes('point')) {
       // 按监测点融合展示: 多监测点, 1指标
@@ -225,7 +229,7 @@ export default class ReportDetail extends Vue {
           data: result[key].reduce<IDetail['data']>((acc, current) => {
             const { deviceCode, itcdName, siteName: temp, ...rest } = current
             const [siteId, siteName] = String(temp).split('-')
-            const dataKey = `${deviceCode}-${itcdName}`
+            const dataKey = `${itcdName}`
             acc[dataKey] = [...(acc[dataKey] || []), { ...rest, deviceCode, itcdName, siteId, siteName }]
             return acc
           }, {})
