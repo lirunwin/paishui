@@ -9,7 +9,9 @@
         {"value": "9","label": "申请作废"},
         {"value": "8","label": "计划已暂停"},
         {"value": "10","label": "计划已作废"},
-        {"value": "5","label": "已开始未执行"}
+        {"value": "5","label": "已开始未执行"},
+        {"value": "11","label": "计划未完成,已超时"},
+        {"value": "12","label": "未到开始时间，不可执行"}
     ],
     "planHeader":{
         "xj":[                    
