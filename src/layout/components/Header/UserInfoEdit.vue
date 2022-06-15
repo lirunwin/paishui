@@ -39,7 +39,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="个性签名" label-width="7.5rem" style="margin-bottom: 15px">
+          <el-form-item label="个性签名" label-width="7.5em" style="margin-bottom: 15px">
             <!-- :data="upLoadData" -->
             <el-upload
               class="avatar-uploader"
@@ -52,7 +52,7 @@
               <i v-else class="el-icon-plus avatar-uploader-icon el-upload" />
             </el-upload>
           </el-form-item>
-          <el-form-item label="头像" label-width="7.5rem">
+          <el-form-item label="头像" label-width="7.5em">
             <!-- :data="upLoadData" -->
             <el-upload
               class="avatar-uploader"
@@ -289,9 +289,6 @@ export default class UserInfoEdit extends Vue {
 
 <style lang="scss" scoped>
 .apply-account-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   .avatar-uploader .el-upload {
     border: 1px dashed #d9d9d9;
     border-radius: 6px;
