@@ -5,7 +5,9 @@
       <el-form label-width="70px">
         <el-form-item label="选取图层" style="margin:0">
           <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small" multiple clearable>
-            <el-option v-for="item in datasetOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+            <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
+               <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+            </el-option-group>
           </el-select>
         </el-form-item>
       </el-form>
@@ -86,7 +88,7 @@ export default {
       drawFeature: null,
       lightFeature: null,
       lightLayer: null,
-      datasetOptions: []
+      layerGroups: []
     }
   },
   computed: {
@@ -129,11 +131,14 @@ export default {
       });
     },
     init() {
-      let layers = mapUtil.getAllSubLayerNames('排水管线')
-
+      let [name, type] = appconfig.initLayers.split("&&")
+      let layer = mapUtil.getAllSubLayerNames(name, type)
       // 设置图层
-      this.datasetOptions = layers.map(layer => {
-        return { label: layer.title, value: layer.name }
+      this.layerGroups = layer.sublayers.map(layer => {
+        let layers = layer.sublayers.map(sub => {
+          return { label: sub.title, value: sub.name.split('@')[0] }
+        })
+        return { label: layer.title, value: layer.name, layers }
       })
       this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
       this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
@@ -157,12 +162,15 @@ export default {
     },
 
     doQuery () {
-        console.log('开始查询')
         if (this.selectLayer.length === 0) return this.$message.error('请先选择要分析的图层!')
         if (this.drawType === 'extent' && !this.drawFeature) return this.$message.error('请先绘制查询范围!')
 
-        let findLayers = this.datasetOptions.filter(layer => this.selectLayer.includes(layer.value))
-        let dataSetInfo = findLayers.map(layer => {
+        let findLayers =  []
+        this.layerGroups.forEach(layer => {
+          let sublayers = layer.layers.filter(sub => this.selectLayer.includes(sub.value))
+          findLayers.push(sublayers)
+        })
+        let dataSetInfo = findLayers.flat().map(layer => {
           return { name: layer.value, label: layer.label }
         })
         

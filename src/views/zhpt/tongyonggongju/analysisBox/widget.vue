@@ -91,10 +91,10 @@ export default {
 
       function clone (layer) {
         if (layer instanceof TileLayer) {
-          if (layer.get("name") === "影像底图") return null
-          return layer.get("parentname") !== "底图" 
-          ? new TF_Layer(true).createLayer({ type: 'smlayer', url: layer.getSource()['_url'] })  
-          : new TF_Layer(true).createLayer({ type: 'wmtslayer', url: layer.getSource()['urls'][0] })
+          if (layer.get("name").includes("影像")) return null
+          return layer.get("name").includes("矢量")
+          ? new TF_Layer(true).createLayer({ type: 'wmtslayer', url: layer.getSource()['urls'][0] })
+          : new TF_Layer(true).createLayer({ type: 'smlayer', url: layer.getSource()['_url'] })   
         } else if (layer instanceof VectorLayer) {
           let clonelayer = new VectorLayer({
             source: new VectorSource(),

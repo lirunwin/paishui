@@ -45,7 +45,7 @@
     <div class="op-box">
       <div class="item-head">详细信息</div>
       <div class="result-total">
-          <el-table max-height='500' @row-click='showPosition' :data="detailData" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
+          <el-table max-height="300" height='200' @row-click='showPosition' :data="detailData" :header-cell-style="{fontSize: '14px', fontWeight:'600',background:'#eaf1fd',color:'#909399'}" style="width: 100%">
             <template slot="empty">
               <img src="@/assets/icon/null.png" alt="">
               <p class="empty-p">暂无数据</p>
@@ -138,22 +138,18 @@ export default {
   },
   methods: {
     init () {
-      this.vectorLayer = new VectorLayer({
-        source: new VectorSource(),
-        style: mapUtil.getCommonStyle()
-      })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
       this.map.addLayer(this.vectorLayer)
-      this.lightLayer = new VectorLayer({
-        source: new VectorSource(),
-        style: mapUtil.getCommonStyle(true)
-      })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, 'red') })
       this.map.addLayer(this.lightLayer)
+      this.data.that.setPopupSwitch(false)
     },
     removeAll (){
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.drawer && this.drawer.end()
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.drawer = this.vectorLayer = this.lightLayer = null
+      this.data.that.setPopupSwitch(true)
     },
     select () {
       this.drawer && this.drawer.end()
@@ -181,7 +177,7 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresArr = resArr.filter(res => res && res.result.featureCount !== 0)

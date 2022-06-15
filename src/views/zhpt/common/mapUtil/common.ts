@@ -256,7 +256,7 @@ export class mapUtil {
       * 超图图层组子图层显隐, 只适合图层组, 会修改 config 公共配置
       * @param layersConfig 图层配置
       */
-    setGroupLayerVisible(layersConfig) {
+    setGroupLayerVisible(layersConfig?) {
         let layers =  layersConfig || appconfig.gisResource['iserver_resource'].layerService.layers
         let parentLayer = layers.find(layer => layer.type === 'smlayergroup')
         let ids = [], idsStr = ''
@@ -280,7 +280,40 @@ export class mapUtil {
             findLayer.setVisible(true)
         }
     }
-
+    // 设置获取图层组显隐 source
+    getChangeResource (layerName, visible) {
+        let layers = appconfig.gisResource['iserver_resource'].layerService.layers
+        let resSource = this.deepClone(layers)
+        resSource.forEach(group => {
+            group.sublayers.forEach(sub => {
+                if (sub.name === layerName) { sub.visible = visible }
+            })
+        })
+        return resSource
+    }
+    deepClone(obj) {
+      let clone
+      if (obj instanceof Array) {
+        clone = [...obj]
+        clone.forEach((item, i) => {
+          if (item instanceof Array || item instanceof Object) {
+            clone[i] = this.deepClone(item)
+          } else {
+            clone[i] = item
+          }
+        })
+      } else if (obj instanceof Object) {
+        clone = { ...obj }
+        for (let i in obj) {
+          if (obj[i] instanceof Object || obj[i] instanceof Array) {
+            clone[i] = this.deepClone(obj[i])
+          } else {
+            clone[i] = obj[i]
+          }
+        }
+      }
+      return clone
+    }
     setSingleLayerVisible() {
         let layers =  appconfig.gisResource['iserver_resource'].layerService.layers
         let parentLayer = layers.find(layer => layer.type === 'smlayer')

@@ -3,7 +3,9 @@
   <div style="padding: 0 8px;overflow-y:auto;" class="i-scrollbar">    
     <tf-legend class="legend_dept" label="图层名称" isopen="true" title="选择将要进行查询的图层。">
       <el-select v-model="layerId" placeholder="请选择">
-        <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.value"/>
+          <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
+             <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+          </el-option-group>
       </el-select>
     </tf-legend>
     <tf-legend class="legend_dept" label="图层字段" isopen="true" title="选择将要查询的字段。">
@@ -117,7 +119,7 @@ export default {
       // add
       limitFeature: null, // 绘制图形
       drawer: null,
-      layers: []
+      layerGroups: []
     }
   },
   computed: { 
@@ -142,10 +144,14 @@ export default {
     }
   },
   mounted: function () {
-      let layers = mapUtil.getAllSubLayerNames('排水管线')
+      let [name, type] = appconfig.initLayers.split("&&")
+      let layer = mapUtil.getAllSubLayerNames(name, type)
       // 设置图层
-      this.layers = layers.map(layer => {
-        return { label: layer.title, value: layer.name }
+      this.layerGroups = layer.sublayers.map(layer => {
+        let layers = layer.sublayers.map(sub => {
+          return { label: sub.title, value: sub.name.split('@')[0] }
+        })
+        return { label: layer.title, value: layer.name, layers }
       })
 
       this.mapView = this.data.mapView

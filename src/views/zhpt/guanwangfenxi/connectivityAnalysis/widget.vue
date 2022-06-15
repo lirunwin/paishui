@@ -68,6 +68,7 @@ import iNetAnalysis from '@/views/zhpt/common/mapUtil/netAnalysis'
 import { fieldDoc } from '@/views/zhpt/common/doc'
 import { Feature } from 'ol'
 import { LineString } from 'ol/geom'
+import { mapUtil } from '../../common/mapUtil/common'
 
 export default {
   name: 'ConnectivityAnalysis',
@@ -115,13 +116,15 @@ export default {
       this.map.removeLayer(this.vectorLayer)
       this.map.removeLayer(this.lightLayer)
       this.$store.dispatch('map/handelClose', { box: "HalfPanel", pathId: "queryResultMore" })
+      this.data.that.setPopupSwitch(false)
     },
     init () {
       this.map = this.data.mapView
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#f00") })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
       this.map.addLayer(this.vectorLayer)
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, "#0ff") })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
       this.map.addLayer(this.lightLayer)
+      this.data.that.setPopupSwitch(false)
     },
     choosePipe () {
       this.selectedPipe = []
@@ -131,7 +134,6 @@ export default {
         endDrawCallBack: drawFea => {
           let fea = new GeoJSON().readFeature(turf.buffer(turf.point(drawFea.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
           this.getAnalysisPipe(fea).then(resObj => {
-            console.log("选择管线")
             if (resObj) {
               let featureJson = resObj.result.features.features[0]
               let feature = new GeoJSON().readFeature(featureJson)
@@ -156,7 +158,7 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-        let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresObj = resArr.find(res => res && res.result.featureCount !== 0)
@@ -218,6 +220,7 @@ export default {
       this.vectorLayer.getSource().clear()
       this.ractSelect = false
       this.resFeatures = []
+      this.drawer && this.drawer.end()
     }
   },
   destroyed() {

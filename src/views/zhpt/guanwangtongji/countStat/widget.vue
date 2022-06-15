@@ -148,7 +148,11 @@ export default {
         { title: '特征点', name: 'TF_PSPS_POINT_B', open: false },
         { title: '检查井', name: 'TF_PSPS_MANHOLE_B', open: false },
         { title: '排放口', name: 'TF_PSPS_OUTFALL_B', open: false },
-        { title: '闸门', name: 'TF_PSPS_GATE_B', open: false },
+        // { title: '闸门', name: 'TF_PSPS_GATE_B', open: false },
+        { title: '给水节点', name: 'TF_JSJS_NODE_B', open: false },
+        { title: '燃气节点', name: 'TF_RQTQ_NODE_B', open: false },
+        { title: '电力节点', name: 'TF_DLLD_NODE_B', open: false },
+        { title: '电信节点', name: 'TF_TXDX_NODE_B', open: false },
       ],
       attList: [
         { name: "地址", field: "ADDRESS" },
@@ -217,9 +221,8 @@ export default {
     },
 
     analysis () {
-      // if (!this.layerId) return this.$message.error('请选择查询图层名称')
+      console.log('管点统计')
       if (this.layerSelectList.length === 0) return this.$message.error('请选择统计类型')
-      // if (this.attSelectList.length === 0) return this.$message.error('请选择管网统计的属性')
 
       let feas = {} // 统计数据
       let dataSetInfo = this.layerSelectList.map(layer => {

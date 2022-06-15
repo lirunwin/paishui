@@ -158,7 +158,7 @@ export default {
     // 点查询
     getPipeLineByPoint (feature) {
       let queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
         let featureObj = resArr.find(res => res.result.featureCount !== 0)
@@ -185,7 +185,7 @@ export default {
             let center = pathFeatures[Math.floor(pathFeatures.length / 2)].geometry.coordinates
             this.openBox(pathFeatures, [(center[0][0] + center[1][0]) / 2, (center[0][1] + center[1][1]) / 2])
 
-            this.layerData = [{ name: "给水管线", value: pathFeatures.length, pathFeatures }]
+            this.layerData = [{ name: "排水管道", value: pathFeatures.length, pathFeatures }]
           }
         } else this.$message.error("分析失败, 管线间不连通")  
       })
@@ -231,7 +231,7 @@ export default {
         yAxis: { name: '高程(m)', type: 'value', scale: true },
         series: [
           { name: '管线高程', smooth: false, data: dataYPipe, type: 'line', symbolSize: 6, itemStyle:{ color: '#f00', normal: { lineStyle: { width: 3 } } }},
-          { name: '地面高程', smooth: true, data: dataYGround, type: 'line', symbolSize: 4, areaStyle: { color:'#ECF2FF'}, itemStyle:{ borderColor:'#2D74E7', color: '#2D74E7' } }
+          { name: '地面高程', smooth: false, data: dataYGround, type: 'line', symbolSize: 4, areaStyle: { color:'#ECF2FF'}, itemStyle:{ borderColor:'#2D74E7', color: '#2D74E7' } }
         ]
       }
 

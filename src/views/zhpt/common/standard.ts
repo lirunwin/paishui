@@ -26,6 +26,11 @@ export const CoverSoilStandard = [
         ditch: 0.65
     },
     {
+        subtype: '排水管道',
+        direct: 0.65,
+        ditch: 0.65
+    },
+    {
         subtype: '雨水排水管道',
         direct: 0.6,
         ditch: 0.6
@@ -53,5 +58,10 @@ export const DisStandard = [
         subtype: '排水管',
         hStandardDis: 0.75,
         vStandardDis: 0.55
-    }
+    },
+    {
+        subtype: '排水管道',
+        hStandardDis: 0.65,
+        vStandardDis: 0.65
+    },
 ]

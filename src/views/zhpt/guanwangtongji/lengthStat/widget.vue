@@ -152,7 +152,12 @@ export default {
         { name: "位置", field: "POINTPOSITION" }
       ],
       limitFeature: null,
-      layerList: [ { title: "排水管道", open: false, name: 'TF_PSPS_PIPE_B' }],
+      layerList: [
+        { title: "给水管道", open: false, name: 'TF_JSJS_PIPE_B' },
+        { title: "燃气管道", open: false, name: 'TF_RQTQ_PIPE_B' },
+        { title: "电力", open: false, name: 'TF_DLLD_PIPE_B' },
+        { title: "中国电信", open: false, name: 'TF_TXDX_PIPE_B' },
+      ],
     }
   },
   computed: { 
@@ -171,6 +176,7 @@ export default {
       this.titleName = this.param.type
     },
     layerSelectList(e) {
+
     },
     layerId(e) {
       if(!e) return
