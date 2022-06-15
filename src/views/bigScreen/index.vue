@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import './flexible.js';
+import Flexible from './flexible'
 import Header from './header/header.vue';
 //地图模块
 import BaseMap from './baseMap/baseMap.vue';
@@ -53,10 +53,11 @@ export default {
     return{
       showMonitoringCenter:false,//监测中心
       showOverviewData:false,//数据总览
+      flexibleObject:null
     }
   },
   mounted(){
-    
+    this.flexibleObject=new Flexible()
   },
   methods:{
     change(){
@@ -76,6 +77,8 @@ export default {
     }
   },
   destroyed(){
+    this.flexibleObject.removeflexible()
+    this.flexibleObject=null
     console.log('大屏实例销毁')
   }
 }

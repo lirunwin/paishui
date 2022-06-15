@@ -70,12 +70,14 @@ export default {
             .then((res) => {
                 let arr = res.result.filter((item)=>item.type ==='bigScreen')
                 arr[0].childrens.forEach(item => {
-                    this.menuList.unshift({
-                        name:item.name,
-                        label:item.label
-                    })
-                    this.currentActive=this.menuList[0].label
+                    if(item.statusFlag==='1'){
+                        this.menuList.unshift({
+                            name:item.name,
+                            label:item.label
+                        })
+                    }
                 });
+                this.currentActive=this.menuList[0].label
             })
             .catch((err) => {
                 console.log(err)

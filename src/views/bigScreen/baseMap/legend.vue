@@ -61,16 +61,11 @@ export default {
     watch:{
         show:{
             handler(n,o){
-                if(n){
-                    this.$nextTick(()=>{
-                        this.$refs['widget-MapLegend'].style.setProperty('--bottom', '1.546875rem') // 给变量赋值
-                    })
-                }else{
-                    this.$nextTick(()=>{
-                        this.$refs['widget-MapLegend'].style.setProperty('--bottom', '.052083rem') // 给变量赋值
-                    })
-
-                }
+                this.$nextTick(()=>{
+                    //变量赋值
+                    n?this.$refs['widget-MapLegend'].style.setProperty('--bottom', '1.546875rem'):
+                    this.$refs['widget-MapLegend'].style.setProperty('--bottom', '.052083rem')
+                })
             },
             immediate:true
         }
