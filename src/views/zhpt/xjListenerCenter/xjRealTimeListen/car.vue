@@ -50,7 +50,7 @@
                 </div>
                 <span style="font-size:12px">{{item.signType}}</span>
               </div>
-              <div class='carInfo'>
+              <div class='carInfo' :title='"点击定位"' @click='goToPoint(item)'>
                 <span class='carNo'>{{item.carNo}}</span>
                 <span>车辆负责人：{{item.chargePersonName}}</span>
                 <span>车牌使用用：{{item.user}}</span>
@@ -251,12 +251,7 @@ export default {
         tempUserList.push(item);
       }
       this.showUserList=tempUserList;
-    },
-
-
-    /**在地图上显示人员*/
-    mapShowPeople(peopelList){
-      
+      this.mapShowPeople(this.showUserList);
     },
 
     /**初始化轨迹、设备、计划内容*/
@@ -326,29 +321,6 @@ export default {
         })
         peopleInfo.pagePathInfo.splitPath=temp;
       });
-      
-      //测试数据
-      // const testData={"code":1,"message":null,"result":[
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01",
-      // "第1段:2022-06-08 00:30:57 - 2022-06-08 09:00:01"]};
-      // const temp = testData.result.map((e) => {
-      //     e = e.split('段:')[1].split(' - ')
-      //     return  { timeFrom: e[0].split(' ')[1], timeTo: e[1]}
-      //   })
-      //   peopleInfo.pagePathInfo.splitPath=temp;
     },
 
     /**获取轨迹*/
@@ -376,24 +348,35 @@ export default {
           })
         } 
       })
-
-      // //测试数据
-      // const tempresult={"code":1,"message":null,"result":[{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438634,"locationLatitude":30.864341,"speed":0,"direction":null,"network":"2","distance":0,"uploadTime":"2022-06-08 08:53:49","gpsTime":"2022-06-08 08:53:17","gpsTimespan":0,"gpsPrecision":"75","gpsStar":0,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:53:25","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438866,"locationLatitude":30.864405,"speed":4.19,"direction":null,"network":"1","distance":23.30,"uploadTime":"2022-06-08 08:54:00","gpsTime":"2022-06-08 08:53:37","gpsTimespan":20,"gpsPrecision":"7","gpsStar":5,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:53:36","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438756,"locationLatitude":30.864397,"speed":3.80,"direction":null,"network":"1","distance":10.56,"uploadTime":"2022-06-08 08:54:10","gpsTime":"2022-06-08 08:53:47","gpsTimespan":10,"gpsPrecision":"5","gpsStar":14,"gpsSpeed":0.23,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:53:46","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438553,"locationLatitude":30.864389,"speed":5.83,"direction":null,"network":"1","distance":19.43,"uploadTime":"2022-06-08 08:54:22","gpsTime":"2022-06-08 08:53:59","gpsTimespan":12,"gpsPrecision":"4","gpsStar":18,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:53:58","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438526,"locationLatitude":30.864389,"speed":0.77,"direction":null,"network":"1","distance":2.58,"uploadTime":"2022-06-08 08:54:34","gpsTime":"2022-06-08 08:54:11","gpsTimespan":12,"gpsPrecision":"1","gpsStar":16,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:54:10","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438504,"locationLatitude":30.864387,"speed":0.63,"direction":null,"network":"1","distance":2.12,"uploadTime":"2022-06-08 08:54:46","gpsTime":"2022-06-08 08:54:23","gpsTimespan":12,"gpsPrecision":"2","gpsStar":13,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:54:22","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438506,"locationLatitude":30.864389,"speed":0.09,"direction":null,"network":"1","distance":0.29,"uploadTime":"2022-06-08 08:54:58","gpsTime":"2022-06-08 08:54:35","gpsTimespan":12,"gpsPrecision":"2","gpsStar":12,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:54:34","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438508,"locationLatitude":30.864390,"speed":0.07,"direction":null,"network":"1","distance":0.22,"uploadTime":"2022-06-08 08:55:10","gpsTime":"2022-06-08 08:54:47","gpsTimespan":12,"gpsPrecision":"2","gpsStar":13,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:54:46","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438573,"locationLatitude":30.864405,"speed":2.32,"direction":null,"network":"1","distance":6.44,"uploadTime":"2022-06-08 08:55:23","gpsTime":"2022-06-08 08:54:57","gpsTimespan":10,"gpsPrecision":"1","gpsStar":12,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:54:59","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438760,"locationLatitude":30.864349,"speed":0.30,"direction":null,"network":"2","distance":12.08,"uploadTime":"2022-06-08 08:56:11","gpsTime":"2022-06-08 08:55:43","gpsTimespan":146,"gpsPrecision":"75","gpsStar":0,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:55:47","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438848,"locationLatitude":30.864462,"speed":2.42,"direction":null,"network":"1","distance":4.71,"uploadTime":"2022-06-08 08:58:29","gpsTime":"2022-06-08 08:58:03","gpsTimespan":7,"gpsPrecision":"6","gpsStar":5,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 08:58:06","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438878,"locationLatitude":30.864397,"speed":3.10,"direction":null,"network":"1","distance":10.33,"uploadTime":"2022-06-08 09:01:11","gpsTime":"2022-06-08 09:00:48","gpsTimespan":12,"gpsPrecision":"5","gpsStar":12,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:00:47","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438944,"locationLatitude":30.864387,"speed":1.92,"direction":null,"network":"1","distance":6.41,"uploadTime":"2022-06-08 09:01:23","gpsTime":"2022-06-08 09:01:00","gpsTimespan":12,"gpsPrecision":"4","gpsStar":12,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:00:59","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438956,"locationLatitude":30.864384,"speed":0.36,"direction":null,"network":"1","distance":1.19,"uploadTime":"2022-06-08 09:01:35","gpsTime":"2022-06-08 09:01:12","gpsTimespan":12,"gpsPrecision":"4","gpsStar":12,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:01:11","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438651,"locationLatitude":30.864230,"speed":0.94,"direction":null,"network":"1","distance":33.80,"uploadTime":"2022-06-08 09:03:46","gpsTime":"2022-06-08 09:03:22","gpsTimespan":130,"gpsPrecision":"9","gpsStar":5,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:03:21","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438804,"locationLatitude":30.863864,"speed":11.95,"direction":null,"network":"1","distance":43.14,"uploadTime":"2022-06-08 09:03:58","gpsTime":"2022-06-08 09:03:35","gpsTimespan":13,"gpsPrecision":"2","gpsStar":22,"gpsSpeed":0.55,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:03:34","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438824,"locationLatitude":30.863887,"speed":0.96,"direction":null,"network":"1","distance":3.19,"uploadTime":"2022-06-08 09:04:10","gpsTime":"2022-06-08 09:03:47","gpsTimespan":12,"gpsPrecision":"1","gpsStar":23,"gpsSpeed":0.11,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:03:46","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438794,"locationLatitude":30.863882,"speed":0.88,"direction":null,"network":"1","distance":2.92,"uploadTime":"2022-06-08 09:04:22","gpsTime":"2022-06-08 09:03:59","gpsTimespan":12,"gpsPrecision":"2","gpsStar":22,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:03:58","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438789,"locationLatitude":30.863857,"speed":0.84,"direction":null,"network":"1","distance":2.81,"uploadTime":"2022-06-08 09:04:35","gpsTime":"2022-06-08 09:04:11","gpsTimespan":12,"gpsPrecision":"2","gpsStar":22,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:04:10","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438803,"locationLatitude":30.863862,"speed":0.43,"direction":null,"network":"1","distance":1.45,"uploadTime":"2022-06-08 09:04:48","gpsTime":"2022-06-08 09:04:23","gpsTimespan":12,"gpsPrecision":"3","gpsStar":16,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:04:22","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438834,"locationLatitude":30.863807,"speed":2.03,"direction":null,"network":"1","distance":6.78,"uploadTime":"2022-06-08 09:04:58","gpsTime":"2022-06-08 09:04:35","gpsTimespan":12,"gpsPrecision":"2","gpsStar":17,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:04:34","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438868,"locationLatitude":30.863782,"speed":1.28,"direction":null,"network":"1","distance":4.27,"uploadTime":"2022-06-08 09:05:10","gpsTime":"2022-06-08 09:04:47","gpsTimespan":12,"gpsPrecision":"3","gpsStar":15,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:04:46","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438814,"locationLatitude":30.863827,"speed":2.15,"direction":null,"network":"1","distance":7.18,"uploadTime":"2022-06-08 09:05:22","gpsTime":"2022-06-08 09:04:59","gpsTimespan":12,"gpsPrecision":"3","gpsStar":16,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:04:58","gpsSection":9000,"isValid":"1",
-      // "gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438823,"locationLatitude":30.863824,"speed":0.28,"direction":null,"network":"1","distance":0.92,"uploadTime":"2022-06-08 09:05:56","gpsTime":"2022-06-08 09:05:11","gpsTimespan":12,"gpsPrecision":"3","gpsStar":16,"gpsSpeed":0.00,"gpsState":"0","gpsId":1654650320302,"checkTime":"2022-06-08 09:05:10","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438873,"locationLatitude":30.863805,"speed":1.57,"direction":null,"network":"1","distance":5.23,"uploadTime":"2022-06-08 09:05:56","gpsTime":"2022-06-08 09:05:23","gpsTimespan":12,"gpsPrecision":"3","gpsStar":14,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:05:22","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438926,"locationLatitude":30.863927,"speed":4.33,"direction":null,"network":"1","distance":14.44,"uploadTime":"2022-06-08 09:05:58","gpsTime":"2022-06-08 09:05:35","gpsTimespan":12,"gpsPrecision":"4","gpsStar":9,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:05:34","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439039,"locationLatitude":30.864184,"speed":9.14,"direction":null,"network":"1","distance":30.47,"uploadTime":"2022-06-08 09:06:10","gpsTime":"2022-06-08 09:05:47","gpsTimespan":12,"gpsPrecision":"3","gpsStar":7,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:05:46","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439169,"locationLatitude":30.864127,"speed":4.18,"direction":null,"network":"1","distance":13.95,"uploadTime":"2022-06-08 09:06:22","gpsTime":"2022-06-08 09:05:59","gpsTimespan":12,"gpsPrecision":"4","gpsStar":10,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:05:58","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439206,"locationLatitude":30.864396,"speed":9.01,"direction":null,"network":"1","distance":30.03,"uploadTime":"2022-06-08 09:06:35","gpsTime":"2022-06-08 09:06:11","gpsTimespan":12,"gpsPrecision":"3","gpsStar":8,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:06:10","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439331,"locationLatitude":30.864314,"speed":4.51,"direction":null,"network":"1","distance":15.02,"uploadTime":"2022-06-08 09:06:46","gpsTime":"2022-06-08 09:06:23","gpsTimespan":12,"gpsPrecision":"4","gpsStar":8,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:06:22","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439321,"locationLatitude":30.864331,"speed":0.63,"direction":null,"network":"1","distance":2.11,"uploadTime":"2022-06-08 09:06:58","gpsTime":"2022-06-08 09:06:35","gpsTimespan":12,"gpsPrecision":"5","gpsStar":6,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:06:34","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439335,"locationLatitude":30.864294,"speed":1.29,"direction":null,"network":"1","distance":4.32,"uploadTime":"2022-06-08 09:07:10","gpsTime":"2022-06-08 09:06:47","gpsTimespan":12,"gpsPrecision":"5","gpsStar":8,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:06:46","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439463,"locationLatitude":30.864337,"speed":3.94,"direction":null,"network":"1","distance":13.14,"uploadTime":"2022-06-08 09:07:22","gpsTime":"2022-06-08 09:06:59","gpsTimespan":12,"gpsPrecision":"4","gpsStar":6,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:06:58","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439463,"locationLatitude":30.864392,"speed":1.83,"direction":null,"network":"1","distance":6.10,"uploadTime":"2022-06-08 09:07:34","gpsTime":"2022-06-08 09:07:11","gpsTimespan":12,"gpsPrecision":"4","gpsStar":11,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:07:10","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439403,"locationLatitude":30.864406,"speed":1.78,"direction":null,"network":"1","distance":5.94,"uploadTime":"2022-06-08 09:07:46","gpsTime":"2022-06-08 09:07:23","gpsTimespan":12,"gpsPrecision":"4","gpsStar":11,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:07:22","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439325,"locationLatitude":30.864499,"speed":3.82,"direction":null,"network":"1","distance":12.73,"uploadTime":"2022-06-08 09:07:58","gpsTime":"2022-06-08 09:07:35","gpsTimespan":12,"gpsPrecision":"4","gpsStar":11,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:07:34","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439099,"locationLatitude":30.864376,"speed":7.67,"direction":null,"network":"1","distance":25.56,"uploadTime":"2022-06-08 09:08:10","gpsTime":"2022-06-08 09:07:47","gpsTimespan":12,"gpsPrecision":"2","gpsStar":21,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:07:46","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.439018,"locationLatitude":30.864177,"speed":7.01,"direction":null,"network":"1","distance":23.38,"uploadTime":"2022-06-08 09:08:22","gpsTime":"2022-06-08 09:07:59","gpsTimespan":12,"gpsPrecision":"2","gpsStar":22,"gpsSpeed":1.61,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:07:58","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438991,"locationLatitude":30.864072,"speed":3.58,"direction":null,"network":"1","distance":11.92,"uploadTime":"2022-06-08 09:08:36","gpsTime":"2022-06-08 09:08:11","gpsTimespan":12,"gpsPrecision":"1","gpsStar":30,"gpsSpeed":0.87,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:08:10","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438823,"locationLatitude":30.864027,"speed":5.05,"direction":null,"network":"1","distance":16.82,"uploadTime":"2022-06-08 09:08:48","gpsTime":"2022-06-08 09:08:23","gpsTimespan":12,"gpsPrecision":"2","gpsStar":28,"gpsSpeed":1.48,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:08:22","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438851,"locationLatitude":30.863919,"speed":3.68,"direction":null,"network":"1","distance":12.27,"uploadTime":"2022-06-08 09:08:58","gpsTime":"2022-06-08 09:08:35","gpsTimespan":12,"gpsPrecision":"4","gpsStar":8,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:08:34","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438763,"locationLatitude":30.863865,"speed":3.38,"direction":null,"network":"1","distance":10.33,"uploadTime":"2022-06-08 09:09:09","gpsTime":"2022-06-08 09:08:46","gpsTimespan":11,"gpsPrecision":"5","gpsStar":4,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:08:45","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438808,"locationLatitude":30.863925,"speed":2.38,"direction":null,"network":"1","distance":7.92,"uploadTime":"2022-06-08 09:09:21","gpsTime":"2022-06-08 09:08:58","gpsTimespan":12,"gpsPrecision":"1","gpsStar":5,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:08:57","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438866,"locationLatitude":30.863912,"speed":1.72,"direction":null,"network":"1","distance":5.73,"uploadTime":"2022-06-08 09:09:33","gpsTime":"2022-06-08 09:09:10","gpsTimespan":12,"gpsPrecision":"3","gpsStar":5,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:09:09","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438883,"locationLatitude":30.863999,"speed":2.93,"direction":null,"network":"1","distance":9.78,"uploadTime":"2022-06-08 09:09:45","gpsTime":"2022-06-08 09:09:22","gpsTimespan":12,"gpsPrecision":"5","gpsStar":6,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:09:21","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null},{"id":null,"userId":142,"userName":"杨旭东","locationLongitude":104.438988,"locationLatitude":30.864030,"speed":3.18,"direction":null,"network":"1","distance":10.61,"uploadTime":"2022-06-08 09:09:57","gpsTime":"2022-06-08 09:09:34","gpsTimespan":12,"gpsPrecision":"4","gpsStar":5,"gpsSpeed":0.00,"gpsState":"0","gpsId":null,"checkTime":"2022-06-08 09:09:33","gpsSection":9000,"isValid":"1","gpsType":"0","gpsDeviceId":null,"pdaId":null}]}
-      // const timeTable = tempresult.result.map((e) => {return {
-      //     x: e.locationLongitude,
-      //     y: e.locationLatitude,
-      //     t: e.checkTime
-      //   }})
-      //   data.pagePathInfo.currentPath=timeTable;
-      //   if(timeTable.length > 0){
-      //     this.$store.dispatch('map/changeMethod', {
-      //       pathId: 'roadPlayer', widgetid: 'FloatPanel',
-      //       label: '浮动框', param: { view: this.mapView, times: timeTable }
-      //     })
-      //   }
     },
 
+    /**在地图上显示车辆*/
+    mapShowPeople(peopelList){
+      const showList=[];
+      peopelList.forEach(item=>{
+        if(item.lng&&item.lat){
+          showList.push({
+            x:item.lng,
+            y:item.lat,
+            name:item.carNo||"",
+            state:'sign'
+            // state:this.stateList.unfinished.includes(item.auditResult)?'nosign':'sign'
+          })
+        }
+      })
+      this.$emit("addPoint",{type:'car',data:showList});
+    },
+
+    /**定位*/
+    goToPoint(data){
+      if(data.lng&&data.lat){
+        this.mapView.getView().setZoom(19);
+        this.$nextTick(e=>{
+        this.mapView.getView().setCenter([data.lng,data.lat])})
+      }else{
+        this.$message.info("未上传坐标")
+      }
+    },
     // /**获取设备信息*/
     // getEquipmentInfo(data){
     //   const pages = (this.$refs["equipmentInfo_"+data.signUser] instanceof Array?(this.$refs["equipmentInfo_"+data.signUser][0]):this.$refs["equipmentInfo_"+data.signUser]);
@@ -507,6 +490,7 @@ export default {
     float: left;
     left: 10px;
     top: calc((100% - 42px)/2);
+    cursor: pointer;
     span{
       display: block;
       font-size: 12px;
@@ -519,7 +503,7 @@ export default {
     }
   }
   .showUser{
-    height: calc(100% - 45px);
+    height: calc(100% - 25px);
     background: #EFF0F5;
     border-radius: 2px;
     overflow-y: auto;

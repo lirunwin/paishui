@@ -234,7 +234,7 @@ export default {
     margin-right: 10px;
   }
   .showUser{
-    height: calc(100% - 45px);
+    height: calc(100% - 25px);
     background: #EFF0F5;
     border-radius: 2px;
     overflow-y: auto;

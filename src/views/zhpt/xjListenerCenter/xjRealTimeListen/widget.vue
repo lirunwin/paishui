@@ -11,6 +11,7 @@
 </template>
 
 <script>
+import tool from './tool'
 import peopleVue from "./people"
 import carVue from "./car"
 import planVue from "./plan"
@@ -19,6 +20,7 @@ import layerVue from "./layer"
 import {getAllDepartments} from '@/api/base'
 import { Vector as VectorSource } from 'ol/source';
 import { Vector as VectorLayer } from 'ol/layer';
+import Text from 'ol/style/Text';
 import Feature from 'ol/Feature';
 import {LineString,Point } from 'ol/geom';
 import {Icon, Style} from 'ol/style';
@@ -26,7 +28,8 @@ import carDuty from "./images/caronwork.png";
 import carNotDuty from "./images/noWorkState.png";
 import peopleDuty from "./images/onWork.png";
 import peopleNotDuty from "./images/noWork.png";
-import troubleImg from "@/assets/images/traingle4.png";
+import notTroubleImg from "@/assets/images/traingle4.png";
+import troubleImg from "@/assets/images/traingle1.png";
 export default {
   components:{peopleVue,carVue,planVue,troubleVue,layerVue},
   props: ['data'],
@@ -62,40 +65,64 @@ export default {
         }
       ],
       layerList:{
-        peopleLayer:null,
-        troubleLayer:null,
-        carLayer:null
+        peopleLayer:{
+          layer:null,
+          title:'人员',
+          show:true
+        },
+        troubleLayer:{
+          layer:null,
+          title:'隐患',
+          show:true
+        },
+        carLayer:{
+          layer:null,
+          title:'车辆',
+          show:true
+        }
       },
       pictureSymbol:{
         carDuty:{
           img:carDuty,
-          size:32,
-          width:32,
-          symbol:null
+          height:64,
+          width:64,
+          symbol:null,
+          scale:0.5
         },
         carNotDuty:{
           img:carNotDuty,
-          size:32,
-          width:32,
-          symbol:null
+          height:64,
+          width:64,
+          symbol:null,
+          scale:0.5
         },
         peopleDuty:{
           img:peopleDuty,
-          size:32,
-          width:32,
-          symbol:null
+          height:48,
+          width:48,
+          symbol:null,
+          scale:0.7
         },
         peopleNotDuty:{
           img:peopleNotDuty,
-          size:32,
-          width:32,
-          symbol:null
+          height:48,
+          width:48,
+          symbol:null,
+          scale:0.7
         },
         troubleImg:{
           img:troubleImg,
-          size:32,
-          width:32,
-          symbol:null
+          height:48,
+          width:48,
+          symbol:null,
+          scale:0.5
+        },
+        notTroubleImg:{
+          img:notTroubleImg,
+          height:48,
+          width:48,
+          symbol:null,
+          scale:0.5
         }
       },
       departInfo:{
@@ -123,8 +150,9 @@ export default {
     /**创建图层，并传送给子组件*/
     initLayer(){
       for(let item in  this.layerList){
-        this.layerList[item]= new VectorLayer({ source: new VectorSource() });
-        this.mapView.addLayer(this.layerList[item]);
+        this.layerList[item].layer= new VectorLayer({ source: new VectorSource() });
+        this.mapView.addLayer(this.layerList[item].layer);
+        this.layerList[item].layer.setVisible(this.layerList[item].show)
       }
     },
 
@@ -133,51 +161,85 @@ export default {
       for(let item in  this.pictureSymbol){
           this.pictureSymbol[item].symbol=new Style({
           image: new Icon({
-            // color: '#BADA55',
             crossOrigin: 'anonymous',
-            // For Internet Explorer 11
-            imgSize: [this.pictureSymbol[item].size, this.pictureSymbol[item].width],
+            scale:this.pictureSymbol[item].scale,
+            size:[this.pictureSymbol[item].width, this.pictureSymbol[item].height],
+            imgSize: [this.pictureSymbol[item].width, this.pictureSymbol[item].height],
             src: this.pictureSymbol[item].img,
           }),
         })
-
-        // this.layerList[item]= new VectorLayer({ source: new VectorSource() });
-        // this.mapView.addLayer(this.layerList[item]);
       }
-      // this.pictureSymbol.forEach(item=>{
-     
-      // })
     },
 
     /**添加点数据*/
     addPoint(data){
       switch (data.type){
         case "people":
-          debugger
-          this.layerList.peopleLayer.getSource().clear();
-          const feartures=[];
-          data.data.forEach(item=>{
-            let symbol=this.pictureSymbol.peopleDuty.symbol;
-            if(item.state!=2){
-              symbol=this.pictureSymbol.peopleNotDuty.symbol;
-            }
-            feartures.push(new Feature({
-              geometry:new Point({coordinates:[item.x,item.y]}),
-              name:item.userName
-            }).setStyle(symbol))
-          })
-          this.layerList.peopleLayer.getSource().addFeatures(feartures)
+          this.addPointToLayer(
+            {
+              layer:this.layerList.peopleLayer.layer,data:data.data,
+              signSymbol:this.pictureSymbol.peopleDuty.symbol,
+              noSignSymbol:this.pictureSymbol.peopleNotDuty.symbol
+            })
+        break;
+        case "trouble":
+            this.addPointToLayer(
+            {
+              layer:this.layerList.troubleLayer.layer,data:data.data,
+              signSymbol:this.pictureSymbol.troubleImg.symbol,
+              noSignSymbol:this.pictureSymbol.notTroubleImg.symbol
+            })
+        break;
+        case "car":
+            this.addPointToLayer(
+            {
+              layer:this.layerList.carLayer.layer,data:data.data,
+              signSymbol:this.pictureSymbol.carDuty.symbol,
+              noSignSymbol:this.pictureSymbol.carNotDuty.symbol
+            })
         break;
       }
     },
+
+    /**将点加入对应的图层*/
+    addPointToLayer(layerData){
+      const{layer,data,signSymbol,noSignSymbol}=layerData
+      layer.getSource().clear();
+      const feartures=[];
+      data.forEach(item=>{
+        let symbol=signSymbol.clone();
+        if(item.state!='sign'){
+          symbol=noSignSymbol.clone();
+        }
+        const tempFea=new Feature({
+          geometry:new Point([item.x,item.y]),
+          labelPoint: new Point([item.x,item.y]),
+          name:item.name
+        });
+        symbol.setText(new Text({
+          text: item.name,
+          font : 'bold 14px Arial,Helvetica,sans-serif',
+          offsetY:25,
+        }))
+        tempFea.setStyle(symbol)
+        feartures.push(tempFea);
+      })
+      layer.getSource().addFeatures(feartures)
+    },
+
+    /**控制图层*/
+    controlLayer(){
+
+    }
   },
+
   destroyed(){
     tool.closePlay(this.$store);
     //清除车辆、人员、隐患图层
     for(let item in  this.layerList){
-      this.layerList[item].clear();
-      this.mapView.removeLayer(this.layerList[item]);
-      this.layerList[item]=null;
+      this.layerList[item].layer.getSource().clear();
+      this.mapView.removeLayer(this.layerList[item].layer);
+      this.layerList[item].layer=null;
     }
   }
 }

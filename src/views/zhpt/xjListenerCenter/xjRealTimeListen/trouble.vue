@@ -21,40 +21,41 @@
     <el-row style="padding: 5px 0px 20px 0px;">
       <span class="bar">隐患</span>
     </el-row>
-    <div class='showUser' :class="(planList.length==0?'emptyClass':'')">
-      <template v-if='planList.length==0'>
+    <div class='showUser' :class="(troubleList.length==0?'emptyClass':'')">
+      <template v-if='troubleList.length==0'>
         <emptyShow :title='"暂无隐患"'></emptyShow>
       </template>
       <template v-else>
-        <template v-for='(item,index) in planList'>
+        <template v-for='(item,index) in troubleList'>
           <div class='userItem' :key="'userItem_'+index">
             <!-- 显示用户基本情况 -->
             <div class='userBaseInfo'>
               <div class='planState' :class="item.backgroundClass">
-                  <span :title='item.planState'>{{item.planState}}</span>
+                  <span :title='item.auditResult'>{{item.auditResult}}</span>
               </div>
-              <div class='otherInfo'>
+              <div class='otherInfo' :title='"点击定位"' @click='goToPoint(item)'>
+                <!-- <div class='peopleList'>
+                  <span :title="item.address||''">{{item.address||""}}</span>
+                </div>   -->
                 <div class='peopleList'>
-                  <span :title="item.inspectUserList">{{item.inspectUserList}}</span>
+                  <span :title="item.submitUserName">{{item.submitUserName}}</span>
                 </div>  
                 <div class='peopleType'>
-                  <span :title="item.inspectType">{{item.inspectType}}</span>
+                  <span :title="item.typeName">{{item.typeName}}</span>
                 </div>              
                 <div class='planTime'>
-                  <span :title="(item.planBegindate.split(' ')[0]+'到'+item.planEnddate.split(' ')[0])">{{item.planBegindate.split(' ')[0]+"到"+item.planEnddate.split(' ')[0]}}</span>
+                  <span :title="(item.submitTime)">{{item.submitTime}}</span>
                 </div>
               </div>
               <div class='clickTool' style="float:right;">
-                <el-tooltip effect="dark" content="任务完成情况" placement="top-start">
+                <el-tooltip effect="dark" content="隐患详情" placement="top-start">
                   <el-button size="mini" style="padding:4px;" @click="showWay(item,showContent.plan)">
                     <span class='icon iconfont iconjihua'></span>
                   </el-button>
                 </el-tooltip>
               </div>
             </div>
-            <!-- 显示选择的内容情况 -->
-            <div v-show="item.pageShow" class='userCurrentInfo'>
-              <!-- 显示任务情况 -->
+            <!-- <div v-show="item.pageShow" class='userCurrentInfo'>
               <template v-if="item.pageShowContent==showContent.plan">
                 <div class='planInfo'>
                   <el-table class="mapTable"  :data="item.planTypeOverList" border  height="100%">
@@ -65,14 +66,14 @@
                     <el-table-column align='center'  prop="type" label="工作量" show-overflow-tooltip >
                         <template slot-scope="scope">{{ scope.row.overCount+'/'+  scope.row.totalCount}}</template>
                     </el-table-column>
-                    <!-- <el-table-column align='center'  prop="completionRate" label="计划完成率" show-overflow-tooltip /> -->
+                
                     <el-table-column  align='center' prop="percent" label="完成率" show-overflow-tooltip >
                       <template slot-scope="scope"><span class='percentClass' :class="((scope.row.completionRate<=scope.row.percent)?stateList.finishedClass:stateList.unfinishedClass)">{{ (scope.row.percent||"0"+"%")}}</span></template>
                     </el-table-column>
                   </el-table>
                 </div>
               </template>
-            </div>
+            </div> -->
           </div>
         </template>
       </template>
@@ -107,7 +108,7 @@ export default {
       loading:false,
       currentUser:"",//当前的用户
       currentDate:'',//查询日期
-      planList:[],//列表渲染的计划
+      troubleList:[],//列表渲染的计划
       showContent:{//明确当前查看的是什么内容
         path:'path',//展示内容轨迹
       },
@@ -115,8 +116,8 @@ export default {
       troubleType:'',//隐患原因
       token:'',//系统的token
       stateList:{
-        finished:['计划完成','计划已作废'],
-        unfinished:[],
+        finished:[],
+        unfinished:['未审批'],
         finishedClass:'finished',
         unfinishedClass:"unfinished"
       },
@@ -176,46 +177,84 @@ export default {
         current:1,
         size:1000,
       }
-      this.loading=true;
-      getTrouble(params).then(res=>{
-        res.result.records.forEach(item=>{
-          this.initPeopleInfo(item)
-        })
-        this.planList=res.result.records
-        this.loading=false;
-      }).catch(e=>{
-        this.loading=false;
+      // this.loading=true;
+      // getTrouble(params).then(res=>{
+      //   res.result.records.forEach(item=>{
+      //     this.initPeopleInfo(item)
+      //   })
+      //   this.troubleList=res.result.records
+      //   this.mapShowPeople(this.troubleList);
+      //   this.loading=false;
+      // }).catch(e=>{
+      //   this.loading=false;
+      // })
+      const troubleList={"code":1,"message":null,"result":{"records":[{"id":13,"pipeName":"测试隐患上报2","location":"管线","padId":null,"typeId":3,"typeName":"施工范围内有给水管线","lgtd":104.377537,"lttd":30.850514,"address":"测试隐患上报2","notes":"测试隐患上报2","createTime":"2022-06-15 13:56:04","createUser":208,"createUserName":null,"isbuild":"是","buildId":9,"suggest":"测试隐患上报2","uploadType":"","uploadFileids":null,"isrespect":"否","state":"无需处理","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:56:04","submitUser":208,"submitUserName":"管网-王海","auditResult":"已通过","auditTime":"2022-06-15 13:56:46","auditUser":208,"auditUserName":"管网-王海","auditNotes":"123","regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":2,"toubleRangeName":"严重"},{"id":12,"pipeName":"测试管线上报","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.497862,"lttd":30.876064,"address":"测试管线上报","notes":"测试管线上报","createTime":"2022-06-15 13:55:25","createUser":208,"createUserName":null,"isbuild":"是","buildId":35,"suggest":"测试管线上报","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:55:25","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":201,"auditUserName":"冯茂","auditNotes":null,"regionId":"A","regionName":"A片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"},{"id":11,"pipeName":"测试隐患","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.433392,"lttd":30.836141,"address":"测试地址","notes":"测试地址2","createTime":"2022-06-14 15:26:02","createUser":208,"createUserName":null,"isbuild":"是","buildId":10,"suggest":"测试地址三","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-14 15:26:02","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":208,"auditUserName":"管网-王海","auditNotes":null,"regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"}],"total":3,"size":10,"current":1,"orders":[],"optimizeCountSql":true,"hitCount":false,"searchCount":true,"pages":1}}
+      troubleList.result.records.forEach(item=>{
+        this.initPeopleInfo(item)
       })
+      this.troubleList=troubleList.result.records;
+      this.mapShowPeople(this.troubleList);
     },
 
     /**初始化轨迹、设备、计划内容*/
     initPeopleInfo(peopleInfo){
       peopleInfo.pageShowContent='';
       peopleInfo.pageShow=false;
-      if(this.stateList.finished.includes(peopleInfo.planState)){
-        peopleInfo.backgroundClass=this.stateList.finishedClass;
-      }else{
+      if(this.stateList.unfinished.includes(peopleInfo.auditResult)){
         peopleInfo.backgroundClass=this.stateList.unfinishedClass;
+      }else{
+        peopleInfo.backgroundClass=this.stateList.finishedClass;
       }
     },
 
-    /**当前操作的用户及其查看的内容*/
-    showWay(peopleInfo,action){
-      //是否已打开的了人员信息
-      if(this.currentShowPeople){
-        //本次打开人员与上次打开人员是一个且本次操作与上次操作是一样的,初始化内容并返回
-        if(this.currentShowPeople==peopleInfo&&this.currentShowPeople.pageShowContent==action){
-          this.initPeopleInfo(this.currentShowPeople);
-          tool.closePlay(this.$store)
-          return
+    /**在地图上显示隐患*/
+    mapShowPeople(peopelList){
+      const showList=[];
+      peopelList.forEach(item=>{
+        if(item.lgtd&&item.lttd){
+          let tempAddress=item.typeName||"";
+          if(tempAddress.length>4){
+            tempAddress=tempAddress.substring(0,4)+"..."
+          }
+          showList.push({
+            x:item.lgtd,
+            y:item.lttd,
+            name:tempAddress,
+            state:this.stateList.unfinished.includes(item.auditResult)?'nosign':'sign'
+          })
         }
-        this.initPeopleInfo(this.currentShowPeople);
-        this.currentShowPeople=peopleInfo;
+      })
+      this.$emit("addPoint",{type:'trouble',data:showList});
+    },
+
+    /**定位*/
+    goToPoint(data){
+      if(data.lgtd&&data.lttd){
+        this.mapView.getView().setZoom(19);
+        this.$nextTick(e=>{
+        this.mapView.getView().setCenter([data.lgtd,data.lttd])})
       }else{
-        this.currentShowPeople=peopleInfo;
+        this.$message.info("未上传坐标")
       }
-      this.currentShowPeople.pageShow=true;
-      this.currentShowPeople.pageShowContent=action;
+    },
+
+    /**调用隐患详情页面*/
+    showWay(peopleInfo,action){
+      // //是否已打开的了人员信息
+      // if(this.currentShowPeople){
+      //   //本次打开人员与上次打开人员是一个且本次操作与上次操作是一样的,初始化内容并返回
+      //   if(this.currentShowPeople==peopleInfo&&this.currentShowPeople.pageShowContent==action){
+      //     this.initPeopleInfo(this.currentShowPeople);
+      //     tool.closePlay(this.$store)
+      //     return
+      //   }
+      //   this.initPeopleInfo(this.currentShowPeople);
+      //   this.currentShowPeople=peopleInfo;
+      // }else{
+      //   this.currentShowPeople=peopleInfo;
+      // }
+      // this.currentShowPeople.pageShow=true;
+      // this.currentShowPeople.pageShowContent=action;
     },
   }
 }
@@ -249,7 +288,7 @@ export default {
     margin-right: 10px;
   }
   .showUser{
-    height: calc(100% - 45px);
+    height: calc(100% - 65px);
     background: #EFF0F5;
     border-radius: 2px;
     overflow-y: auto;
@@ -303,6 +342,7 @@ export default {
     position: relative;
     float: left;
     font-size: 16px;
+    cursor: pointer;
   }
   .peopleList,.peopleType,.planTime{
     width: 100%;
