@@ -15,6 +15,11 @@
 
 <script>
 import request from '@/utils/request'
+import { Vector as VectorSource } from 'ol/source';
+import { Vector as VectorLayer } from 'ol/layer';
+import Feature from 'ol/Feature';
+import {LineString,Point } from 'ol/geom';
+import { comSymbol } from '@/utils/comSymbol';
 export default {
   name: 'roadPlayer',
   components: { },
@@ -31,6 +36,8 @@ export default {
       pointColor:"",
       pointSize:"",
       lineWidth:"",
+      pathLayer:'',
+      highPathLayer:'',
     }
   },
   mounted: function() {
@@ -38,75 +45,41 @@ export default {
   },
   watch:{
     time(index) {
-      if(this.times.length - 1 > index) {
-        var dt = this.times[index + 1]
-        var center = this.Point.geometry = { type: 'point', x: dt.x, y: dt.y, spatialReference: this.mapView.spatialReference }
+      if(this.times.length > index) {
+        var dt = this.times[index]
         this.dtime = dt.t
-        this.playLine.geometry = { type: 'polyline', paths: this.road.slice(0, index + 2), spatialReference: this.mapView.spatialReference }
-        if(!this.pause) {
-          this.mapView.goTo(this.Point.geometry, {
-            duration: 80,
-            easing: "linear"
-          })
-          this.mapView.zoom = 6
-          // this.mapView.center = center
-          // this.mapView.zoom = 6
-        }
+        this.highPathLayer.getSource().clear();
+        this.highPathLayer.getSource().addFeature(new Feature({
+            geometry: new LineString(this.road.slice(0, index + 1))
+          }))
       }
     }
   },
   methods: {
     startSearch(){
-      var param = this.param
-      this.mapView = param.view
-      this.times = param.times
-      var view = this.mapView
-      var Graphic = view.TF_graphic
-      this.Line = new Graphic({
-        geometry: { type: 'polyline', paths: [[0,0]], spatialReference: view.spatialReference },
-        symbol: { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: { color: this.pathColor, width:this.lineWidth } }
-      })
-      this.Point = new Graphic({
-        geometry: { type: 'point', x: 0, y: 0, spatialReference: view.spatialReference },
-        symbol: {
-          path: 'M296.565983 216.613614a225.868923 216.613614 0 1 0 451.737847 0 225.868923 216.613614 0 1 0-451.737847 0Z M659.689169 433.227228h-13.292199a233.4504 233.4504 0 0 1-273.622379 0H359.580853c-57.402608 0-97.771509 44.208869-79.359352 96.393059l138.337331 427.910349a93.93154 93.93154 0 0 0 91.076179 66.460995A93.93154 93.93154 0 0 0 600.612729 957.530636l138.337331-427.910349C757.460678 477.436098 716.993316 433.227228 659.689169 433.227228z',
-          color: [255, 255, 255], outline: {color:this.pointColor, width: 2},
-          size:  this.pointSize, yoffset: '15px', xoffset: '0px', type: 'simple-marker'
-        }
-      })
-      this.playLine = new Graphic({
-        geometry: { type: 'polyline', paths: [], spatialReference: view.spatialReference },
-        symbol: { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: {color: this.moveColor, width:this.lineWidth} }
-      })
-      // this.Line = new Graphic({
-      //   geometry: { type: 'polyline', paths: [[0,0]], spatialReference: view.spatialReference },
-      //   symbol: { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: { color: [45, 116, 231, 1], width: "3px" } }
-      // })
-      // this.Point = new Graphic({
-      //   geometry: { type: 'point', x: 0, y: 0, spatialReference: view.spatialReference },
-      //   symbol: {
-      //     path: 'M296.565983 216.613614a225.868923 216.613614 0 1 0 451.737847 0 225.868923 216.613614 0 1 0-451.737847 0Z M659.689169 433.227228h-13.292199a233.4504 233.4504 0 0 1-273.622379 0H359.580853c-57.402608 0-97.771509 44.208869-79.359352 96.393059l138.337331 427.910349a93.93154 93.93154 0 0 0 91.076179 66.460995A93.93154 93.93154 0 0 0 600.612729 957.530636l138.337331-427.910349C757.460678 477.436098 716.993316 433.227228 659.689169 433.227228z',
-      //     color: '2D74E7', outline: { color: '2D74E7', width: '1px' },
-      //     size: '30px', yoffset: '15px', xoffset: '0px', type: 'simple-marker'
-      //   }
-      // })
-      // this.playLine = new Graphic({
-      //   geometry: { type: 'polyline', paths: [], spatialReference: view.spatialReference },
-      //   symbol: { type: 'simple-fill', color: [0, 0, 0, 0.3], outline: { color: [255, 0, 0, 1], width: "2px" } }
-      // })
-      this.road = this.times.map((e) => [e.x, e.y])
-      view.graphics.addMany([this.Line, this.playLine, this.Point])
-      this.mapView.TF_roadPlayer = {
-        reload: (table) => {
-          this.times = table
-          this.init()
-        },
-        close:()=>{
-          this.close();
-        }    
+      this.mapView = this.param.view
+      this.times = this.param.times
+      if(!this.pathLayer){
+        this.pathLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(this.lineWidth,this.pathColor) });
+        this.mapView.addLayer(this.pathLayer);
       }
+      if(!this.highPathLayer){
+        this.highPathLayer=new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(this.lineWidth,this.moveColor) });
+        this.mapView.addLayer(this.highPathLayer); 
+      }
+      //轨迹数据
+      this.road = this.times.map((e) => [e.x, e.y])
+      const pathFea=new Feature({
+          geometry: new LineString(this.road)
+      })
+      this.pathLayer.getSource().clear();
+      this.pathLayer.getSource().addFeature(pathFea);
+      this.mapView.getView().fit(this.pathLayer.getSource().getExtent(),{
+        size:this.mapView.getSize(),
+        maxZoom:19,
+        duration:1000
+      });
       this.init()
-      this.loadSymbol()
     },
     /**
      * 获取巡检颜色配置
@@ -146,37 +119,11 @@ export default {
       })
     },
     init() {
-      var tables = this.times
-      this.max = tables.length - 1
-      this.time = 0
-      this.dtime = this.times[0].t
-      this.pause = true
-      
-      var paths = []
-      var last = [-1, -1]
-      for(var i=0,ii=tables.length;i<ii;i++) {
-        var dtime = tables[i]
-        if(last[0] != dtime.x && last[1] != dtime.y) paths.push([dtime.x, dtime.y])
-        last = paths[paths.length - 1]
-      }
-      this.road = this.times.map((e) => [e.x, e.y])
-      this.Line.geometry = { type: 'polyline', paths: paths, spatialReference: this.mapView.spatialReference }
-      this.mapView.extent = this.Line.geometry.extent
-      this.mapView.zoom -= 1
-    },
-    loadSymbol() {
-      request({ url: '/base/paramconfig/page', method: 'get' }).then((res) => {
-        if(res.code == 1) {
-          res = res.result.records[0]
-          this.Line.symbol = { type: 'simple-line', color: res.plineColor, cap: 'square', width: res.routeLine + 'px'  }
-          this.Point.symbol = {
-              path: 'M296.565983 216.613614a225.868923 216.613614 0 1 0 451.737847 0 225.868923 216.613614 0 1 0-451.737847 0Z M659.689169 433.227228h-13.292199a233.4504 233.4504 0 0 1-273.622379 0H359.580853c-57.402608 0-97.771509 44.208869-79.359352 96.393059l138.337331 427.910349a93.93154 93.93154 0 0 0 91.076179 66.460995A93.93154 93.93154 0 0 0 600.612729 957.530636l138.337331-427.910349C757.460678 477.436098 716.993316 433.227228 659.689169 433.227228z',
-              color: res.pointColor, outline: { color: res.pointColor, width: '1px' },
-              size: res.routePt + 'px', yoffset: res.routePt / 2 + 'px', xoffset: '0px', type: 'simple-marker'
-            }
-          this.playLine.symbol = { type: 'simple-line', color: res.lineColor, cap: 'square', width: res.routeLine + 'px'  }
-        } else this.$message.error('配置加载失败')        
-      })
+      var tables = this.times;
+      this.max = tables.length - 1;
+      this.time = 0;
+      this.dtime = this.times[0].t;
+      this.pause = true;
     },
     play() {
       if(this.pause){
@@ -203,7 +150,12 @@ export default {
       return this.times ? this.times[e].t : e
     },
     close() {
-      this.mapView.graphics.removeMany([this.Line, this.playLine, this.Point])
+      this.pathLayer.getSource().clear();
+      this.highPathLayer.getSource().clear();
+      this.mapView.removeLayer(this.pathLayer);
+      this.mapView.removeLayer(this.highPathLayer);
+      this.pathLayer=null;
+      this.highPathLayer=null;
       for (let i = 0, il = this.$store.state.map.floatPanels, ii = il.length; i < ii; i++) {
         if (il[i].com == 'roadPlayer') {
           il.splice(i, 1)
@@ -211,6 +163,9 @@ export default {
         }
       }
     }
+  },
+  destroyed(){
+    this.close();
   }
 }
 </script>

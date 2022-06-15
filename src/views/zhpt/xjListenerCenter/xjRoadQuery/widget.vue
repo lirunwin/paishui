@@ -47,7 +47,7 @@
         <template slot-scope="scope">{{ { 1: 'GPS', 2: 'Wifi', 3: '基站定位'}[scope.row.network] || '未知' }}</template>
       </el-table-column>
       <el-table-column prop="precision" label="精度" >
-        <template slot-scope="scope">{{ (scope.row.precision || '0') + 'm' }}</template>
+        <template slot-scope="scope">{{ (scope.row.gpsPrecision || '0') + 'm' }}</template>
       </el-table-column>
     </el-table>
     <el-row style="margin-top: 8px">
@@ -102,8 +102,8 @@ export default {
     let startHours=endHours-12;
     if(startHours<0){
       let day=currentDate.getFullYear()+"-"+(currentDate.getMonth+1)+"-"+(currentDate.getDate()-1);
-      let dayDate=new(day);
-      dayS=day.getFullYear()+"-"+(day.getMonth+1)+"-"+day.getDate();
+      // let dayDate=new Date(day);
+      let dayS=day.getFullYear()+"-"+(day.getMonth+1)+"-"+day.getDate();
       this.addStartTime=dayS;
       this.addStartHour=(startHours+24)+":00"
     }else if(startHours==0){
@@ -159,12 +159,22 @@ export default {
       if(!this.addStartTime) return this.$message.error('请选择开始时间')
       if(!this.addStopTime) return this.$message.error('请选择结束时间')
       this.loading = true;
-      request({ url: '/gps/gps/inspectionTrackQuery' +
-        '?&startDate=' + (this.addStartTime || '') + ' ' + (this.addStartHour || '00') + ':00' +
-        '&endDate=' + (this.addStopTime || '') + ' ' + (this.addStopHour || '00') + ':00' +
-        '&userId=' + this.worker +
-        '&deptId=' + this.group +
-        '&size=' + pages.internalPageSize + '&current=' + pages.internalCurrentPage, method: 'get' }).then(res => {
+      const data={
+        startDate:(this.addStartTime || '') + ' ' + (this.addStartHour || '00') + ':00',
+        endDate:(this.addStopTime || '') + ' ' + (this.addStopHour || '00') + ':00',
+        userId:this.worker,
+        deptId:this.group,
+        size:pages.internalPageSize,
+        current:pages.internalCurrentPage
+      }
+      request({ url: '/gps/gps/inspectionTrackQuery' 
+      // +
+      //   '?&startDate=' + (this.addStartTime || '') + ' ' + (this.addStartHour || '00') + ':00' +
+      //   '&endDate=' + (this.addStopTime || '') + ' ' + (this.addStopHour || '00') + ':00' +
+      //   '&userId=' + this.worker +
+      //   '&deptId=' + this.group +
+      //   '&size=' + pages.internalPageSize + '&current=' + pages.internalCurrentPage
+        ,params:data, method: 'post' }).then(res => {
         if(res.code == 1) {
           this.showDetail=[res.result.totalMileage,res.result.totalTimeConsuming,res.result.overallAverageSpeed]
           res = res.result.pageGpsInfo

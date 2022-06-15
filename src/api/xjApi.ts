@@ -480,3 +480,84 @@ export function repairPlanAuditPage(params) {
         params
     })
 }
+
+//获取人员签到信息
+export function getUserSignList(params) {
+    return request({
+        url: '/gps/pdasign/getUserSignList',
+        method: 'get',
+        params
+    })
+}
+
+//获取人员轨迹分段信息
+export function getSection(params) {
+    return request({
+        url: '/gps/gps/getSection',
+        method: 'get',
+        params
+    })
+}
+
+//获取多人员轨迹分段信息
+export function getSectionMulti(params) {
+    return request({
+        url: '/gps/gps/getSectionMulti',
+        method: 'get',
+        params
+    })
+}
+
+
+//获取人员轨迹详细信息
+export function getGPSAll(params) {
+    return request({
+        url: '/gps/gps/getAll',
+        method: 'get',
+        params
+    })
+}
+
+//获取GPS设备信息
+export function getEquipmentInfo(params) {
+    return request({
+        url: '/gps/gps/page',
+        method: 'get',
+        params
+    })
+}
+
+//获取巡检计划内容
+export function getPlanTimeIntervalPage(params) {
+    return request({
+        url: '/gps/plan/getPlanTimeIntervalPage',
+        method: 'get',
+        params
+    })
+}
+
+//获取某部门某一天的所有计划
+export function getDayPlan(params) {
+    return request({
+        url: '/gps/plan/page',
+        method: 'get',
+        params
+    })
+}
+
+//获取车辆列表
+export function getCarMonitor(params) {
+    return request({
+        url: '/gps/monitorCenter/carMonitor',
+        method: 'get',
+        params
+    })
+}
+
+export function getTrouble(params) {
+    return request({
+        url: '/gps/trouble/page',
+        method: 'get',
+        params
+    })
+}
