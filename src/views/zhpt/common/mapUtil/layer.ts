@@ -5,7 +5,7 @@ import { WMTS } from 'ol/source'
 import * as olExtent from 'ol/extent'
 import WMTSTileGrid from 'ol/tilegrid/WMTS'
 import * as olProj from 'ol/proj'
-import { TileSuperMapRest, SuperMap, LayerInfoService, SetLayerStatusParameters, LayerStatus, SetLayersInfoParameters, SetLayerStatusService } from '@supermap/iclient-ol'
+import { TileSuperMapRest, SuperMap, LayerInfoService, DatasetService } from '@supermap/iclient-ol'
 
 import { appconfig } from 'staticPub/config';
 
@@ -84,6 +84,7 @@ export class TF_Layer {
                 let layer = null
                 if (res) {
                     this.setLayerConfig(res.result)
+                    this.setDataConfig(res.result.subLayers.layers)
                     let source = new TileSuperMapRest({ url, cacheEnabled: false, crossOrigin: 'anonymous', wrapX: true })
                     let layer = new TileLayer({ source, properties: { projection: this.projection } })
                     //
@@ -114,7 +115,17 @@ export class TF_Layer {
                 })
             }
         })
-        console.log('修改后的图层服务', layerConfig)
+    }
+    // 配置数据服务
+    setDataConfig (layers) {
+        let serviceConfig = appconfig.gisResource['iserver_resource'].dataService
+        serviceConfig.dataSetInfo = layers.map(layer => layer.subLayers.layers.map(sub => {
+            return { name: sub.name.split('@')[0], title: sub.caption, label: sub.caption }
+        })).flat()
+        // new DatasetService(url).getDatasets(dataSetInfo, res => {
+        //     console.log('获取数据服务', res)
+        //     console.log('获取数据服务', layers)
+        // })
     }
     // 超图切片图层
     // 设置临时图层

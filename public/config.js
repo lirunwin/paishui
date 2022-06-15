@@ -28,7 +28,7 @@ export const appconfig = {
   'initCenter': [101.724022, 26.580702], 
   // [101.724022, 26.580702] 攀枝花
   // [104.1958, 30.0181] 仁寿
-  'initLayers': 'psmap&&single', // 用于配置图层树 pipemap&&group
+  'initLayers': 'pipemap&&smlayergroup', // 用于配置图层树 pipemap&&group
   // 地图初始视角级别
   'initZoom': 15,
   // token
@@ -38,10 +38,6 @@ export const appconfig = {
     'printer': {
       'name': '打印地址',
       'url': 'http://117.174.10.73:8090/iserver/services/webprinting/rest/webprinting/v1'
-    },
-    'legend': {
-        'name': '图例',
-        'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/psmap/layers/'
     },
     // add iserverResource
     "iserver_resource": {
@@ -55,36 +51,33 @@ export const appconfig = {
         'dataSource': "tofly",
         'dataSet': ["psmap"],
         'dataSetInfo': [
-            { 'name': 'TF_PSPS_PIPE_B', 'type': 'line', 'label': '排水管线' },
-            { 'name': 'TF_PSPS_POINT_B', 'type': 'point', 'label': '排水管点' },
-            { 'name': 'TF_PSPS_OUTFALL_B', 'type': 'point', 'label': '排放口' },
+            // { 'name': 'TF_PSPS_PIPE_B', 'label': '排水管线' },
+            // { 'name': 'TF_PSPS_POINT_B', 'label': '排水管点' },
+            // { 'name': 'TF_PSPS_OUTFALL_B', 'label': '排放口' },
         ]
       },
       'layerService': {
         'name': '图层服务',
         'layers': [
           {
-            'parentname': "底图",
             'name': '矢量底图',
             'type': 'wmtslayer',
             'url': 'http://t0.tianditu.gov.cn/vec_c/wmts?tk=',
             'visible': true
           },
           {
-            'parentname': "底图", 
             'name': '影像底图',
             'type': 'wmtslayer',
             'url': 'http://t0.tianditu.gov.cn/img_c/wmts?tk=',
             'visible': false
           },
           {
-            'parentname': "底图",
             'name': '矢量标注',
             'type': 'wmtslayer',
             'url': 'http://t0.tianditu.gov.cn/cva_c/wmts?tk=',
             'visible': true
-          },{
-            'parentname': "底图", 
+          },
+          {
             'name': '影像标注',
             'type': 'wmtslayer',
             'url': 'http://t0.tianditu.gov.cn/cia_c/wmts?tk=',
@@ -113,118 +106,16 @@ export const appconfig = {
           //   'url': 'http://t4.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
           //   'visible': true,
           //   "id": 4
-          // },
-          { 
-            'name': 'psmap',
-            'title': '排水管线',
-            'type': 'smlayer',
-            'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/psmap',
+          // // },
+          {
+            'name': 'pipemap',
+            'title': '综合管网',
+            'type': 'smlayergroup',
+            'url': iserverConfig.baseUrl + 'services/map-tf_rsps-2/rest/maps/pipemap',
             'visible': true,
-            'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/psmap/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
-            'sublayers': [
-              {
-                title: "城市受纳水体（河道）",
-                name: "TF_PSPS_RIVER_B",
-                visible: true,
-              },
-              {
-                title: "排水渠道",
-                name: "TF_PSPS_CONDUIT_B",
-                visible: true
-              },
-              {
-                title: "排水管道",
-                name: "TF_PSPS_PIPE_B",
-                visible: true
-              },
-              {
-                title: "特征点",
-                name: "TF_PSPS_POINT_B",
-                visible: true,
-                type: 'point'
-              },
-              {
-                title: "检查井",
-                name: "TF_PSPS_MANHOLE_B",
-                visible: true,
-                type: 'point'
-              },
-              {
-                title: "雨水口",
-                name: "TF_PSPS_COMB_B",
-                visible: true,
-                type: 'point'
-              },
-              {
-                title: "排放口",
-                name: "TF_PSPS_OUTFALL_B",
-                visible: true,
-                type: 'point'
-              },
-              {
-                title: "溢流堰",
-                name: "TF_PSPS_WEIR_B",
-                visible: true
-              },
-              {
-                title: "闸门",
-                name: "TF_PSPS_GATE_B",
-                visible: true,
-                type: 'point'
-              },
-              {
-                title: "阀门",
-                name: "TF_PSPS_VALVE_B",
-                visible: true,
-                type: 'point'
-              },
-              {
-                title: "排水泵站",
-                name: "TF_PSPS_PUMPSTATION_B",
-                visible: true
-              },
-              {
-                title: "调蓄设施",
-                name: "TF_PSPS_RETENTION_B",
-                visible: true
-              },
-              {
-                title: "污水处理设施",
-                name: "TF_PSPS_WWTP_B",
-                visible: true
-              },
-              {
-                title: "污泥处理处置设施",
-                name: "TF_PSPS_STP_B",
-                visible: true
-              },
-              {
-                title: "排水户",
-                name: "TF_PSPS_DISCHARGER_B",
-                visible: true
-              },
-              {
-                title: "水浸点数据表",
-                name: "TF_PSPS_FLOOD_B",
-                visible: true
-              },
-              {
-                title: "城市河道桩号点",
-                name: "TF_PSPS_RIVERNODE",
-                visible: true
-              },
-            
-            ]
-          },
-          // {
-          //   'name': 'pipemap',
-          //   'title': '综合管网',
-          //   'type': 'smlayergroup',
-          //   'url': iserverConfig.baseUrl + 'services/map-tf_rsps-2/rest/maps/pipemap',
-          //   'visible': true,
-          //   // 'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/psmap/layers/TF_PSPS_RIVER_B@tofly@@psmap/legend',
-          //   'sublayers': []
-          // }
+            'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps-2/rest/maps/pipemap/layers/',
+            'sublayers': []
+          }
         ]
       }
     },

@@ -159,7 +159,8 @@ export default {
                 return { 
                   properties: fea.properties, 
                   tableName, 
-                  feature: fea, name: fea.properties[KeyId[tableName]] || fea.properties['EXP_NO'], 
+                  feature: fea, 
+                  name: fea.properties[KeyId[tableName]] || fea.properties['EXP_NO'], 
                   layer: layerName 
                 }
               })
@@ -173,13 +174,13 @@ export default {
     },
     // 空间查询 获取设施
     getFacilities (fea) {
-      let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
-      let info = sources.map(source => source.sublayers.map(sublayer => {
-        return { name: sublayer.name, label: sublayer.title }
-      }))
-      let dataSetInfo = info.flat()
+      // let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
+      // let info = sources.map(source => source.sublayers.map(sublayer => {
+      //   return { name: sublayer.name, label: sublayer.title }
+      // }))
+      // let dataSetInfo = info.flat()
       return new Promise(resolve => {
-        new iQuery({ dataSetInfo }).spaceQuery(fea).then(res => {
+        new iQuery().spaceQuery(fea).then(res => {
           console.log('返回的数据', res)
           let data = res.filter(item => item.type === "processCompleted")
           resolve(data)

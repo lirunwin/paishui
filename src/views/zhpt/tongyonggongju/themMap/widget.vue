@@ -7,7 +7,9 @@
         </tf-legend>
         <tf-legend class="legend_dept" label="图层选择" isopen="true" title="选择将要进行查询的图层">
           <el-select v-model="layerId" placeholder="请选择图层">
-            <el-option v-for="item in layers" :key="item.value" :label="item.label" :value="item.value"/>
+            <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
+               <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+            </el-option-group>
           </el-select>
         </tf-legend>        
         <tf-legend class="legend_dept" label="图层字段" isopen="true" title="请选择图层查询字段。">
@@ -51,7 +53,7 @@
           <label style="color: #409eff;display: flex;margin: 6px 0;font-size:14px;">{{queTextName}}</label>
           <el-row style="margin-top: 8px">
             <el-col :span="5" style="float:right;">
-              <el-button size="mini" type="primary" @click="queText = ''">清空</el-button>
+              <el-button size="mini" type="primary" @click="clearText">清空</el-button>
             </el-col>
           </el-row>
         </tf-legend>
@@ -141,7 +143,7 @@ export default {
       fixLoading: false,
       activeName: 'themShow',
       
-      layers: [],
+
       
       layerFix: [],      
       queText: '',
@@ -163,7 +165,8 @@ export default {
       pageSize: 30,
       currentPage: 1,
       total: 0,
-      layerBox: new Map()
+      layerBox: new Map(),
+      layerGroups: []
     }
   },
   computed: { 
@@ -171,6 +174,7 @@ export default {
   },
   watch: {
     sidePanelOn(newTab, oldTab) {
+      console.log('图层变化')
       if (newTab !== "themMap") {
         this.drawer && this.drawer.end()
         this.drawer = null
@@ -217,6 +221,10 @@ export default {
     this.updateThemLayerTable()
   },
   methods: {
+    clearText () {
+      this.queText = '';
+      this.queTextName = '';
+    },
     // 移除图层
     removeLayer (layername) {
       if (!layername) {
@@ -230,11 +238,14 @@ export default {
       }
     },
     init() {
-      let layers = mapUtil.getAllSubLayerNames('排水管线')
- 
+      let [name, type] = appconfig.initLayers.split("&&")
+      let layer = mapUtil.getAllSubLayerNames(name, type)
       // 设置图层
-      this.layers = layers.map(layer => {
-        return { label: layer.title, value: layer.name }
+      this.layerGroups = layer.sublayers.map(layer => {
+        let layers = layer.sublayers.map(sub => {
+          return { label: sub.title, value: sub.name.split('@')[0] }
+        })
+        return { label: layer.title, value: layer.name, layers }
       })
 
       var mapView = this.mapView = this.data.mapView
@@ -300,7 +311,7 @@ export default {
       isField && this.getUniqueValue(text)
     },
     getUniqueValue (filed) {
-      mapUtil.getUniqueValue(this.layerId, filed).then(res => {
+      mapUtil.getUniqueValue(this.layerId, filed.trim()).then(res => {
         if(res) {
           this.layerFix = res
         } else this.$message.error('获取唯一值失败')
@@ -504,6 +515,7 @@ export default {
   destroyed() {
     this.drawer && this.drawer.end()
     this.drawer = null
+    this.removeLayer()
   }
 }
 </script>

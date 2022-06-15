@@ -176,7 +176,6 @@ export default {
         return { ...fea.properties, geometry: fea.geometry, tableName }
       })
       mapUtil.getFields(tableName).then(res => {
-        console.log('字段', res)
         let cols = res.filter(i => {
           return i.name.includes('唯一编号') 
           || i.name.includes('类型')
@@ -196,32 +195,26 @@ export default {
       this.drawer = new iDraw(this.data.mapView, type, {
         endDrawCallBack: feature => {
           this.drawer.remove()
-          query(feature, res => {
-            this.addStatistic(res)
-          })
+          query(feature, res => this.addStatistic(res))
         },
         showCloser: false
       })
       this.drawer.start()
 
-      function query(feature, callback) {
-        let dataSetInfo = mapUtil.getAllSubLayerNames('排水管线').map(layerInfo => {
-          return { name: layerInfo.name, label: layerInfo.title }
-        })
-        let queryTask = new iQuery({ dataSetInfo })
+      function query(feature, callback) { 
         let geometry = null
         // 如果是点，缓冲距离
         if (type === 'point') {
           const dis = 1e-3
           feature = turf.buffer(turf.point(feature.getGeometry().getCoordinates()), dis, { units: 'kilometers' })
         }
-        queryTask.spaceQuery(feature).then(resArr => {
+        new iQuery().spaceQuery(feature).then(resArr => {
+          console.log('空间查询')
           callback(resArr)
           let features = []
           resArr.forEach(item => {
             if (item && item.result.featureCount !== 0) {
               features.push(item.result.features)
-            } else {
             }
           })
           features.forEach(feaJson => {

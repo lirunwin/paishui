@@ -40,9 +40,9 @@ export default {
     methods: {
         initTree () {
             let layers = appconfig.gisResource['iserver_resource'].layerService.layers
-            let showlayers = layers.filter(layer => layer.name === this.treeTitle)
+            let showlayer = layers.find(layer => layer.name === this.treeTitle)
             let ids = [], id = 0
-            this.layersData = showlayers.map(parentlayer => {
+            this.layersData = showlayer.sublayers.map(parentlayer => {
                 let parentName = parentlayer.name
                 let sublayers = parentlayer.sublayers.map(sublayer => {
                     id++
@@ -55,7 +55,7 @@ export default {
             this.defaultCheckedKeys = ids
         },
         setLayerVisible (row, check) {
-            if (this.type === 'group') {
+            if (this.type === 'smlayergroup') {
                 this.setLayerGroupVisible(row, check)
             } else {
                 this.setSingleVisible(row, check)

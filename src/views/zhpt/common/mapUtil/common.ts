@@ -201,7 +201,7 @@ export class mapUtil {
     static getUniqueValue(layerName, field) {
         return new Promise(resolve => {
             getUniqueValueByFiled({ dataSetName: layerName, fieldName: field }).then(res => {
-                if (res.code === 1) {
+                if (res && res.code === 1) {
                     resolve(res.result)
                 } else resolve(null)
             })
@@ -211,12 +211,9 @@ export class mapUtil {
     // 
     static getAllSubLayerNames(parentLayerName, type) {
         let layers = appconfig.gisResource['iserver_resource'].layerService.layers
-        let showlayers = layers.filter(layer => layer.type === 'smlayer')
+        let showlayers = layers.filter(layer => layer.type === type)
         let filterLayer = showlayers.find(layer => layer.name = parentLayerName)
-        if (type) {
-            return filterLayer.sublayers.filter(layer => layer.type === type)
-        }
-        return filterLayer.sublayers
+        return filterLayer
     }
 
     /**
@@ -257,19 +254,18 @@ export class mapUtil {
     
     /**
       * 超图图层组子图层显隐, 只适合图层组, 会修改 config 公共配置
-      * @param layersVisble 子图层显隐 eg: [{ name: "", visible:  }]
-      * @param parentName 父级
+      * @param layersConfig 图层配置
       */
-    setGroupLayerVisible(parentName, layersVisble) {
-        let layers =  appconfig.gisResource['iserver_resource'].layerService.layers
+    setGroupLayerVisible(layersConfig) {
+        let layers =  layersConfig || appconfig.gisResource['iserver_resource'].layerService.layers
         let parentLayer = layers.find(layer => layer.type === 'smlayergroup')
         let ids = [], idsStr = ''
         let url = parentLayer.url
         parentLayer.sublayers.forEach(group => {
             group.sublayers.forEach(sub => {
-                if (parentName && group.name === parentName && layersVisble.some(layer => layer.name === sub.name)) {
-                    sub.visible = layersVisble.find(layer => layer.name === sub.name).visible
-                }
+                // if (parentName && group.name === parentName && layersVisble.some(layer => layer.name === sub.name)) {
+                //     sub.visible = layersVisble.find(layer => layer.name === sub.name).visible
+                // }
                 if (sub.visible) { ids.push(sub.id) }
             })
         })

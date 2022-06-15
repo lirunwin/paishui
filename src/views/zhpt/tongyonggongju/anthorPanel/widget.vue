@@ -14,7 +14,7 @@
         ref="tree"
         :data="layerTable"
         node-key="id"
-        :default-expand-all="true"
+        :default-expand-all="false"
         show-checkbox
         @check="subLayerChange"
         :default-checked-keys="defaultCheckedKeys"
@@ -35,7 +35,7 @@
             </div>
             <span class="el-tree-node__label">{{ node.label }}</span>
           </el-tooltip>
-        </el-row> -->
+        </el-row>-->
       </el-tree>
     </tf-legend>
     <tf-legend
@@ -106,6 +106,7 @@ import * as control from 'ol/control'
 import { Logo, TileSuperMapRest } from '@supermap/iclient-ol'
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import { defaults as controls } from 'ol/control'
+import { mapUtil } from '../../common/mapUtil/common'
 
 export default {
   name: 'AnthorPanel',
@@ -125,21 +126,28 @@ export default {
       followExtentZ: true,
       layerTable: [],
       pipeLayer: undefined,
-      
+
       currMap: null,
       defaultCheckedKeys: [],
       defaultProps: {
         children: 'children',
         label: 'label'
       },
+      //
+      layerTree: '',
+      layersSource: []
     }
+  },
+  created() {
+    let [treeName, type] = appconfig.initLayers.split('&&')
+    this.layerTree = treeName
   },
   mounted: function() {
     this.antP = this.data.that.$refs.antP
     this.antP.nextElementSibling.style.display = 'block'
     this.antP.style.display = 'block'
 
-    var mapView = this.mapView = this.data.mapView
+    var mapView = (this.mapView = this.data.mapView)
     this.mapDiv = mapView.getTargetElement()
     this.mapDiv.style.width = 'calc(50% - 2px)'
     this.mapDiv.style.float = 'left'
@@ -166,12 +174,13 @@ export default {
         controls: controls({
           zoom: false,
           attribution: false
-        }),
+        })
       })
       this.currMap = map
-      this.addLayers(layerResource)
 
-      this.setTreeData(layerResource)
+      this.layersSource = this.deepClone(layerResource)
+      this.addLayers(this.layersSource)
+      this.setTreeData(this.layersSource)
 
       this.mapView.getView().on('change', (evt) => {
         let currView = map.getView()
@@ -179,6 +188,29 @@ export default {
           zoom = evt.target.getZoom()
         this.setCenterAndZoom(currView, { center: this.followExtentC && center, zoom: this.followExtentZ && zoom })
       })
+    },
+    deepClone(obj) {
+      let clone
+      if (obj instanceof Array) {
+        clone = [...obj]
+        clone.forEach((item, i) => {
+          if (item instanceof Array || item instanceof Object) {
+            clone[i] = this.deepClone(item)
+          } else {
+            clone[i] = item
+          }
+        })
+      } else if (obj instanceof Object) {
+        clone = { ...obj }
+        for (let i in obj) {
+          if (obj[i] instanceof Object || obj[i] instanceof Array) {
+            clone[i] = this.deepClone(obj[i])
+          } else {
+            clone[i] = obj[i]
+          }
+        }
+      }
+      return clone
     },
     setCenterAndZoom(view, { center = null, zoom = 0 }) {
       center && view.setCenter(center)
@@ -192,89 +224,76 @@ export default {
     },
 
     addLayers(layersSource) {
-      new TF_Layer().createLayers(layersSource).then(layers => {
-        layers.forEach(layer => {
+      new TF_Layer().createLayers(layersSource).then((layers) => {
+        layers.forEach((layer) => {
           layer && this.currMap.addLayer(layer)
         })
       })
     },
 
     setTreeData(layers) {
-      let showlayers = layers.filter(layer => layer.type === 'smlayer')
-      let id = 0, ids = []
-      let layersData = showlayers.map(parentlayer => {
-        let parentId = id++
+      let showlayer = layers.find((layer) => layer.name === this.layerTree)
+      let ids = [],
+        id = 0
+      this.layerTable = showlayer.sublayers.map((parentlayer) => {
         let parentName = parentlayer.name
-        ids.push({ id: parentId, name: parentName, isParent: true })
-        let sublayers = parentlayer.sublayers.map(sublayer => {
-          let layerId = id++
-          ids.push({ id: layerId, name: sublayer.title, isParent: false })
-          return { id: layerId, label: sublayer.title, parentName }
+        let sublayers = parentlayer.sublayers.map((sublayer) => {
+          id++
+          if (sublayer.visible) {
+            ids.push(id)
+          }
+          return { id, label: sublayer.title, name: sublayer.name, parentName }
         })
-        return { id: parentId, label: parentlayer.name, children: sublayers }
+        id++
+        return { id, label: parentlayer.title, name: parentName, children: sublayers }
       })
-      this.layerTable = layersData
-      this.defaultCheckedKeys = ids.map(obj => obj.id)
+      this.defaultCheckedKeys = ids
     },
 
-    subLayerChange (row, check) {
+    subLayerChange(row, check) {
       let visible = check.checkedKeys.includes(row.id)
-      let isParent, parentLayerName = ''
-
-      if ('children' in row) {
-        isParent = true
-        parentLayerName = row.label
+      let isParent = !row.parentName, parentName, layerName, layersVisible
+      if (isParent) {
+        parentName = row.name
       } else {
-        isParent = false
-        parentLayerName = row.parentName
+        parentName = row.parentName
+        layerName = row.name
       }
-      // 筛选选择的图层
-      let layers = appconfig.gisResource['iserver_resource'].layerService.layers
-      let showlayers = layers.filter(layer => layer.type === 'smlayer')
-      let filterLayer = showlayers.find(layer => layer.name = parentLayerName)
-      // 设置子图层显隐
-      let findLayer = null
-      if (filterLayer) {
-        let tempSublayers = filterLayer.sublayers.map(layer => {
-          return { ...layer }
-        })
-        findLayer = { ...filterLayer, sublayers: [ ...tempSublayers ] }
-        findLayer.sublayers.forEach(l => {
+
+      // 修改配置项
+      let layers = this.layersSource.find((layer) => layer.name === this.layerTree )
+      layers.sublayers.forEach((layerGroup) => {
+        let groupName = layerGroup.name
+        let sublayers = layerGroup.sublayers
+        sublayers.forEach((layer) => {
           if (isParent) {
-            l.visible = visible
+            if (groupName === parentName) { layer.visible = visible }
           } else {
-            let visible = check.checkedNodes.find(obj => obj.label === l.title)
-            l.visible = !!visible
+            if (groupName === parentName && layerName === layer.name) { layer.visible = visible }
           }
         })
-      }
-      // 删掉原有图层，添加新图层
-      new TF_Layer().createLayers([findLayer]).then(layers => {
-        let layerInMap = this.currMap.getLayers().getArray().find(layer => layer.get('name') === findLayer.name)
-        this.currMap.addLayer(layers[0])
-        setTimeout(() => {
-          this.currMap.removeLayer(layerInMap)
-        }, 1000)
       })
+      new mapUtil(this.currMap).setGroupLayerVisible(this.layersSource)
     },
-    opacityChange (data) {
+    opacityChange(data) {
       data.layer.values_.opacity = 1 - data.visibleNum / 100
       this.currMap.render()
     },
     // 底图变化
     baseMapChange: function(showVector) {
+      console.log('底图切换')
       if (showVector) {
         this.showImageBase = !this.showImageBase
       } else {
         this.showVectorBase = !this.showVectorBase
       }
-      
+
       let layers = this.currMap.getLayers().getArray()
-      layers.forEach(layer => {
-        let { parentname, name, } = layer.values_
-        if (parentname === "底图") {
-          if (name.includes("矢量")) layer.setVisible(this.showVectorBase)
-          else if (name.includes("影像")) layer.setVisible(!this.showVectorBase)
+      layers.forEach((layer) => {
+        let { parentname, name } = layer.values_
+        if (name.includes('矢量') || name.includes('影像')) {
+          if (name.includes('矢量')) layer.setVisible(this.showVectorBase)
+          else if (name.includes('影像')) layer.setVisible(!this.showVectorBase)
         }
       })
     },
@@ -283,11 +302,13 @@ export default {
     },
     inputBaseLayer: function(w) {
       let layerBox = ['矢量', '影像']
-      let opacity = this.baseMapsNum[w];
+      let opacity = this.baseMapsNum[w]
       let layers = this.currMap.getLayers().getArray()
-      layers.filter(layer => layer.get('name').includes(layerBox[w])).forEach(layer => {
-        layer.setOpacity(1 - opacity / 100)
-      })
+      layers
+        .filter((layer) => layer.get('name').includes(layerBox[w]))
+        .forEach((layer) => {
+          layer.setOpacity(1 - opacity / 100)
+        })
     }
   },
   watch: {

@@ -36,11 +36,18 @@ export default {
             //     }).join("")
             //     this.rootPage.$refs.legend.innerHTML = htmlStr
             // })
-
-            let htmlStr = this.legends.map((legend, index) => {
-                let url = `${appconfig.gisResource.legend.url + legend.name}@tofly@@psmap/legend`
-                return `<div><img src='${url}'><div style='display:inline-block;font-size:14px'>${legend.title}</div></div>`
-            }).join('')
+            console.log('图例', this.legends)
+            let url = this.legends.legendUrl
+            let dataSetName = this.legends.name
+            let legendSourceName = this.legends.legendSource
+            let htmlStr = this.legends.sublayers.map((group, index) => {
+                let groupName = group.name.replace('#', '.')
+                return group.sublayers.map(sub => {
+                    let subName = sub.name.replace('#', '.')
+                    let legendUrl = `${url + subName}@@${groupName}@@${dataSetName}/legend`
+                    return `<div><img src='${legendUrl}'><div style='display:inline-block;font-size:14px'>${sub.title}</div></div>`
+                })
+            }).flat().join('')
             this.rootPage.$refs.legend.innerHTML = htmlStr
 
         // $.ajax({
@@ -74,7 +81,7 @@ export default {
         this.$nextTick(() => {
             document.addEventListener('keyup', this.keyUpEvent)
         })
-        this.legends = mapUtil.getAllSubLayerNames('排水管线')
+        this.legends = mapUtil.getAllSubLayerNames('pipemap', 'smlayergroup')
         this.showlegend(true)
         this.$notify({
             title: '操作提示',
