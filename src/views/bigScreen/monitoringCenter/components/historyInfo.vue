@@ -174,7 +174,6 @@ export default {
         color: #88B4CE;
         .el-col{
             display: flex;
-            // justify-content: space-around;
             align-items: center;
             padding: 0 .052083rem /* 10/192 */;
         }

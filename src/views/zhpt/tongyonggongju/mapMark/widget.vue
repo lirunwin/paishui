@@ -12,7 +12,7 @@
     <tf-legend class="legend_dept" label="我的书签" isopen="true" title="查看所有已保存的地图书签。">      
       <el-row>
         <el-col :span="24">
-          <el-table height='650px' @row-click='jump' ref="markTable" :default-sort="{ prop: 'date', order: 'descending' }" :data="list" stripe style="width: 100%;" row-class-name="selectRowC">
+          <el-table height='550px' @row-click='jump' ref="markTable" :default-sort="{ prop: 'date', order: 'descending' }" :data="list" stripe style="width: 100%;" row-class-name="selectRowC">
             <!-- <el-table-column type="selection" width="55" /> -->
             <template slot="empty">
               <img src="@/assets/icon/null.png" alt="">
@@ -147,11 +147,10 @@ export default {
       })
     },
     listRefersh() {
-      console.log('更新列表')
       var pages = this.$refs.pagination
       let param = { size: this.pageSize, current: this.currentPage }
       getMapMark(param).then(res => {
-        if(res.code == 1) {
+        if(res.code == 1 && res.result) {
           res = res.result
           this.total = res.total
           let list = res.records.map(item => {

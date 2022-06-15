@@ -248,7 +248,7 @@ export default {
           showList.push({
             x:item.lng,
             y:item.lat,
-            userName:item.signUserName,
+            name:item.signUserName,
             state:(item.signType=="未打卡")?'nosign':'sign'
           })
         }
@@ -388,7 +388,10 @@ export default {
     /**定位*/
     goToPoint(data){
       if(data.lat&&data.lng){
-        this.mapView.getView().setCenter([data.lng,data.lat])
+        this.mapView.getView().setZoom(19);
+        this.$nextTick(e=>{
+          this.mapView.getView().setCenter([data.lng,data.lat])
+        })
       }else{
         this.$message.info("未上传坐标")
       }
@@ -501,7 +504,7 @@ export default {
     margin-right: 10px;
   }
   .showUser{
-    height: calc(100% - 45px);
+    height: calc(100% - 55px);
     background: #EFF0F5;
     border-radius: 2px;
     overflow-y: auto;
@@ -568,6 +571,7 @@ export default {
     font-size: 14px;
     left: 10px;
     top: calc((100% - 15px)/2);
+    cursor: pointer;
   }
   .clickTool{
     height: 100%;

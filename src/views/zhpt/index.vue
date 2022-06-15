@@ -465,21 +465,24 @@ export default class BaseMap extends Vue {
   }
 
   async spaceQuery(position) {
-    const bufferDis = 3e-3
+    const bufferDis = 1e-3
     let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
     let dataServerConfig = appconfig.gisResource.iserver_resource.dataService
-    let queryData = await new iQuery().spaceQuery(queryFeature)
-    let showData = []
-    for (let data of queryData as any) {
-      let features = data.result.features.features
-      if (features.length !== 0) {
-        showData.push(features)
+    new iQuery().spaceQuery(queryFeature).then(queryData => {
+      console.log('查询服务')
+      let showData = []
+      for (let data of queryData as any) {
+        let features = data.result.features.features
+        if (features.length !== 0) {
+          showData.push(features)
+        }
       }
-    }
-    if (showData.length !== 0) {
-      let feature = showData[0][0]
-      this.openPopup(position, feature)
-    }
+      if (showData.length !== 0) {
+        let fea = showData.find(data => data[0].geometry.type === 'Point')
+        let feature = fea ? fea[0] : showData[0][0]
+        this.openPopup(position, feature)
+      }
+    })
   }
 
   // 设置是否开启弹窗
@@ -499,7 +502,7 @@ export default class BaseMap extends Vue {
       vectorLayer.getSource().addFeature(ifeature)
       this.view.addLayer(vectorLayer)
     }
-    // 重置事件
+    // 关闭弹窗后
     function afterClosePopup() {
       vectorLayer.getSource().removeFeature(ifeature)
     }
@@ -510,12 +513,6 @@ export default class BaseMap extends Vue {
       layers.forEach(layer => {
         layer && this.view.addLayer(layer)
       })
-      // new mapUtil(this.view).setGroupLayerVisible("LayerGroup#1", [
-      //     { name: "TF_TXDX_PIPE_B@tofly", visible: false },
-      //     { name: "TF_DLLD_PIPE_B@tofly", visible: false },
-      //     { name: "TF_RQTQ_PIPE_B@tofly", visible: false }
-      //   ]
-      // )
     })
   }
 

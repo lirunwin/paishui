@@ -2,7 +2,7 @@
   <!-- 地图弹窗 -->
   <div id="popup-window" class="popup-window">
     <div class="window-header">
-      <span class="popup-title" v-cloak v-if="flg">{{infoObject.properties.TYPE+'('+ infoObject.properties.LNO + ')'}}</span>
+      <span class="popup-title" v-cloak v-if="flg">{{infoObject.properties.TYPE+'('+ infoObject.properties.LNO || infoObject.properties.EXP_NO + ')'}}</span>
       <span class="close-btn el-icon-close" title="关闭" @click="closePopup"></span>
     </div>
     <!-- 管线属性内容 -->
@@ -39,7 +39,7 @@
         <li>
           <span>类型：<i v-text="infoObject.properties.TYPE"></i></span>
           <!-- <span>所属类型：<i v-text="infoObject.properties.SUBTYPE +' '+ infoObject.properties.ADJUNCT"></i></span> -->
-          <span>所属类型：<i v-text="infoObject.properties.POINT_TYPE"></i></span>
+          <span>使用状态：<i v-text="infoObject.properties.STATUS"></i></span>
         </li>
         <li>
           <span>地面高程：<i v-text="infoObject.properties.HIGH"></i></span>
@@ -51,7 +51,7 @@
         </li>
         <li>
           <!-- <span>埋深：<i v-text="infoObject.properties.DEPTH"></i></span> -->
-          <span>接入管数：<i v-text="infoObject.properties.WELLPIPES"></i></span>
+          <span>地址：<i v-text="infoObject.properties.ADDRESS"></i></span>
           <span>更新日期：<i v-text="infoObject.properties.UPDATE_TIME"></i></span>
         </li>
         <li>

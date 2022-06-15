@@ -150,8 +150,12 @@ export default {
       return this.times ? this.times[e].t : e
     },
     close() {
-      this.pathLayer.getSource().clear();
-      this.highPathLayer.getSource().clear();
+      if(this.pathLayer){
+        this.pathLayer.getSource().clear();
+      }
+      if(this.highPathLayer){
+        this.highPathLayer.getSource().clear();
+      }
       this.mapView.removeLayer(this.pathLayer);
       this.mapView.removeLayer(this.highPathLayer);
       this.pathLayer=null;
