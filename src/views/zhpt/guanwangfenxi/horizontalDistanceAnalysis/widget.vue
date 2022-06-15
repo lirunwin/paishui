@@ -82,6 +82,7 @@ import iDraw from '@/views/zhpt/common/mapUtil/draw';
 import iQuery from '@/views/zhpt/common/mapUtil/query';
 import DisAnalysisTool from '@/views/zhpt/common/mapUtil/disAnalysis';
 import { DisStandard } from '@/views/zhpt/common/standard'
+import { mapUtil } from '../../common/mapUtil/common';
 
 export default {
   props: ["data"],
@@ -136,22 +137,18 @@ export default {
   },
   methods: {
     init () {
-      this.vectorLayer = new VectorLayer({
-        source: new VectorSource(),
-        style: comSymbol.getAllStyle(2, "f00", 5, '#00FFFF', 'rgba(255,255,255,0.3)')
-      })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
       this.map.addLayer(this.vectorLayer)
-      this.lightLayer = new VectorLayer({
-        source: new VectorSource(),
-        style: comSymbol.getLineStyle(5, "#f00")
-      })
+      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getLineStyle(5, 'red') })
       this.map.addLayer(this.lightLayer)
+      this.data.that.setPopupSwitch(false)
     },
     removeAll (){
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.drawer && this.drawer.end()
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.drawer = this.vectorLayer = this.lightLayer = null
+      this.data.that.setPopupSwitch(true)
     },
     select () {
       this.drawer && this.drawer.end()
@@ -179,7 +176,7 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresArr = resArr.filter(res => res && res.result.featureCount !== 0)

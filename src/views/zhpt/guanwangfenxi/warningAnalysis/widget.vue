@@ -6,7 +6,9 @@
       <el-form label-width="70px">
         <el-form-item label="图层名称" style="margin:0">
           <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small">
-            <el-option v-for="item in datasetOptions" :key="item.name" :label="item.label" :value="item.name"> </el-option>
+            <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
+               <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+            </el-option-group>
           </el-select>
         </el-form-item>
       </el-form>
@@ -210,7 +212,7 @@ export default {
 
       draw: null,
 
-      datasetOptions: [],
+      layerGroups: [],
 
       features: [],
       queryForm: {
@@ -309,9 +311,15 @@ export default {
       this.mapView.addLayer(this.vectorLayer)
       this.mapView.addLayer(this.lightLayer)
       
-      let sublayers = mapUtil.getAllSubLayerNames('排水管线')
-      this.datasetOptions = sublayers.map(layer => {
-        return { name: layer.name, label: layer.title }
+      // 
+      let [name, type] = appconfig.initLayers.split("&&")
+      let layer = mapUtil.getAllSubLayerNames(name, type)
+      // 设置图层
+      this.layerGroups = layer.sublayers.map(layer => {
+        let layers = layer.sublayers.map(sub => {
+          return { label: sub.title, value: sub.name.split('@')[0] }
+        })
+        return { label: layer.title, value: layer.name, layers }
       })
     },
     // 绘制完成
@@ -383,14 +391,17 @@ export default {
     },
     // 分析
     execute() {
+      console.log(1111)
       if (this.warningExtent === "2" && !this.limitFeature) return this.$message.error("请先绘制查询范围")
       if (!this.selectLayer) return this.$message.error("请选择查询图层")
 
-      let dataSetInfo = this.datasetOptions.filter(layer => layer.name === this.selectLayer).map(layer => {
-        return { name: layer.name, label: layer.label }
+      let findLayer, dataSetInfo = []
+      this.layerGroups.forEach(layer => {
+        let find = layer.layers.find(sub => sub.value === this.selectLayer)
+        if (find) { findLayer = find }
       })
       this.loading = true
-
+      dataSetInfo = [{ name: findLayer.value, label: findLayer.label }]
       let sqlStr = this.checkQueryParams()
       new iQuery({ dataSetInfo }).sqlQuery(sqlStr).then(resArr => {
         this.loading = false

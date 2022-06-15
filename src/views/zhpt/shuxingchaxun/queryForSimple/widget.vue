@@ -3,7 +3,9 @@
   <div style="padding: 0 8px">
     <tf-legend class="legend_dept" label="选择图层" isopen="true" title="选择查询要素图层">
       <el-select v-model="layerName" placeholder="请选择">
-        <el-option v-for="item in layersAtt" :key="item.value" :label="item.label" :value="item.value"/>
+            <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
+               <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+            </el-option-group>
       </el-select>
     </tf-legend>
     <tf-legend class="legend_dept" label="选择字段" isopen="true" title="选择查询图层对应的字段">
@@ -109,7 +111,7 @@ export default {
       radioHolder: '',
       dateDistancs: ['', ''],
       selectType: '',
-      layersAtt: [],
+      layerGroups: [],
       attLists: [],
       panel: {
         pathId: 'queryResult3',
@@ -213,14 +215,19 @@ export default {
       this.attList = ''
       this.radio = ''
       this.selectType = ''
+      this.finalData = []
     },
     init () {
       // 加载图层
-      let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
-      let info = sources.map(source => source.sublayers.map(sublayer => {
-        return { value: sublayer.name, label: sublayer.title }
-      }))
-      this.layersAtt = info[0]
+      let [name, type] = appconfig.initLayers.split("&&")
+      let layer = mapUtil.getAllSubLayerNames(name, type)
+      // 设置图层
+      this.layerGroups = layer.sublayers.map(layer => {
+        let layers = layer.sublayers.map(sub => {
+          return { label: sub.title, value: sub.name.split('@')[0] }
+        })
+        return { label: layer.title, value: layer.name, layers }
+      })
 
       this.vectorLayer = new VectorLayer({ source: new VectorSource(), style:  comSymbol.getAllStyle(5, "#f00", 6, 'rgb(64, 158, 255)') })
       this.data.mapView.addLayer(this.vectorLayer)
@@ -234,6 +241,7 @@ export default {
       });
     },
     queryResult() {
+      console.log(11111)
       var layerName = this.layerName
       var attList = this.attList
       if(!layerName) return this.$message.error('请选择图层')
@@ -260,7 +268,11 @@ export default {
           queryText = '1=1'
         }
       }
-      let layer = this.layersAtt.find(item => layerName === item.value)
+      let layer = null
+      this.layerGroups.forEach(item => {
+        let find = item.layers.find(sub => sub.value === layerName)
+        if (find) { layer = find }
+      })
       let dataSetInfo = [{ label: layer.label, name: layer.value }]
       this.analysisDisable = true
       new iQuery({ dataSetInfo }).sqlQuery(queryText).then(res => {

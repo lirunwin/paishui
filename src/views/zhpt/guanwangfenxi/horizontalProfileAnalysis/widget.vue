@@ -115,7 +115,7 @@ export default {
       }
     },
     analysis_new (drawFeature) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
+      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
       let queryTask = new iQuery({ dataSetInfo })
 
       queryTask.spaceQuery(drawFeature).then(resArr => {
