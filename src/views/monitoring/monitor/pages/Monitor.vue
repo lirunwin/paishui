@@ -284,7 +284,7 @@ export default class Monitor extends Vue {
   }
 
   goTo(item) {
-    const { id: siteId, code: indexCode } = item || {}
+    const { id: siteId } = item || {}
     this.$store.dispatch('map/changeMethod', {
       id: '/monitoring/report/detail',
       type: 'gis',
@@ -293,7 +293,7 @@ export default class Monitor extends Vue {
       meta: {
         title: '监测详情查看'
       },
-      param: { siteId, indexCode }
+      param: { siteId }
     })
   }
 

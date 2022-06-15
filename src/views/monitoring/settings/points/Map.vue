@@ -10,13 +10,12 @@ import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
 // import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 import * as turf from '@turf/turf'
-import { getDistance } from '@/utils/constant'
 import GeoJSON from 'ol/format/GeoJSON'
-import { Vector as VectorSource } from "ol/source";
-import { Vector as VectorLayer } from "ol/layer";
-import Feature from 'ol/Feature';
-import { Geometry, Point } from 'ol/geom';
-import {Style, Circle,Fill,} from 'ol/style';
+import { Vector as VectorSource } from 'ol/source'
+import { Vector as VectorLayer } from 'ol/layer'
+import Feature from 'ol/Feature'
+import { Point } from 'ol/geom'
+import { Style, Circle, Fill } from 'ol/style'
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 type Coordinate = number[]
 
@@ -31,11 +30,11 @@ export default class MapView extends Vue {
 
   view: Map = null
 
-  timer: NodeJS.Timeout = null
+  timer: number = null
 
-  vectorLayer:VectorLayer<any>=null
-  queryLayer:VectorLayer<any>=null
-  lightLayer:VectorLayer<any>=null
+  vectorLayer: VectorLayer<any> = null
+  queryLayer: VectorLayer<any> = null
+  lightLayer: VectorLayer<any> = null
 
   async initMap() {
     const { initCenter, initZoom } = appconfig
@@ -60,9 +59,9 @@ export default class MapView extends Vue {
         // const distance = getDistance(this.center, e.coordinate)
         // console.log(distance)
         // if (distance * 1000 > 10) this.spaceQuery(e.coordinate)
-        if(this.queryLayer.getSource().getFeatures().length>0){
+        if (this.queryLayer.getSource().getFeatures().length > 0) {
           this.clickHightlight(e)
-        }else{
+        } else {
           this.$message('当前站点10m范围内无相关设施，请重新选择站点')
         }
       }
@@ -82,55 +81,58 @@ export default class MapView extends Vue {
     const bufferDis = 10e-3
     let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
     let queryData = await new iQuery().spaceQuery(queryFeature)
-    let multiData=[];
+    let multiData = []
     for (let data of queryData as any) {
       let multifeatures = data.result.features
       if (multifeatures.totalCount !== 0) {
         multiData.push(multifeatures)
       }
     }
-    multiData.forEach(feaJson => {
+    multiData.forEach((feaJson) => {
       let feas = new GeoJSON().readFeatures(feaJson)
       this.queryLayer.getSource().addFeatures(feas)
     })
   }
 
-  clickHightlight(e){
-      let gl =this;
-      gl.lightLayer.getSource().clear()
-      let pixel = gl.view.getEventPixel(e.originalEvent)
-      gl.view.forEachFeatureAtPixel(pixel,function(feature){
-          const featureInfo={
-              geometry:feature.getGeometry(),
-              id:feature.getId(),
-              properties: feature.getProperties()
-          }
-          gl.deviceChange(featureInfo)
-          gl.lightLayer.getSource().addFeature(feature)
-      });
+  clickHightlight(e) {
+    let gl = this
+    gl.lightLayer.getSource().clear()
+    let pixel = gl.view.getEventPixel(e.originalEvent)
+    gl.view.forEachFeatureAtPixel(pixel, function(feature) {
+      const featureInfo = {
+        geometry: feature.getGeometry(),
+        id: feature.getId(),
+        properties: feature.getProperties()
+      }
+      gl.deviceChange(featureInfo)
+      gl.lightLayer.getSource().addFeature(feature)
+    })
   }
 
   addLayers(layersSource) {
-    new TF_Layer().createLayers(layersSource).then((layers: any[]) => {
-      layers.forEach((layer) => {
-        layer && this.view.addLayer(layer)
+    new TF_Layer()
+      .createLayers(layersSource)
+      .then((layers: any[]) => {
+        layers.forEach((layer) => {
+          layer && this.view.addLayer(layer)
+        })
       })
-    }).then(()=>{
-      this.initVectorLayer()
-    })
+      .then(() => {
+        this.initVectorLayer()
+      })
   }
-  showDevicePosition(position){
-      this.showPointSymbol(position)
-      this.spaceQuery(position)
+  showDevicePosition(position) {
+    this.showPointSymbol(position)
+    this.spaceQuery(position)
   }
   @Watch('center', { immediate: true })
   setCenter(coordinate: number[]) {
     this.clearVectorLayer()
     const [lat, lng] = coordinate || []
     if (!lat || !lng) return
-    
+
     this.timer && clearTimeout(this.timer)
-    this.timer = setTimeout(() => {
+    this.timer = window.setTimeout(() => {
       this.view.getView().setCenter([lat, lng])
       this.view.getView().setZoom(19)
       this.showDevicePosition([lat, lng])
@@ -154,36 +156,36 @@ export default class MapView extends Vue {
   }
 
   //初始化矢量图层源
-  initVectorLayer(){
-      this.vectorLayer = new VectorLayer({
-          source: new VectorSource({wrapX: false,}),
-          style: new Style({
-              image: new Circle({
-                  fill: new Fill({
-                      color: 'red'
-                  }),
-                  radius: 5
-              }),
-          })
+  initVectorLayer() {
+    this.vectorLayer = new VectorLayer({
+      source: new VectorSource({ wrapX: false }),
+      style: new Style({
+        image: new Circle({
+          fill: new Fill({
+            color: 'red'
+          }),
+          radius: 5
+        })
       })
-      this.view.addLayer(this.vectorLayer);
-      this.queryLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
-      this.view.addLayer(this.queryLayer)
-      this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
-      this.view.addLayer(this.lightLayer)
+    })
+    this.view.addLayer(this.vectorLayer)
+    this.queryLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
+    this.view.addLayer(this.queryLayer)
+    this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
+    this.view.addLayer(this.lightLayer)
   }
   //显示点符号
-  showPointSymbol(position){
-      const feature = new Feature({
-          geometry: new Point(position),
-          name:'monitorPoint',
-      })
-      this.vectorLayer.getSource().clear()
-      this.vectorLayer.getSource().addFeature(feature)
+  showPointSymbol(position) {
+    const feature = new Feature({
+      geometry: new Point(position),
+      name: 'monitorPoint'
+    })
+    this.vectorLayer.getSource().clear()
+    this.vectorLayer.getSource().addFeature(feature)
   }
   //清除地图元素
-  clearVectorLayer(){
-    if(!this.vectorLayer||!this.queryLayer||!this.lightLayer) return
+  clearVectorLayer() {
+    if (!this.vectorLayer || !this.queryLayer || !this.lightLayer) return
     this.vectorLayer.getSource().clear()
     this.queryLayer.getSource().clear()
     this.lightLayer.getSource().clear()

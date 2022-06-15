@@ -551,7 +551,7 @@ export const updateDeviceType = (data: IDeviceType) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.base, method: 'put', data })
 
 export const getDeviceType = (id: string) =>
-  axios.request<IRes<IDeviceType>>({ url: `${uris.settings.device.types.base}/${id}`, method: 'get' })
+  axios.request<IResult<IDeviceType>>({ url: `${uris.settings.device.types.base}/${id}`, method: 'get' })
 
 export const deviceTypesPage = (params: IDeviceType & IQueryCommon) =>
   axios.request<IRes<IDeviceType[]>>({
@@ -574,7 +574,7 @@ export const updateDeviceTypeParam = (data: IDeviceTypeParam) =>
   axios.request<IRes<boolean>>({ url: uris.settings.device.types.params.base, method: 'put', data })
 
 export const getDeviceTypeParam = (id: string) =>
-  axios.request<IRes<IDeviceTypeParam>>({ url: `${uris.settings.device.types.params.base}/${id}`, method: 'get' })
+  axios.request<IResult<IDeviceTypeParam>>({ url: `${uris.settings.device.types.params.base}/${id}`, method: 'get' })
 
 export const deviceTypeParamsPage = (params: IDeviceTypeParam & IQueryCommon & { LRange?: string }) =>
   axios.request<IRes<IDeviceTypeParam[]>>({ url: uris.settings.device.types.params.page, method: 'get', params })
@@ -601,7 +601,7 @@ export const updateDevice = (data: IDevice) =>
   })
 
 export const getDevice = (id: string) =>
-  axios.request<IRes<IDevice>>({ url: `${uris.settings.device.archives.base}/${id}`, method: 'get' })
+  axios.request<IResult<IDevice>>({ url: `${uris.settings.device.archives.base}/${id}`, method: 'get' })
 
 export const devicesPage = (params: IDevice & IQueryCommon) =>
   axios.request<IRes<IDevice[]>>({ url: uris.settings.device.archives.page, method: 'get', params })
@@ -623,7 +623,7 @@ export const updateStandard = (data: IStandard) =>
   axios.request<IRes<boolean>>({ url: uris.settings.standards.base, method: 'put', data })
 
 export const getStandard = (id: string) =>
-  axios.request<IRes<IStandard>>({ url: `${uris.settings.standards.base}/${id}`, method: 'get' })
+  axios.request<IResult<IStandard>>({ url: `${uris.settings.standards.base}/${id}`, method: 'get' })
 
 export const standardsPage = (params: IStandard & IQueryCommon) =>
   axios.request<IRes<IStandard[]>>({ url: uris.settings.standards.page, method: 'get', params })
@@ -642,7 +642,7 @@ export const updateStandardParam = (data: IStandardParam) =>
   axios.request<IRes<boolean>>({ url: uris.settings.standards.params.base, method: 'put', data })
 
 export const getStandardParam = (id: string) =>
-  axios.request<IRes<IStandardParam>>({ url: `${uris.settings.standards.params.base}/${id}`, method: 'get' })
+  axios.request<IResult<IStandardParam>>({ url: `${uris.settings.standards.params.base}/${id}`, method: 'get' })
 
 export const standardParamsPage = (params: IStandardParam & IQueryCommon) =>
   axios.request<IRes<IStandardParam[]>>({ url: uris.settings.standards.params.page, method: 'get', params })
@@ -661,7 +661,7 @@ export const updatePoint = (data: IPoint) =>
   axios.request<IRes<boolean>>({ url: uris.settings.points.base, method: 'put', data })
 
 export const getPoint = (id: string) =>
-  axios.request<IRes<IPoint>>({ url: `${uris.settings.points.base}/${id}`, method: 'get' })
+  axios.request<IResult<IPointConnectDevice>>({ url: `${uris.settings.points.base}/${id}`, method: 'get' })
 
 export const pointsPage = (params: IPointConnectDevice & IQueryCommon & { deviceTypeId?: string | number }) =>
   axios.request<IRes<IPointConnectDevice[]>>({ url: uris.settings.points.page, method: 'get', params })
@@ -849,7 +849,7 @@ export interface IReportDetailQuery {
   startTime: string
   endTime: string
   /** 0：实时监测 1：15分钟平均值 2：1小时平均值 */
-  status: '0' | '1' | '2'
+  status: string
 }
 
 export interface IReportDetail {
@@ -858,10 +858,10 @@ export interface IReportDetail {
   deviceCode: string
   /** 指标编号 */
   itCd: string
-  /** 当前指标值 */
-  itVal: string
-  /** 检测值数字型 */
-  itnumVal: number
+  // /** 当前指标值 */
+  // itVal: string
+  // /** 检测值数字型 */
+  // itnumVal: number
   /** 监测值字符型 */
   itstrVal: string
   /** 监测点数据质量192=good,0=bad */

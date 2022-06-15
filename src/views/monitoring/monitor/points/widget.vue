@@ -118,7 +118,7 @@ export default class PointsMonitor extends Vue {
   }
 
   goTo(item) {
-    const { siteId } = item || {}
+    const { siteId, paraName: indexCode } = item || {}
     this.$store.dispatch('map/changeMethod', {
       id: '/monitoring/report/detail',
       type: 'gis',
@@ -127,7 +127,7 @@ export default class PointsMonitor extends Vue {
       meta: {
         title: '监测详情查看'
       },
-      param: { siteId }
+      param: { siteId, indexCode }
     })
   }
 

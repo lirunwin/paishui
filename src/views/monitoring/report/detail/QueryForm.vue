@@ -1,15 +1,28 @@
 <template>
   <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData">
     <el-form-item label="设备类型" prop="indicateNames">
-      <el-select v-model="formData.deviceType" placeholder="请选择设备类型" size="small" clearable>
-        <el-option v-for="param of deviceTypes" :value="param.id" :key="param.id" :label="param.name" />
+      <el-select
+        v-model="formData.deviceType"
+        placeholder="请选择设备类型"
+        size="small"
+        clearable
+        @change="onDeviceTypeChange"
+      >
+        <el-option v-for="param of deviceTypes" :value="String(param.id)" :key="param.id" :label="param.name" />
       </el-select>
     </el-form-item>
     <el-form-item label="监测站点" prop="siteId">
       <el-row type="flex">
         <el-col>
-          <el-select v-model="formData.siteId" placeholder="请选监测点" size="small" clearable multiple>
-            <el-option v-for="point of points" :value="point.id" :key="point.id" :label="point.name">
+          <el-select
+            v-model="formData.siteId"
+            placeholder="请选监测点"
+            size="small"
+            clearable
+            multiple
+            @change="onSiteIdChange"
+          >
+            <el-option v-for="point of points" :value="String(point.id)" :key="point.id" :label="point.name">
               {{ point.name }} | {{ point.code }}
             </el-option>
           </el-select>
@@ -110,7 +123,7 @@ interface IFormData {
   siteId: number[] | string[]
   indexCode: string[]
   status: string
-  deviceType: (number | string)[]
+  deviceType: number | string
 }
 
 const format = 'YYYY-MM-DD HH:mm:ss'
@@ -127,7 +140,7 @@ const getDefaultFormData = (): Partial<IFormData> => {
         .startOf('day')
         .toDate(),
       moment()
-        .endOf('day')
+        .startOf('day')
         .toDate()
     ],
     siteId: [],
@@ -159,7 +172,7 @@ export default class QueryForm extends Vue {
         .startOf('day')
         .format(format),
       endTime: moment(endTime)
-        .endOf('day')
+        .startOf('day')
         .format(format)
     }
     // const data = {
@@ -174,8 +187,8 @@ export default class QueryForm extends Vue {
     this.$emit('query', query)
   }
 
-  @Watch('formData.deviceType')
   async onDeviceTypeChange(deviceTypeId: number | string) {
+    if (!deviceTypeId) return
     try {
       this.formData.siteId = []
       this.formData.indexCode = []
@@ -189,8 +202,8 @@ export default class QueryForm extends Vue {
   }
 
   pointParamTimer = null
-  @Watch('formData.siteId')
-  onSiteIdChange(ids: (string | number)[]) {
+
+  onSiteIdChange(ids: (string | number)[], fallback?: Function) {
     try {
       if (this.pointParamTimer) clearTimeout(this.pointParamTimer)
       this.formData.indexCode = []
@@ -207,7 +220,9 @@ export default class QueryForm extends Vue {
         const {
           result: { records }
         } = await configuredPointParamPage({ deviceIds, current: 1, size: 9999999 })
-        this.thresholdNames = [...new Set(records.map((item) => item.name))]
+        const names = [...new Set(records.map((item) => item.name))]
+        this.thresholdNames = names
+        fallback && fallback(names)
       }, 500)
     } catch (error) {
       console.log(error)
@@ -223,17 +238,29 @@ export default class QueryForm extends Vue {
   }
 
   @Watch('defaultQuery')
-  onDefaultQuery(query) {
-    const { beginTime, siteId, indexCode, endTime, status } = query
-    if (siteId)
+  async onDefaultQuery(query) {
+    const { deviceType, siteId, startTime, endTime, status, indexCode } = query
+    if (siteId) {
+      if (deviceType) await this.onDeviceTypeChange(deviceType)
       this.formData = {
-        ...this.defaultQuery,
-        date: [beginTime || '', endTime || ''],
-        siteId: siteId ? [String(siteId)] : [],
-        indexCode: indexCode ? [String(indexCode)] : [],
+        deviceType: String(deviceType) || '',
+        date: [startTime || '', endTime || ''],
         status: String(status || '') || '0',
-        besides: [...this.formData.besides]
+        besides: [getDefaultBeside()]
       }
+      await this.onSiteIdChange([siteId], (names: string[] = []) => {
+        this.formData = {
+          ...this.formData,
+          indexCode: indexCode ? [indexCode] : [...names]
+        }
+        this.onQuery()
+      })
+
+      this.formData = {
+        ...this.formData,
+        siteId: siteId ? [String(siteId)] : []
+      }
+    }
   }
 }
 </script>
