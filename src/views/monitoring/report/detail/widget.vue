@@ -9,7 +9,15 @@
               @query="onQuery"
               :defaultQuery="{
                 ...param,
-                data: [$moment().add(-7, 'day').startOf('day').toDate(), $moment().endOf('day').toDate()]
+                data: [
+                  $moment()
+                    .add(-7, 'day')
+                    .startOf('day')
+                    .toDate(),
+                  $moment()
+                    .endOf('day')
+                    .toDate()
+                ]
               }"
               :deviceTypes="deviceTypes"
               :points="points"
@@ -70,7 +78,6 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import QueryForm from './QueryForm.vue'
 import BaseTitle from '../../components/BaseTitle/index.vue'
-import Echarts from '../../components/Echarts/index.vue'
 import {
   deviceTypesPage,
   fetchReportDetail,
@@ -98,10 +105,7 @@ const getDefaultMapData = ({ title, names }: { title: string; names?: string[] }
     calculable: true,
     yAxis: [{ type: 'value' }],
     xAxis: [{ type: 'category', boundaryGap: false }],
-    dataZoom: [
-      { type: 'inside', start: 0, end: 100 },
-      { start: 0, end: 100 }
-    ],
+    dataZoom: [{ type: 'inside', start: 0, end: 100 }, { start: 0, end: 100 }],
     // legend: { data: names },
     toolbox: {
       show: true,
@@ -116,7 +120,7 @@ const getDefaultMapData = ({ title, names }: { title: string; names?: string[] }
   }
 }
 
-@Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle, Echarts } })
+@Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle } })
 export default class ReportDetail extends Vue {
   @Prop({ type: Object, default: () => ({}) }) param!: IReportDetailQuery
   @Prop({ type: Boolean }) isActive!: boolean
@@ -164,24 +168,31 @@ export default class ReportDetail extends Vue {
               return {
                 name: `${name}-${key}`,
                 type: 'line',
-                symbol: 'none'
+                symbol: 'none',
+                smooth: true
               }
             })
           })
           .flat()
           .map((item, index) => {
-            return {
-              datasetIndex: index,
-              ...item
-            }
+            return { datasetIndex: index, ...item }
           })
       }
     } else if (this.merge.includes('point')) {
       // 按监测点融合展示: 多监测点, 1指标
+
+      return {
+        ...getDefaultMapData({ title: '' }),
+        dataset: this.detail
+      }
     } else if (this.merge.includes('param')) {
       // 按指标融合展示: 1监测点 多指标
+      return {
+        ...getDefaultMapData({ title: '' })
+      }
     }
     return {
+      // 1监测点 1指标
       ...getDefaultMapData({ title: '', names: [] }),
       series: [
         {
