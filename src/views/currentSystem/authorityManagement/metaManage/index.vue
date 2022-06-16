@@ -223,13 +223,14 @@ export default {
 }
 /deep/.el-dialog .el-dialog__header {
   background-color: rgb(45, 116, 231);
-  box-shadow: inset 0 0 30px #116fb9;
-  border: none;
+  font-size: 16px;
   .el-dialog__title {
     color: white;
   }
   .el-dialog__headerbtn {
-    color: white;
+    > i {
+        color: white!important;
+    }
   }
 }
 </style>

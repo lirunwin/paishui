@@ -36,7 +36,8 @@
         <el-button size="small" type="primary" @click="updateTable">查询</el-button>
       </el-form-item>
       <el-form-item style="margin-right:15px;">
-        <el-button size="small" type="primary" @click="backup">备份</el-button>
+        <el-button size="small" type="primary" @click="backup(0)">备份</el-button>
+        <el-button size="small" type="primary" @click="backup(1)">策略</el-button>
       </el-form-item>
     </el-form>
 
@@ -75,17 +76,44 @@
         @size-change="updateTable"
       />
     </div>
-    <el-dialog :visible.sync="showBackConfig" append-to-body width="50%" title="备份">
+    <el-dialog :visible.sync="showBackConfig" append-to-body width="40%" title="备份">
         <div class="common-title">备份策略</div>
-        <div slot="footer" style="text-align:right;margin:15px 10px 0 0;">
-            <el-button size="small" @click="toBackup" type="primary">确定</el-button>
-            <el-button size="small" @click="showBackConfig=false" type="primary">取消</el-button>
+        <div style="margin: 20px; font-size: 14px; color: #333333;">对业务数据库进行备份</div>
+        <div class="backup-content">
+            <div class="backup-content-main">
+                <div class="backup-content-img"><img :src="overBackup.img" alt=""></div>
+                <div class="backup-content-title">全面备份</div>
+                <div class="backup-content-tips">{{ overBackup.time }}</div>
+                <div v-show="!backConfig"><el-button @click="backupOption(0)" :type="!overBackup.status ? 'primary' : 'danger'">{{ overBackup.text }}</el-button></div>
+            </div>
+            <div style="flex:0.02"></div>
+            <div class="backup-content-main">
+                <div class="backup-content-img"><img :src="incBackup.img"></div>
+                <div class="backup-content-title">增量备份</div>
+                <div class="backup-content-tips">{{ incBackup.time }}</div>
+                <div v-show="!backConfig"><el-button @click="backupOption(2)" :type="!incBackup.status ? 'primary' : 'danger'">{{ incBackup.text }}</el-button></div>
+            </div>
+        </div>
+        <div style="display:flex;margin-top:10px">
+            <div class="backup-config">
+                备份周期<el-input :disabled="!backConfig" size="small" value="7" style="width:40px"/>天一次，保存<el-input size="small" value="28" :disabled="!backConfig" style="width: 50px"/>天
+            </div>
+            <div style="flex:0.02"></div>
+            <div class="backup-config">
+                备份周期<el-input :disabled="!backConfig"  size="small" value="7" style="width: 40px;color:#2d74e7;"/>天一次，保存<el-input size="small"  value="28" :disabled="!backConfig" style="width: 50px"/>天
+            </div>
+        </div>
+        <div v-show="backConfig" slot="footer" style="text-align:right;margin:15px 10px 0 0;">
+            <el-button size="small" @click="saveBackup" type="primary">保存</el-button>
+            <el-button size="small" @click="showBackConfig=false" type="primary">关闭</el-button>
         </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
+import backupImg from '@/assets/images/backup.png'
+import backupingImg from '@/assets/images/backuping.png'
 export default {
   data() {
     return {
@@ -126,7 +154,21 @@ export default {
           height: '40px'
         }
       },
-      showBackConfig: false
+      showBackConfig: false,
+      //
+      overBackup: {
+          img: backupImg,
+          status: 0,
+          time: '最后一次备份时间：2022.06.03 12:24:06',
+          text: '开始备份'
+      },
+      incBackup: {
+          img: backupImg,
+          status: 0,
+          time: '最后一次备份时间：2022.06.03 12:24:06',
+          text: '开始备份'
+      },
+      backConfig: true
     }
   },
   watch: {
@@ -140,10 +182,26 @@ export default {
     // 下载
     download() {},
     // 备份
-    backup() {
+    backup(type) {
         this.showBackConfig = true
+        this.backConfig = !!type
     },
-    toBackup () {
+    // 备份操作
+    backupOption (type) {
+        let backType = type ? this.incBackup : this.overBackup
+        if (backType.status) {
+            backType.time = '最后一次备份时间：2022.06.03 12:24:06'
+            backType.status = 0
+            backType.img = backupImg
+            backType.text = '开始备份'
+        } else {
+            backType.time = '备份中'
+            backType.status = 1
+            backType.img = backupingImg
+            backType.text = '停止备份'
+        }
+    },
+    saveBackup () {
         this.showBackConfig = false
     }
   },
@@ -160,13 +218,15 @@ export default {
     margin-right: 5px!important;
 }
 /deep/ .common-title {
+    background: rgb(242, 246, 252);
     position: relative;
     font-weight: bold;
     margin-left: 20px;
     font-size: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
     height: 30px;
     line-height: 30px;
+    color: rgb(46, 116, 231);
     &::after {
         position: absolute;
         top: 5px;
@@ -175,6 +235,50 @@ export default {
         width: 4px;
         height: 65%;
         background-color: #2d74e7;
+    }
+}
+
+/deep/ .backup-content {
+    display: flex;
+    .backup-content-main {
+        height: 300px;
+        flex: 0.49;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        background: rgb(242, 246, 252);
+        justify-content: space-around;
+        .backup-content-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: rgb(46, 116, 231);
+        }
+        .backup-content-tips {
+            font-size: 12px;;
+        }
+    }
+}
+/deep/.el-dialog .el-dialog__header {
+  background-color: rgb(45, 116, 231);
+  font-size: 16px;
+  .el-dialog__title {
+    color: white;
+  }
+  .el-dialog__headerbtn {
+    > i {
+        color: white!important;
+    }
+  }
+}
+/deep/.backup-config {
+    flex:0.49;
+    letter-spacing: 2px;
+    .el-input {
+        color: #2d74e7;
+        margin: 0 5px;
+        > input {
+            color: #2d74e7;
+        }
     }
 }
 </style>
