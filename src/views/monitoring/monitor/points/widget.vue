@@ -36,7 +36,12 @@
       :isSetCenter="popups[key].center"
       @close="() => onPopupClose(key)"
     >
-      <InfoCard @distribute="onDistribute" :data="popups[key].data" :colors="levelColors" />
+      <InfoCard
+        @distribute="onDistribute"
+        :data="popups[key].data"
+        :colors="levelColors"
+        @jump="() => goTo(popups[key])"
+      />
     </CommonPopup>
   </div>
 </template>

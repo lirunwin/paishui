@@ -194,7 +194,7 @@ export default {
     z-index: 2;
     margin-left: 2.34375rem /* 450/192 */;
     bottom: .052083rem /* 10/192 */;
-    height:  1.390625rem /* 267/192 */;
+    height:  1.458333rem /* 280/192 */;
     width: 5.302083rem /* 1018/192 */;
     overflow: hidden;
     position: absolute;

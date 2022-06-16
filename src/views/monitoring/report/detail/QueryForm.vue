@@ -206,8 +206,9 @@ export default class QueryForm extends Vue {
   onSiteIdChange(ids: (string | number)[], fallback?: Function) {
     try {
       if (this.pointParamTimer) clearTimeout(this.pointParamTimer)
-      this.formData.indexCode = []
+      this.$emit('change:point', { selected: ids, points: this.points })
 
+      this.formData.indexCode = []
       const deviceIds = this.points
         .filter((item) => ids.map((i) => String(i)).includes(String(item.id)))
         .map((point) => {

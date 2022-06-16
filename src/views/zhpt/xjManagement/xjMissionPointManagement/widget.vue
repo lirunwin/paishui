@@ -155,7 +155,8 @@ export default class XjMissionPointManagement extends Vue {
     // this.getXjType() //绑定新增页面的巡查类型
     this.getData() //获取首页表格数据
     var that = this
-    this.initMapSource()
+    //this.initMapSource()
+    this.addMap();
   }
 
   destroyed() {
@@ -208,9 +209,13 @@ export default class XjMissionPointManagement extends Vue {
    * 在模块打开的时候预先加载地图
    */
   addMap() {
-    let { initCenter, initZoom } = appconfig
+    if(!this.$store.getters.appconfig){
+      this.$message('服务加载失败 启用默认服务配置')
+      return;
+    }
+    let { initCenter, initZoom } = this.$store.getters.appconfig
     var div = this.$refs.cctvMap as HTMLElement
-    let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
+    let layerResource = this.$store.getters.appconfig.gisResource['iserver_resource'].layerService.layers
     const map = new Map({
       target: div,
       view: new View({
@@ -222,12 +227,12 @@ export default class XjMissionPointManagement extends Vue {
       })
     })
     this.mapV = map
-
-    layerResource.forEach((layerConfig) => {
-      let { name, type, url, parentname, id, visible = true } = layerConfig
-      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-      map.addLayer(layer)
+    new TF_Layer().createLayers(layerResource).then(layers => {
+      layers.forEach((layer:any) => {
+        layer && map.addLayer(layer)
+      })
     })
+   
     //添加矢量点图层
     const vectorLayer = new VectorLayer({
       source: new VectorSource()
@@ -393,73 +398,6 @@ export default class XjMissionPointManagement extends Vue {
     that.$nextTick(that.loadMap)
     that.flag = false
   }
-  initMapSource() {
-    var resource = appconfig.gisResource['iserver_resource']
-    if (appconfig.isloadServer) {
-      request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then((res1) => {
-        if (res1.code == 1) {
-          const res = res1.result
-          //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
-          let onlineIndex = res.findIndex((item) => item.code == 'isOnlineAddress')
-          if (onlineIndex !== -1) {
-            let isOnline = true
-            let onLineAddress = res[onlineIndex].child[0].cval
-            axios
-              .get(onLineAddress)
-              .then(
-                (res) => {
-                  isOnline = res.status === 200
-                },
-                (error) => {
-                  isOnline = false // 异常返回
-                }
-              )
-              .catch((e) => {
-                isOnline = false //异常返回
-              })
-              .finally(() => {
-                const repItems = ['地图配置服务']
-                res.forEach((service) => {
-                  let resData = service.child,
-                    source = null
-                  if (repItems.includes(service.name) && resData && resData.length !== 0) {
-                    if (service.name === '图层服务') {
-                      source = resource.layerService.layers
-                      resData.forEach((data) => {
-                        let findItem = source.find((sourceItem) => {
-                          return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
-                        })
-                        if (findItem) {
-                          findItem.url = data.cval
-                        }
-                      })
-                    } else if (service.name === '地图配置服务') {
-                      source = appconfig
-                      resData.forEach((item) => {
-                        if (item.ckey === 'center') {
-                          source.initCenter = item.cval.split(',')
-                        } else if (item.ckey === 'zoom') {
-                          source.initZoom = item.cval
-                        }
-                      })
-                    } else if (service.name === '网络分析服务') {
-                      source = resource.netAnalysisService
-                      source.url = resData[0].cval
-                    } else if (service.name === '数据服务') {
-                      source = resource.dataService
-                      source.url = resData[0].cval
-                    }
-                  }
-                })
-                this.addMap()
-              })
-          }
-        } else this.$message('服务加载失败 启用默认服务配置')
-      })
-    } else {
-      //nextDo()
-    }
-  }
   //点击确定，提交添加的巡检点信息
   xjPointInfoSubmit() {
     let regionName = ''
@@ -504,14 +442,7 @@ export default class XjMissionPointManagement extends Vue {
     } else {
       this.graphicsLayer.getSource().clear()
     }
-    // const style = new Style({
-    //   image: new Icon({
-    //     src: require('@/views/zhpt/xjManagement/xjMissionPointManagement/images/location.svg'),
-    //     scale: 0.5,
-    //     color: 'red'
-    //   })
-    // })
-
+   
     const style = new Style({
       image: new Icon({
         src: locationIcon,
@@ -524,38 +455,6 @@ export default class XjMissionPointManagement extends Vue {
     })
     feature.setStyle(style)
     this.graphicsLayer.getSource().addFeature(feature)
-
-    // loadModules(
-    //   ['esri/views/MapView', 'esri/Graphic', 'esri/layers/GraphicsLayer', 'esri/symbols/PictureMarkerSymbol'],
-    //   { url: esriConfig.baseUrl }
-    // ).then(([MapView, Graphic, GraphicsLayer, PictureMarkerSymbol]) => {
-    //   const point = {
-    //     type: 'point',
-    //     x: lon,
-    //     y: lat,
-    //     spatialReference: mapV.spatialReference
-    //   }
-    //   const simpleMarkerSymbol = {
-    //     path: 'M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z',
-    //     color: 'red',
-    //     outline: { color: 'red', width: '1px' },
-    //     size: '30px',
-    //     yoffset: '15px',
-    //     xoffset: '0px',
-    //     type: 'simple-marker'
-    //   }
-    //   const pointGraphic = new Graphic({
-    //     geometry: point,
-    //     symbol: simpleMarkerSymbol
-    //   })
-    //   if (that.graphicsLayer) {
-    //     that.graphicsLayer.removeAll()
-    //   } else {
-    //     that.graphicsLayer = new GraphicsLayer()
-    //     map.add(that.graphicsLayer)
-    //   }
-    //   that.graphicsLayer.add(pointGraphic)
-    // })
   }
   //跳转到坐标点
   toPoint(lon, lat) {

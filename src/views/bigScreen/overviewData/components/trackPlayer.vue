@@ -48,6 +48,7 @@ export default {
         show:{
             handler(n,o){
                 if(n) this.showTrackPlayer=true
+                else this.showTrackPlayer=false
             }
         },
         isPlaying:{
@@ -99,8 +100,8 @@ export default {
 .trackPlayer{
     position: absolute;
     white-space: nowrap;
-    left: 2.239583rem /* 430/192 */;
-    top:.520833rem /* 100/192 */;
+    left: 2.5rem /* 480/192 */;
+    top: -.083333rem /* 16/192 */;
     width: 2.869792rem /* 551/192 */;
     height: .260417rem /* 50/192 */;
     background: linear-gradient(-90deg, rgba(3, 109, 190, 0.56) 0%, rgba(3, 109, 190, 0.26) 100%);

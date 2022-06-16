@@ -77,7 +77,8 @@ export default Vue.extend({
         },
         'cell-style': {
           height: '40px'
-        }
+        },
+        height: 'calc(100% - 50px)'
         // highlightCurrentRow: true
       } as Partial<ElTable>
     }
@@ -117,6 +118,19 @@ export default Vue.extend({
   >>> .el-table--striped {
     /deep/ .el-table__body tr.el-table__row--striped.el-table__row--striped.el-table__row--striped td {
       background-color: #f3f7fe;
+    }
+  }
+  >>> .el-table__body {
+    tr.hover-row {
+      &.el-table__row--striped.current-row,
+      &.current-row,
+      &.el-table__row--striped,
+      & {
+        & > td.el-table__cell {
+          background-color: rgba(45, 116, 231, 0.1);
+          color: #f19944;
+        }
+      }
     }
   }
   .table {

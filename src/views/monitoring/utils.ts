@@ -265,7 +265,7 @@ export const monitorPointReportCols: ColItem[] = [
   { prop: 'unit', label: '单位', width: '100px' },
   { prop: 'levelName', label: '判定结果', width: '90px' },
   { prop: 'shreshold', label: '监测阈值', width: '110px' },
-  { prop: 'isValid', label: '数据有效性', width: '60px', formatter: ({ isValid }: any) => (isValid ? '是' : '否 ') },
+  { prop: 'isValid', label: '数据有效性', width: '110px', formatter: ({ isValid }: any) => (isValid ? '是' : '否 ') },
   { prop: 'actions', label: '操作', width: '80px' }
 ]
 

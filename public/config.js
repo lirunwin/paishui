@@ -188,7 +188,7 @@ export const appconfig = {
       'groupname': '离线业务地图服务',
       'type': 'dynamic',
       'config': [
-        { 'name': '业务地图', 'url': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/psmap' }
+        { 'name': '业务地图', 'url': 'http://221.182.8.141:8090/iserver/services/map-tf_rsps-2/rest/maps/pipemap' }
       ]
     },
     'print': {

@@ -42,6 +42,9 @@ router.beforeEach(async(to, from, next) => {
     } else {
       const addRoutes = store.getters.addRoutes && store.getters.addRoutes.length > 0
       if (addRoutes) {
+        //初始化地图资源
+        const appconfig=await store.dispatch('gis/initGISResource')
+        console.log(appconfig)
         next()
       } else {
         try {
@@ -60,6 +63,10 @@ router.beforeEach(async(to, from, next) => {
           router.addRoutes(accessRoutes.concat(ERROR))
           // 确保addRoutes完整的hack方法
           // console.log('qqqqq', to)
+
+          //初始化地图资源
+          let appconfig = await store.dispatch('gis/initGISResource')
+          console.log(appconfig)
           next({ ...to })
         } catch (error) {
           // debugger

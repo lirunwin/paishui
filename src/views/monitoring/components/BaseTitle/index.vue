@@ -16,8 +16,9 @@ export default {
 
 <style lang="scss" scoped>
 .base-title {
-  padding: 4px 1em 4px 10px;
+  padding: 4px 0 4px 10px;
   border-left: 3px solid $--color-primary;
   margin-bottom: 15px;
+  font-size: 16px;
 }
 </style>

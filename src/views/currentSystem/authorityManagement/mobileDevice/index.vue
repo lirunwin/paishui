@@ -18,9 +18,20 @@
       @row-dblclick="onEdit"
       @selection-change="onSelectionChange"
       @page-change="onPageChange"
+      border
+      :header-cell-style="{
+        background: 'rgb(250, 250, 250)',
+        color: 'rgb(50, 59, 65)',
+        height: '38px'
+      }"
+      :cell-style="{
+        height: '28px'
+      }"
     >
       <template v-for="(_, index) of devices" v-slot:[`action-${index}`]="{ row }">
-        <el-button type="text" :key="`${index}-${row.id}`" @click.stop="() => onEdit(row)">编辑</el-button>
+        <el-button type="text" :key="`${index}-${row.id}`" @click.stop="() => onEdit(row)" style="padding:2px 5px"
+          >编辑</el-button
+        >
       </template>
     </BaseTable>
     <DeviceForm

@@ -77,15 +77,15 @@
             </el-select>
           </div>
         </div>
-        <div class="flexDiv">
+        <!-- <div class="flexDiv">
           <span class="flexTitle">片区：</span>
           <div class="flexInfo">
             <el-select v-model="reportForm.pointPlace" size="small" placeholder="请选择片区" style="width: 260px;">
               <el-option v-for="item of pointPlaces" :key="item.OBJECTID" :value="item.OBJECTID" :label="item.NAME"></el-option>
             </el-select>
           </div>
-        </div>
-        <div class="flexDiv">
+        </div> -->
+        <!-- <div class="flexDiv">
           <span class="flexTitle">是否进入工地：</span>
           <div class="flexInfo">
             <el-switch v-model="reportForm.isbuild" active-color="#13ce66" inactive-color="#ff4949" @change='changeBuildStatus($event)'></el-switch>
@@ -98,7 +98,7 @@
               <el-option v-for="item of dangerbuild" :key="item.id" :value="item.id" :label="item.name"></el-option>
             </el-select>
           </div>
-        </div>
+        </div> -->
         <div class="flexDiv">
           <span class="flexTitle">审核人：</span>
           <div class="flexInfo">
@@ -151,122 +151,6 @@
           <div style="width:100%; height: 310px; margin-top:8px;" ref="mapBox"></div>
         </div>
       </div>
-
-      <!-- <el-form :model="reportForm" :rules="reportRule" label-width="140px" label-position="right">
-				<el-row :gutter="20">
-					<el-col :span="10">
-						<el-form-item label="管线名称"  prop="name">
-							<el-input v-model="reportForm.name" style="width: 260px;" placeholder="请输入管线名称" size="small"></el-input>
-						</el-form-item>
-					</el-col>
-					<el-col :span="10" :offset="2">
-						<el-form-item label="隐患部位">
-							<el-select v-model="reportForm.part" @focus="getDangerPart" size="small" style="width: 260px;" clearable>
-									<el-option v-for="item of dangerpart" :key="item.ccode" :value="item.ccode" :label="item.cname"></el-option>
-							</el-select>
-						</el-form-item>
-					</el-col>
-				</el-row>
-				<el-row :gutter="20" style="margin-top:10px;">
-					<el-col :span="10">
-						<el-form-item label="隐患原因">
-							<el-select v-model="reportForm.reason" @focus="getDangerReason" size="small" style="width: 260px;" clearable>
-								<el-option v-for="item of reasons" :key="item.id" :value="item.id" :label="item.name"></el-option>
-							</el-select>
-						</el-form-item>
-					</el-col>
-					<el-col :span="10" :offset="2">
-						<el-form-item label="片区">
-							<el-select v-model="reportForm.pointPlace" size="small" placeholder="请选择片区" style="width: 260px;">
-								<el-option v-for="item of pointPlaces" :key="item.OBJECTID" :value="item.OBJECTID" :label="item.NAME"></el-option>
-							</el-select>
-						</el-form-item>
-					</el-col>
-				</el-row>
-				<el-row :gutter="20" style="margin-top:10px;">
-					<el-col :span="10">
-						<el-form-item label="是否进入工地">
-							<el-switch  v-model="reportForm.isbuild" active-color="#13ce66" inactive-color="#ff4949"
-								@change='changeBuildStatus($event)'
-							></el-switch>
-						</el-form-item>
-					</el-col>
-					<el-col :span="10" :offset="2">
-						<el-form-item v-show="reportForm.isbuild == true" label="所属工地">
-							<el-select v-model="reportForm.buildId" @focus="getDangerBuild" size="small" placeholder="请选择片区" style="width: 260px;">
-								<el-option v-for="item of dangerbuild" :key="item.id" :value="item.id" :label="item.name"></el-option>
-							</el-select>
-						</el-form-item>
-					</el-col>
-				</el-row>
-				<el-row :gutter="20" style="margin-top:10px;">
-					<el-col :span="10">
-						<el-form-item label="附件">
-							<el-upload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/"
-								:on-preview="handlePreview" 
-								:on-remove="handleRemove" 
-								:before-remove="beforeRemove"
-								:on-change="beforeAvatarUpload"
-                      			:on-success="handleAvatarSuccess"
-								:file-list="fileList" :auto-upload="false"
-								multiple :limit="3" :on-exceed="handleExceed" style="width: 260px;" size="small">
-								<el-button size="small" type="primary" style="width: 260px; margin-top: 3px;" >点击上传</el-button>
-								<div slot="tip" class="el-upload__tip">⚠️注意：文件大小不能超过10MB!最多3个文件!</div>
-							</el-upload>
-						</el-form-item>
-					</el-col>
-					<el-col :span="10" :offset="2">
-						<el-form-item label="审核人">
-							<el-select v-model="reportForm.checkMan" style="width: 260px" size="small" @focus="getCheckMan">
-								<el-option v-for="item of checkMen" :key="item.id" :value="item.id" :label="item.realName"></el-option>
-							</el-select>
-						</el-form-item>
-					</el-col>
-				</el-row>
-				<el-row style="margin-top: 10px">
-					<el-row :gutter="20">
-						<el-col :span="10">
-							<el-form-item label="地址">
-								<el-input v-model="reportForm.address" type="textarea" style="width: 260px;"  placeholder="请输入地址" size="small"></el-input>
-							</el-form-item>
-						</el-col>
-						<el-col :span="10" :offset="2">
-							<el-form-item label="隐患原因备注">
-								<el-input v-model="reportForm.note" type="textarea" placeholder="请输入隐患原因备注" style="width: 260px;" size="small"></el-input>
-							</el-form-item>
-						</el-col>
-					</el-row>
-				</el-row>
-				<el-row style="margin-top: 10px">
-					<el-row :gutter="20">
-						<el-col :span="10">
-							<el-form-item label="消除隐患建议">
-								<el-input v-model="reportForm.suggest" type="textarea" style="width: 260px;"  placeholder="请输入消除隐患建议" size="small"></el-input>
-							</el-form-item>
-						</el-col>
-					</el-row>
-				</el-row>
-				<el-row style="margin-top:10px;">
-					<el-row :gutter="20">
-						<el-col :span="10">
-							<el-form-item label="经度">
-								<el-input placeholder="请输入经度" style="width: 260px;"  v-model="reportForm.pointLon" size="small"></el-input>
-							</el-form-item>
-						</el-col>
-						<el-col :span="12" :offset="2">
-							<el-form-item label="纬度">
-								<el-input style="width: 210px" placeholder="请输入纬度"  v-model="reportForm.pointLat" size="small"></el-input>
-								<el-button icon="el-icon-map-location" style="width: 50px; margin-bottom: 5px;" type="primary" size="small" @click="chageFlagStatus()"></el-button>
-							</el-form-item>
-						</el-col>
-					</el-row>
-					<el-row style="margin-top:10px;">
-						<el-col :span="24">
-							<div style="width:100%; height: 310px; margin-top:8px;" ref="mapBox"></div>
-						</el-col>
-					</el-row>
-				</el-row>
-			</el-form> -->
       <template slot="footer">
         <el-button @click="cancelReport" size="small">取消</el-button>
         <el-button type="primary" @click="confirmDangerReport()" size="small">确定</el-button>
@@ -285,8 +169,6 @@
  */
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import troubleDetail from '@/views/zhpt/hiddendangermanage/components/troubleDetails.vue'
-import { esriConfig, appconfig } from 'staticPub/config'
-import { loadModules } from 'esri-loader'
 import {
   getCode,
   queryDangerReport,
@@ -296,6 +178,15 @@ import {
   queryDangerBuild,
   getToubleRange
 } from '@/api/xjHiddenDangerManageApi'
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
+import locationIcon from '@/assets/images/map/location.png'
+import { Map, View } from 'ol'
+import {unByKey} from 'ol/Observable'
+import Feature from 'ol/Feature'
+import VectorSource from 'ol/source/Vector'
+import { Vector as VectorLayer } from 'ol/layer'
+import { Point,MultiPoint } from 'ol/geom'
+import { Icon, Style } from 'ol/style'
 @Component({
   name: 'HiddendangerReport',
   components: { troubleDetail }
@@ -339,7 +230,7 @@ export default class HiddenDangerReport extends Vue {
     pointLat: undefined,
     pointPlace: undefined, //隐患片区
     checkMan: '',
-    isbuild: true, //是否进入工地
+    isbuild: false, //是否进入工地
     buildId: '', //工地编号
     fileList: undefined
   }
@@ -349,13 +240,17 @@ export default class HiddenDangerReport extends Vue {
   reasons = [] //隐患原因
   levels = [] //隐患原因
   reportRule = {
-    name: [{ required: true, message: '请输入管辖名称', trigger: 'blur' }]
+    name: [{ required: false, message: '请输入管辖名称', trigger: 'blur' }]
   } // 规则
   fileList = [] // 上传文件
   hiddendangerData = [] // 上报隐患数据
   feature = '' //存储在地图上绘制的点的信息
   layerId = 17 //片区图层id
-  mapV=null
+  mapV:Map=null
+  addMapEvent=null
+  click=null //主地图点击事件
+  graphicsLayer:VectorLayer<VectorSource<any>>=null
+  mainGraphicsLayer:VectorLayer<VectorSource<any>>=null
   @Watch('$store.state.map.halfP_editableTabsValue')
   editableTabsValueChange() {
     console.log('进入页面:hiddendangerReport')
@@ -369,28 +264,7 @@ export default class HiddenDangerReport extends Vue {
     }
   }
   mounted() {
-    var that = this
-    var div = this.$refs.cctvMap
-    var mapV = this.data.mapView
-    var map = mapV.map
-    // loadModules(['esri/views/MapView'], { url: esriConfig.baseUrl }).then(([MapView]) => {
-    //   const mapview = new MapView({
-    //     container: div,
-    //     map: map
-    //   })
-    //   that.mapV = mapview
-    //   mapview.ui.components = []
-    //   mapview.constraints.lods = mapV.constraints.lods
-    //   mapview.on('click', function (e) {
-    //     if (that.flag === true) {
-    //       that.reportForm.pointLon = e.mapPoint.longitude.toFixed(6) //经度
-    //       that.reportForm.pointLat = e.mapPoint.latitude.toFixed(6) //纬度
-    //       that.drawPoint(e.mapPoint.longitude, e.mapPoint.latitude)
-    //       that.getPartArea(e.mapPoint.longitude, e.mapPoint.latitude) //获取片区信息
-    //       that.flag = false
-    //     }
-    //   })
-    // })
+    this.addMap()
     this.getData() //渲染主页表格
     this.getDangerPart() //获取隐患部位
     this.getDangerReason() //获取隐患原因
@@ -399,8 +273,53 @@ export default class HiddenDangerReport extends Vue {
     this.getCheckMan() //获取审核人
   }
   destroyed() {
-    console.log('实例销毁完成')
     this.clearPageInfo()
+  }
+  /**
+   * 在模块打开的时候预先加载地图
+   */
+  addMap() {
+    if(!this.$store.getters.appconfig){
+      this.$message('服务加载失败 启用默认服务配置')
+      return;
+    }
+    const mainmap=this.data.mapView;
+    let { initCenter, initZoom } = this.$store.getters.appconfig
+    var div = this.$refs.cctvMap as HTMLElement
+    let layerResource = this.$store.getters.appconfig.gisResource['iserver_resource'].layerService.layers
+    const map = new Map({
+      target: div,
+      view: new View({
+        center: initCenter,
+        zoom: initZoom,
+        maxZoom: 21,
+        minZoom: 5,
+        projection: 'EPSG:4326'
+      })
+    })
+    this.mapV = map
+    //添加矢量点图层
+    const vectorLayer = new VectorLayer({
+      source: new VectorSource()
+    })
+    this.graphicsLayer = vectorLayer
+    new TF_Layer().createLayers(layerResource).then((layers:any[]) => {
+      layers.forEach((layer) => {
+        layer && map.addLayer(layer)
+      })
+      map.addLayer(this.graphicsLayer)
+    })
+   
+    
+    mainmap.addLayer(this.graphicsLayer)
+    this.addMapEvent = map.on('singleclick', (e) => {
+      if (this.flag === true) {
+          this.reportForm.pointLon = e.coordinate[0].toFixed(6) //经度
+          this.reportForm.pointLat = e.coordinate[1].toFixed(6) //纬度
+          this.drawPoint(e.coordinate[0], e.coordinate[1])
+          this.flag = false
+        }
+    })
   }
   /**
    * 渲染数据处理
@@ -429,87 +348,54 @@ export default class HiddenDangerReport extends Vue {
     this.$refs.mapBox.appendChild(this.$refs.cctvMap);
 	//@ts-ignore
     this.$refs.cctvMap.style.display = ''
-	//@ts-ignore
-    this.mapV.extent = this.data.mapView.extent
+    if(this.mapV){
+      const main=this.data.mapView as Map;
+      this.mapV.setView(main.getView());
+        this.mapV.updateSize();
+    } 
   }
   /**
    * @description 绘制隐患点
    */
   drawPoint(lon, lat) {
-    let that = this
-    let mapV = this.data.mapView
-    let map = mapV.map
-    // loadModules(
-    //   ['esri/views/MapView', 'esri/Graphic', 'esri/layers/GraphicsLayer', 'esri/symbols/PictureMarkerSymbol'],
-    //   { url: esriConfig.baseUrl }
-    // ).then(([MapView, Graphic, GraphicsLayer, PictureMarkerSymbol]) => {
-    //   const point = {
-    //     type: 'point',
-    //     x: lon,
-    //     y: lat,
-    //     spatialReference: mapV.spatialReference
-    //   }
-    //   const simpleMarkerSymbol = {
-    //     path: 'M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z',
-    //     color: '2D74E7',
-    //     outline: { color: '2D74E7', width: '1px' },
-    //     size: '30px',
-    //     yoffset: '15px',
-    //     xoffset: '0px',
-    //     type: 'simple-marker'
-    //   }
-    //   const pointGraphic = new Graphic({
-    //     geometry: point,
-    //     symbol: simpleMarkerSymbol
-    //   })
-    //   if (that.graphicsLayer) {
-    //     // map.remove(that.graphicsLayer)
-    //     // that.graphicsLayer = null
-    //     map.removeAll()
-    //   }
-    //   that.graphicsLayer = new GraphicsLayer()
-    //   that.graphicsLayer.add(pointGraphic)
-    //   map.add(that.graphicsLayer)
-    // })
+    if (!this.graphicsLayer) {
+      this.$message.error('隐患图层创建失败')
+      return
+    } else {
+      this.graphicsLayer.getSource().clear()
+    }
+    const style = new Style({
+      image: new Icon({
+        src: locationIcon,
+        scale: 0.5,
+        color: '#2D74E7'
+      })
+    })
+    const feature = new Feature({
+      geometry: new Point([lon, lat])
+    })
+    feature.setStyle(style)
+    this.graphicsLayer.getSource().addFeature(feature)
   }
 
   /**
    * @description 定位到点
    */
   toPoint(lon, lat) {
+    if (lon == '' || lat == '') {
+      return
+    }
     this.drawPoint(lon, lat)
-    var mapV = this.mapV
-    // console.log(this.mapV);
-    let Graphic = this.data.mapView.TF_graphic
-    let centerPt = {
-      type: 'point',
-      x: parseFloat(lon),
-      y: parseFloat(lat),
-      spatialReference: mapV.spatialReference
+    let mapV = this.data.mapView
+    const options = {
+      center: [lon, lat],
+      zoom: 17
     }
-    const simpleMarkerSymbol = {
-      path: 'M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z',
-      color: '2D74E7',
-      outline: { color: '2D74E7', width: '1px' },
-      size: '30px',
-      yoffset: '15px',
-      xoffset: '0px',
-      type: 'simple-marker'
+    if (this.mapV) {
+      this.mapV.getView().animate(options)
     }
-    const pointGraphic = new Graphic({
-      geometry: centerPt,
-      symbol: simpleMarkerSymbol
-    })
-    let opts = {
-      duration: 1000
-    }
-    mapV.goTo(
-      {
-        target: pointGraphic,
-        zoom: 5
-      },
-      opts
-    ) //跳转至地图上添加的点
+    mapV.getView().animate(options)
+    
   }
 
   /**
@@ -571,14 +457,20 @@ export default class HiddenDangerReport extends Vue {
    */
   clearPageInfo() {
     //地图相关数据
-    let mapV = this.data.mapView
-    let map = mapV.map
-    // if (this.click) {
-    //   this.click.remove()
-    // }
-    // if (this.graphicsLayer) {
-    //   map.remove(this.graphicsLayer)
-    // }
+    let mapV = this.data.mapView as Map;
+    let map = this.mapV;
+    if (this.addMapEvent) {
+      unByKey(this.addMapEvent);
+      this.addMapEvent=null;
+    }
+    if (this.click) {
+      unByKey(this.click);
+      this.click=null;
+    }
+    if (this.graphicsLayer) {
+      mapV.removeLayer(this.graphicsLayer);
+      map.removeLayer(this.graphicsLayer);
+    }
     //表单数据
     for (var key in this.reportForm) {
       console.log('key值：' + key)
@@ -656,16 +548,16 @@ export default class HiddenDangerReport extends Vue {
     let mapView = this.data.mapView
     this.flag = true
     if ((this.flag = true)) {
-    //   this.click = mapView.on('click', function (e) {
-    //     that.reportForm.pointLon = e.mapPoint.longitude.toFixed(6) //经度
-    //     that.reportForm.pointLat = e.mapPoint.latitude.toFixed(6) //纬度
-    //     that.drawPoint(e.mapPoint.longitude, e.mapPoint.latitude)
-    //     that.reportDialog = true //显示弹窗
-    //     that.getPartArea(e.mapPoint.longitude, e.mapPoint.latitude)
-    //     that.$nextTick(that.loadMap)
-    //     that.flag = false
-    //   })
+      this.click = mapView.on('singleclick', function (e) {
+        that.reportForm.pointLon = e.coordinate[0].toFixed(6) //经度
+        that.reportForm.pointLat = e.coordinate[1].toFixed(6) //纬度
+        that.drawPoint(e.coordinate[0], e.coordinate[1])
+        that.reportDialog = true //显示弹窗
+        that.$nextTick(that.loadMap)
+        that.flag = false
+      })
     }
+    
   }
 
   //获取主页面表格数据
@@ -731,10 +623,10 @@ export default class HiddenDangerReport extends Vue {
       this.$message.error('请选择隐患等级')
       return
     }
-    if (that.strIsNull(that.reportForm.pointPlace)) {
-      this.$message.error('请选择隐患所属片区')
-      return
-    }
+    // if (that.strIsNull(that.reportForm.pointPlace)) {
+    //   this.$message.error('请选择隐患所属片区')
+    //   return
+    // }
     if (that.reportForm.isbuild) {
       if (that.strIsNull(that.reportForm.buildId)) {
         this.$message.error('请选择隐患所属工地')
@@ -755,17 +647,16 @@ export default class HiddenDangerReport extends Vue {
     }
 
     //获取码表值
-    var _pointPlace = that.pointPlaces.find((item:any) => {
-      return item.OBJECTID === that.reportForm.pointPlace
-    }) as any
-
+    // var _pointPlace = that.pointPlaces.find((item:any) => {
+    //   return item.OBJECTID === that.reportForm.pointPlace
+    // }) as any
     let data = {
       pipeName: that.reportForm.name, //管线名称
       location: that.reportForm.part, //隐患部位
       typeId: that.reportForm.reason, //隐患原因编码
       toubleRangeId: that.reportForm.toubleRangeId, //隐患原因编码
-      regionId: _pointPlace.CODE || '', //片区编码
-      regionName: _pointPlace.NAME || '', //片区名称
+      regionId: '', //片区编码
+      regionName:  '', //片区名称
       auditUser: that.reportForm.checkMan, //审核人
       address: that.reportForm.address, //隐患地址
       notes: that.reportForm.note, //隐患原因备注
