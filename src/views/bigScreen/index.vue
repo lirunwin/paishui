@@ -19,6 +19,7 @@
     <EMDStatistic :show="showOverviewData" />
     <WPSVMStatistic :show="showOverviewData" />
     <MIDStatistic :show="showOverviewData" />
+    <CPNLStatistic :show="showOverviewData" :fontSize="fontSize"/>
   </div>
 </template>
 
@@ -42,12 +43,13 @@ import DPNLStatistic from './overviewData/DPNLStatistic.vue'
 import EMDStatistic from './overviewData/EMDStatistic.vue'
 import WPSVMStatistic from './overviewData/WPSVMStatistic.vue'
 import MIDStatistic from './overviewData/MIDStatistic.vue'
+import CPNLStatistic from './overviewData/CPNLStatistic.vue'
 export default {
   name:'bigScreen',//项目大屏
   components:{
     Header,MapLegend,BaseMap,LayerControl,MonitorTree,
     ELPWLMStatistic,PNLLMonitoring,ELPVmonitoring,MMIStatistic,
-    PNIARStatistic,WFStatistic,DPNLStatistic,EMDStatistic,WPSVMStatistic,MIDStatistic
+    PNIARStatistic,WFStatistic,DPNLStatistic,EMDStatistic,WPSVMStatistic,MIDStatistic,CPNLStatistic
   },
   data(){
     return{
@@ -91,7 +93,8 @@ export default {
   position: fixed;
   /* 设置滚动条的样式 */
   ::-webkit-scrollbar {
-      width:5px;
+      width:.026042rem /* 5/192 */;
+      height: .052083rem /* 10/192 */;
   }
   /* 滚动槽 */
   ::-webkit-scrollbar-track {

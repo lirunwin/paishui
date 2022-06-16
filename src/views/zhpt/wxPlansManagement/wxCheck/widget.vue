@@ -30,118 +30,132 @@
     <div ref="div2" style="width:100%;height:100%; position: relative;
       transition: 0.3s; top: -100%; left: 110%; z-index: 3; padding:8px;">
       <el-page-header @back="backCheak" :content="typeTitle" style="overflow: hidden;"></el-page-header>
-      <!-- <component style="width:100%:height:calc(100% - 62px)" :is="component[selectCheak]" :isCheak="isCheak" :data="data"></component> -->
+      <component style="width:100%:height:calc(100% - 62px)" :is="component[selectCheak]" :isCheak="isCheak" :data="data"></component>
     </div>
   </div>
 </template>
 
-<script>
+<script lang='ts'>
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import Echarts from 'echarts'
 import request from '@/utils/request'
 import elementResizeDetectorMaker from 'element-resize-detector'
-// import component from "./loadAllCheak";
-import { typeConfig } from "./typeConfig";
-
-export default {
-  name: 'wxMissionManagement',
-  props: { data: Object, isXj: Boolean },
-  data() {
-    return {
-      mainTable: [],
-      chooseType: '',
-      types: [],
-      typeTitle: '123',
-      selectCheak: '',
-      isCheak: false,
-      loading: false,
-      component
-    }
-  },
+import component from './loadAllCheak'
+import { typeConfig } from './typeConfig'
+@Component({
+  name: 'wxMissionManagement'
+})
+export default class wxMissionManagement extends Vue {
+  @Prop() data: any
+  @Prop() isXj: boolean
+  mainTable = []
+  chooseType = ''
+  types = []
+  typeTitle = '123'
+  selectCheak = ''
+  isCheak = false
+  loading = false
+  component = component
+  chart=null
+  divs=[]
+  typeIndex=null
   mounted() {
     this.init().then(() => {
       this.getAll()
     })
-  },
-  created() {},
-  methods: {
-    async init() {
-      var chart = this.chart = Echarts.init(this.$refs.chart)
-      elementResizeDetectorMaker().listenTo(this.$refs.echart, () => this.$nextTick(chart.resize))
-      window.onresize = () => this.$nextTick(chart.resize)
-      
-      this.divs = [this.$refs.div1, this.$refs.div2]
-    },
-    getAll() {
-      this.loading = true
-      request({ url: '/gps/audit/getAuditInfoList', method: 'post' }).then(res => {
-        if(res.code == 1) {
-          var filterConfig = this.isXj ? ['00', '01', '02', '03', '04', '05', '07', '06'] : ['08', '10','11']
-          res = res.result.filter(e => filterConfig.indexOf(e.auditTypeCode) > -1)
-          var allLength = 0
-          var typeIndex = this.typeIndex = {}
-          this.types = res
-          this.mainTable = res = res.filter(e =>{ 
-            allLength += e.number
-            typeIndex[e.auditTypeCode] = e
-            return e.number
-          })
-          if(res.length) {
-            this.$nextTick(_ => {
-              this.chart.setOption({
-                title: { text: '待审核数量', subtext: '共' + allLength + '条', left: 'center' },
-                tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} 条 ({d}%)' },
-                legend: { bottom: 10, left: 'center', data: res.map(e => e.auditTypeName) },       
-                series: [{ 
-                  name: '审核数量占比', type: 'pie', radius: [0, 120], center: ['50%', '50%'], label: { show: false, position: 'center' },
-                  data: res.map(e => { return { value: e.number, name: e.auditTypeName } }),
-                }]
-              })
-              this.chart.resize
-            })
-          }
-          var t = [['350px', '15px', '1', 'calc(100% - 350px)'], ['0', '0', '0', '100%']][res.length ? 0 : 1]
-          this.$refs.echart.style.width = t[0]
-          this.$refs.echart.style.padding = t[1]
-          this.$refs.echart.style.opacity = t[2]
-          this.$refs.echart2.style.width = t[3]
-        } else this.$message.error(res.message)
-        this.loading = false
-      })
-    },
-    backCheak() {
-      this.selectCheak = undefined
-      this.divs[0].style.left = '0'
-      this.divs[0].style.opacity = '1'
-      this.divs[1].style.left = '110%'
-      this.divs[1].style.opacity = '0'
-      this.getAll()
-    },
-    pageJumpTr(row){
-      this.pageJump(row.auditTypeCode, true);
-    },
-    pageJump(code, isCheak) {
-      this.typeTitle = this.typeIndex[code].auditTypeName + ((this.isCheak = isCheak) ? '' : '历史')
+  }
+  async init() {
+    var chart = (this.chart = Echarts.init(this.$refs.chart as HTMLDivElement))
+    elementResizeDetectorMaker().listenTo(this.$refs.echart, () => this.$nextTick(chart.resize))
+    window.onresize = () => this.$nextTick(chart.resize)
 
-      var d = typeConfig[code]
-      if(!this.isCheak && d == 'xjYear') d = 'xjYearQuery'
-      if(!this.isCheak && d == 'xjMonth') d = 'xjMonthQuery'
-      if(!this.isCheak && d=='wxPlanYear') d = 'wxPlanYearQuery'
-      if(!this.isCheak && d=='wxYear') d = 'wxYearQueryhis'
-      this.selectCheak = d
-      this.divs[0].style.left = '-110%'
-      this.divs[0].style.opacity = '0'
-      this.divs[1].style.left = '0'
-      this.divs[1].style.opacity = '1'
-    }
+    this.divs = [this.$refs.div1, this.$refs.div2]
+  }
+  getAll() {
+    this.loading = true
+    request({ url: '/gps/audit/getAuditInfoList', method: 'post' }).then((res) => {
+      if (res.code == 1) {
+        var filterConfig = this.isXj ? ['00', '01', '02', '03', '04', '05', '07', '06'] : ['08', '10', '11']
+        res = res.result.filter((e) => filterConfig.indexOf(e.auditTypeCode) > -1)
+        var allLength = 0
+        var typeIndex = (this.typeIndex = {})
+        this.types = res
+        this.mainTable = res = res.filter((e) => {
+          allLength += e.number
+          typeIndex[e.auditTypeCode] = e
+          return e.number
+        })
+        if (res.length) {
+          this.$nextTick(() => {
+            this.chart.setOption({
+              title: { text: '待审核数量', subtext: '共' + allLength + '条', left: 'center' },
+              tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} 条 ({d}%)' },
+              legend: { bottom: 10, left: 'center', data: res.map((e) => e.auditTypeName) },
+              series: [
+                {
+                  name: '审核数量占比',
+                  type: 'pie',
+                  radius: [0, 120],
+                  center: ['50%', '50%'],
+                  label: { show: false, position: 'center' },
+                  data: res.map((e) => {
+                    return { value: e.number, name: e.auditTypeName }
+                  })
+                }
+              ]
+            })
+            this.chart.resize
+          })
+        }
+        var t = [
+          ['350px', '15px', '1', 'calc(100% - 350px)'],
+          ['0', '0', '0', '100%']
+        ][res.length ? 0 : 1]
+        //@ts-ignore
+        this.$refs.echart.style.width = t[0]
+        //@ts-ignore
+        this.$refs.echart.style.padding = t[1]
+        //@ts-ignore
+        this.$refs.echart.style.opacity = t[2]
+        //@ts-ignore
+        this.$refs.echart2.style.width = t[3]
+      } else this.$message.error(res.message)
+      this.loading = false
+    })
+  }
+  backCheak() {
+    this.selectCheak = undefined
+    this.divs[0].style.left = '0'
+    this.divs[0].style.opacity = '1'
+    this.divs[1].style.left = '110%'
+    this.divs[1].style.opacity = '0'
+    this.getAll()
+  }
+  pageJumpTr(row) {
+    this.pageJump(row.auditTypeCode, true)
+  }
+  pageJump(code, isCheak) {
+    this.typeTitle = this.typeIndex[code].auditTypeName + ((this.isCheak = isCheak) ? '' : '历史')
+
+    var d = typeConfig[code]
+    if (!this.isCheak && d == 'xjYear') d = 'xjYearQuery'
+    if (!this.isCheak && d == 'xjMonth') d = 'xjMonthQuery'
+    if (!this.isCheak && d == 'wxPlanYear') d = 'wxPlanYearQuery'
+    if (!this.isCheak && d == 'wxYear') d = 'wxYearQueryhis'
+    this.selectCheak = d
+    this.divs[0].style.left = '-110%'
+    this.divs[0].style.opacity = '0'
+    this.divs[1].style.left = '0'
+    this.divs[1].style.opacity = '1'
   }
 }
 </script>
 <style scoped>
-.el-table >>> .el-table__header-wrapper table th{
+.el-table >>> .el-table__header-wrapper table th {
   height: 60px;
   text-align: center;
 }
-.el-table >>> .el-table__body-wrapper table td{
+.el-table >>> .el-table__body-wrapper table td {
   text-align: center;
 }
 </style>
