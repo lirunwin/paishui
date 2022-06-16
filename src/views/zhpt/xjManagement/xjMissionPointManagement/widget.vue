@@ -442,14 +442,7 @@ export default class XjMissionPointManagement extends Vue {
     } else {
       this.graphicsLayer.getSource().clear()
     }
-    // const style = new Style({
-    //   image: new Icon({
-    //     src: require('@/views/zhpt/xjManagement/xjMissionPointManagement/images/location.svg'),
-    //     scale: 0.5,
-    //     color: 'red'
-    //   })
-    // })
-
+   
     const style = new Style({
       image: new Icon({
         src: locationIcon,
@@ -462,38 +455,6 @@ export default class XjMissionPointManagement extends Vue {
     })
     feature.setStyle(style)
     this.graphicsLayer.getSource().addFeature(feature)
-
-    // loadModules(
-    //   ['esri/views/MapView', 'esri/Graphic', 'esri/layers/GraphicsLayer', 'esri/symbols/PictureMarkerSymbol'],
-    //   { url: esriConfig.baseUrl }
-    // ).then(([MapView, Graphic, GraphicsLayer, PictureMarkerSymbol]) => {
-    //   const point = {
-    //     type: 'point',
-    //     x: lon,
-    //     y: lat,
-    //     spatialReference: mapV.spatialReference
-    //   }
-    //   const simpleMarkerSymbol = {
-    //     path: 'M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z',
-    //     color: 'red',
-    //     outline: { color: 'red', width: '1px' },
-    //     size: '30px',
-    //     yoffset: '15px',
-    //     xoffset: '0px',
-    //     type: 'simple-marker'
-    //   }
-    //   const pointGraphic = new Graphic({
-    //     geometry: point,
-    //     symbol: simpleMarkerSymbol
-    //   })
-    //   if (that.graphicsLayer) {
-    //     that.graphicsLayer.removeAll()
-    //   } else {
-    //     that.graphicsLayer = new GraphicsLayer()
-    //     map.add(that.graphicsLayer)
-    //   }
-    //   that.graphicsLayer.add(pointGraphic)
-    // })
   }
   //跳转到坐标点
   toPoint(lon, lat) {
