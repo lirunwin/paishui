@@ -339,12 +339,6 @@
           <el-row>
             <el-col :span="12" class="base-info">
               <el-row>
-                <span class="title">申请人：</span><span>{{ detailInfo.createUserName }}</span>
-              </el-row>
-              <el-row>
-                <span class="title">申请时间：</span><span>{{ detailInfo.createTime }}</span>
-              </el-row>
-              <el-row>
                 <span class="title">登录名：</span><span>{{ detailInfo.username }}</span>
               </el-row>
               <el-row>
@@ -361,6 +355,12 @@
               </el-row>
               <el-row>
                 <span class="title">工作岗位：</span><span>{{ detailInfo.job }}</span>
+              </el-row>
+              <el-row>
+                <span class="title">申请人：</span><span>{{ detailInfo.createUserName }}</span>
+              </el-row>
+              <el-row>
+                <span class="title">申请时间：</span><span>{{ detailInfo.createTime }}</span>
               </el-row>
             </el-col>
             <el-col :span="12" class="base-info">

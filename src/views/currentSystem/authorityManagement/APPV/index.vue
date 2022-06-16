@@ -241,10 +241,10 @@ export default class APPV extends Vue {
   }
 
   options1 = [
-    // {
-    //   id: '1',
-    //   name: 'APP'
-    // },
+    {
+      id: '1',
+      name: '移动平台'
+    },
     {
       id: '2',
       name: '前端平台'

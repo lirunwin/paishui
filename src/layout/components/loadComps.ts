@@ -7,7 +7,7 @@ const requireComponent = require.context(
 requireComponent.keys().forEach((fileName) => {
   const comp = requireComponent(fileName)
   const files = fileName.replace(/^\.\/(.*)\.\w+$/, '$1').split('/')
-  if (['monitoring'].includes(files[0])) {
+  if (['monitoring', 'business'].includes(files[0])) {
     const names = [...files]
     names.pop()
     resultComps[`/${names.join('/')}`] = comp.default

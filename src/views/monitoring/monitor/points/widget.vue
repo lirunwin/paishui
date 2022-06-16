@@ -62,7 +62,6 @@ import {
   sections,
   getDictKeys,
   IDictionary,
-  IMonitorItem,
   getMonitorItemCurrentInfoById
 } from '@/views/monitoring/api'
 import {
@@ -71,7 +70,6 @@ import {
   monitorAutoRefreshInterval,
   monitorStandardLevelKey
 } from '@/utils/constant'
-import { Map } from 'ol'
 
 type IPopupParam = Record<'id' | 'coordiateX' | 'coordiateY', string | number>
 
@@ -91,7 +89,7 @@ export default class PointsMonitor extends Vue {
   sections: string[] = []
   levels: IDictionary[] = []
   levelColors: IDictionary[] = []
-  popups: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IPopupParam } } = {}
+  popups: { [x: string]: { coordinate: number[]; map: any; center: boolean; data: IPopupParam } } = {}
   get popupIds() {
     return Object.keys(this.popups)
   }
