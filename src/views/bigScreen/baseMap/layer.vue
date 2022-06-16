@@ -8,6 +8,16 @@
             <div class="wrap">
                 <div class="icon" title="图层控制" @click="layerBoardShow=!layerBoardShow"><div class="img"></div></div>
                 <div class="layerBoard" v-if="layerBoardShow">
+                    <div class="layerItem" v-for="item of layerGroup" :key="item.name">
+                        <div class="layerCategory">{{item.title}}</div>
+                        <el-checkbox-group v-model="layerList" v-for="layerItem of item.sublayers" :key="layerItem.name">
+                            <el-checkbox 
+                            :label="layerItem.title" 
+                            :checked="layerItem.visible"
+                             @change="setLayerVisible(layerItem.name,!layerItem.visible)">
+                            </el-checkbox>
+                        </el-checkbox-group>
+                    </div>
                     <div class="layerItem">
                         <div class="layerCategory">其他</div>
                         <el-checkbox-group v-model="checkList">
@@ -15,7 +25,6 @@
                             <el-checkbox label="工程车辆"></el-checkbox>
                             <el-checkbox label="上报隐患"></el-checkbox>
                             <el-checkbox label="上报汛情"></el-checkbox>
-                            <el-checkbox label="上报时间"></el-checkbox>
                         </el-checkbox-group>
                     </div>
                 </div>
@@ -25,6 +34,7 @@
 </template>
 
 <script>
+import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 export default {
     name:"LayerControl",//图层控制
     props:{
@@ -33,26 +43,58 @@ export default {
     data(){
         return{
             layerBoardShow:false,
-            checkList:[]
+            checkList:[],
+            layerGroup:[],      
+            layerList:[],    
+            mapUtilObj:null,  
         }
     },
-    mounted(){
-
+    computed:{
+        layerSource(){
+            return this.$store.state.bigScreen.layersSource 
+        },
+        view(){
+            return this.$store.state.bigScreen.view
+        }
     },
     watch:{
-        show:{
-            handler(n,o){
-                this.$nextTick(()=>{
-                    //变量赋值
-                    n?this.$refs['widget-LayerControl'].style.setProperty('--bottom', '1.546875rem'):
-                    this.$refs['widget-LayerControl'].style.setProperty('--bottom', '.052083rem')
-                })
-            },
-            immediate:true
-        },
-    },
-    methods:{
+        // show:{
+        //     handler(n,o){
+        //         this.$nextTick(()=>{
+        //             //变量赋值
+        //             n?this.$refs['widget-LayerControl'].style.setProperty('--bottom', '1.546875rem'):
+        //             this.$refs['widget-LayerControl'].style.setProperty('--bottom', '.052083rem')
+        //         })
+        //     },
+        //     immediate:true
+        // },
+        checkList:{
 
+        },
+        layerSource:{
+            handler(n,o){
+                this.setLayerList()
+            },
+            deep:true
+        },
+        view(n,o){
+            //初始化地图工具对象
+            this.mapUtilObj=new mapUtil(n)
+        }
+    },
+
+    methods:{
+        //初始化图层列表
+        setLayerList(){
+            let layersSource = this.layerSource.filter(item=>item.type=='smlayergroup')
+            this.layerGroup=layersSource[0].sublayers
+        },
+        //设置图层显隐
+        setLayerVisible(layerName,visible){
+            let source = this.mapUtilObj.getChangeResource(this.layerSource,layerName, visible)
+            this.$store.state.bigScreen.layersSource =source
+            this.mapUtilObj.setGroupLayerVisible(source)
+        }
     }
 }
 </script>
@@ -67,13 +109,10 @@ export default {
     $size20:.104167rem /* 20/192 */;
     z-index: 2;
     //position
-    bottom: var(--bottom);
+    bottom: 1.59375rem /* 306/192 */;
     margin-right: 2.34375rem /* 450/192 */;
     position: absolute;
     right: 0;
-    //size
-    // height: .546875rem /* 105/192 */;
-    // width: 2.083333rem /* 400/192 */;
     //background
     background-color: rgba(20, 24, 47, 0.5);
     color: #eee;
@@ -103,13 +142,14 @@ export default {
         }
         .layerBoard{
             margin-right: .052083rem /* 10/192 */;
-            width: 124px;
-            // height: 144px;
+            // width: .78125rem /* 150/192 */;
+            height: 1.145833rem /* 220/192 */;
             background: rgba(3, 109, 190,0.4);
             border-radius: 2px;
             display: flex;
             flex-flow: column;
-            padding: .026042rem /* 5/192 */;
+            padding: .052083rem /* 10/192 */ .104167rem /* 20/192 */;
+            overflow: auto;
             .layerItem{
                 display: flex;
                 flex-flow: column;
@@ -118,6 +158,10 @@ export default {
                     font-weight: bold;
                     color: #2BA7FF;
                 }
+            }
+            .el-checkbox-group{
+                display: flex;
+                flex-flow: column;
             }
             .el-checkbox{
                 color: #fff;

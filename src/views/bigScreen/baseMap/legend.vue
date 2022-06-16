@@ -59,16 +59,16 @@ export default {
         }
     },
     watch:{
-        show:{
-            handler(n,o){
-                this.$nextTick(()=>{
-                    //变量赋值
-                    n?this.$refs['widget-MapLegend'].style.setProperty('--bottom', '1.546875rem'):
-                    this.$refs['widget-MapLegend'].style.setProperty('--bottom', '.052083rem')
-                })
-            },
-            immediate:true
-        }
+        // show:{
+        //     handler(n,o){
+        //         this.$nextTick(()=>{
+        //             //变量赋值
+        //             n?this.$refs['widget-MapLegend'].style.setProperty('--bottom', '1.546875rem'):
+        //             this.$refs['widget-MapLegend'].style.setProperty('--bottom', '.052083rem')
+        //         })
+        //     },
+        //     immediate:true
+        // }
     },
     methods:{
 
@@ -86,12 +86,9 @@ export default {
     $size20:.104167rem /* 20/192 */;
     z-index: 2;
     //position
-    bottom: var(--bottom);
+    bottom: 1.59375rem /* 306/192 */;
     margin-left: 2.34375rem /* 450/192 */;
     position: absolute;
-    //size
-    // height: .546875rem /* 105/192 */;
-    // width: 2.083333rem /* 400/192 */;
     //background
     background-color: rgba(20, 24, 47, 0.5);
     color: #eee;

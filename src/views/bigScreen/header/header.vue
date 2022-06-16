@@ -105,7 +105,12 @@ export default {
                 let hour =mynow.getHours();//获取小时
                 let minute =mynow.getMinutes();//获取分钟
                 let second =mynow.getSeconds();//获取秒
-                let strdate = year+"年"+month+"月"+day+"日 "+hour+":"+minute+":"+second+"";
+                let strdate = year+"年"
+                +(month < 0 ?"00" : ("0"+month).slice(-2))+"月"
+                +(day < 0 ?"00" : ("0"+day).slice(-2))+"日 "
+                +(hour < 0 ?"00" : ("0"+hour).slice(-2))+":"
+                +(minute < 0 ?"00" : ("0"+minute).slice(-2))+":"
+                +(second < 0 ?"00" : ("0"+second).slice(-2))+"";
                 return strdate
             }
             //动态显示时间
