@@ -9,7 +9,6 @@
               @query="onQuery"
               :defaultQuery="defaultQuery"
               :deviceTypes="deviceTypes"
-              :points="points"
               @change:point="onPointChange"
             />
           </div>
@@ -83,6 +82,7 @@ import {
   getPoint,
   IDeviceTypeParam,
   IPoint,
+  IPointConnectDevice,
   IReportDetail,
   IReportDetailQuery
 } from '../../api'
@@ -334,8 +334,11 @@ export default class ReportDetail extends Vue {
     console.log(records)
   }
 
-  onPointChange(ids) {
-    this.fetchReportDetailThreshold(ids)
+  onPointChange({ selected = [], points = [] }: { selected: string[]; points: IPointConnectDevice[] }) {
+    this.points = points.map((item) => {
+      return { ...item, selected: selected.includes(String(item.id)) }
+    })
+    this.fetchReportDetailThreshold(selected.join())
   }
 
   preparing() {

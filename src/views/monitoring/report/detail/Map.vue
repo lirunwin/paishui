@@ -1,5 +1,9 @@
 <template>
-  <div></div>
+  <div>
+    <pre>
+      {{ JSON.stringify(points, null, 2) }}
+    </pre>
+  </div>
 </template>
 
 <script lang="ts">
@@ -8,6 +12,7 @@ import { IPointConnectDevice } from '../../api'
 
 @Component({})
 export default class Map extends Vue {
+  @Prop({ type: Boolean, default: false }) enable!: boolean
   @Prop({ type: Object, default: () => ({ all: false, selected: false }) }) display!: {
     /** 显示所有监测点 */
     all: boolean

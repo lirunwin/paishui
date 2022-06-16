@@ -77,7 +77,8 @@ export default Vue.extend({
         },
         'cell-style': {
           height: '40px'
-        }
+        },
+        height: 'calc(100% - 50px)'
         // highlightCurrentRow: true
       } as Partial<ElTable>
     }
