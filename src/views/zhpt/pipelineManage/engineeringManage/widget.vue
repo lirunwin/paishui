@@ -191,18 +191,15 @@
             <el-upload
               :on-success="uploadSuccess"
               v-show="!isDetails"
-              show-file-list
+              :show-file-list='true'
               ref="updataDocx"
               class="upload-demo"
               :headers="uploadHeaders"
               :action="getBaseAddress"
-              accept=".doc,.docx"
               :data="getIdData"
               multiple
               :before-remove="beforeRemove"
-              :on-progress="beforeUpload"
-              :on-exceed="handleExceed"
-              :file-list="fileList"
+              :on-change='uploadChange'
               :auto-upload="false"
             >
               <div class="add-btn">
@@ -213,11 +210,11 @@
                   <el-button size="small" @click.stop="dialogFormVisible = false" v-if="isDetails">退 出</el-button>
                 </span>
               </div>
-              <div slot="tip" class="el-upload__tip">
+              <!-- <div slot="tip" class="el-upload__tip">
                 <p style="line-height: 10px; margin: 10px 0">上传 *.docx / *.doc格式文件</p>
                 <p v-show="isEdit" style="height: 20px; font-size: 12px; border-bottom: 1px solid #dedede; margin: 0; line-height: 20px"></p>
-                <!-- <p>只能上传docx/doc文件</p> -->
-              </div>
+                <p>只能上传docx/doc文件</p>
+              </div> -->
             </el-upload>
             <!-- 附件列表 -->
             <p v-show="isEdit" style="
@@ -456,6 +453,13 @@ export default {
     uploadSuccess (file, fileList) {
       if (file.result[0].flag === 'fail') {
         this.$message.error(fileList.response.result[0].msg)
+      } else {
+        let tipType = this.isEdit ? '修改' : '添加'
+        this.getDate()
+        // 最后清空表单
+        this.form = { ...this.initForm }
+        this.dialogFormVisible = false
+        this.$message.success(`${tipType}成功`)
       }
     },
     // 确认删除附件
@@ -661,81 +665,46 @@ export default {
         this.$message.error('删除失败')
       }
     },
-    // 上传触发的方法
-    beforeUpload(event, file, fileList) {
-      console.log('附件列表', this.fileList)
-    },
-    handleExceed(files, fileList) {
-      this.$message.warning(
-        `当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`
-      )
+    uploadChange (a, b, c) {
+      this.fileList.push(a)
     },
     beforeRemove(file, fileList) {
-      return this.$confirm(`确定移除 ${file.name}？`)
+      return this.$confirm(`确定移除 ${file.name}？`).then(() => {
+        let index = this.fileList.findIndex(item => item.uid === file.uid)
+        this.fileList.splice(index, 1)
+      })
     },
     // ----------
-    async addTable(formName) {
-      // 上传附件
-      // async uploadWord() {
-      //   await this.$refs.updataDocx.submit()
-      // },
-      console.log('添加数据')
-      this.$refs[formName].validate(async (valid) => {
+    addTable(formName) {
+      this.$refs[formName].validate(valid => {
         if (valid) {
           // 将文件上传到服务器，先触发beforeUpload事件，对上传的文件进行校验，校验通过后才会上传
-          let res
           // 获取入库人id和名称
           this.form.createUserId = sessionStorage.getItem('userId') * 1
           this.form.createUserName = sessionStorage.getItem('username')
-          let data = {}
-          for (let key in this.form) {
-            if (this.form[key] === null) {
-              data[key] = ''
+          let api = null
+          if (this.isEdit) { api = changeInfo }
+          else { api = addData }
+          api(this.form).then(res => {
+            let tipType = this.isEdit ? '修改' : '添加'
+            if (res.code === 1) {
+              if (this.fileList.length !== 0) {
+                this.updataParamsId.itemId = res.result.id
+                // 获得字典id
+                this.getParamsId().then(res => {
+                  this.$refs.updataDocx.submit()
+                })
+              } else {
+                this.getDate()
+                // 最后清空表单
+                this.form = { ...this.initForm }
+                this.dialogFormVisible = false
+                this.$message.success(`${tipType}成功`)
+              }
             } else {
-              data[key] = this.form[key]
+              this.$message.success(`${tipType}失败`)
             }
-          }
-          if (this.isEdit) {
-            res = await changeInfo(data)
-          } else {
-            res = await addData(this.form)
-          }
-          // console.log('工程添加成功后', res)
-          // 如果有附件则再上传附件
-          if (this.fileList) {
-            this.updataParamsId.itemId = res.result.id
-            // 获得字典id
-            await this.getParamsId()
-            // console.log('附件参数', this.updataParamsId)
-            await this.$refs.updataDocx.submit()
-          }
-          if (this.isEdit) {
-            if (res.result) {
-              console.log('修改成功')
-              this.$message({
-                message: '修改成功',
-                type: 'success'
-              })
-            } else {
-              this.$message.error('修改失败')
-            }
-            this.isEdit = false
-          } else {
-            if (res.result) {
-              this.$message({
-                message: '添加成功',
-                type: 'success'
-              })
-            } else {
-              this.$message.error('添加失败')
-            }
-          }
-
-          await this.getDate()
-          // 最后清空表单
-          this.form = { ...this.initForm }
-          this.dialogFormVisible = false
-          // this.$store.dispatch('app/toggleSideBarShow', true)
+          })
         } else {
           console.log('不能提交!!')
           return false
@@ -786,6 +755,7 @@ export default {
       let fileRes = await queryPageEnclosure(params)
       console.log('附件分页数据', fileRes)
       this.fileListData = fileRes.result.records
+      Promise.resolve()
     },
     // 双击修改
     async dblclickUpdata(row) {
