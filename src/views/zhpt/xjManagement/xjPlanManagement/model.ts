@@ -9,7 +9,6 @@ import tfLegend from "@/views/zhpt/common/Legend.vue";
 import tfTableLegend from '@/views/zhpt/common/TableLegend.vue';
 import initConfig from './config.json';
 import tool from './tool';
-import { appconfig } from 'staticPub/config';
 import {
     queryTaskArrange, addTaskArrange, editTaskArrange, deleteTaskArrange, submitPauseCheckInfo,
     submitAbandonCheckInfo, xjRoundDispose, queryDetail, getGroupPersonById, queryRegionRelation, stopList, cancleList
@@ -44,7 +43,7 @@ export default class XjPlanManagement extends Vue {
         flag: 1//共享人的id
     }
     //表格加载状态
-    tableLoading=true;
+    tableLoading = true;
     tempEvent = null;
     percentageShow = false;//进度条
     percentage = 0;//查询进度
@@ -242,6 +241,7 @@ export default class XjPlanManagement extends Vue {
     mapV: Map = null
     view = null;
     draw: Draw = null;
+    appconfig = this.$store.getters.appconfig;
     get watchMonthId() {
         if (this.acceptData) {
             return this.acceptData.monthId
@@ -269,7 +269,7 @@ export default class XjPlanManagement extends Vue {
         //保存输入框的默认配置
         this.planModel.initInput = tool.copyValue(this.planModel.input);
         //添加本模块使用的地图
-        this.initMapSource();
+        this.addMap();
         //获取图层信息
         this.getLayerInfo();
     }
@@ -436,8 +436,7 @@ export default class XjPlanManagement extends Vue {
                 this.planModel.optionData.chooseWorker = planWorkerAndGroup[aIndex].data;
             }
             this.planModel.optionData.chooseGroup = tool.copyValue(planWorkerAndGroup);
-            //获取片区图形信息
-            //this.getAllRegions();
+
             this.$nextTick(() => {
                 this.getData();
             })
@@ -448,7 +447,7 @@ export default class XjPlanManagement extends Vue {
      * 获取首页表单数据
      */
     getData() {
-        this.tableLoading=true;
+        this.tableLoading = true;
         //this.dataT1 = [];
         //将修改和删除按钮重置为不可操作
         tool.setVaule(this.buttonControl, true);
@@ -491,7 +490,7 @@ export default class XjPlanManagement extends Vue {
         queryTaskArrange(data).then(res => {
             this.searchModel.getData.allRow = res.result.records
             this.searchModel.getData.tableTotal = res.result.total
-            this.tableLoading=false
+            this.tableLoading = false
         }).catch(err => {
             console.log(err);
         })
@@ -639,38 +638,6 @@ export default class XjPlanManagement extends Vue {
             this.planModel.optionData.period = res.result.records
         })
     }
-
-    //获取所有片区的图形信息
-    getAllRegions() {
-        let data = {
-            where: "1=1",
-            outFields: "*",
-            returnGeometry: true,
-            f: "pjson"
-        }
-        this.queryServce(data, this.regionLayerId, function (result) {
-            if (result && result.features && result.features.length > 0) {
-                result.features.forEach(item => {
-                    this.planModel.regionInfo.allRegions.push({
-                        id: item.attributes['CODE'],
-                        name: item.attributes['NAME'],
-                        geometry: item.geometry.rings[0],
-                        geometry2: {
-                            rings: item.geometry.rings,
-                            type: "polygon",
-                            spatialReference: this.data.mapView.spatialReference
-                        }
-                    })
-                })
-            }
-            //当巡检组固定的时候直接获取当前巡检组的片区
-            if (this.hasGroup) {
-                //获取片区图形信息
-                this.getRegionIds();
-            }
-        }.bind(this));
-    }
-
     /**
      * 获取根据巡检组获取片区
     */
@@ -752,9 +719,13 @@ export default class XjPlanManagement extends Vue {
      * 在模块打开的时候预先加载地图
     */
     addMap() {
-        let { initCenter, initZoom } = appconfig
+        if (!this.appconfig) {
+            this.$message('服务加载失败 启用默认服务配置')
+            return;
+        }
+        let { initCenter, initZoom } = this.appconfig
         var div = this.$refs.cctvMap as HTMLElement;
-        let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers;
+        let layerResource = this.appconfig.gisResource['iserver_resource'].layerService.layers;
         const map = new Map({
             target: div,
             controls: controls({
@@ -774,80 +745,17 @@ export default class XjPlanManagement extends Vue {
         this.controlComLayer("init");
     }
     addLayers(layers) {
-        layers.forEach((layerConfig) => {
-            let { name, type, url, parentname, id, visible = true } = layerConfig
-            let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-            this.mapV.addLayer(layer)
-        })
-    }
-    initMapSource() {
-        var resource = appconfig.gisResource['iserver_resource']
-        if (appconfig.isloadServer) {
-            request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then((res1) => {
-                if (res1.code == 1) {
-                    const res = res1.result
-                    //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
-                    let onlineIndex = res.findIndex((item) => item.code == 'isOnlineAddress')
-                    if (onlineIndex !== -1) {
-                        let isOnline = true
-                        let onLineAddress = res[onlineIndex].child[0].cval
-                        axios
-                            .get(onLineAddress)
-                            .then(
-                                (res) => {
-                                    isOnline = res.status === 200
-                                },
-                                (error) => {
-                                    isOnline = false // 异常返回
-                                }
-                            )
-                            .catch((e) => {
-                                isOnline = false //异常返回
-                            })
-                            .finally(() => {
-                                const repItems = ['地图配置服务']
-                                res.forEach((service) => {
-                                    let resData = service.child,
-                                        source = null
-                                    if (repItems.includes(service.name) && resData && resData.length !== 0) {
-                                        if (service.name === '图层服务') {
-                                            source = resource.layerService.layers
-                                            resData.forEach((data) => {
-                                                let findItem = source.find((sourceItem) => {
-                                                    return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
-                                                })
-                                                if (findItem) {
-                                                    findItem.url = data.cval
-                                                }
-                                            })
-                                        } else if (service.name === '地图配置服务') {
-                                            source = appconfig
-                                            resData.forEach((item) => {
-                                                if (item.ckey === 'center') {
-                                                    source.initCenter = item.cval.split(',')
-                                                } else if (item.ckey === 'zoom') {
-                                                    source.initZoom = item.cval
-                                                }
-                                            })
-                                        } else if (service.name === '网络分析服务') {
-                                            source = resource.netAnalysisService
-                                            source.url = resData[0].cval
-                                        } else if (service.name === '数据服务') {
-                                            source = resource.dataService
-                                            source.url = resData[0].cval
-                                        }
-                                    }
-                                })
-                                this.addMap();
-                            })
-                    }
-                } else this.$message('服务加载失败 启用默认服务配置')
+        new TF_Layer().createLayers(layers).then((layers:any[]) => {
+            layers.forEach(layer => {
+              layer && this.mapV.addLayer(layer)
             })
-        } else {
-            this.addMap();
-        }
+          })
+        // layers.forEach((layerConfig) => {
+        //     let { name, type, url, parentname, id, visible = true } = layerConfig
+        //     let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
+        //     this.mapV.addLayer(layer)
+        // })
     }
-
     /**
      * 通用的图层的打开和移除及清理(传入init初始化图层，如果图层已初始化则清空图层内容，
      * 传入destory则删除图层，将 图层移除地图)
@@ -2186,7 +2094,7 @@ export default class XjPlanManagement extends Vue {
             div[1].innerText = '加载中'
             this.serverSearch.analysisAtt = [] //存储图层字段信息
             SuperMapService.getLayerFields({
-                url: appconfig.gisResource.business_map.config[0].url,
+                url: this.appconfig.gisResource.business_map.config[0].url,
                 layer: data.layerNameEn
             }).then(result => {
                 const fieldNames = result.result.recordsets[0].fields;
@@ -2224,9 +2132,9 @@ export default class XjPlanManagement extends Vue {
         //选项卡减少过会，如果当前值大于实际值将其设置为实际值
         if ((parseInt(this.planModel.input.currentPlanTypeName.toString()) + 1) > this.planModel.input.planTypeInfo.length) {
             if (this.planModel.input.planTypeInfo.length == 0) {
-                this.planModel.input.currentPlanTypeName=0+"";
+                this.planModel.input.currentPlanTypeName = 0 + "";
             } else {
-                this.planModel.input.currentPlanTypeName=(this.planModel.input.planTypeInfo.length-1)+"";
+                this.planModel.input.currentPlanTypeName = (this.planModel.input.planTypeInfo.length - 1) + "";
             }
         }
         if (parseInt(this.planModel.input.currentPlanTypeName) >= 0) {
@@ -2263,7 +2171,7 @@ export default class XjPlanManagement extends Vue {
         div[1].innerText = '加载中'
         this.serverSearch.layerFix = []
         SuperMapService.getFieldUniqueValue({
-            url: appconfig.gisResource.business_map.config[0].url,
+            url: this.appconfig.gisResource.business_map.config[0].url,
             layer: currentData.layerNameEn,
             uniqueField: field
         }).then(result => {
@@ -2319,7 +2227,7 @@ export default class XjPlanManagement extends Vue {
     */
     queryServce(option, id, call) {
         $.ajax({
-            url: appconfig.gisResource.business_map.config[0].url + "/" + id + "/query?f=pjson",
+            url: this.appconfig.gisResource.business_map.config[0].url + "/" + id + "/query?f=pjson",
             type: 'POST',
             data: option,
             success: (data) => {
@@ -2377,7 +2285,6 @@ export default class XjPlanManagement extends Vue {
         const dblclickevt = map.getInteractions().getArray().find(interaction => {
             return interaction instanceof DoubleClickZoom;
         })
-        console.log(dblclickevt)
         this.draw.on('drawstart', (e) => {
             //删除默认的双击事件，防止双击完成绘制时放大地图
             map.removeInteraction(dblclickevt);
@@ -2387,7 +2294,6 @@ export default class XjPlanManagement extends Vue {
 
             //记录组成线的点信息
             let geometrys = geometry.getCoordinates();
-            console.log(geometrys);
             const geo = SuperMapService.convertPolygon(geometrys);
             this.drawEndHandle(geo)
             //this.editInfo.geometry = JSON.stringify(geometrys);
@@ -2515,7 +2421,7 @@ export default class XjPlanManagement extends Vue {
         // }
         //查询
         SuperMapService.queryByMapService({
-            url: appconfig.gisResource.business_map.config[0].url,
+            url: this.appconfig.gisResource.business_map.config[0].url,
             geometry: currentData.planInfo.drawGraphic,
             datasetNames: [currentData.layerNameEn],
             whereclause: currentData.planInfo.where
@@ -2702,7 +2608,7 @@ export default class XjPlanManagement extends Vue {
             };
             //查询
             SuperMapService.queryByMapService({
-                url: appconfig.gisResource.business_map.config[0].url,
+                url: this.appconfig.gisResource.business_map.config[0].url,
                 datasetNames: [data.layerNameEn],
                 whereclause: where
             }).then((result: any) => {

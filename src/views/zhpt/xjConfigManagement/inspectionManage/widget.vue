@@ -51,8 +51,6 @@
 <script>
 import { xjTypeQuery, xjTypeAdd, xjTypeAlter, xjTypeDelete } from '@/api/xjConfigManageApi'
 import { geteSessionStorage } from '@/utils/auth'
-import { appconfig } from 'staticPub/config';
-//appconfig.gisResource.business_map.config[0].url管网图层中设备图层的id
 //目前配置
 const equipmentLayerId = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
@@ -70,6 +68,7 @@ export default {
       disabledAlter: true, //控制修改按钮是否可点击
       disabledDelete: true, //控制删除按钮是否可点击
       diaVisibleAdd: false, //控制新增弹窗的显示
+      appconfig: this.$store.getters.appconfig,//地图服务配置
       search: {
         size: 30,
         current: 1,
@@ -108,22 +107,23 @@ export default {
   },
   mounted() {
     this.queryXjType()
+    debugger;
     //获取图层信息
     $.ajax({
-      url: appconfig.gisResource.business_map.config[0].url + "/layers.json",
+      url: this.appconfig.gisResource.business_map.config[0].url + "/layers.json",
       type: 'GET',
       success: (result) => {
-        console.log(result);
         if (!result.length) return this.$message.error('图层获取失败')
         const data = result[0].subLayers.layers;
 
         this.layerNames = [{ value: 'inspectionPoint', label: '巡检点' }, { value: 'inspectionLine', label: '巡检线' }, { value: 'hiddenDangerPoint', label: '隐患点' }]
         for (let i = 0, ii = data.length; i < ii; i++) {
-          var layer = data[i];
-          //图层过滤
-          //if(equipmentLayerId.indexOf(layer.id) > 0){
-          this.layerNames.push({ value: layer.name, label: layer.caption })
-          //}
+          var layergroup = data[i].subLayers.layers;
+          for (let j = 0, jj = layergroup.length; j < jj; j++) {
+            const layer = layergroup[j]
+            this.layerNames.push({ value: layer.name, label: layer.caption })
+          }
+
         }
       },
       error: (error) => this.$message.error(error)
@@ -134,10 +134,10 @@ export default {
      * 该方法用于监听图层选择器
      */
     layerSelectChange(val) {
-		const layer=this.layerNames.find(item=>{return item.value===val});
-		if(layer){
-			this.addForm.layerName=layer.label;
-		}
+      const layer = this.layerNames.find(item => { return item.value === val });
+      if (layer) {
+        this.addForm.layerName = layer.label;
+      }
     },
     /**
      * 渲染数据处理
@@ -208,7 +208,7 @@ export default {
             createUser: Number(geteSessionStorage('userId')), //创建人信息
             name: this.addForm.typeName, //类型名称
             layerName: this.addForm.layerName, //图层中文名称
-			layerNameEn:this.addForm.layerNameEn,//图层英文名称
+            layerNameEn: this.addForm.layerNameEn,//图层英文名称
             note: this.addForm.notes //备注信息
           }
           xjTypeAdd(addInfo).then(res => {

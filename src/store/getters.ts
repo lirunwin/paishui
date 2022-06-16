@@ -2,6 +2,7 @@ const getters = {
   sidebar: state => state.app.sidebar,
   device: state => state.app.device,
   token: state => state.user.token,
+  appconfig:state=>state.gis.appconfig,
   avatar: state => state.user.avatar,
   name: state => state.user.username,
   visitedViews: state => state.tagsView.visitedViews,

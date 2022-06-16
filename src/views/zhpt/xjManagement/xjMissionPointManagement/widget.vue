@@ -155,7 +155,8 @@ export default class XjMissionPointManagement extends Vue {
     // this.getXjType() //绑定新增页面的巡查类型
     this.getData() //获取首页表格数据
     var that = this
-    this.initMapSource()
+    //this.initMapSource()
+    this.addMap();
   }
 
   destroyed() {
@@ -208,9 +209,13 @@ export default class XjMissionPointManagement extends Vue {
    * 在模块打开的时候预先加载地图
    */
   addMap() {
-    let { initCenter, initZoom } = appconfig
+    if(!this.$store.getters.appconfig){
+      this.$message('服务加载失败 启用默认服务配置')
+      return;
+    }
+    let { initCenter, initZoom } = this.$store.getters.appconfig
     var div = this.$refs.cctvMap as HTMLElement
-    let layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
+    let layerResource = this.$store.getters.appconfig.gisResource['iserver_resource'].layerService.layers
     const map = new Map({
       target: div,
       view: new View({
@@ -222,12 +227,12 @@ export default class XjMissionPointManagement extends Vue {
       })
     })
     this.mapV = map
-
-    layerResource.forEach((layerConfig) => {
-      let { name, type, url, parentname, id, visible = true } = layerConfig
-      let layer = new TF_Layer().createLayer({ url, type, visible, properties: { id, name, parentname } })
-      map.addLayer(layer)
+    new TF_Layer().createLayers(layerResource).then(layers => {
+      layers.forEach((layer:any) => {
+        layer && map.addLayer(layer)
+      })
     })
+   
     //添加矢量点图层
     const vectorLayer = new VectorLayer({
       source: new VectorSource()
@@ -392,73 +397,6 @@ export default class XjMissionPointManagement extends Vue {
     that.title = '巡检点添加'
     that.$nextTick(that.loadMap)
     that.flag = false
-  }
-  initMapSource() {
-    var resource = appconfig.gisResource['iserver_resource']
-    if (appconfig.isloadServer) {
-      request({ url: '/base/sourcedic/getTreeService', method: 'get' }).then((res1) => {
-        if (res1.code == 1) {
-          const res = res1.result
-          //通过访问天地图地址判断是否可以连接外网,先获取编码isOnlineAddress下的外网地址
-          let onlineIndex = res.findIndex((item) => item.code == 'isOnlineAddress')
-          if (onlineIndex !== -1) {
-            let isOnline = true
-            let onLineAddress = res[onlineIndex].child[0].cval
-            axios
-              .get(onLineAddress)
-              .then(
-                (res) => {
-                  isOnline = res.status === 200
-                },
-                (error) => {
-                  isOnline = false // 异常返回
-                }
-              )
-              .catch((e) => {
-                isOnline = false //异常返回
-              })
-              .finally(() => {
-                const repItems = ['地图配置服务']
-                res.forEach((service) => {
-                  let resData = service.child,
-                    source = null
-                  if (repItems.includes(service.name) && resData && resData.length !== 0) {
-                    if (service.name === '图层服务') {
-                      source = resource.layerService.layers
-                      resData.forEach((data) => {
-                        let findItem = source.find((sourceItem) => {
-                          return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
-                        })
-                        if (findItem) {
-                          findItem.url = data.cval
-                        }
-                      })
-                    } else if (service.name === '地图配置服务') {
-                      source = appconfig
-                      resData.forEach((item) => {
-                        if (item.ckey === 'center') {
-                          source.initCenter = item.cval.split(',')
-                        } else if (item.ckey === 'zoom') {
-                          source.initZoom = item.cval
-                        }
-                      })
-                    } else if (service.name === '网络分析服务') {
-                      source = resource.netAnalysisService
-                      source.url = resData[0].cval
-                    } else if (service.name === '数据服务') {
-                      source = resource.dataService
-                      source.url = resData[0].cval
-                    }
-                  }
-                })
-                this.addMap()
-              })
-          }
-        } else this.$message('服务加载失败 启用默认服务配置')
-      })
-    } else {
-      //nextDo()
-    }
   }
   //点击确定，提交添加的巡检点信息
   xjPointInfoSubmit() {

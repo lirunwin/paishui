@@ -108,15 +108,15 @@ export default class HiddenDangerSearch extends Vue {
     var div = this.$refs.cctvMap
     var mapV = this.data.mapView
     var map = mapV.map
-    loadModules(['esri/views/MapView'], { url: esriConfig.baseUrl }).then(([MapView]) => {
-      const mapview = new MapView({
-        container: div,
-        map: map
-      })
-      that.mapV = mapview
-      mapview.ui.components = []
-      mapview.constraints.lods = mapV.constraints.lods
-    })
+    // loadModules(['esri/views/MapView'], { url: esriConfig.baseUrl }).then(([MapView]) => {
+    //   const mapview = new MapView({
+    //     container: div,
+    //     map: map
+    //   })
+    //   that.mapV = mapview
+    //   mapview.ui.components = []
+    //   mapview.constraints.lods = mapV.constraints.lods
+    // })
 
     this.getData() //渲染主页表格
   }
