@@ -119,6 +119,19 @@ export default Vue.extend({
       background-color: #f3f7fe;
     }
   }
+  >>> .el-table__body {
+    tr.hover-row {
+      &.el-table__row--striped.current-row,
+      &.current-row,
+      &.el-table__row--striped,
+      & {
+        & > td.el-table__cell {
+          background-color: rgba(45, 116, 231, 0.1);
+          color: #f19944;
+        }
+      }
+    }
+  }
   .table {
     flex: 1 1 auto;
     // min-height: 100%;

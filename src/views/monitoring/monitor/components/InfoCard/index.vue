@@ -3,14 +3,19 @@
     <div slot="header" class="info-card-title">
       <span>{{ (detail.monitorSiteVo || {}).name }}</span>
       <div>
-        <el-button type="text" icon="el-icon-map-location" style="height: 1.2em; padding: 0" />
+        <!-- <el-button type="text" icon="el-icon-map-location" style="height: 1.2em; padding: 0" />
         <el-button
           type="text"
           icon="el-icon-s-tools"
           @click="() => $emit('distribute', data)"
           style="height: 1.2em; padding: 0"
+        /> -->
+        <el-button
+          type="text"
+          icon="iconfont icontjfx"
+          style="height: 1.2em; padding: 0"
+          @click="() => $emit('jump')"
         />
-        <el-button type="text" icon="el-icon-data-line" style="height: 1.2em; padding: 0" />
       </div>
     </div>
     <h3 :style="`color:${monitorStatusColor[detail.isAlarm ? '2' : detail.status]}`">{{ noticeType }}</h3>
@@ -45,6 +50,7 @@ export default class InfoCard extends Vue {
   detail: Partial<IMonitorItemDetail> = {}
   monitorStatusColor = monitorStatusColor
   fetchCount: number = 0
+  timer = null
 
   get noticeType() {
     const { status, isAlarm } = this.detail
@@ -73,8 +79,6 @@ export default class InfoCard extends Vue {
       this.fetchCount += 1
     }
   }
-
-  timer = null
 
   stopInterval() {
     if (this.timer) clearInterval(this.timer)
@@ -123,6 +127,7 @@ export default class InfoCard extends Vue {
     display: flex;
     align-items: center;
     font-weight: 600;
+    font-size: 16px;
     > span {
       flex: 1 1 auto;
       text-overflow: ellipsis;
