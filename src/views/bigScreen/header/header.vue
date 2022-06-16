@@ -22,7 +22,7 @@
                 </div>
                 <div class="otherItem">
                     <div class="specificTime" >{{specificTime}}</div>
-                    <div class="entrySys" @click="enterSys()"><span>进入系统</span></div>
+                    <div class="entrySys" @click="enterSys()"><span>{{operationName}}</span></div>
                 </div>
             </div>  
             <div class="underline"></div>
@@ -41,11 +41,15 @@ export default {
             menuList:[],//菜单栏配置
             currentActive:'',//当前激活模块
             specificTime:null,//系统当前时间
+            operationName:null,
         }
     },
     computed:{
         config(){
             return Config
+        },
+        routerData(){
+            return this.$store.state.routeSetting.addRoutes
         }
     },
     mounted(){
@@ -53,6 +57,7 @@ export default {
         this.title=this.config.title
         // this.menuList=this.config.menuList
         this.showCurrentTime()
+        this.getEnterText()
     },
     watch:{
         currentActive:{
@@ -60,7 +65,7 @@ export default {
                 this.activeModule(n)
             },
             immediate:true
-        }
+        },
     },
     methods:{
         //获取用户激活模块
@@ -85,7 +90,23 @@ export default {
         },
         //进入系统
         enterSys(){
-            this.$router.push({ path: '/' })
+            console.log(this.routerData)
+            if(!this.routerData.some((item) => item.label === '首页')&&!this.routerData.some((item) => item.label === '地图')){
+                this.logout()
+            }else{
+                this.$router.push({ path: '/' })
+            }
+        },
+        async logout() {
+            await this.$store.dispatch('user/logout')
+            this.$router.push('/login')
+        },
+        getEnterText(){
+            if(!this.routerData.some((item) => item.label === '首页')&&!this.routerData.some((item) => item.label === '地图')){
+                this.operationName='退出系统'
+            }else{
+                this.operationName='进入系统'
+            }
         },
         //当前激活模块
         activeModule(module){

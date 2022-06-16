@@ -140,7 +140,7 @@ const actions = {
             if (data.some((item) => item.type === 'bigScreen')) addRouter.unshift(bigScreenRoutes)
             if (data.some((item) => item.type === 'map' || gisNames.includes(item.type))) addRouter.unshift(mapRoute)
             if (data.some((item) => item.type === 'dashboard')) addRouter.unshift(dashboardRoute)
-            else if (!data.some((item) => item.type === 'dashboard')) {
+            else if (!data.some((item) => item.type === 'dashboard')&&data.some((item) => item.type === 'map')) {
               const redirectParent = state.addRoutes[0]
               noDashboardRedict.redirect =
                 redirectParent.path !== '/map' ? `${redirectParent.path}/${redirectParent.children[0].path}` : '/map'
