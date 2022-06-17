@@ -36,7 +36,9 @@
       <el-tab-pane label="设置" name="setting" style="height:100%">
         <tf-legend class="legend_dept" label="图层名称" isopen="true" title="指定查询的图层。">
           <el-select v-model="layerName" size="small" placeholder="请选择">
-            <el-option v-for="(item, index) in layersAtt" :key="index" :value="item.label"/>
+          <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
+             <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+          </el-option-group>
           </el-select>
         </tf-legend>
         <tf-legend class="legend_dept" label="可见属性" isopen="true" title="指定所要查询的属性字段。">
@@ -84,7 +86,7 @@ export default {
       elements: {},
       openstate: true,
 
-      layersAtt: [],
+      layerGroups: [],
       activeName: 'attQuerry',
       ractSelect: false,
 
@@ -104,8 +106,8 @@ export default {
   },
   watch:{
     layerName(n, o) {
-      let tableName = this.layersAtt.find(item => item.label === n)
-      mapUtil.getFields(tableName.name).then(res => {
+      console.log('管网图层', n)
+      mapUtil.getFields(n).then(res => {
         if (res) {
           this.attDatas = res
           this.attDatas.forEach(row => this.$refs.attTable.toggleRowSelection(row, true))
@@ -126,25 +128,26 @@ export default {
       this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#0ff', 7, 'rgba(0, 255, 255, 0.7)') })
       this.data.mapView.addLayer(this.vectorLayer)
       //
-      let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
-      let info = sources.map(source => source.sublayers.map(sublayer => {
-        return { name: sublayer.name, label: sublayer.title }
-      }))
-      this.layersAtt = info[0]
+      let [name, type] = appconfig.initLayers.split("&&")
+      let layer = mapUtil.getAllSubLayerNames(name, type)
+      // 设置图层
+      this.layerGroups = layer.sublayers.map(layer => {
+        let layers = layer.sublayers.map(sub => {
+          return { label: sub.title, value: sub.name.split('@')[0] }
+        })
+        return { label: layer.title, value: layer.name, layers }
+      })
+      this.data.that.setPopupSwitch(false)
     },
     clearAll () {
       this.vectorLayer && this.data.mapView.removeLayer(this.vectorLayer)
       this.drawer && this.drawer.end()
+      this.data.that.setPopupSwitch(true)
     },
     isDrawRect: function(checked) {
       if (!checked) {
         this.drawer && this.drawer.end()
         return
-      }
-      const KeyId = {
-        'TF_PSPS_PIPE_B': 'LNO',
-        "TF_PSPS_POINT_B": 'EXP_NO',
-        "TF_PSPS_OUTFALL_B": 'EXP_NO'
       }
       this.drawer = new iDraw(this.data.mapView, 'rect', {
         startDrawCallBack: () => {
@@ -160,7 +163,7 @@ export default {
                   properties: fea.properties, 
                   tableName, 
                   feature: fea, 
-                  name: fea.properties[KeyId[tableName]] || fea.properties['EXP_NO'], 
+                  name: fea.properties['LNO'] || fea.properties['EXP_NO'] || fea.properties['SID'], 
                   layer: layerName 
                 }
               })

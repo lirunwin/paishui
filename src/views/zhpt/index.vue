@@ -461,7 +461,9 @@ export default class BaseMap extends Vue {
       source: new VectorSource(),
       style: comSymbol.getAllStyle(3, 'f00', 5, '#00ffff', 'rgba(255, 255, 255, 0.6)')
     })
+
     this.view.addLayer(this.vectorLayer)
+    // this.view.getView().setCenter([101.724022, 26.580702])
   }
 
   async spaceQuery(position) {
@@ -469,18 +471,46 @@ export default class BaseMap extends Vue {
     let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
     let dataServerConfig = appconfig.gisResource.iserver_resource.dataService
     new iQuery().spaceQuery(queryFeature).then(queryData => {
-      console.log('查询服务')
       let showData = []
       for (let data of queryData as any) {
         let features = data.result.features.features
         if (features.length !== 0) {
-          showData.push(features)
+          showData.push(data)
         }
       }
       if (showData.length !== 0) {
-        let fea = showData.find(data => data[0].geometry.type === 'Point')
-        let feature = fea ? fea[0] : showData[0][0]
-        this.openPopup(position, feature)
+        let openData = showData.find(data => data.result.features.features[0].geometry.type === 'Point')
+        // 点优于线显示
+        let featureData = openData ? openData : showData[0]
+        let layerName = featureData.tableName
+        //
+        let layer = mapUtil.getAllSubLayerNames('pipemap', 'smlayergroup')
+        let feature = featureData.result.features.features[0]
+        let findLayer
+        layer.sublayers.forEach(p => {
+          let layername = p.title
+          let sublayer = p.sublayers.find(sub => sub.name.split("@")[0] === layerName)
+          if (sublayer) {
+            feature.layerName = layername
+            feature.tableName = sublayer.name.split("@")[0]
+          }
+        })
+
+        let com = this.$refs.popupWindow as any
+        com.showPopup(position, feature, afterClosePopup, true)
+        let vectorLayer = new VectorLayer({
+          source: new VectorSource(),
+          style: mapUtil.getCommonStyle()
+        })
+        let ifeature = new GeoJSON().readFeature(feature)
+        if (ifeature) {
+          vectorLayer.getSource().addFeature(ifeature)
+          this.view.addLayer(vectorLayer)
+        }
+        // 关闭弹窗后
+        function afterClosePopup() {
+          vectorLayer.getSource().removeFeature(ifeature)
+        }
       }
     })
   }
@@ -488,24 +518,6 @@ export default class BaseMap extends Vue {
   // 设置是否开启弹窗
   setPopupSwitch (isopen) {
     this.openPopupSwitch = isopen
-  }
-
-  openPopup(position, feature) {
-    let com = this.$refs.popupWindow as any
-    com.showPopup(position, feature, afterClosePopup, true)
-    let vectorLayer = new VectorLayer({
-      source: new VectorSource(),
-      style: comSymbol.getAllStyle(3, '#f00', 5, '#0ff', 'rgba(255, 255, 255, 0.6)')
-    })
-    let ifeature = new GeoJSON().readFeature(feature)
-    if (ifeature) {
-      vectorLayer.getSource().addFeature(ifeature)
-      this.view.addLayer(vectorLayer)
-    }
-    // 关闭弹窗后
-    function afterClosePopup() {
-      vectorLayer.getSource().removeFeature(ifeature)
-    }
   }
   // 加载图层
   addLayers(layersSource) {

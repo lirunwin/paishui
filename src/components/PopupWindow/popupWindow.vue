@@ -2,11 +2,21 @@
   <!-- 地图弹窗 -->
   <div id="popup-window" class="popup-window">
     <div class="window-header">
-      <span class="popup-title" v-cloak v-if="flg">{{infoObject.properties.TYPE+'('+ infoObject.properties.LNO || infoObject.properties.EXP_NO + ')'}}</span>
+      <span class="popup-title" v-cloak v-if="flg">{{idStr}}</span>
       <span class="close-btn el-icon-close" title="关闭" @click="closePopup"></span>
     </div>
+    <div class="window-body">
+      <ul>
+        <li v-for="item in propertiesData" :key="item.label">
+          <span v-if="item[0]">{{ item[0].label }}: <i v-text="item[0].value"></i></span>
+          <span v-if="item[0] && item[0].type && hasDetail"><el-link style="color: #80C3FF" @click="showDetail">详细信息...</el-link></span>
+          <span v-if="item[1] && item[1].type && hasDetail"><el-link style="color: #80C3FF" @click="showDetail">详细信息...</el-link></span>
+          <span v-if="item[1] && !item[1].type">{{ item[1].label }}: <i v-text="item[1].value"></i></span>
+        </li>
+      </ul>
+    </div>
     <!-- 管线属性内容 -->
-    <div class="window-body" v-if="flg&&infoObject.geometry.type=='LineString'"> 
+    <!-- <div class="window-body" v-if="flg&&infoObject.geometry.type=='LineString'"> 
       <ul>
         <li>
           <span>类型：<i v-text="infoObject.properties.TYPE"></i></span>
@@ -32,13 +42,12 @@
           <span v-show="hasDetail"><el-link style="color: #80C3FF" @click="showDetail">详细信息...</el-link></span>
         </li>
       </ul>
-    </div>
+    </div> -->
     <!-- 管点属性内容 -->
-    <div class="window-body" v-if="flg&&infoObject.geometry.type=='Point'">
+    <!-- <div class="window-body" v-if="flg&&infoObject.geometry.type=='Point'">
       <ul>
         <li>
           <span>类型：<i v-text="infoObject.properties.TYPE"></i></span>
-          <!-- <span>所属类型：<i v-text="infoObject.properties.SUBTYPE +' '+ infoObject.properties.ADJUNCT"></i></span> -->
           <span>使用状态：<i v-text="infoObject.properties.STATUS"></i></span>
         </li>
         <li>
@@ -50,7 +59,6 @@
           <span>符号角度：<i v-text="infoObject.properties.ROTATION"></i></span>
         </li>
         <li>
-          <!-- <span>埋深：<i v-text="infoObject.properties.DEPTH"></i></span> -->
           <span>地址：<i v-text="infoObject.properties.ADDRESS"></i></span>
           <span>更新日期：<i v-text="infoObject.properties.UPDATE_TIME"></i></span>
         </li>
@@ -58,7 +66,7 @@
           <span style="width:100%">权属单位：<i v-text="infoObject.properties.BELONG"></i></span>
         </li>
       </ul>
-    </div>
+    </div> -->
     <el-dialog width='80%' title="详细信息" v-if="formData.length !== 0" :visible.sync="showDialog" :append-to-body="true">
         <div class="container i-scrollbar">
           <el-form v-if="formData.length !== 0" :inline="true" class="">
@@ -81,6 +89,8 @@ import Fill from "ol/style/Fill";
 import Circle from "ol/style/Circle";
 import GeoJSON from 'ol/format/GeoJSON';
 import { fieldDoc, pointFieldDoc } from '@/views/zhpt/common/doc'
+import { fieldsConfig } from './popupconfig'
+import { mapUtil } from '../../views/zhpt/common/mapUtil/common';
 
 export default {
   props: ['map'],
@@ -92,7 +102,8 @@ export default {
       popup: null,
       hasDetail: false,
       showDialog: false,
-      formData: []
+      formData: [],
+      propertiesData: []
     }
   },
   mounted() {
@@ -112,28 +123,21 @@ export default {
      * 打开详情
      * */
     showDetail () {
-
-      // let info = {
-      //   label: '详细信息',
-      //   widgetid: 'FullPanel',
-      //   pathId: 'detailInfo',
-      //   param: { info: this.infoObject }
-      // }
-      // this.$store.dispatch('map/changeMethod', info)
-        let { geometry, properties } = this.infoObject
-        if (geometry.type === 'LineString') {
-            this.doc = fieldDoc
-        } else {
-            this.doc = pointFieldDoc
-        }
-        let data = []
-        for (let key in properties) {
-            if (this.doc[key]) {
-                data.push({ label: this.doc[key], value: properties[key] })
-            }
-        }
-        this.formData = data
-        this.showDialog = true
+        let { geometry, properties, tableName } = this.infoObject
+        //
+        console.log('详情')
+        mapUtil.getFields(tableName).then(fieldsDoc => {
+          let data = []
+          for (let key in properties) {
+              let fieldObj = fieldsDoc.find(field => field.field === key)
+              if (fieldObj) {
+                  data.push({ label: fieldObj.name, value: properties[key] })
+              }
+          }
+          this.formData = data
+          this.showDialog = true
+        })
+        
     },
     /**
      * 打开弹窗 
@@ -142,9 +146,46 @@ export default {
       this.hasDetail = hasDetail
       this.afterClosePopup && this.afterClosePopup()
       this.afterClosePopup = afterClosePopup
+
+      let showData = []
       this.infoObject = infoObject
+      let type = infoObject.geometry.type
+      let layerFieldConfig = fieldsConfig[infoObject['layerName']][type]
+      let properties = infoObject.properties
+      this.idStr = `设备编号： ${properties[layerFieldConfig['key']]}`
+
+      let fields = layerFieldConfig['fields']
+      for(let i = 0; (i <= fields.length); i+=2) {
+        let prev = fields[i]
+        let next = fields[i + 1]
+        let prevData = formatData(prev, properties)
+        let nextData = formatData(next, properties)
+        showData.push([prevData, nextData])
+      }
+      this.propertiesData = showData
+      console.log('信息', this.propertiesData)
       this.flg = true
       this.popup.setPosition(position)
+      // 转换数据
+      function formatData (data) {
+        if (data) {
+          let value = ''
+          let { name, label, type } = data
+          if (!type) {
+            if (Array.isArray(name)) {
+              value = name.map(f => properties[f])
+              value = value.join('/')
+            } else {
+              value = properties[name]
+            }
+          } else {
+            return { label, type }
+          }
+          return { label, value }
+        } else {
+          return null
+        }
+      }
     },
     /**
      * 关闭弹窗 
