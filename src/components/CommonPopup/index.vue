@@ -29,7 +29,8 @@ export default {
         isHeaderShow:{type: Boolean},//是否显示头部
         headerStyle: {type: String,default:"border-bottom:1px solid #cccccc"},//头部样式
         isSetCenter:{type: Boolean,default: false},//是否视图定位至中心
-        operationGroup:{type:Array,default: () => []}//例如：operationGroup:[{icon:"iconfont icondtbz",color:"royalblue",action:"detail"},],
+        operationGroup:{type:Array,default: () => []},//例如：operationGroup:[{icon:"iconfont icondtbz",color:"royalblue",action:"detail"},],
+        right:{type:Number,default:-190}
     },
     data() {
         return {
@@ -54,6 +55,8 @@ export default {
                     this.$nextTick(()=>{
                         this.showPopup()
                     })
+                }else{
+                    this.closePopup()
                 }
             },
             deep: true,
@@ -61,6 +64,7 @@ export default {
         },
     },
     mounted(){
+        this.$refs['commonPopup'].style.setProperty('--right', this.right+'px')
     },
     methods:{
         getPan() {
@@ -143,7 +147,7 @@ export default {
     // bottom: 12px;
     // left: -50px;
     top: 30px;
-    right: -190px;
+    right: var(--right);
     min-width: 280px;
 }
 .popup-header{
