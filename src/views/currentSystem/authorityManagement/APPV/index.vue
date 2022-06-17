@@ -275,7 +275,7 @@ export default class APPV extends Vue {
       prop: 'appType',
       width: '150',
       formatter: (row, col, cellValue, index) => {
-        if (cellValue === '1') return 'app'
+        if (cellValue === '1') return '移动平台'
         if (cellValue === '2') return '前端平台'
       }
     },
