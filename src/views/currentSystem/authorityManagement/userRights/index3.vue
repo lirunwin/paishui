@@ -439,7 +439,7 @@ import {
   getFiles
 } from '@/api/base'
 import { getToken, setSessionStorage } from '@/utils/auth'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 import { ElForm } from 'element-ui/types/form'
 @Component({
   name: 'UserRights',
@@ -791,7 +791,7 @@ export default class UserRights extends Vue {
     // const arr = [this.detailInfo.avatar, this.detailInfo.esignature];
     // arr.forEach((item, index) => {
     //   if (item === null) return;
-    //   imageByName(item).then((res) => {
+    //   getRemoteImg(item).then((res) => {
     //     if (res.status === 200) {
     //       index === 1
     //         ? (this.detailInfo.esignature = res.config.url)
@@ -806,7 +806,7 @@ export default class UserRights extends Vue {
     this.copyRole = []
     // const arr = [this.multipleSelection[0].avatar, this.multipleSelection[0].esignature]
     // arr.forEach((item, index) => {
-    //   imageByName(item).then((res) => {
+    //   getRemoteImg(item).then((res) => {
     //     if (res.status === 200) {
     //       index === 1
     //         ? (this.multipleSelection[0].esignature = res.config.url)
@@ -815,8 +815,8 @@ export default class UserRights extends Vue {
     //   })
     // })
 
-    this.multipleSelection[0].esignature = imageByName(this.multipleSelection[0].esignature)
-    this.multipleSelection[0].avatar = imageByName(this.multipleSelection[0].avatar)
+    this.multipleSelection[0].esignature = getRemoteImg(this.multipleSelection[0].esignature)
+    this.multipleSelection[0].avatar = getRemoteImg(this.multipleSelection[0].avatar)
 
     // 审核页面，默认同意
     this.auditInfo.auditStatus = '2'

@@ -241,10 +241,10 @@ export default class APPV extends Vue {
   }
 
   options1 = [
-    // {
-    //   id: '1',
-    //   name: 'APP'
-    // },
+    {
+      id: '1',
+      name: '移动平台'
+    },
     {
       id: '2',
       name: '前端平台'
@@ -275,7 +275,7 @@ export default class APPV extends Vue {
       prop: 'appType',
       width: '150',
       formatter: (row, col, cellValue, index) => {
-        if (cellValue === '1') return 'app'
+        if (cellValue === '1') return '移动平台'
         if (cellValue === '2') return '前端平台'
       }
     },
@@ -404,6 +404,9 @@ export default class APPV extends Vue {
         'application/zip' // .zip
       ].includes(data.raw.type)
     ) {
+      const { name } = data.raw
+      if (data.raw.type === 'application/vnd.android.package-archive')
+        this.appForm.version = name.replace(/^.*-(?=\d{1,2}\.\d{1,2})/, '').replace(/\.apk/, '')
       this.fileList = [...this.fileList, data.raw]
     } else {
       this.fileList = [...(this.fileList || [])]

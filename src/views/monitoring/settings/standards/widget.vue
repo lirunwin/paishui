@@ -12,7 +12,7 @@
           :loading="loading.standardDeleting"
           @click="onStandardDelete"
         >
-          删除设备类型
+          删除指标标准
         </el-button>
       </div>
       <div>

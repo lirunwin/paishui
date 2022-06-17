@@ -236,7 +236,7 @@
           <span>个性签名图片：</span>
           <el-image
             style="width: 100px; height: 100px"
-            :src="imageByName(multipleSelection[0].esignature)"
+            :src="getRemoteImg(multipleSelection[0].esignature)"
             :preview-src-list="[multipleSelection[0].esignature]"
           >
           </el-image>
@@ -246,7 +246,7 @@
           <span>用户头像：</span>
           <el-image
             style="width: 100px; height: 100px"
-            :src="imageByName(multipleSelection[0].avatar)"
+            :src="getRemoteImg(multipleSelection[0].avatar)"
             :preview-src-list="[multipleSelection[0].avatar]"
           >
           </el-image>
@@ -339,12 +339,6 @@
           <el-row>
             <el-col :span="12" class="base-info">
               <el-row>
-                <span class="title">申请人：</span><span>{{ detailInfo.createUserName }}</span>
-              </el-row>
-              <el-row>
-                <span class="title">申请时间：</span><span>{{ detailInfo.createTime }}</span>
-              </el-row>
-              <el-row>
                 <span class="title">登录名：</span><span>{{ detailInfo.username }}</span>
               </el-row>
               <el-row>
@@ -362,15 +356,21 @@
               <el-row>
                 <span class="title">工作岗位：</span><span>{{ detailInfo.job }}</span>
               </el-row>
+              <el-row>
+                <span class="title">申请人：</span><span>{{ detailInfo.createUserName }}</span>
+              </el-row>
+              <el-row>
+                <span class="title">申请时间：</span><span>{{ detailInfo.createTime }}</span>
+              </el-row>
             </el-col>
             <el-col :span="12" class="base-info">
               <el-row>
                 <span class="title">个性签名图片：</span>
-                <img v-if="detailInfo.esignature !== null" :src="imageByName(detailInfo.esignature)" />
+                <img v-if="detailInfo.esignature !== null" :src="getRemoteImg(detailInfo.esignature)" />
               </el-row>
               <el-row>
                 <span class="title">用户头像：</span>
-                <img v-if="detailInfo.avatar !== null" :src="imageByName(detailInfo.avatar)" />
+                <img v-if="detailInfo.avatar !== null" :src="getRemoteImg(detailInfo.avatar)" />
               </el-row>
               <el-row> <span class="title">工作职责：</span><span v-html="detailInfo.note" /> </el-row>
             </el-col>
@@ -437,7 +437,7 @@ import {
   getFiles
 } from '@/api/base'
 import { getToken, setSessionStorage } from '@/utils/auth'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 import { ElForm } from 'element-ui/types/form'
 @Component<UserRights>({
   name: 'UserRights',
@@ -468,7 +468,7 @@ export default class UserRights extends Vue {
   formatteAuditStatus?: any
   list = []
   total = 0
-  imageByName = imageByName
+  getRemoteImg = getRemoteImg
   column = [
     {
       label: '登录名',
@@ -788,7 +788,7 @@ export default class UserRights extends Vue {
     this.copyRole = []
     // const arr = [this.multipleSelection[0].avatar, this.multipleSelection[0].esignature]
     // arr.forEach((item, index) => {
-    //   imageByName(item).then((res) => {
+    //   getRemoteImg(item).then((res) => {
     //     // debugger
     //     if (res.status === 200) {
     //       index === 1
@@ -797,8 +797,8 @@ export default class UserRights extends Vue {
     //     }
     //   })
     // })
-    // this.multipleSelection[0].esignature = imageByName(this.multipleSelection[0].esignature)
-    // this.multipleSelection[0].avatar = imageByName(this.multipleSelection[0].avatar)
+    // this.multipleSelection[0].esignature = getRemoteImg(this.multipleSelection[0].esignature)
+    // this.multipleSelection[0].avatar = getRemoteImg(this.multipleSelection[0].avatar)
 
     // 审核页面，默认同意
     this.auditInfo.auditStatus = '2'

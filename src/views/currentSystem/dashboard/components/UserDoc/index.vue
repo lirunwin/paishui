@@ -61,7 +61,7 @@
 <script>
 import Blocks from '../Layout/Blocks'
 import { getInfo } from '@/api/dashboard'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 
 export default {
   components: { Blocks },
@@ -125,10 +125,10 @@ export default {
      * @description 获取用户图片
      */
     getUserAvatar(avatar) {
-      const img = imageByName(avatar)
+      const img = getRemoteImg(avatar)
       this.userinfo.avatar = img
       this.$store.commit('user/SET_AVATAR', img)
-      // imageByName(avatar).then((res) => {
+      // getRemoteImg(avatar).then((res) => {
       //   this.userinfo.avatar = null
       //   if (res.status === 200) {
       //     this.userinfo.avatar = res.config.url

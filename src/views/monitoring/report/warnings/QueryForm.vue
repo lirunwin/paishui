@@ -29,13 +29,13 @@
       </el-select>
     </el-form-item>
 
-    <el-form-item label="类型" prop="warnType">
+    <el-form-item label="类别" prop="warnType">
       <el-select v-model="formData.warnType" placeholder="请选择类型" size="small" clearable>
         <el-option value="1" label="报警" />
         <el-option value="2" label="预警" />
       </el-select>
     </el-form-item>
-    <el-form-item label="类别" prop="levelName">
+    <el-form-item label="类型" prop="levelName">
       <el-select v-model="formData.levelName" placeholder="请选择类别" size="small" clearable multiple>
         <el-option v-for="level of levels" :value="level.notes" :label="level.notes" :key="level.notes" />
       </el-select>

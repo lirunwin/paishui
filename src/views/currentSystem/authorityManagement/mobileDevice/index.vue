@@ -29,9 +29,9 @@
       }"
     >
       <template v-for="(_, index) of devices" v-slot:[`action-${index}`]="{ row }">
-        <el-button type="text" :key="`${index}-${row.id}`" @click.stop="() => onEdit(row)" style="padding:2px 5px"
-          >编辑</el-button
-        >
+        <el-button type="text" :key="`${index}-${row.id}`" @click.stop="() => onEdit(row)" style="padding:2px 5px">
+          编辑
+        </el-button>
       </template>
     </BaseTable>
     <DeviceForm

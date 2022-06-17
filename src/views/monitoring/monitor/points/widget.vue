@@ -62,7 +62,6 @@ import {
   sections,
   getDictKeys,
   IDictionary,
-  IMonitorItem,
   getMonitorItemCurrentInfoById
 } from '@/views/monitoring/api'
 import {
@@ -71,7 +70,6 @@ import {
   monitorAutoRefreshInterval,
   monitorStandardLevelKey
 } from '@/utils/constant'
-import { Map } from 'ol'
 
 type IPopupParam = Record<'id' | 'coordiateX' | 'coordiateY', string | number>
 
@@ -91,7 +89,7 @@ export default class PointsMonitor extends Vue {
   sections: string[] = []
   levels: IDictionary[] = []
   levelColors: IDictionary[] = []
-  popups: { [x: string]: { coordinate: number[]; map: Map; center: boolean; data: IPopupParam } } = {}
+  popups: { [x: string]: { coordinate: number[]; map: any; center: boolean; data: IPopupParam } } = {}
   get popupIds() {
     return Object.keys(this.popups)
   }
@@ -165,11 +163,6 @@ export default class PointsMonitor extends Vue {
     const { result } = await getMonitorItemCurrentInfoById(row.siteId)
     const { id, coordiateX, coordiateY } = result.monitorSiteVo || {}
     this.onShowPopup({ id, coordiateX, coordiateY })
-  }
-
-  mounted() {
-    this.view = (this.$attrs.data as any).mapView
-    this.startInterval()
   }
 
   stopInterval() {
@@ -247,6 +240,12 @@ export default class PointsMonitor extends Vue {
     this.getGroupsAndSections()
     this.getLevels()
     this.getLevelColors()
+  }
+
+  mounted() {
+    this.preparing()
+    this.view = (this.$attrs.data as any).mapView
+    this.startInterval()
   }
 
   @Watch('isActive')

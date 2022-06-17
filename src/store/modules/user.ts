@@ -1,6 +1,6 @@
 import { login, logout } from '@/api/user'
 import { getToken, setToken, removeToken, setSessionStorage, removeSessionStorage } from '@/utils/auth'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 import { resetRouter } from '@/router'
 const sha1Hex = require('sha1-hex')
 
@@ -77,14 +77,14 @@ const actions = {
           setSessionStorage('userId', id)
           setSessionStorage('departmentId', departmentId)
           if (avatar) {
-            // imageByName(avatar).then(res => {
+            // getRemoteImg(avatar).then(res => {
             //   if (res.status === 200) {
             //     commit('SET_AVATAR', res.config.url)
             //     setSessionStorage('avatar', res.config.url)
             //   }
             // })
-            commit('SET_AVATAR', imageByName(avatar))
-            setSessionStorage('avatar', imageByName(avatar))
+            commit('SET_AVATAR', getRemoteImg(avatar))
+            setSessionStorage('avatar', getRemoteImg(avatar))
           }
           resolve(response)
         })

@@ -44,7 +44,7 @@ export function packageRouter(routerlist) {
         try {
           temp = JSON.parse(e.meta || '{}')
         } catch (error) {
-          console.log(e.meta, error)
+          console.log({ meta: e.meta, error })
         }
         return temp
       }

@@ -2,46 +2,153 @@
   <div style="width: 100%; height: 100%; padding:8px;">
     <el-row>
       <span class="title2" style="margin-left:8px;">巡查日期</span>
-      <el-date-picker v-model="startTime" size="small" type="date" placeholder="请选择开始时间" :picker-options="startOptions" value-format="yyyy-MM-dd" /> ~
-      <el-date-picker v-model="endTime" size="small" type="date" placeholder="请选择结束时间" :picker-options="endOptions" value-format="yyyy-MM-dd" />
+      <el-date-picker
+        v-model="startTime"
+        size="small"
+        type="date"
+        placeholder="请选择开始时间"
+        :picker-options="startOptions"
+        value-format="yyyy-MM-dd"
+      />
+      ~
+      <el-date-picker
+        v-model="endTime"
+        size="small"
+        type="date"
+        placeholder="请选择结束时间"
+        :picker-options="endOptions"
+        value-format="yyyy-MM-dd"
+      />
       <!-- <el-date-picker v-model="timeForMission" type="datetimerange" size="small" style="width:300px"
                 range-separator="至" start-placeholder="起始时间" end-placeholder="结束时间" value-format="yyyy-MM-dd HH:mm:ss" align="right" clearable/> -->
       <span class="title2">部门</span>
-      <el-select v-model="chooseGroup" :disabled="hasGroup" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择巡检人" @change="Bmchange()">
-        <el-option v-for="item of searchGroupArray" :index='item.index' :key="item.id" :value="item.id" :label="item.name"></el-option>
+      <el-select
+        v-model="chooseGroup"
+        :disabled="hasGroup"
+        style="display: inline-block; margin-left: 5px; width:150px;"
+        size="small"
+        placeholder="请选择巡检人"
+        @change="Bmchange()"
+      >
+        <el-option
+          v-for="item of searchGroupArray"
+          :index="item.index"
+          :key="item.id"
+          :value="item.id"
+          :label="item.name"
+        ></el-option>
       </el-select>
       <span class="title2">人员</span>
-      <el-select v-model="chooseWorker" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择巡检人" clearable>
+      <el-select
+        v-model="chooseWorker"
+        style="display: inline-block; margin-left: 5px; width:150px;"
+        size="small"
+        placeholder="请选择巡检人"
+        clearable
+      >
         <el-option v-for="item in searchWorkers" :key="item.id" :label="item.realName" :value="item.id" />
       </el-select>
       <span class="title2">巡检类型</span>
-      <el-select v-model="planType" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择计划类型" clearable>
+      <el-select
+        v-model="planType"
+        style="display: inline-block; margin-left: 5px; width:150px;"
+        size="small"
+        placeholder="请选择计划类型"
+        clearable
+      >
         <el-option v-for="item of planTypeArray" :key="item.id" :value="item.id" :label="item.name"></el-option>
       </el-select>
       <span class="title2">状态</span>
-      <el-select v-model="chooseStatus" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择状态" clearable>
+      <el-select
+        v-model="chooseStatus"
+        style="display: inline-block; margin-left: 5px; width:150px;"
+        size="small"
+        placeholder="请选择状态"
+        clearable
+      >
         <el-option v-for="item of statusArray" :key="item.value" :value="item.value" :label="item.label"></el-option>
       </el-select>
       <el-button size="small" type="primary" @click="getData">查询</el-button>
     </el-row>
-    <el-table class="mapTable" :data="dataT1" border @row-dblclick="planInfo" style="width: 100%;margin-top: 8px;" ref="table1" height="calc(100% - 88px)" stripe highlight-current-row>
+    <el-table
+      class="mapTable"
+      :data="dataT1"
+      border
+      @row-dblclick="planInfo"
+      style="width: 100%;margin-top: 8px;"
+      ref="table1"
+      height="calc(100% - 88px)"
+      stripe
+      highlight-current-row
+    >
       <template slot="empty">
-        <img src="@/assets/icon/null.png" alt="">
+        <img src="@/assets/icon/null.png" alt="" />
         <p class="empty-p">暂无数据</p>
       </template>
       <el-table-column type="index" width="50" label="序号" />
       <el-table-column prop="departmentName" :formatter="formatter" sortable label="部门" show-overflow-tooltip />
       <el-table-column prop="inspectType" :formatter="formatter" sortable label="巡检类型" show-overflow-tooltip />
       <el-table-column prop="planType" :formatter="formatter" sortable label="计划类型" show-overflow-tooltip />
-      <el-table-column prop="createTime" :formatter="formatter" sortable width="200px" label="派发时间" show-overflow-tooltip />
+      <el-table-column
+        prop="createTime"
+        :formatter="formatter"
+        sortable
+        width="200px"
+        label="派发时间"
+        show-overflow-tooltip
+      />
       <el-table-column prop="createUserName" :formatter="formatter" sortable label="创建人" />
-      <el-table-column prop="inspectUserList" :formatter="formatter" sortable label="巡查人" show-overflow-tooltip></el-table-column>
-      <el-table-column prop="planBegindate" :formatter="formatter" sortable width="200px" label="起始时间" show-overflow-tooltip />
-      <el-table-column prop="planEnddate" :formatter="formatter" sortable width="200px" label="结束时间" show-overflow-tooltip />
-      <el-table-column prop="planState" :formatter="formatter" sortable label="执行状态" show-overflow-tooltip></el-table-column>
-      <el-table-column prop="isDispatching" :formatter="formatter" sortable label="是否派工" show-overflow-tooltip></el-table-column>
-      <el-table-column prop="isPlanStop" :formatter="formatter" sortable label="是否暂停" show-overflow-tooltip></el-table-column>
-      <el-table-column prop="isPlanInvalid" :formatter="formatter" sortable label="是否作废" show-overflow-tooltip></el-table-column>
+      <el-table-column
+        prop="inspectUserList"
+        :formatter="formatter"
+        sortable
+        label="巡查人"
+        show-overflow-tooltip
+      ></el-table-column>
+      <el-table-column
+        prop="planBegindate"
+        :formatter="formatter"
+        sortable
+        width="200px"
+        label="起始时间"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="planEnddate"
+        :formatter="formatter"
+        sortable
+        width="200px"
+        label="结束时间"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="planState"
+        :formatter="formatter"
+        sortable
+        label="执行状态"
+        show-overflow-tooltip
+      ></el-table-column>
+      <el-table-column
+        prop="isDispatching"
+        :formatter="formatter"
+        sortable
+        label="是否派工"
+        show-overflow-tooltip
+      ></el-table-column>
+      <el-table-column
+        prop="isPlanStop"
+        :formatter="formatter"
+        sortable
+        label="是否暂停"
+        show-overflow-tooltip
+      ></el-table-column>
+      <el-table-column
+        prop="isPlanInvalid"
+        :formatter="formatter"
+        sortable
+        label="是否作废"
+        show-overflow-tooltip
+      ></el-table-column>
       <!-- <el-table-column prop="planPercent" sortable label="计划完成率" show-overflow-tooltip></el-table-column>
             <el-table-column prop="percent" sortable label="实际完成率" show-overflow-tooltip></el-table-column> -->
       <el-table-column label="操作" width="100">
@@ -52,14 +159,34 @@
     </el-table>
     <el-row style="margin-top: 8px;width:350px;">
       <el-col :span="20">
-        <el-pagination small background layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10,20,30,50,100,1000]" :current-page="pageInfo.current" :page-size="pageInfo.size" @size-change="changeSize" @current-change="changeCurrent" @prev-click="changeCurrent" @next-click="changeCurrent" :total="tableTotal" />
+        <el-pagination
+          small
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :page-sizes="[10, 20, 30, 50, 100, 1000]"
+          :current-page="pageInfo.current"
+          :page-size="pageInfo.size"
+          @size-change="changeSize"
+          @current-change="changeCurrent"
+          @prev-click="changeCurrent"
+          @next-click="changeCurrent"
+          :total="tableTotal"
+        />
       </el-col>
     </el-row>
-    <el-dialog v-dialogDrag title="任务详细" :visible.sync="diaVisiable3" width="100%" top="calc(50vh - 450px)" @close="clearSelectData">
+    <el-dialog
+      v-dialogDrag
+      title="任务详细"
+      :visible.sync="diaVisiable3"
+      width="100%"
+      top="calc(50vh - 450px)"
+      @close="clearSelectData"
+    >
       <div style="width:100%;padding-right:8px;">
         <tf-table-legend label="巡检信息" isopen="true" style="margin-top: 8px;">
           <div style="width:100%; display: flex; flex-wrap: wrap;">
-            <div class="flexDiv" ref="xjType"><span class="flexTitle">巡查类型：</span>
+            <div class="flexDiv" ref="xjType">
+              <span class="flexTitle">巡查类型：</span>
               <div class="flexInfo">管线巡检</div>
             </div>
             <div class="flexDiv" ref="xjGroup">
@@ -90,27 +217,55 @@
         <tf-table-legend label="任务内容" isopen="true" style="margin-top: 8px;">
           <div style="width:100%;margin-top: 8px;height:650px">
             <div style="width:100%;height: calc(100% - 250px);" ref="mapBox1"></div>
-            <div class='tableDiv' style="width:100%; height: 250px;">
+            <div class="tableDiv" style="width:100%; height: 250px;">
               <el-tabs type="border-card" style="width:100%; height: 100%;">
                 <el-tab-pane label="任务内容">
-                  <el-table :data="currentDataT3" style="width: 100%;margin-top: 8px;" height="150" stripe highlight-current-row @row-click="rowClickT3">
+                  <el-table
+                    :data="currentDataT3"
+                    style="width: 100%;margin-top: 8px;"
+                    height="150"
+                    stripe
+                    highlight-current-row
+                    @row-click="rowClickT3"
+                  >
                     <template slot="empty">
-                      <img src="@/assets/icon/null.png" alt="">
+                      <img src="@/assets/icon/null.png" alt="" />
                       <p class="empty-p">暂无数据</p>
                     </template>
-                    <el-table-column v-for="(item, index) in headerT3" :key="index" :label="item.label" align="center" :prop="item.value" show-overflow-tooltip />
+                    <el-table-column
+                      v-for="(item, index) in headerT3"
+                      :key="index"
+                      :label="item.label"
+                      align="center"
+                      :prop="item.value"
+                      show-overflow-tooltip
+                    />
                   </el-table>
                   <el-row style="margin-top: 8px;width:100%;">
                     <el-col :span="20">
-                      <el-pagination small background @current-change="handleCurrentChange3" :page-size="10" layout="total, prev, pager, next" :total="tableTotal3">
+                      <el-pagination
+                        small
+                        background
+                        @current-change="handleCurrentChange3"
+                        :page-size="10"
+                        layout="total, prev, pager, next"
+                        :total="tableTotal3"
+                      >
                       </el-pagination>
                     </el-col>
                   </el-row>
                 </el-tab-pane>
                 <el-tab-pane label="上报记录">
-                  <el-table :data="currentDataT4" style="width: 100%;margin-top: 8px;" height="150" stripe highlight-current-row @row-click="rowClickT3">
+                  <el-table
+                    :data="currentDataT4"
+                    style="width: 100%;margin-top: 8px;"
+                    height="150"
+                    stripe
+                    highlight-current-row
+                    @row-click="rowClickT3"
+                  >
                     <template slot="empty">
-                      <img src="@/assets/icon/null.png" alt="">
+                      <img src="@/assets/icon/null.png" alt="" />
                       <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
@@ -131,7 +286,11 @@
                           <el-form-item label="图片附件：">
                             <template v-if="props.row.filePathLists">
                               <div class="demo-image__preview">
-                                <el-image style="width: 100px; height: 100px" :src="props.row.filePathLists[0]" :preview-src-list="props.row.filePathLists">
+                                <el-image
+                                  style="width: 100px; height: 100px"
+                                  :src="props.row.filePathLists[0]"
+                                  :preview-src-list="props.row.filePathLists"
+                                >
                                 </el-image>
                               </div>
                             </template>
@@ -141,10 +300,15 @@
                           </el-form-item>
                           <el-form-item label="语音附件：">
                             <template v-if="props.row.videos">
-                              <template v-for="(item,index) in props.row.videos">
+                              <template v-for="(item, index) in props.row.videos">
                                 <div class="videosList" :key="index">
                                   <div style="width:150px;padding-right:5px;position:relative;float: left;">
-                                    <audio controls="controls" preload='auto' :src="item" style="width: 100%; height: 40px;position: relative;float: left;" />
+                                    <audio
+                                      controls="controls"
+                                      preload="auto"
+                                      :src="item"
+                                      style="width: 100%; height: 40px;position: relative;float: left;"
+                                    />
                                   </div>
                                 </div>
                               </template>
@@ -157,19 +321,40 @@
                       </template>
                     </el-table-column>
                     <el-table-column type="index" width="50" label="序号" />
-                    <el-table-column v-for="(item, index) in headerT4" :key="index" :label="item.label" align="center" :prop="item.value" show-overflow-tooltip />
+                    <el-table-column
+                      v-for="(item, index) in headerT4"
+                      :key="index"
+                      :label="item.label"
+                      align="center"
+                      :prop="item.value"
+                      show-overflow-tooltip
+                    />
                   </el-table>
                   <el-row style="margin-top: 8px;width:100%;">
                     <el-col :span="20">
-                      <el-pagination small background @current-change="handleCurrentChange4" :page-size="10" layout="total, prev, pager, next" :total="tableTotal4">
+                      <el-pagination
+                        small
+                        background
+                        @current-change="handleCurrentChange4"
+                        :page-size="10"
+                        layout="total, prev, pager, next"
+                        :total="tableTotal4"
+                      >
                       </el-pagination>
                     </el-col>
                   </el-row>
                 </el-tab-pane>
                 <el-tab-pane label="管线巡检记录">
-                  <el-table :data="currentDataT5" style="width: 100%;margin-top: 8px;" height="150" stripe highlight-current-row @row-click="rowClickT3">
+                  <el-table
+                    :data="currentDataT5"
+                    style="width: 100%;margin-top: 8px;"
+                    height="150"
+                    stripe
+                    highlight-current-row
+                    @row-click="rowClickT3"
+                  >
                     <template slot="empty">
-                      <img src="@/assets/icon/null.png" alt="">
+                      <img src="@/assets/icon/null.png" alt="" />
                       <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
@@ -226,7 +411,11 @@
                           <el-form-item label="图片附件：">
                             <template v-if="props.row.filePathLists">
                               <div class="demo-image__preview">
-                                <el-image style="width: 100px; height: 100px" :src="props.row.filePathLists[0]" :preview-src-list="props.row.filePathLists">
+                                <el-image
+                                  style="width: 100px; height: 100px"
+                                  :src="props.row.filePathLists[0]"
+                                  :preview-src-list="props.row.filePathLists"
+                                >
                                 </el-image>
                               </div>
                             </template>
@@ -236,10 +425,15 @@
                           </el-form-item>
                           <el-form-item label="语音附件：">
                             <template v-if="props.row.videos">
-                              <template v-for="(item,index) in props.row.videos">
+                              <template v-for="(item, index) in props.row.videos">
                                 <div class="videosList" :key="index">
                                   <div style="width:150px;padding-right:5px;position:relative;float: left;">
-                                    <audio controls="controls" preload='auto' :src="item" style="width: 100%; height: 40px;position: relative;float: left;" />
+                                    <audio
+                                      controls="controls"
+                                      preload="auto"
+                                      :src="item"
+                                      style="width: 100%; height: 40px;position: relative;float: left;"
+                                    />
                                     <!-- <audio style="height:30px;width:100%" controlslist="nodownload" oncontextmenu="return false" controls="controls"><source :src="item">您的浏览器不支持 audio 标签。</audio> -->
                                   </div>
                                 </div>
@@ -253,19 +447,40 @@
                       </template>
                     </el-table-column>
                     <el-table-column type="index" width="50" label="序号" />
-                    <el-table-column v-for="(item, index) in headerT5" :key="index" :label="item.label" align="center" :prop="item.value" show-overflow-tooltip />
+                    <el-table-column
+                      v-for="(item, index) in headerT5"
+                      :key="index"
+                      :label="item.label"
+                      align="center"
+                      :prop="item.value"
+                      show-overflow-tooltip
+                    />
                   </el-table>
                   <el-row style="margin-top: 8px;width:100%;">
                     <el-col :span="20">
-                      <el-pagination small background @current-change="handleCurrentChange5" :page-size="10" layout="total, prev, pager, next" :total="tableTotal5">
+                      <el-pagination
+                        small
+                        background
+                        @current-change="handleCurrentChange5"
+                        :page-size="10"
+                        layout="total, prev, pager, next"
+                        :total="tableTotal5"
+                      >
                       </el-pagination>
                     </el-col>
                   </el-row>
                 </el-tab-pane>
                 <el-tab-pane label="水压测试记录">
-                  <el-table :data="currentDataT6" style="width: 100%;margin-top: 8px;" height="150" stripe highlight-current-row @row-click="rowClickT3">
+                  <el-table
+                    :data="currentDataT6"
+                    style="width: 100%;margin-top: 8px;"
+                    height="150"
+                    stripe
+                    highlight-current-row
+                    @row-click="rowClickT3"
+                  >
                     <template slot="empty">
-                      <img src="@/assets/icon/null.png" alt="">
+                      <img src="@/assets/icon/null.png" alt="" />
                       <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
@@ -295,7 +510,11 @@
                           <el-form-item label="图片附件：">
                             <template v-if="props.row.filePathLists">
                               <div class="demo-image__preview">
-                                <el-image style="width: 100px; height: 100px" :src="props.row.filePathLists[0]" :preview-src-list="props.row.filePathLists">
+                                <el-image
+                                  style="width: 100px; height: 100px"
+                                  :src="props.row.filePathLists[0]"
+                                  :preview-src-list="props.row.filePathLists"
+                                >
                                 </el-image>
                               </div>
                             </template>
@@ -305,11 +524,15 @@
                           </el-form-item>
                           <el-form-item label="语音附件：">
                             <template v-if="props.row.videos">
-                              <template v-for="(item,index) in props.row.videos">
+                              <template v-for="(item, index) in props.row.videos">
                                 <div class="videosList" :key="index">
                                   <div style="width:150px;padding-right:5px;position:relative;float: left;">
-                                    <audio controls="controls" preload='auto' :src="item" style="width: 100%; height: 40px;position: relative;float: left;" />
-
+                                    <audio
+                                      controls="controls"
+                                      preload="auto"
+                                      :src="item"
+                                      style="width: 100%; height: 40px;position: relative;float: left;"
+                                    />
                                   </div>
                                 </div>
                               </template>
@@ -322,19 +545,40 @@
                       </template>
                     </el-table-column>
                     <el-table-column type="index" width="50" label="序号" />
-                    <el-table-column v-for="(item, index) in headerT6" :key="index" :label="item.label" align="center" :prop="item.value" show-overflow-tooltip />
+                    <el-table-column
+                      v-for="(item, index) in headerT6"
+                      :key="index"
+                      :label="item.label"
+                      align="center"
+                      :prop="item.value"
+                      show-overflow-tooltip
+                    />
                   </el-table>
                   <el-row style="margin-top: 8px;width:100%;">
                     <el-col :span="20">
-                      <el-pagination small background @current-change="handleCurrentChange6" :page-size="10" layout="total, prev, pager, next" :total="tableTotal6">
+                      <el-pagination
+                        small
+                        background
+                        @current-change="handleCurrentChange6"
+                        :page-size="10"
+                        layout="total, prev, pager, next"
+                        :total="tableTotal6"
+                      >
                       </el-pagination>
                     </el-col>
                   </el-row>
                 </el-tab-pane>
                 <el-tab-pane label="消防栓记录">
-                  <el-table :data="currentDataT7" style="width: 100%;margin-top: 8px;" height="150" stripe highlight-current-row @row-click="rowClickT3">
+                  <el-table
+                    :data="currentDataT7"
+                    style="width: 100%;margin-top: 8px;"
+                    height="150"
+                    stripe
+                    highlight-current-row
+                    @row-click="rowClickT3"
+                  >
                     <template slot="empty">
-                      <img src="@/assets/icon/null.png" alt="">
+                      <img src="@/assets/icon/null.png" alt="" />
                       <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
@@ -367,7 +611,11 @@
                           <el-form-item label="图片附件：">
                             <template v-if="props.row.filePathLists">
                               <div class="demo-image__preview">
-                                <el-image style="width: 100px; height: 100px" :src="props.row.filePathLists[0]" :preview-src-list="props.row.filePathLists">
+                                <el-image
+                                  style="width: 100px; height: 100px"
+                                  :src="props.row.filePathLists[0]"
+                                  :preview-src-list="props.row.filePathLists"
+                                >
                                 </el-image>
                               </div>
                             </template>
@@ -377,11 +625,15 @@
                           </el-form-item>
                           <el-form-item label="语音附件：">
                             <template v-if="props.row.videos">
-                              <template v-for="(item,index) in props.row.videos">
+                              <template v-for="(item, index) in props.row.videos">
                                 <div class="videosList" :key="index">
                                   <div style="width:150px;padding-right:5px;position:relative;float: left;">
-                                    <audio controls="controls" preload='auto' :src="item" style="width: 100%; height: 40px;position: relative;float: left;" />
-
+                                    <audio
+                                      controls="controls"
+                                      preload="auto"
+                                      :src="item"
+                                      style="width: 100%; height: 40px;position: relative;float: left;"
+                                    />
                                   </div>
                                 </div>
                               </template>
@@ -394,20 +646,41 @@
                       </template>
                     </el-table-column>
                     <el-table-column type="index" width="50" label="序号" />
-                    <el-table-column v-for="(item, index) in headerT7" :key="index" :label="item.label" align="center" :prop="item.value" show-overflow-tooltip />
+                    <el-table-column
+                      v-for="(item, index) in headerT7"
+                      :key="index"
+                      :label="item.label"
+                      align="center"
+                      :prop="item.value"
+                      show-overflow-tooltip
+                    />
                   </el-table>
                   <el-row style="margin-top: 8px;width:100%;">
                     <el-col :span="20">
-                      <el-pagination small background @current-change="handleCurrentChange7" :page-size="10" layout="total, prev, pager, next" :total="tableTotal7">
+                      <el-pagination
+                        small
+                        background
+                        @current-change="handleCurrentChange7"
+                        :page-size="10"
+                        layout="total, prev, pager, next"
+                        :total="tableTotal7"
+                      >
                       </el-pagination>
                     </el-col>
                   </el-row>
                 </el-tab-pane>
 
                 <el-tab-pane label="探漏记录">
-                  <el-table :data="currentDataT8" style="width: 100%;margin-top: 8px;" height="150" stripe highlight-current-row @row-click="rowClickT3">
+                  <el-table
+                    :data="currentDataT8"
+                    style="width: 100%;margin-top: 8px;"
+                    height="150"
+                    stripe
+                    highlight-current-row
+                    @row-click="rowClickT3"
+                  >
                     <template slot="empty">
-                      <img src="@/assets/icon/null.png" alt="">
+                      <img src="@/assets/icon/null.png" alt="" />
                       <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
@@ -452,7 +725,11 @@
                           <el-form-item label="漏水点图片附件：">
                             <template v-if="props.row.leakSourceFilePathList2">
                               <div class="demo-image__preview">
-                                <el-image style="width: 100px; height: 100px" :src="props.row.leakSourceFilePathList2[0]" :preview-src-list="props.row.leakSourceFilePathList2">
+                                <el-image
+                                  style="width: 100px; height: 100px"
+                                  :src="props.row.leakSourceFilePathList2[0]"
+                                  :preview-src-list="props.row.leakSourceFilePathList2"
+                                >
                                 </el-image>
                               </div>
                             </template>
@@ -462,10 +739,15 @@
                           </el-form-item>
                           <el-form-item label="漏水点语音附件：">
                             <template v-if="props.row.leakSourceFileVideos">
-                              <template v-for="(item,index) in props.row.leakSourceFileVideos">
+                              <template v-for="(item, index) in props.row.leakSourceFileVideos">
                                 <div class="videosList" :key="index">
                                   <div style="width:150px;padding-right:5px;position:relative;float: left;">
-                                    <audio controls="controls" preload='auto' :src="item" style="width: 100%; height: 40px;position: relative;float: left;" />
+                                    <audio
+                                      controls="controls"
+                                      preload="auto"
+                                      :src="item"
+                                      style="width: 100%; height: 40px;position: relative;float: left;"
+                                    />
                                   </div>
                                 </div>
                               </template>
@@ -477,7 +759,11 @@
                           <el-form-item label="开挖验证图片附件：">
                             <template v-if="props.row.excavationFilePathList2">
                               <div class="demo-image__preview">
-                                <el-image style="width: 100px; height: 100px" :src="props.row.excavationFilePathList2[0]" :preview-src-list="props.row.excavationFilePathList2">
+                                <el-image
+                                  style="width: 100px; height: 100px"
+                                  :src="props.row.excavationFilePathList2[0]"
+                                  :preview-src-list="props.row.excavationFilePathList2"
+                                >
                                 </el-image>
                               </div>
                             </template>
@@ -487,10 +773,15 @@
                           </el-form-item>
                           <el-form-item label="开挖验证语音附件：">
                             <template v-if="props.row.excavationVideos">
-                              <template v-for="(item,index) in props.row.excavationVideos">
+                              <template v-for="(item, index) in props.row.excavationVideos">
                                 <div class="videosList" :key="index">
                                   <div style="width:150px;padding-right:5px;position:relative;float: left;">
-                                    <audio controls="controls" preload='auto' :src="item" style="width: 100%; height: 40px;position: relative;float: left;" />
+                                    <audio
+                                      controls="controls"
+                                      preload="auto"
+                                      :src="item"
+                                      style="width: 100%; height: 40px;position: relative;float: left;"
+                                    />
                                   </div>
                                 </div>
                               </template>
@@ -503,11 +794,25 @@
                       </template>
                     </el-table-column>
                     <el-table-column type="index" width="50" label="序号" />
-                    <el-table-column v-for="(item, index) in headerT8" :key="index" :label="item.label" align="center" :prop="item.value" show-overflow-tooltip />
+                    <el-table-column
+                      v-for="(item, index) in headerT8"
+                      :key="index"
+                      :label="item.label"
+                      align="center"
+                      :prop="item.value"
+                      show-overflow-tooltip
+                    />
                   </el-table>
                   <el-row style="margin-top: 8px;width:100%;">
                     <el-col :span="20">
-                      <el-pagination small background @current-change="handleCurrentChange8" :page-size="10" layout="total, prev, pager, next" :total="tableTotal8">
+                      <el-pagination
+                        small
+                        background
+                        @current-change="handleCurrentChange8"
+                        :page-size="10"
+                        layout="total, prev, pager, next"
+                        :total="tableTotal8"
+                      >
                       </el-pagination>
                     </el-col>
                   </el-row>
@@ -555,7 +860,7 @@ import { queryDangerReport } from '@/api/xjHiddenDangerManageApi'
 import { queryBuildList } from '@/api/xjWorkSiteCheckApi'
 import { queryXjPoint, queryXjLine } from '@/api/xjDailyManageApi'
 import { getGroupUserMap } from '@/api/base'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 import { graphic } from 'echarts/lib/export'
 import { getDepartment, getDeptUserList } from '@/api/work'
 import { IP } from '@/utils/request'
@@ -850,8 +1155,8 @@ export default class XjPlanQuery extends Vue {
     })
     this.mapV = map
 
-    new TF_Layer().createLayers(layerResource).then(layers => {
-      layers.forEach((layer:any) => {
+    new TF_Layer().createLayers(layerResource).then((layers) => {
+      layers.forEach((layer: any) => {
         layer && map.addLayer(layer)
       })
     })
@@ -1363,8 +1668,7 @@ export default class XjPlanQuery extends Vue {
     if (type == 'point') {
       geo = new MultiPoint(data)
     } else {
-      
-      geo=new LineString(data);
+      geo = new LineString(data)
     }
     return geo
   }
@@ -1431,7 +1735,7 @@ export default class XjPlanQuery extends Vue {
         let lines = geo.paths
         this.hLineToMap(lines)
       } else {
-        this.highPointToMap([geo.longitude,geo.latitude])
+        this.highPointToMap([geo.longitude, geo.latitude])
       }
     }
   }
@@ -1530,7 +1834,7 @@ export default class XjPlanQuery extends Vue {
   }
 }
 </script>
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .flexDiv {
   width: 33%;
   height: 30px;
