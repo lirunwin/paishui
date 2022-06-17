@@ -54,7 +54,7 @@
 </template>
 <script lang='ts'>
 /**
- * @description 该功能为巡检子系统，巡检管理模块中的巡检计划审核功能
+ * @description 该功能为巡检子系统，监控中心模块中的上报审核的隐患消除审核功能
  * @author 梁罗、李顺<876330731@qq.com>
  */
 import { Vue, Watch, Prop, Component } from 'vue-property-decorator'

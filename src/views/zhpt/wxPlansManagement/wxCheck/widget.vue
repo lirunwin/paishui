@@ -75,7 +75,9 @@ export default class wxMissionManagement extends Vue {
     this.loading = true
     request({ url: '/gps/audit/getAuditInfoList', method: 'post' }).then((res) => {
       if (res.code == 1) {
-        var filterConfig = this.isXj ? ['00', '01', '02', '03', '04', '05', '07', '06'] : ['08', '10', '11']
+        //var filterConfig = this.isXj ? ['00', '01', '02', '03', '04', '05', '07', '06'] : ['08', '10', '11']
+        //排水项目暂考虑隐患审核
+        const filterConfig = ['02', '03'];
         res = res.result.filter((e) => filterConfig.indexOf(e.auditTypeCode) > -1)
         var allLength = 0
         var typeIndex = (this.typeIndex = {})
