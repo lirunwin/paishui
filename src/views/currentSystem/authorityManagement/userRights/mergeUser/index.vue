@@ -105,7 +105,7 @@
 <script lang="ts">
 import { Vue, Prop, Component, Watch } from 'vue-property-decorator'
 import { addUser, editUser, getDeptUserList, getUserList } from '@/api/base'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 import { regUserName, regPhone, regEmail } from '@/utils/reg'
 import { ElForm } from 'element-ui/types/form'
 
@@ -294,7 +294,7 @@ export default class MergeUser extends Vue {
     // const arr = [this.data.avatar, this.data.esignature]
     // arr.forEach((item, index) => {
     //   if (item === null) return
-    //   imageByName(item).then((res) => {
+    //   getRemoteImg(item).then((res) => {
     //     if (res.status === 200) {
     //       index === 1 ? (this.form.signPic = res.config.url) : (this.form.avatar = res.config.url)
     //     }
@@ -302,8 +302,8 @@ export default class MergeUser extends Vue {
     // })
     this.form = {
       ...this.form,
-      signPic: imageByName(this.data.esignature),
-      avatar: imageByName(this.data.avatar)
+      signPic: getRemoteImg(this.data.esignature),
+      avatar: getRemoteImg(this.data.avatar)
     }
   }
   // 赋值

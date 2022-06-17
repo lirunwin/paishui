@@ -83,7 +83,7 @@
 import { Vue, Component, Prop } from 'vue-property-decorator'
 // import { getInfo } from '@/api/dashboard'
 import { editUser, getUserList } from '@/api/base'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 import { regUserName, regPhone, regEmail } from '@/utils/reg'
 import { ElForm } from 'element-ui/types/form'
 @Component({})
@@ -143,7 +143,7 @@ export default class UserInfoEdit extends Vue {
           that.data.email = that.strIsNull(that.data.email) ? '' : that.data.email // 邮箱
           that.data.job = that.strIsNull(that.data.job) ? '' : that.data.job // 工作岗位
           that.data.note = that.strIsNull(that.data.note) ? '' : that.data.note // 工作职责
-          this.$store.commit('user/SET_AVATAR', imageByName(that.data.avatar))
+          this.$store.commit('user/SET_AVATAR', getRemoteImg(that.data.avatar))
           that.handleEdit()
         } else {
           that.$message.error('未查询到相关的用户信息')
@@ -244,7 +244,7 @@ export default class UserInfoEdit extends Vue {
     // const arr = [this.data.avatar, this.data.esignature]
     // arr.forEach((item, index) => {
     //   if (item === null) return
-    //   imageByName(item).then((res) => {
+    //   getRemoteImg(item).then((res) => {
     //     if (res.status === 200) {
     //       index === 1
     //         ? (this.form.signPic = res.config.url)
@@ -254,8 +254,8 @@ export default class UserInfoEdit extends Vue {
     // })
     this.form = {
       ...this.form,
-      signPic: imageByName(this.data.esignature),
-      avatar: imageByName(this.data.avatar)
+      signPic: getRemoteImg(this.data.esignature),
+      avatar: getRemoteImg(this.data.avatar)
     }
   }
 

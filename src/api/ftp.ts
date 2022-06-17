@@ -6,8 +6,10 @@ import { IP } from '@/utils/request'
 // 获取图片地址
 const tokenFormSession = () => sessionStorage.getItem('token')
 
-export const imageByName = (data) =>
-  data ? `${String(IP).replace(/\/$/, '')}/base/file/${String(data).replace(/^\//, '')}` : ''
-
 export const getRemoteImg = (path: string) =>
-  path ? `${String(IP).replace(/\/$/, '')}/base/file/loadImg?access_token=${tokenFormSession()}&remotePath=${path}` : ''
+  path
+    ? `${String(IP.startsWith('http://192') ? 'http://221.182.8.141:1118' : IP).replace(
+        /\/$/,
+        ''
+      )}/base/file/loadImg?access_token=${tokenFormSession()}&remotePath=${path}`
+    : ''

@@ -165,11 +165,6 @@ export default class PointsMonitor extends Vue {
     this.onShowPopup({ id, coordiateX, coordiateY })
   }
 
-  mounted() {
-    this.view = (this.$attrs.data as any).mapView
-    this.startInterval()
-  }
-
   stopInterval() {
     if (this.timer) clearInterval(this.timer)
   }
@@ -245,6 +240,12 @@ export default class PointsMonitor extends Vue {
     this.getGroupsAndSections()
     this.getLevels()
     this.getLevelColors()
+  }
+
+  mounted() {
+    this.preparing()
+    this.view = (this.$attrs.data as any).mapView
+    this.startInterval()
   }
 
   @Watch('isActive')

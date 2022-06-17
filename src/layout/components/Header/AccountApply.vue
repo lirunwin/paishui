@@ -276,7 +276,7 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import { accountApplyHistory, accountApplyFill, getCompanyAll, getAllAuditors, getAllDepartments } from '@/api/base'
-import { imageByName } from '@/api/ftp'
+import { getRemoteImg } from '@/api/ftp'
 import { regPhone, regEmail, regPassword, regUserName, regRealName } from '@/utils/reg'
 
 // eslint-disable-next-line no-unused-vars
@@ -433,7 +433,7 @@ export default class AccountApply extends Vue {
     const arr = [this.detailInfo.avatar, this.detailInfo.esignature]
     // arr.forEach((item, index) => {
     // item !== null &&
-    // imageByName(item).then((res) => {
+    // getRemoteImg(item).then((res) => {
     //   if (res.status === 200) {
     //     index === 1
     //       ? (this.detailInfo.esignature = res.config.url)
@@ -447,8 +447,8 @@ export default class AccountApply extends Vue {
     this.detailInfo = {
       ...this.detailInfo,
       departmentId: Array.isArray(departmentId) ? [...departmentId].pop() : departmentId,
-      esignature: imageByName(this.detailInfo.esignature),
-      avatar: imageByName(this.detailInfo.avatar)
+      esignature: getRemoteImg(this.detailInfo.esignature),
+      avatar: getRemoteImg(this.detailInfo.avatar)
     }
   }
   // 关闭dialog
