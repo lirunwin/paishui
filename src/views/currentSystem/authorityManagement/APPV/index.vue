@@ -404,6 +404,9 @@ export default class APPV extends Vue {
         'application/zip' // .zip
       ].includes(data.raw.type)
     ) {
+      const { name } = data.raw
+      if (data.raw.type === 'application/vnd.android.package-archive')
+        this.appForm.version = name.replace(/^.*-(?=\d{1,2}\.\d{1,2})/, '').replace(/\.apk/, '')
       this.fileList = [...this.fileList, data.raw]
     } else {
       this.fileList = [...(this.fileList || [])]
