@@ -102,7 +102,7 @@ export default class HiddenDangerSearch extends Vue {
     startDate:undefined,
     endDate:undefined
   }
-  pageInfo = { current: 1, size: 10, tableTotal: 1 } //分页数据
+  pageInfo = { current: 1, size: 10, tableTotal: 1,auditResult:'1' } //分页数据
   troubleAry = {} //组件参数
   // 上报隐患数据
   hiddendangerData = []
