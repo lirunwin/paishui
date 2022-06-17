@@ -1,59 +1,26 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'medium' }" :model="formData" inline>
-    <template v-for="{ label, name, options, onChange, ...rest } of []">
-      <template v-if="name === 'queryLike'">
-        <el-form-item :key="name" :label="`${label} : `" :prop="name">
-          <el-input
-            v-model="formData[name]"
-            :placeholder="`请输入${label}`"
-            v-bind="rest"
-            size="small"
-            maxlength="50"
-            clearable
-            v-on="onChange ? { change: onChange } : {}"
-          />
-        </el-form-item>
-      </template>
-      <template v-else>
-        <el-form-item :key="name" :label="`${label} : `" :prop="name">
-          <template v-if="name === 'status'">
-            <el-checkbox
-              v-model="formData[name]"
-              :true-label="options[0].id"
-              :false-label="options[1].id"
-              v-on="onChange ? { change: onChange } : {}"
-            >
-              查看绑定历史
-            </el-checkbox>
-          </template>
-          <template v-else-if="options.length > 2">
-            <el-select
-              v-model="formData[name]"
-              :placeholder="`请选择${label}`"
-              v-bind="rest"
-              size="small"
-              clearable
-              v-on="onChange ? { change: onChange } : {}"
-            >
-              <el-option v-for="item of options" :key="item.id" :index="item.id" :value="item.id" :label="item.label" />
-            </el-select>
-          </template>
-          <template v-else>
-            <el-checkbox-group
-              v-model="formData[name]"
-              v-bind="rest"
-              size="small"
-              :max="1"
-              v-on="onChange ? { change: onChange } : {}"
-            >
-              <el-checkbox v-for="opt of options" :label="opt.id" :key="opt.id" :value="opt.id">
-                {{ opt.label }}
-              </el-checkbox>
-            </el-checkbox-group>
-          </template>
-        </el-form-item>
-      </template>
-    </template>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" inline>
+    <el-form-item label="关键字:">
+      <el-input
+        v-model="formData.queryLike"
+        placeholder="支持事件类型、名称、地址"
+        size="small"
+        maxlength="50"
+        clearable
+      />
+    </el-form-item>
+
+    <el-form-item label="事件类别:">
+      <el-checkbox-group v-model="formData.category" size="small">
+        <el-checkbox v-for="(value, key) of DICTONARY.event.category" :key="key" :label="key">{{ value }}</el-checkbox>
+      </el-checkbox-group>
+    </el-form-item>
+
+    <el-form-item label="状态:">
+      <el-checkbox-group v-model="formData.status" size="small">
+        <el-checkbox v-for="(value, key) of DICTONARY.event.status" :key="key" :label="key">{{ value }}</el-checkbox>
+      </el-checkbox-group>
+    </el-form-item>
     <el-form-item class="btns">
       <el-button
         type="primary"
@@ -66,47 +33,51 @@
       >
         查询
       </el-button>
-      <el-button
-        type="primary"
-        size="small"
-        :loading="loading.add"
-        :disabled="loading.add"
-        @click="$emit('add')"
-        style="margin-left: 80px"
-        icon="el-icon-plus"
-      >
-        新增
-      </el-button>
-      <el-button
-        type="danger"
-        size="small"
-        :loading="loading.del"
-        :disabled="loading.del || !ids.length"
-        @click="$emit('del', ids)"
-        icon="el-icon-delete"
-      >
-        删除
-      </el-button>
+      <div>
+        <el-button
+          type="primary"
+          size="small"
+          :loading="loading.report"
+          :disabled="loading.report"
+          @click="$emit('report')"
+          icon="el-icon-plus"
+        >
+          上报
+        </el-button>
+        <el-button
+          type="primary"
+          size="small"
+          :loading="loading.assign"
+          :disabled="loading.assign || ids.length !== 1"
+          @click="$emit('assign', ids)"
+          icon="el-icon-plus"
+        >
+          派工
+        </el-button>
+      </div>
     </el-form-item>
   </el-form>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { IEvent } from '../../api'
 import { DICTONARY } from '../../utils'
 
 @Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
-  @Prop({ type: Object, default: () => ({ query: false, add: false, del: false, review: false }) })
-  loading!: { query?: boolean; add?: boolean; del?: boolean; review?: boolean }
+  @Prop({ type: Object, default: () => ({ query: false, report: false, assign: false }) })
+  loading!: { query?: boolean; report?: boolean; assign?: boolean }
+  @Prop({ type: Array, default: () => [] }) selected!: IEvent[]
 
-  @Prop({ type: Array, default: () => [] }) selected!: { id?: string; auditStataus?: string }[]
+  DICTONARY = DICTONARY
 
-  formData: { [x: string]: any } = {}
+  formData: { queryLike: string; category: string[]; status: string[] } = { queryLike: '', category: [], status: [] }
 
-  users = []
-
-  onQuery() {}
+  onQuery() {
+    const { queryLike, category, status } = this.formData
+    this.$emit('query', { queryLike, category: category.join(), status: status.join() })
+  }
 
   get ids() {
     return this.selected.map((item) => item.id)
@@ -118,8 +89,21 @@ export default class QueryForm extends Vue {
 .form {
   display: flex;
   flex-wrap: wrap;
-  .btns {
+  >>> .el-form-item.btns {
     flex: 1 1 auto;
+    > div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      &::before,
+      &::after {
+        display: none;
+      }
+    }
+  }
+
+  >>> .el-form-item--small.el-form-item {
+    margin-bottom: 10px;
   }
 }
 </style>

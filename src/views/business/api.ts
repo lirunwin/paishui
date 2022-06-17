@@ -5,7 +5,12 @@ const base = '/gps'
 const uris = {
   events: {
     base: `${base}/eventmange`,
-    page: `${base}/eventmange/page`
+    page: `${base}/eventmange/page`,
+    assign: {
+      base: `${base}/dispatch`,
+      page: `${base}/dispatch/page`,
+      delBatch: `${base}/dispatch/deleteByIds`
+    }
   },
   flood: {
     base: `${base}/floodseasonw`,
@@ -78,6 +83,24 @@ export interface IEvent {
   y: string | number
 }
 
+export interface IEventAssign {
+  /** 协同处理人id 多个,分割 */
+  collaborateHanler: string
+  /** 上报时间 */
+  createTime: string
+  /** 上报人 */
+  createUserid: string | number
+  delFlag: string
+  id: string | number
+  /** 是否发送短信 0false 1true */
+  isPush: boolean
+  majorHandler: string
+  message: string
+  sourceId: string | number
+  status: string
+  /** 1事件管理 2汛情管理 */
+  type: string
+}
 export interface IFlood {
   address: string
   createTime: string
@@ -133,7 +156,7 @@ export interface IEasyUserInfo {
 }
 
 export const addEvent = (data: Partial<Omit<IEvent, 'id'>>) =>
-  axios.request<IRes<boolean>>({ url: uris.events.base, method: 'post', data })
+  axios.request<IResult<IEvent>>({ url: uris.events.base, method: 'post', data })
 
 export const deleteEvent = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.events.base}/${id}`, method: 'delete' })
@@ -213,3 +236,25 @@ export const vehicleArchivePage = (params: Partial<IVehicleArchive & IQueryCommo
     method: 'get',
     params
   })
+
+export const addEventAssign = (data: Partial<Omit<IEventAssign, 'id'>>) =>
+  axios.request<IRes<boolean>>({ url: uris.events.assign.base, method: 'post', data })
+
+export const deleteEventAssign = (id: string) =>
+  axios.request<IRes<boolean>>({ url: `${uris.events.assign.base}/${id}`, method: 'delete' })
+
+export const updateEventAssign = (data: Partial<IEventAssign>) =>
+  axios.request<IRes<boolean>>({ url: uris.events.assign.base, method: 'put', data })
+
+export const getEventAssign = (id: string) =>
+  axios.request<IResult<IEventAssign>>({ url: `${uris.events.assign.base}/${id}`, method: 'get' })
+
+export const eventAssignPage = (params: Partial<IEventAssign & IQueryCommon>) =>
+  axios.request<IRes<(IEventAssign & { createUserDetail: IEasyUserInfo })[]>>({
+    url: uris.flood.page,
+    method: 'get',
+    params
+  })
+
+export const deleteEventAssignBatch = (ids: string) =>
+  axios.request<IRes<boolean>>({ url: uris.events.assign.delBatch, method: 'delete', params: { ids } })
