@@ -42,6 +42,7 @@ import * as olSphere from 'ol/sphere';
 import { LineString, Geometry } from 'ol/geom';
 import { fieldDoc } from '@/views/zhpt/common/doc'
 import { Feature } from 'ol';
+import { mapUtil } from '../../common/mapUtil/common';
 
 export default {
   name: 'HorizontalProfileAnalysis',
@@ -65,10 +66,12 @@ export default {
     sidePanelOn(newTab, oldTab) {
       console.log("新标签", newTab)
       if (newTab !== 'horizontalProfileAnalysis') this.removeAll()
+      else this.init()
     }
   },
   mounted: function() {    
     this.mapView = this.data.mapView
+    this.init()
   },
   methods: {
     drawLine_new () {
@@ -79,8 +82,10 @@ export default {
         maxLength: 2,
         showCloser: false,
         endDrawCallBack: feature => {
+          let [startPoint, endPoint]= feature.getGeometry().getCoordinates()
+          let isEast = startPoint[0] < endPoint[0]
           this.drawer.remove()
-          this.analysis_new(feature)
+          this.analysis_new(feature, isEast)
         }
       })
       this.drawer.start()
@@ -88,13 +93,11 @@ export default {
     },
     showValue_new (row) {
       console.log('更多信息')
-      if (row) {
-        let colsData = []
-        for (let field in fieldDoc) {
-          colsData.push({ prop: field, label: fieldDoc[field] })
-        }
-        // 暂时展示15条属性
-        colsData.length = 15
+      let tableData = row.tableName
+      mapUtil.getFields(tableData).then(res => {
+        let colsData = res.map(item => {
+          return { prop: item.field, label: item.name }
+        })
         let rowData = row.features.map(fea => {
           return { ...fea.properties, geometry: fea.geometry }
         })
@@ -107,15 +110,21 @@ export default {
           this.$store.dispatch('map/changeMethod', {
             pathId: 'queryResultMore', 
             widgetid: 'HalfPanel', 
-            label: '详情', 
+            label: '详情',
             param: { rootPage: this, data: rowData || [], colsData }
           }
         )
         })
-      }
+      })
     },
-    analysis_new (drawFeature) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
+    analysis_new (drawFeature, isEast) {
+      let dataSetInfo = [
+        { label: "排水管道", name: "TF_PSPS_PIPE_B",},
+        { label: "给水管道", name: 'TF_JSJS_PIPE_B' },
+        { label: "燃气管道", name: 'TF_RQTQ_PIPE_B' },
+        { label: "电力路灯", name: 'TF_DLLD_PIPE_B' },
+        { label: "中国电信", name: 'TF_TXDX_PIPE_B' },
+      ]
       let queryTask = new iQuery({ dataSetInfo })
 
       queryTask.spaceQuery(drawFeature).then(resArr => {
@@ -129,7 +138,7 @@ export default {
         resArr.forEach(item => {
           if (item && item.result.featureCount !== 0) {
             let features = item.result.features.features
-            let tableRow = { name: item.layerName, value: features.length, features }
+            let tableRow = { tableName: item.tableName, name: item.layerName, value: features.length, features }
             tableData.push(tableRow)
             item.result.features.features.forEach(feaJson => {
               // 添加要素
@@ -150,6 +159,11 @@ export default {
         if (insertPoints.length !== 0) {
           let coordinates = drawFeature.getGeometry().getCoordinates()
           let center = [(coordinates[0][0] + coordinates[1][0]) / 2, (coordinates[0][1] + coordinates[1][1]) / 2]
+          insertPoints.sort((prev, next) => {
+            let pointX1 = prev.points.features[0].geometry.coordinates[0],
+                pointX2 = next.points.features[0].geometry.coordinates[0]
+            return isEast ? pointX1 - pointX2 : pointX2 - pointX1
+          })
           this.openBox(insertPoints, center)
           this.layerData = tableData
         } else this.$message.error('无管线')
@@ -181,21 +195,21 @@ export default {
     openBox (features, mapCenter) {
       let xminDistance = 0, xmaxDistance = 1, xmin = 0, xmax = 0
       let dataYPipe = [], dataYGround = []
-      const heightField = "IN_ELEV", deepFiled = "S_DEEP"
+      const heightField = "IN_ELEV", deepFiled = "S_DEEP", heightField2 = 'START_HEIGHT', deepFiled2 = 'START_DEPTH'
 
       if (features.length === 1) {
         xminDistance = 0.1
         let { attrs, points } = features[0]
-        let height = attrs[heightField]
-        let deep = attrs[deepFiled]
+        let height = attrs[heightField] || attrs[heightField2]
+        let deep = attrs[deepFiled] || attrs[deepFiled2]
         if (!height) return this.$.$message.error("管线高程数据不完整！")
         dataYPipe.push([0, Number(height), Number(deep)])
       } else {
         let startX = 0
         for (let length = features.length, i = 0; i < length; i++) {
           let { attrs, points } = features[i]
-          let height = attrs[heightField]
-          let deep = attrs[deepFiled]
+          let height = attrs[heightField] || attrs[heightField2]
+          let deep = attrs[deepFiled] || attrs[deepFiled2]
           if (i) {
             let prevPoint = new GeoJSON().readFeature(features[i - 1].points.features[0]).getGeometry().getCoordinates()
             let thisPoint = new GeoJSON().readFeature(points.features[0]).getGeometry().getCoordinates()
@@ -224,12 +238,20 @@ export default {
           { name: '地面高程', smooth: true, data: dataYGround, type: 'line', symbolSize: 8, areaStyle:{color:'#ECF2FF'}, itemStyle:{ borderColor:'#2D74E7', color: '#2D74E7' } }
         ]
       }
+  
+        this.$store.dispatch('map/handelClose', {
+          box:'FloatPanel',
+          pathId: 'analysisBox',
+          widgetid: 'FloatPanel',
+        });
 
-      this.$store.dispatch('map/changeMethod', {
-        pathId: 'analysisBox',
-        widgetid: 'FloatPanel',
-        label: '分析结果统计',
-        param: { that: this, title: '横剖面分析', mapCenter, tabs: [{ option: chartOption, title: '横剖面分析结果' }] }
+      this.$nextTick(() => {
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'analysisBox',
+          widgetid: 'FloatPanel',
+          label: '分析结果统计',
+          param: { that: this, title: '横剖面分析', mapCenter, tabs: [{ option: chartOption, title: '横剖面分析结果' }] }
+        })
       })
 
     },
@@ -382,6 +404,9 @@ export default {
           } })
       }
     },
+    init () {
+      this.data.that.setPopupSwitch(false)
+    },
     removeAll () {
       this.drawer && this.drawer.end()
       this.vectorLayer && this.mapView.removeLayer(this.vectorLayer)
@@ -395,6 +420,7 @@ export default {
         pathId: 'analysisBox',
         widgetid: 'FloatPanel',
       })
+      this.data.that.setPopupSwitch(true)
     }
   },
   destroyed() {

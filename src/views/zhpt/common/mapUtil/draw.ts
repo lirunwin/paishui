@@ -73,7 +73,7 @@ export default class iDraw {
             source: this.vectorSource,
             type: this.drawType[this.type],
             maxPoints: this.maxLength,
-            style: !this.drawStyle?comSymbol.getDrawStyle(5, "#f40", 2, "#409EFF"):
+            style: !this.drawStyle ? comSymbol.getDrawStyle(5, "#f40", 2, "#409EFF") :
                     comSymbol.getDrawStyle(this.drawStyle.pointSize, this.drawStyle.pointColor, this.drawStyle.lineWidth, this.drawStyle.lineColor,this.drawStyle.fillColor,this.drawStyle.lineDash),
             condition: evt => {
                 this.conditionCallBack && this.conditionCallBack(evt)

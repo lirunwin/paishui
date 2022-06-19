@@ -64,4 +64,29 @@ export const DisStandard = [
         hStandardDis: 0.65,
         vStandardDis: 0.65
     },
+    {
+        subtype: '电力',
+        hStandardDis: 0.75,
+        vStandardDis: 0.55
+    },
+    {
+        subtype: '电力路灯',
+        hStandardDis: 0.65,
+        vStandardDis: 0.65
+    },
+    {
+        subtype: '给水管道',
+        hStandardDis: 0.75,
+        vStandardDis: 0.55
+    },
+    {
+        subtype: '燃气管道',
+        hStandardDis: 0.65,
+        vStandardDis: 0.65
+    },
+    {
+        subtype: '中国电信',
+        hStandardDis: 0.65,
+        vStandardDis: 0.65
+    },
 ]

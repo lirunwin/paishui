@@ -216,7 +216,9 @@ export default {
     },
     // 保存设置
     saveLayer() {
-
+      if(this.layerName) {
+        this.$message.success('设置属性信息成功')
+      }
     },
     // 勾选属性
     selectChange(select, row) {

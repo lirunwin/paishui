@@ -90,6 +90,7 @@ export default {
       this.data.that.setPopupSwitch(false)
     },
     drawPoint () {
+      console.log('纵剖面分析')
       this.drawer && this.drawer.end()
       this.startLine = this.endLine = null
       this.vectorLayer.getSource().clear()
@@ -104,17 +105,21 @@ export default {
           if (this.startLine) {
             let endLine = await this.getPipeLineByPoint(feature)
             if (endLine) {
-              endPoint = feature.getGeometry().getCoordinates()
-              this.endLine = endLine
-              this.vectorLayer.getSource().addFeature(new GeoJSON().readFeature(this.endLine.features[0]))
-
-              this.tip.setPosition(null)
-              unByKey(this.moveEvent)
-              this.drawer.remove()
-              // 结束后，执行连通分析
-              let startId = { x: startPoint[0], y: startPoint[1] }
-              let endId = { x: endPoint[0], y: endPoint[1] }
-              this.showConnetPipe(startId, endId)
+              if (this.startLine.type === endLine.type) {
+                endPoint = feature.getGeometry().getCoordinates()
+                this.endLine = endLine
+                this.vectorLayer.getSource().addFeature(new GeoJSON().readFeature(this.endLine.features[0]))
+                this.tip.setPosition(null)
+                unByKey(this.moveEvent)
+                this.drawer.remove()
+                // 结束后，执行连通分析
+                let startId = { x: startPoint[0], y: startPoint[1] }
+                let endId = { x: endPoint[0], y: endPoint[1] }
+                this.showConnetPipe(startId, endId)
+              } else {
+                this.$message.error('请选择同种类型管线')
+                this.drawer.clear()
+              }
             } else {
               this.$message.error("该点无管线数据")
               this.drawer.clear()
@@ -158,11 +163,20 @@ export default {
     // 点查询
     getPipeLineByPoint (feature) {
       let queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
+      let dataSetInfo = [
+        { label: "排水管道", name: "TF_PSPS_PIPE_B",},
+        { label: "给水管道", name: 'TF_JSJS_PIPE_B' },
+        { label: "燃气管道", name: 'TF_RQTQ_PIPE_B' },
+        { label: "电力路灯", name: 'TF_DLLD_PIPE_B' },
+        { label: "中国电信", name: 'TF_TXDX_PIPE_B' },
+      ]
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
         let featureObj = resArr.find(res => res.result.featureCount !== 0)
-        if (featureObj) resolve(featureObj.result.features)
+        if (featureObj) {
+          featureObj.result.features.type = featureObj.layerName
+          resolve(featureObj.result.features)
+        }
         else resolve(null)
       })
       })
@@ -243,22 +257,24 @@ export default {
       })
     },
     showValue_new (row) {
+      console.log('详情')
       let features = row.pathFeatures
-      let colsData = []
-      for (let field in fieldDoc) {
-        colsData.push({ prop: field, label: fieldDoc[field] })
-      }
-      // 暂时展示15条属性
-      colsData.length = 15
-      let rowData = features.map(fea => {
-        return { ...fea.properties, geometry: fea.geometry }
+      let tableData = row.tableName
+      mapUtil.getFields(tableData).then(res => {
+        let colsData = res.map(item => {
+          return { prop: item.field, label: item.name }
+        })
+        let rowData = features.map(fea => {
+          return { ...fea.properties, geometry: fea.geometry }
+        })
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'queryResultMore', 
+          widgetid: 'HalfPanel', 
+          label: '详情', 
+          param: { rootPage: this, data: rowData || [], colsData }
+        })
       })
-      this.$store.dispatch('map/changeMethod', {
-        pathId: 'queryResultMore', 
-        widgetid: 'HalfPanel', 
-        label: '详情', 
-        param: { rootPage: this, data: rowData || [], colsData }
-      })
+
     },
     gotoGeometry (geometry) {
       let source = this.lightLayer.getSource()

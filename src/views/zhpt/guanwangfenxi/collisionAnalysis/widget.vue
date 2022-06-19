@@ -16,16 +16,22 @@
       <div class="result-description">
         <div class="contant" v-if="selectPipeLines.length>0">
           <div>
-            <p>{{selectPipeLines[0].properties.TYPE}}</p>
-            <p>{{selectPipeLines[0].properties.S_POINT}} / {{selectPipeLines[0].properties.E_POINT }}</p>
-            <p>{{selectPipeLines[0].properties.ADDRESS}}</p>
+            <p style="overflow:hidden;text-overflow:ellipsis;" :title="selectPipeLines[0].properties.LNO || selectPipeLines[0].properties.SID">
+              {{selectPipeLines[0].properties.LNO || selectPipeLines[0].properties.SID}}</p>
+            <p style="overflow:hidden;text-overflow:ellipsis;">
+              {{selectPipeLines[0].properties.S_POINT || selectPipeLines[0].properties.START_SID}} / {{selectPipeLines[0].properties.E_POINT || selectPipeLines[0].properties.END_SID }}</p>
+            <p style="overflow:hidden;text-overflow:ellipsis;" :title="selectPipeLines[0].properties.ADDRESS">
+              {{selectPipeLines[0].properties.ADDRESS}}</p>
             <!-- <p>{{selectPipeLines[0].feature.properties.PRESSURE}}</p> -->
           </div>
           <div>VS</div>
           <div v-if="selectPipeLines.length==2">
-            <p>{{selectPipeLines[1].properties.TYPE}}</p>
-            <p>{{selectPipeLines[0].properties.S_POINT}} / {{selectPipeLines[0].properties.E_POINT }}</p>
-            <p>{{selectPipeLines[1].properties.ADDRESS}}</p>
+            <p style="overflow:hidden;text-overflow:ellipsis;" :title="selectPipeLines[1].properties.LNO || selectPipeLines[1].properties.SID">
+              {{selectPipeLines[1].properties.LNO || selectPipeLines[1].properties.SID}}</p>
+            <p style="overflow:hidden;text-overflow:ellipsis;">
+              {{selectPipeLines[1].properties.S_POINT || selectPipeLines[1].properties.START_SID}} / {{selectPipeLines[1].properties.E_POINT || selectPipeLines[1].properties.END_SID }}</p>
+            <p style="overflow:hidden;text-overflow:ellipsis;" :title="selectPipeLines[1].properties.ADDRESS">
+              {{selectPipeLines[1].properties.ADDRESS}}</p>
             <!-- <p>{{selectPipeLines[1].feature.properties.PRESSURE}}</p> -->
           </div>
         </div>
@@ -129,9 +135,11 @@ export default {
               if (this.selectPipeLines.length === 0) {
                 this.$set(this.selectPipeLines, 0, featuresJson.features[0])
               } else {
-                if (this.selectPipeLines[0].properties.S_POINT === featuresJson.features[0].properties.S_POINT
-                && this.selectPipeLines[0].properties.E_POINT === featuresJson.features[0].properties.E_POINT
-                ) return this.$message.error('同一条管线')
+                let sid =  this.selectPipeLines[0].properties.S_POINT || this.selectPipeLines[0].properties.START_SID , 
+                eid = this.selectPipeLines[0].properties.E_POINT || this.selectPipeLines[0].properties.END_SID 
+                let sid2 = featuresJson.features[0].properties.S_POINT || featuresJson.features[0].properties.START_SID , 
+                eid2 = featuresJson.features[0].properties.E_POINT || featuresJson.features[0].properties.END_SID 
+                if (sid === sid2 && eid === eid2) return this.$message.error('同一条管线')
                 this.$set(this.selectPipeLines, 1, featuresJson.features[0])
                 this.drawer.remove()
               }
@@ -167,7 +175,7 @@ export default {
       if  (isConnect(pipe1, pipe2)) {
         this.bgc = "#FF6401"
         this.isCollsion = "碰撞"
-        this.resResult = [pipe1, pipe2].map(pipe => pipe.get("LNO")).join(",") + " 相连"
+        this.resResult = [pipe1, pipe2].map(pipe => pipe.get("LNO") || pipe.get('SID')).join(",") + " 相连"
         return
       }
       
@@ -182,8 +190,8 @@ export default {
         this.resResult = `垂直净距${res.dis}m`
       } else {
         // 水平净距
-        let sdiameter = pipe1.get("PSIZE")
-        let cdiameter = pipe2.get("PSIZE")
+        let sdiameter = pipe1.get("PSIZE") || pipe1.get("DIAMETER")
+        let cdiameter = pipe2.get("PSIZE") || pipe2.get("DIAMETER")
         let res = disAnalysisTool.closetHzDis(pipe1.getGeometry(), pipe2.getGeometry(), sdiameter, cdiameter)
         this.isCollsion = "不碰撞"
         this.bgc = "#02baaf"
@@ -192,15 +200,21 @@ export default {
 
       // 判断是否是前后连接的管段
       function isConnect(feature1, feature2) {
-        let sid1 = feature1.get("S_POINT"),
-            eid1 = feature1.get("E_POINT")
-        let sid2 = feature2.get("S_POINT"),
-            eid2 = feature2.get("E_POINT")
+        let sid1 = feature1.get("S_POINT") || feature1.get("START_SID"),
+            eid1 = feature1.get("E_POINT") || feature1.get("END_SID")
+        let sid2 = feature2.get("S_POINT") || feature2.get("START_SID"),
+            eid2 = feature2.get("E_POINT") || feature2.get("END_SID")
         return sid1 === eid2 || eid1 === sid2 || sid1 === sid2 || eid1 === eid2
       }
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管" }]
+      let dataSetInfo = [
+        { label: "排水管道", name: "TF_PSPS_PIPE_B",},
+        { label: "给水管道", name: 'TF_JSJS_PIPE_B' },
+        { label: "燃气管道", name: 'TF_RQTQ_PIPE_B' },
+        { label: "电力路灯", name: 'TF_DLLD_PIPE_B' },
+        { label: "中国电信", name: 'TF_TXDX_PIPE_B' },
+      ]
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresArr = resArr.find(res => res && res.result.featureCount !== 0)

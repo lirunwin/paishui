@@ -229,7 +229,7 @@ export default {
         return { label: layer.title, value: layer.name, layers }
       })
 
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style:  comSymbol.getAllStyle(5, "#f00", 6, 'rgb(64, 158, 255)') })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
       this.data.mapView.addLayer(this.vectorLayer)
     },
     clearAll () {
