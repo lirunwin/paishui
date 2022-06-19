@@ -75,8 +75,8 @@ export default class QueryForm extends Vue {
   formData: Partial<IVehicleArchiveQuery> & { queryLike?: string; date?: Date[] } = {
     queryLike: '',
     department: '',
-    chargePerson: ''
-    // date: [moment().add(-7, 'day').startOf('day').toDate(), moment().startOf('day').toDate()]
+    chargePerson: '',
+    date: [moment().add(-7, 'day').startOf('day').toDate(), moment().startOf('day').toDate()]
   }
 
   onDepartmentChange() {
