@@ -3,5 +3,6 @@ dist
 *.rar
 *.zip
 psjc
+psjcdev
 report.20*.json
 .doc*
