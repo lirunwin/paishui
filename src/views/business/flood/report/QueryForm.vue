@@ -1,18 +1,13 @@
 <template>
   <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" inline>
     <el-form-item label="关键字:">
-      <el-input
-        v-model="formData.queryLike"
-        placeholder="支持事件类型、名称、地址"
-        size="small"
-        maxlength="50"
-        clearable
-      />
+      <el-input v-model="formData.queryLike" placeholder="汛情位置地址模糊查询" size="small" maxlength="50" clearable />
     </el-form-item>
 
-    <el-form-item label="事件类别:">
-      <el-checkbox-group v-model="formData.category" size="small">
-        <el-checkbox v-for="(value, key) of DICTONARY.event.category" :key="key" :label="key">{{ value }}</el-checkbox>
+    <el-form-item label="是否为警情:">
+      <el-checkbox-group v-model="formData.police" size="small">
+        <el-checkbox :label="1">是</el-checkbox>
+        <el-checkbox :label="0">否</el-checkbox>
       </el-checkbox-group>
     </el-form-item>
 
@@ -61,22 +56,22 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
-import { IEvent } from '../../api'
+import { IFlood } from '../../api'
 import { DICTONARY } from '../../utils'
 
 @Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
   @Prop({ type: Object, default: () => ({ query: false, report: false, assign: false }) })
   loading!: { query?: boolean; report?: boolean; assign?: boolean }
-  @Prop({ type: Array, default: () => [] }) selected!: IEvent[]
+  @Prop({ type: Array, default: () => [] }) selected!: IFlood[]
 
   DICTONARY = DICTONARY
 
-  formData: { queryLike: string; category: string[]; status: string[] } = { queryLike: '', category: [], status: [] }
+  formData: { queryLike: string; police: string[]; status: string[] } = { queryLike: '', police: [], status: [] }
 
   onQuery() {
-    const { queryLike, category, status } = this.formData
-    this.$emit('query', { queryLike, category: category.join(), status: status.join() })
+    const { queryLike, police, status } = this.formData
+    this.$emit('query', { queryLike, police: police.join(), status: status.join() })
   }
 
   get ids() {

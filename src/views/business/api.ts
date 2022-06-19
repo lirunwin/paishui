@@ -161,6 +161,19 @@ export interface IVehicleArchive {
   userName: string
 }
 
+export interface IVehicleArchiveQuery {
+  carNo: string
+  chargePerson: string | number
+  department: string | number
+  endTime: string
+  gpsDeviceId: string | number
+  id: string | number
+  model: string | number
+  note: string | number
+  phone: string | number
+  type: string | number
+}
+
 export interface IEasyUserInfo {
   id: string
   isLatest: boolean
@@ -252,7 +265,7 @@ export const vehiclePage = (params: Partial<IVehicle & IQueryCommon>) =>
 export const deleteVehicleBatch = (ids: string) =>
   axios.request<IRes<boolean>>({ url: uris.vehicle.delBatch, method: 'delete', params: { ids } })
 
-export const vehicleArchivePage = (params: Partial<IVehicleArchive & IQueryCommon>) =>
+export const vehicleArchivePage = (params: Partial<IVehicleArchiveQuery & IQueryCommon>) =>
   axios.request<IRes<IVehicleArchive[]>>({
     url: uris.vehicle.archive.page,
     method: 'get',

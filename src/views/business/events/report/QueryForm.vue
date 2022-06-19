@@ -17,7 +17,7 @@
     </el-form-item>
 
     <el-form-item label="状态:">
-      <el-checkbox-group v-model="formData.status" size="small">
+      <el-checkbox-group v-model="formData.statusMuti" size="small">
         <el-checkbox v-for="(value, key) of DICTONARY.event.status" :key="key" :label="key">{{ value }}</el-checkbox>
       </el-checkbox-group>
     </el-form-item>
@@ -28,7 +28,7 @@
         :loading="loading.query"
         :disabled="loading.query"
         @click="onQuery"
-        style="margin-left:3em"
+        style="margin-left: 3em"
         icon="el-icon-search"
       >
         查询
@@ -72,11 +72,15 @@ export default class QueryForm extends Vue {
 
   DICTONARY = DICTONARY
 
-  formData: { queryLike: string; category: string[]; status: string[] } = { queryLike: '', category: [], status: [] }
+  formData: { queryLike: string; category: string[]; statusMuti: string[] } = {
+    queryLike: '',
+    category: [],
+    statusMuti: []
+  }
 
   onQuery() {
-    const { queryLike, category, status } = this.formData
-    this.$emit('query', { queryLike, category: category.join(), status: status.join() })
+    const { queryLike, category, statusMuti } = this.formData
+    this.$emit('query', { queryLike, category: category.join(), statusMuti: statusMuti.join() })
   }
 
   get ids() {

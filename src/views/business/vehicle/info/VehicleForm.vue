@@ -88,7 +88,7 @@ import { ElForm } from 'element-ui/types/form'
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
-import { IEvent, IDepartment, IVehicle } from '../../api'
+import { IVehicle, IDepartment } from '../../api'
 import { DICTONARY } from '../../utils'
 import { telAndMobileReg } from '@/utils/constant'
 
@@ -98,7 +98,7 @@ const getDefaultData = (): IFormData => ({ status: '1', chargePerson: undefined,
 
 @Component({ components: { BaseDialog, BaseTitle } })
 export default class ReportAndAssignForm extends Vue {
-  @Prop({ type: Object, default: () => ({}) }) data!: IEvent
+  @Prop({ type: Object, default: () => ({}) }) data!: IVehicle
   @Prop({ type: Boolean, default: false }) loading!: boolean
   @Prop({ type: Array, default: () => [] }) departments!: IDepartment[]
   $refs!: { form: ElForm }

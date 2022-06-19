@@ -89,7 +89,7 @@ export const vehicleCols: Partial<ElTableColumn>[] = [
   }
 ]
 
-export const vehicleArchiveCols: Partial<ElTableColumn>[] = [
+export const vehicleArchiveCols: Partial<ElTableColumn & { _slot?: true }>[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
   { prop: 'eventMangeList.findDate', label: '日期', minWidth: '150px', ...alignLeft() },
@@ -100,9 +100,9 @@ export const vehicleArchiveCols: Partial<ElTableColumn>[] = [
   { prop: 'chargePerson', label: '负责人', minWidth: '150px', ...alignLeft() },
   { prop: 'userName', label: '使用人', minWidth: '150px', ...alignLeft() },
   { prop: 'gpsDeviceId', label: '巡检设备', minWidth: '150px', ...alignLeft() },
-  { prop: 'name1', label: '巡查上报', minWidth: '150px', ...alignLeft() },
-  { prop: 'name2', label: '巡查轨迹', minWidth: '150px', ...alignLeft() },
-  { prop: 'name3', label: '巡查里程', minWidth: '150px', ...alignLeft() },
+  { prop: 'name1', label: '巡查上报', _slot: true, minWidth: '150px', ...alignLeft(), formatter: () => '1' },
+  { prop: 'name2', label: '巡查轨迹', _slot: true, minWidth: '150px', ...alignLeft(), formatter: () => '2' },
+  { prop: 'name3', label: '巡查里程', minWidth: '150px', ...alignLeft(), formatter: () => '3' },
   { prop: 'beginTime', label: '巡查开始时间', minWidth: '150px', ...alignLeft() },
   { prop: 'endTime', label: '巡查结束时间', minWidth: '150px', ...alignLeft() }
 ]
