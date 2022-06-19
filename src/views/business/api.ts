@@ -1,4 +1,4 @@
-// import { serialize } from 'object-to-formdata'
+import { serialize } from 'object-to-formdata'
 import axios from '@/utils/request'
 
 const base = '/gps'
@@ -145,6 +145,7 @@ export interface IVehicle {
   planState: string
   status: string
   type: string
+  isUsed: boolean
 }
 
 export interface IVehicleArchive {
@@ -169,7 +170,11 @@ export interface IEasyUserInfo {
 }
 
 export const addEvent = (data: Partial<Omit<IEvent, 'id'>>) =>
-  axios.request<IResult<IEvent>>({ url: uris.events.base, method: 'post', data })
+  axios.request<IResult<IEvent>>({
+    url: uris.events.base,
+    method: 'post',
+    data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
+  })
 
 export const deleteEvent = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.events.base}/${id}`, method: 'delete' })
@@ -194,7 +199,11 @@ export const eventsPage = (params: Partial<IEvent & IQueryCommon>) =>
   })
 
 export const addFlood = (data: Partial<Omit<IFlood, 'id'>>) =>
-  axios.request<IResult<IFlood>>({ url: uris.flood.base, method: 'post', data })
+  axios.request<IResult<IFlood>>({
+    url: uris.flood.base,
+    method: 'post',
+    data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
+  })
 
 export const deleteFlood = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.flood.base}/${id}`, method: 'delete' })

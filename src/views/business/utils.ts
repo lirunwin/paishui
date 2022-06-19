@@ -15,6 +15,9 @@ export const DICTONARY = {
   },
   assign: {
     type: { '1': '1事件管理', '2': '汛情管理' }
+  },
+  vehicle: {
+    status: { '1': '在用', '2': '维修', '3': '报废' }
   }
 }
 

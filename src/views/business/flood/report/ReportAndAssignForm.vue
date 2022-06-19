@@ -7,7 +7,7 @@
           <el-row>
             <el-col :span="24">
               <el-form-item label="是否为警情" required prop="flood.police">
-                <el-radio-group v-model="formData.flood.police" size="small" :disabled="!!data.id">
+                <el-radio-group v-model="formData.flood.police" size="small">
                   <el-radio :label="1">是</el-radio>
                   <el-radio :label="0">否</el-radio>
                 </el-radio-group>
@@ -22,19 +22,12 @@
                   placeholder="请输入汛期位置"
                   clearable
                   maxlength="100"
-                  :disabled="!!data.id"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="关联设施" prop="flood.facility">
-                <el-input
-                  v-model="formData.flood.facility"
-                  size="small"
-                  placeholder="请选择关联设施"
-                  clearable
-                  :disabled="!!data.id"
-                >
+                <el-input v-model="formData.flood.facility" size="small" placeholder="请选择关联设施" clearable>
                   <template v-slot:suffix>
                     <el-button icon="el-icon-top-left" type="text" style="padding: 7px 5px" />
                   </template>
@@ -43,13 +36,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="经纬度" prop="coordinate">
-                <el-input
-                  v-model="formData.coordinate"
-                  size="small"
-                  placeholder="请选择在地图上选择"
-                  clearable
-                  :disabled="!!data.id"
-                >
+                <el-input v-model="formData.coordinate" size="small" placeholder="请选择在地图上选择" clearable>
                   <template v-slot:suffix>
                     <el-button icon="iconfont iconzhongdian11" type="text" style="padding: 7px 5px" />
                   </template>
@@ -65,7 +52,6 @@
                   placeholder="请输入详细描述"
                   clearable
                   maxlength="255"
-                  :disabled="!!data.id"
                 />
               </el-form-item>
             </el-col>
@@ -78,7 +64,6 @@
                   placeholder="请输入处理建议"
                   clearable
                   maxlength="255"
-                  :disabled="!!data.id"
                 />
               </el-form-item>
             </el-col>
@@ -93,14 +78,13 @@
                     :on-change="onFileChange"
                     action="whatever"
                     accept=".jpg,.jpeg,.png,.amr"
-                    :disabled="!!data.id || formData.fileList.length >= 3"
+                    :disabled="formData.fileList.length >= 3"
                   >
-                    <el-button size="small" type="primary" :disabled="!!data.id || formData.fileList.length >= 3">
+                    <el-button size="small" type="primary" :disabled="formData.fileList.length >= 3">
                       点击上传
                     </el-button>
                     <div slot="tip" style="font-size: 12px; display: inline-block; margin-left: 1em">
-                      <i class="iconfont iconyichang text-primary" style="vertical-align: middle" />
-                      注意：请上传.jpg/.jpeg .png .amr格式的文件，且文件大小不能超10MB，最多上传3个文件
+                      ⚠️ 注意：请上传.jpg/.jpeg .png .amr格式的文件，且文件大小不能超10MB，最多上传3个文件
                     </div>
                   </el-upload>
                 </el-row>
@@ -129,6 +113,7 @@
               filterable
               placeholder="请选择处理人"
               @change="onMajorHandlerChange"
+              :disabled="!!assign.id"
             >
               <el-option
                 v-for="user of usersInMyDepartment"
@@ -142,7 +127,14 @@
         </el-col>
         <el-col :span="6">
           <el-form-item label="电话" prop="assign.phone">
-            <el-input v-model="formData.phone" size="small" placeholder="请输入联系电话" clearable maxlength="30" />
+            <el-input
+              v-model="formData.phone"
+              size="small"
+              placeholder="请输入联系电话"
+              clearable
+              maxlength="30"
+              :disabled="!!assign.id"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -155,6 +147,7 @@
               multiple
               filterable
               @change="setPhones"
+              :disabled="!!assign.id"
             >
               <el-option
                 v-for="user of usersInMyDepartment"
@@ -175,6 +168,7 @@
               :active-value="1"
               :inactive-value="0"
               @change="onSendMsgChange"
+              :disabled="!!assign.id"
             />
           </el-form-item>
         </el-col>
@@ -186,10 +180,10 @@
               v-model="formData.assign.message"
               type="textarea"
               size="small"
-              placeholder="请输入详细描述"
+              placeholder="请输入短信内容"
               clearable
               maxlength="255"
-              :disabled="!formData.assign.isPush"
+              :disabled="!formData.assign.isPush || !!assign.id"
             />
           </el-form-item>
         </el-col>
@@ -201,7 +195,7 @@
               clearable
               multiple
               placeholder="请选择短信接收电话"
-              :disabled="!formData.assign.isPush"
+              :disabled="!formData.assign.isPush || !!assign.id"
             >
               <el-option
                 v-for="user of usersInMyDepartment"
@@ -260,6 +254,7 @@ export default class ReportAndAssignForm extends Vue {
   DICTONARY = DICTONARY
 
   formData: IFormData = getDefaultData()
+  assign: Partial<IAssign> = {}
   enable = { coordinate: true, device: true }
 
   get allUsers() {
@@ -402,21 +397,14 @@ export default class ReportAndAssignForm extends Vue {
       const {
         result: { records }
       } = await assignPage({ current: 1, size: 1, sourceId: id })
-      const { collaborateHanler, majorHandler, isPush, ...assign } = records[0] || {}
+      this.assign = records[0] || {}
+      const { collaborateHanler, majorHandler, isPush, ...assign } = this.assign
       this.formData = {
         ...this.formData,
-        assign: {
-          ...assign,
-          collaborateHanler: collaborateHanler ? collaborateHanler.split(',') : [],
-          isPush: Number(isPush)
-        }
+        assign
       }
       this.setPhones()
     }
-  }
-  @Watch('formData.fileList')
-  adsad(val) {
-    console.log(val)
   }
 }
 </script>
