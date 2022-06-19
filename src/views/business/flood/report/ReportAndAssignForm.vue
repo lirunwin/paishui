@@ -1,0 +1,424 @@
+<template>
+  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading" width="1280px">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: '7.5em', size: 'small' }" :model="formData" :rules="rules">
+      <el-row :gutter="20" type="flex">
+        <el-col :span="14">
+          <BaseTitle>基本信息</BaseTitle>
+          <el-row>
+            <el-col :span="24">
+              <el-form-item label="是否为警情" required prop="flood.police">
+                <el-radio-group v-model="formData.flood.police" size="small" :disabled="!!data.id">
+                  <el-radio :label="1">是</el-radio>
+                  <el-radio :label="0">否</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </el-col>
+
+            <el-col :span="24">
+              <el-form-item label="汛期位置" prop="flood.address">
+                <el-input
+                  v-model="formData.flood.address"
+                  size="small"
+                  placeholder="请输入汛期位置"
+                  clearable
+                  maxlength="100"
+                  :disabled="!!data.id"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="关联设施" prop="flood.facility">
+                <el-input
+                  v-model="formData.flood.facility"
+                  size="small"
+                  placeholder="请选择关联设施"
+                  clearable
+                  :disabled="!!data.id"
+                >
+                  <template v-slot:suffix>
+                    <el-button icon="el-icon-top-left" type="text" style="padding: 7px 5px" />
+                  </template>
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="经纬度" prop="coordinate">
+                <el-input
+                  v-model="formData.coordinate"
+                  size="small"
+                  placeholder="请选择在地图上选择"
+                  clearable
+                  :disabled="!!data.id"
+                >
+                  <template v-slot:suffix>
+                    <el-button icon="iconfont iconzhongdian11" type="text" style="padding: 7px 5px" />
+                  </template>
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item label="详细描述" prop="flood.detail">
+                <el-input
+                  v-model="formData.flood.detail"
+                  type="textarea"
+                  size="small"
+                  placeholder="请输入详细描述"
+                  clearable
+                  maxlength="255"
+                  :disabled="!!data.id"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item label="处理建议" prop="flood.suggest">
+                <el-input
+                  v-model="formData.flood.suggest"
+                  type="textarea"
+                  size="small"
+                  placeholder="请输入处理建议"
+                  clearable
+                  maxlength="255"
+                  :disabled="!!data.id"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item label="附件">
+                <el-row>
+                  <el-upload
+                    :on-remove="handleRemovePic"
+                    multiple
+                    :auto-upload="false"
+                    :file-list="formData.fileList"
+                    :on-change="onFileChange"
+                    action="whatever"
+                    accept=".jpg,.jpeg,.png,.amr"
+                    :disabled="!!data.id || formData.fileList.length >= 3"
+                  >
+                    <el-button size="small" type="primary" :disabled="!!data.id || formData.fileList.length >= 3">
+                      点击上传
+                    </el-button>
+                    <div slot="tip" style="font-size: 12px; display: inline-block; margin-left: 1em">
+                      <i class="iconfont iconyichang text-primary" style="vertical-align: middle" />
+                      注意：请上传.jpg/.jpeg .png .amr格式的文件，且文件大小不能超10MB，最多上传3个文件
+                    </div>
+                  </el-upload>
+                </el-row>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-col>
+        <el-col :span="10">
+          <Map
+            @coordinate-change="onCoordinateChange"
+            @device-change="onDeviceChange"
+            :enableCoordinateSelect="enable.coordinate"
+            :enableDeviceSelect="enable.device"
+            :center="(formData.coordinate || '').split(',')"
+          />
+        </el-col>
+      </el-row>
+      <BaseTitle>派工信息</BaseTitle>
+      <el-row>
+        <el-col :span="6">
+          <el-form-item label="处理人" prop="assign.majorHandler">
+            <el-select
+              v-model="formData.assign.majorHandler"
+              size="small"
+              clearable
+              filterable
+              placeholder="请选择处理人"
+              @change="onMajorHandlerChange"
+            >
+              <el-option
+                v-for="user of usersInMyDepartment"
+                :key="user.id"
+                :value="String(user.id)"
+                :label="user.realName"
+                :disabled="formData.assign.collaborateHanler.includes(String(user.id))"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="电话" prop="assign.phone">
+            <el-input v-model="formData.phone" size="small" placeholder="请输入联系电话" clearable maxlength="30" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="协同处理人" prop="assign.collaborateHanler">
+            <el-select
+              v-model="formData.assign.collaborateHanler"
+              size="small"
+              placeholder="请选择协同处理人"
+              clearable
+              multiple
+              filterable
+              @change="setPhones"
+            >
+              <el-option
+                v-for="user of usersInMyDepartment"
+                :key="user.id"
+                :value="String(user.id)"
+                :label="user.realName"
+                :disabled="String(user.id) === formData.assign.majorHandler"
+              >
+                <span>{{ user.realName }}</span>
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+        <el-col :span="6">
+          <el-form-item label="是否发送短信" prop="assign.isPush">
+            <el-switch
+              v-model="formData.assign.isPush"
+              :active-value="1"
+              :inactive-value="0"
+              @change="onSendMsgChange"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col :span="12">
+          <el-form-item label="短信内容" prop="assign.message">
+            <el-input
+              v-model="formData.assign.message"
+              type="textarea"
+              size="small"
+              placeholder="请输入详细描述"
+              clearable
+              maxlength="255"
+              :disabled="!formData.assign.isPush"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="短信接收电话" prop="phones">
+            <el-select
+              v-model="formData.phones"
+              size="small"
+              clearable
+              multiple
+              placeholder="请选择短信接收电话"
+              :disabled="!formData.assign.isPush"
+            >
+              <el-option
+                v-for="user of usersInMyDepartment"
+                :key="user.id"
+                :value="String(user.phone)"
+                :label="String(`${user.realName} ${user.phone}`).trim()"
+                :disabled="!user.phone"
+              >
+                <span>{{ user.realName }} {{ user.phone }}</span>
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </el-form>
+  </BaseDialog>
+</template>
+
+<script lang="ts">
+import { ElForm } from 'element-ui/types/form'
+import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
+import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
+import { IEvent, IAssign, IDepartment, assignPage, IFlood } from '../../api'
+import { DICTONARY } from '../../utils'
+import { telAndMobileReg } from '@/utils/constant'
+import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
+import Map from './Map.vue'
+
+interface IFormData {
+  flood: Partial<Omit<IFlood, 'police'>> & { police?: number }
+  assign: Partial<Omit<IAssign, 'collaborateHanler' | 'isPush' | 'findDate'>> & {
+    collaborateHanler?: string[]
+    isPush?: number
+  }
+  coordinate?: string
+  phone?: string
+  phones?: string[]
+  fileList?: Partial<ElUploadInternalFileDetail>[]
+}
+
+const getDefaultData = (): IFormData => ({
+  flood: { police: 1 },
+  assign: { collaborateHanler: [] },
+  phones: [],
+  fileList: [],
+  coordinate: ''
+})
+
+@Component({ components: { BaseDialog, BaseTitle, Map } })
+export default class ReportAndAssignForm extends Vue {
+  @Prop({ type: Object, default: () => ({}) }) data!: IEvent
+  @Prop({ type: Boolean, default: false }) loading!: boolean
+  @Prop({ type: Array, default: () => [] }) users!: IDepartment[]
+  $refs!: { form: ElForm }
+  DICTONARY = DICTONARY
+
+  formData: IFormData = getDefaultData()
+  enable = { coordinate: true, device: true }
+
+  get allUsers() {
+    return this.users
+      .map(({ users }) => users)
+      .flat()
+      .filter((item) => !!item)
+  }
+
+  get usersInMyDepartment() {
+    const { users } = this.users.find((item) => String(item.id) === this.$store.state.user.departmentId) || {}
+    return users
+  }
+
+  get listeners() {
+    const { submit, ...rest } = this.$listeners
+    return rest
+  }
+
+  rules = {
+    'flood.police': [{ required: true, message: '是否为警情' }],
+    'flood.detail': [{ max: 255, message: '详细描述不能超过255个字符' }],
+    'flood.suggest': [{ max: 255, message: '处理建议不能超过255个字符' }],
+    'assign.phone': [{ pattern: telAndMobileReg(), message: '请输入正确的联系方式' }],
+    'assign.message': [{ max: 255, message: '短信内容不能超过255个字符' }]
+  }
+
+  onSubmit() {
+    this.$refs.form.validate((valid) => {
+      if (valid) {
+        const {
+          flood,
+          assign: { collaborateHanler, ...resetAssign },
+          coordinate,
+          fileList
+        } = this.formData
+        const [x, y] = !coordinate ? [] : (coordinate || '').split(',')
+        const data = {
+          flood: { ...flood, x, y, fileList: fileList.map(({ raw }) => raw) },
+          assign: { ...resetAssign, collaborateHanler: collaborateHanler.join(), type: '1' }
+        }
+        console.log(JSON.stringify(data, null, 2))
+        this.$emit('submit', data)
+      }
+    })
+  }
+
+  onCoordinateChange(coordiate: number[]) {
+    this.formData.coordinate = coordiate.join()
+  }
+
+  onDeviceChange(geo) {
+    const {
+      geometry,
+      id,
+      properties: { ADDRESS, LNO, TYPE }
+    } = geo
+    this.formData.flood.facility = id
+  }
+
+  onMajorHandlerChange(id: string) {
+    const { phone } = this.usersInMyDepartment.find((item) => String(item.id) === id) || {}
+    this.formData.phone = phone || ''
+    this.setPhones()
+  }
+
+  onCollaborateHanlerChange(ids: string[]) {
+    this.setPhones()
+  }
+
+  onSendMsgChange(isPush: IAssign['isPush']) {
+    if (isPush) {
+      this.setPhones()
+    } else {
+      this.formData.phones = []
+    }
+  }
+
+  setPhones() {
+    if (this.formData.assign.isPush) {
+      this.usersInMyDepartment
+        .filter((item) =>
+          [this.formData.assign.majorHandler, ...this.formData.assign.collaborateHanler].includes(String(item.id))
+        )
+        .forEach((item) => {
+          if (!this.formData.phones.includes(item.phone) && !!item.phone) {
+            this.formData.phones = [...this.formData.phones, item.phone]
+          }
+        })
+    }
+  }
+
+  onFileChange(file) {
+    const allowedTypes = ['image/jpeg', 'image/png']
+    const isLt10M = file.size / 1024 / 1024 < 10
+    const max = 3
+    let pass = true
+
+    if (
+      !allowedTypes.includes(file.raw.type) &&
+      !String(file.raw.type).endsWith('.amr') &&
+      !String(file.raw.type).startsWith('audio')
+    ) {
+      this.$message.error('上传文件只能是 JPG/JPEG、png、amr 格式!')
+      pass = false
+    }
+
+    if (!isLt10M) {
+      this.$message.error('上传文件大小不能超过 10MB!')
+      pass = false
+    }
+
+    if (this.formData.fileList.length >= max) {
+      this.$message.error(`最多可以上传${max}张图片!`)
+      pass = false
+    }
+
+    this.formData.fileList = pass ? [...this.formData.fileList, file] : [...this.formData.fileList]
+  }
+
+  handleRemovePic(file, fileList) {
+    this.formData.fileList = fileList.filter((item) => item.uid !== file.uid)
+  }
+
+  @Watch('data', { immediate: true })
+  async setDefaultData({ id, x, y, filePathList, findDate, ...rest }: IEvent) {
+    this.formData = getDefaultData()
+    if (id) {
+      this.formData = {
+        ...this.formData,
+        flood: { id, x, y, ...rest },
+        coordinate: `${x},${y}`,
+        fileList: (filePathList || []).map((path, index) => ({
+          name: path,
+          url: path,
+          uid: +new Date() + index
+        }))
+      }
+      this.onMajorHandlerChange(String(id))
+      const {
+        result: { records }
+      } = await assignPage({ current: 1, size: 1, sourceId: id })
+      const { collaborateHanler, majorHandler, isPush, ...assign } = records[0] || {}
+      this.formData = {
+        ...this.formData,
+        assign: {
+          ...assign,
+          collaborateHanler: collaborateHanler ? collaborateHanler.split(',') : [],
+          isPush: Number(isPush)
+        }
+      }
+      this.setPhones()
+    }
+  }
+  @Watch('formData.fileList')
+  adsad(val) {
+    console.log(val)
+  }
+}
+</script>
+
+<style lang="scss"></style>

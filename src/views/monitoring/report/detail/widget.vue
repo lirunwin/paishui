@@ -301,10 +301,13 @@ export default class ReportDetail extends Vue {
         return {
           info: { id, name },
           data: result[key].reduce<IDetail['data']>((acc, current) => {
-            const { deviceCode, itcdName, siteName: temp, ...rest } = current
+            if (!current) {
+              return acc
+            }
+            const { itcdName, siteName: temp, ...rest } = current
             const [siteId, siteName] = String(temp).split('-')
             const dataKey = `${itcdName}`
-            acc[dataKey] = [...(acc[dataKey] || []), { ...rest, deviceCode, itcdName, siteId, siteName }]
+            acc[dataKey] = [...(acc[dataKey] || []), { ...rest, itcdName, siteId, siteName }]
             return acc
           }, {})
         }

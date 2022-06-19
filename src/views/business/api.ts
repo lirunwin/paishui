@@ -3,9 +3,16 @@ import axios from '@/utils/request'
 
 const base = '/gps'
 const uris = {
+  // users: '/base/user/pageNew',
+  users: '/base/user/getUserByDepts',
   events: {
     base: `${base}/eventmange`,
-    page: `${base}/eventmange/page`
+    page: `${base}/eventmange/page`,
+    assign: {
+      base: `${base}/dispatch`,
+      page: `${base}/dispatch/page`,
+      delBatch: `${base}/dispatch/deleteByIds`
+    }
   },
   flood: {
     base: `${base}/floodseasonw`,
@@ -54,6 +61,16 @@ interface IQueryCommon extends IPagination {
   pages?: number
   searchCount?: boolean
 }
+export interface IDepartment {
+  name: string
+  id: string | number
+  users: {
+    realName: string
+    phone: string
+    departmentId: string | number
+    id: string | number
+  }[]
+}
 
 export interface IEvent {
   address: string
@@ -74,10 +91,29 @@ export interface IEvent {
   status: string
   type: string
   uploadFileids: string
+  filePathList: string[]
   x: string | number
   y: string | number
 }
 
+export interface IAssign {
+  /** 协同处理人id 多个,分割 */
+  collaborateHanler: string
+  /** 上报时间 */
+  createTime: string
+  /** 上报人 */
+  createUserid: string | number
+  delFlag: string
+  id: string | number
+  /** 是否发送短信 0false 1true */
+  isPush: boolean
+  majorHandler: string
+  message: string
+  sourceId: string | number
+  status: string
+  /** 1事件管理 2汛情管理 */
+  type: string
+}
 export interface IFlood {
   address: string
   createTime: string
@@ -133,7 +169,7 @@ export interface IEasyUserInfo {
 }
 
 export const addEvent = (data: Partial<Omit<IEvent, 'id'>>) =>
-  axios.request<IRes<boolean>>({ url: uris.events.base, method: 'post', data })
+  axios.request<IResult<IEvent>>({ url: uris.events.base, method: 'post', data })
 
 export const deleteEvent = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.events.base}/${id}`, method: 'delete' })
@@ -158,7 +194,7 @@ export const eventsPage = (params: Partial<IEvent & IQueryCommon>) =>
   })
 
 export const addFlood = (data: Partial<Omit<IFlood, 'id'>>) =>
-  axios.request<IRes<boolean>>({ url: uris.flood.base, method: 'post', data })
+  axios.request<IResult<IFlood>>({ url: uris.flood.base, method: 'post', data })
 
 export const deleteFlood = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.flood.base}/${id}`, method: 'delete' })
@@ -212,4 +248,33 @@ export const vehicleArchivePage = (params: Partial<IVehicleArchive & IQueryCommo
     url: uris.vehicle.archive.page,
     method: 'get',
     params
+  })
+
+export const addAssign = (data: Partial<Omit<IAssign, 'id'>>) =>
+  axios.request<IRes<boolean>>({ url: uris.events.assign.base, method: 'post', data })
+
+export const deleteAssign = (id: string) =>
+  axios.request<IRes<boolean>>({ url: `${uris.events.assign.base}/${id}`, method: 'delete' })
+
+export const updateAssign = (data: Partial<IAssign>) =>
+  axios.request<IRes<boolean>>({ url: uris.events.assign.base, method: 'put', data })
+
+export const getAssign = (id: string) =>
+  axios.request<IResult<IAssign>>({ url: `${uris.events.assign.base}/${id}`, method: 'get' })
+
+export const assignPage = (params: Partial<IAssign & IQueryCommon>) =>
+  axios.request<IRes<(IAssign & { createUserDetail: IEasyUserInfo; collaborateHandlers: IEasyUserInfo[] })[]>>({
+    url: uris.flood.page,
+    method: 'get',
+    params
+  })
+
+export const deleteAssignBatch = (ids: string) =>
+  axios.request<IRes<boolean>>({ url: uris.events.assign.delBatch, method: 'delete', params: { ids } })
+
+export const getUsers = (depts?: string) =>
+  axios.request<IResult<IDepartment[]>>({
+    url: uris.users,
+    method: 'get',
+    params: { depts }
   })

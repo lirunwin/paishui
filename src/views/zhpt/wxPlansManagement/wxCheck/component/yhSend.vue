@@ -259,553 +259,568 @@
  * @description 该功能为巡检子系统，巡检管理模块中的巡检计划审核功能
  * @author 梁罗、李顺<876330731@qq.com>
  */
-import {Vue,Prop,Watch,Component} from 'vue-property-decorator'
+import { Vue, Prop, Watch, Component } from 'vue-property-decorator'
 import troubleDetail from '@/views/zhpt/hiddendangermanage/components/troubleDetails.vue'
 import tfTableLegend from '@/views/zhpt/common/TableLegend.vue'
-import { esriConfig } from 'staticPub/config'
 import { IP } from '@/utils/request'
-import { loadModules } from 'esri-loader'
-import { 
-  queryDangerReport , getHiddenDangerId , getHiddenDangerUpdateId , getHiddenDangerBuildId, 
-  queryGroupUserMap , queryPeriod , getFileImg , 
-  reportDangerCheck } from '@/api/xjHiddenDangerManageApi'
+import {
+  queryDangerReport,
+  getHiddenDangerId,
+  getHiddenDangerUpdateId,
+  getHiddenDangerBuildId,
+  queryGroupUserMap,
+  queryPeriod,
+  getFileImg,
+  reportDangerCheck
+} from '@/api/xjHiddenDangerManageApi'
 import { ElTable } from 'element-ui/types/table'
+import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
+import locationIcon from '@/assets/images/map/location.png'
+import { Map, View } from 'ol'
+import { unByKey } from 'ol/Observable'
+import Feature from 'ol/Feature'
+import VectorSource from 'ol/source/Vector'
+import { Vector as VectorLayer } from 'ol/layer'
+import { Point, MultiPoint } from 'ol/geom'
+import { Icon, Style } from 'ol/style'
 @Component({
   name: 'HiddendangerAuditAssignment',
-  components: { tfTableLegend,troubleDetail }
+  components: { tfTableLegend, troubleDetail }
 })
 export default class HiddendangerAuditAssignment extends Vue {
-  @Prop() isCheak:boolean;
-  @Prop() data:any;
-  disabledCheckIdea= true//控制审核意见栏是否可编辑
-      disabledCheckIdeaAnnex= true //控制审核意见说明是否可编辑
-      showFooter=false//控制footer的显示
-      dialogDetail= false //控制详情页面显示
-			startOptions={//开始时间控制
-					disabledDate:time=> {
-					if(this.problems.endTime){
-							return time.getTime() >=new Date(this.problems.endTime);
-					}
-					}
-			}
-			endOptions={//结束时间控制
-					disabledDate:time=> {
-					if(this.problems.startTime){
-							return  new Date(this.problems.startTime).getTime()-1000*60*60*24>time.getTime();
-					}
-					}
-			}
-      // 筛选条件
-      problems= {
-        auditUser: '',    //审核人员
-        auditResult: "0",   //0：未审核；1：通过；2：未通过
-        isSubmit: "1",    //上报状态；0：未提交；1：已提交
-        pipeName: undefined,
-        reportTime: undefined,
-        address: undefined,
-        startTime:"",
-				endTime:"",
+  @Prop() isCheak: boolean
+  @Prop() data: any
+  disabledCheckIdea = true //控制审核意见栏是否可编辑
+  disabledCheckIdeaAnnex = true //控制审核意见说明是否可编辑
+  showFooter = false //控制footer的显示
+  dialogDetail = false //控制详情页面显示
+  startOptions = {
+    //开始时间控制
+    disabledDate: (time) => {
+      if (this.problems.endTime) {
+        return time.getTime() >= new Date(this.problems.endTime)
       }
-      postProblems= {
-        auditUser: '',    //审核人员
-        auditResult: "0",   //0：未审核；1：通过；2：未通过
-        isSubmit: "1",    //上报状态；0：未提交；1：已提交
-				pipeName: undefined,
-				startTime: undefined,
-				endTime: undefined,
-				address: undefined,
-        startDate:"",
-        endDate:""
-			}
-      pageInfo= { current: 1,  size: 30, tableTotal:1,auditResult:"",auditResults:'' }		//分页数据
-			troubleAry= {}   //组件参数
-
-      //隐患记录展开项的数据
-			dangerRecordData= {
-				pipeName: '', // 隐患所在管线名称
-				dangerPosition: '', //隐患部位
-				positionDetail: '', //隐患详细地址描述
-				geographicalPosition: '', //地理位置
-				dangerLocationArea: '', //隐患所在片区
-				//隐患原因
-				dangerReason: [
-					{ value: 0, label: '占压'},
-					{ value: 1, label: '渗水'},
-					{ value: 2, label: '周边打围开挖'},
-					{ value: 3, label: '其他管线穿越或并行'}
-				], 
-				dangerReasonNote: '', //隐患原因备注
-				dangerOccurTime: '', // 隐患发生时间
-				isIntoWorkStageManage: '', //是否进入工地管理
-				constructionUnitName: '', //施工单位名称
-				constructionLeader: '', //施工负责人
-				phoneNo: '', // 联系电话
-				removeDangerAdvice: '', //消除隐患建议
-				annex: '', //附件
-			}
-      dialogDelete= false //控制是否确认删除弹框显示
-      multipleSelection= []
-      
-      // 上报审核弹窗
-      auditDialog= false
-
-      //审核结果码表
-			auditStatus= [
-				{ id:'1',name:'通过' },
-				{ id:'2',name:'未通过' },
-			]
-      //是否需要人员巡查
-      respectStatus=[
-        { id:'0',name:'否' },
-				{ id:'1',name:'是' },
-      ]
-      dispatchingtatus=[         //码表 => 是否需要派工
-				{ id:'0',name:'否' },
-				{ id:'1',name:'是' },
-			]
-      // 上报审核表单信息
-      auditForm= {
-        dangerId: "",		//隐患主键编号
-        isrespect: "0",   //是否需要人员巡查
-        auditResult: undefined, //审核结果 1：通过；2：未通过
-        auditNotes: "",   //审核意见
-        templateServiceType: '02',    //审核类型:  02:隐患审核 03:隐患消除审核 
-        inspectGroupId: undefined,    //巡检组
-        inspectUsers: undefined,      //巡检人员(可多人)
-        periodId: undefined,    //巡检周期
-        intervalDay: undefined,   //间隔天数
-        inspectionTime: undefined,     //起止时间
-        // planBegindate: undefined,     //计划开始时间
-        // planEnddate: undefined,     //计划结束时间
-        planPercent: 100,   //计划完成率
-        isDispatching: "1", //是否自动派工 => 1 默认派工
-        planType: "1",      //计划类型；0：计划性；1：隐患 2:工地 3:临时性任务
-        inspectType: 14,  //巡查类型：14=隐患点
-        planState: "0",   //巡检计划状态；0：未提交；1：未审核，2：未开始，3：正在执行 4：计划完成 5: 已开始未执行 7：申请暂停 8：计划已暂停 9：申请作废 10：计划已作废    
-        totalCount:1,     //总点数=> 隐患默认为1个
-        totalLength: 1,   //记录计划任务情况（点是个数，线是长度）=> 隐患默认为1个
-        planBegindate:"",//起始时间
-        planEnddate:"",//终止时间
-        planBegindate2:"",//巡查时间
-        planEnddate2:"",
-        planBegindatePick:{ disabledDate(time) {}},//起始时间选择控制
-        planEnddatePick:{ disabledDate(time) {}},//终止时间选择控制
-        planBegindate2Pick:{ disabledDate(time) {}},//终止时间选择控制
-        planEnddate2Pick:{ disabledDate(time) {}}
+    }
+  }
+  endOptions = {
+    //结束时间控制
+    disabledDate: (time) => {
+      if (this.problems.startTime) {
+        return new Date(this.problems.startTime).getTime() - 1000 * 60 * 60 * 24 > time.getTime()
       }
+    }
+  }
+  // 筛选条件
+  problems = {
+    auditUser: '', //审核人员
+    auditResult: '0', //0：未审核；1：通过；2：未通过
+    isSubmit: '1', //上报状态；0：未提交；1：已提交
+    pipeName: undefined,
+    reportTime: undefined,
+    address: undefined,
+    startTime: '',
+    endTime: ''
+  }
+  postProblems = {
+    auditUser: '', //审核人员
+    auditResult: '0', //0：未审核；1：通过；2：未通过
+    isSubmit: '1', //上报状态；0：未提交；1：已提交
+    pipeName: undefined,
+    startTime: undefined,
+    endTime: undefined,
+    address: undefined,
+    startDate: '',
+    endDate: ''
+  }
+  pageInfo = { current: 1, size: 30, tableTotal: 1, auditResult: '', auditResults: '' } //分页数据
+  troubleAry = {} //组件参数
 
-      // 隐患基础信息 => 详情
-      reportDetailForm= {
-        pipeName:"",
-        location:"",
-        typeName:"",
-        toubleRangeName:"",
-        address:"",
-        regionId:"",
-        regionName:"",
-        submitUserName:"",
-        submitTime:"",
-        notes:"",
-        isbuild:"",
-        suggest:"",
-        lgtd:"",
-        lttd:"",
-        sgdw:"",
-        gdfzr:"",
-        phone:""
-      }
-      filelist= []
-      audioFileList= []
-      isrespect= true    //未通过，隐藏是否需要人员巡查信息
-			isdispatching= false	//是否需要派工：否=>隐藏,是=>展示
-			isxjshow=false		//巡检信息是否隐藏
+  //隐患记录展开项的数据
+  dangerRecordData = {
+    pipeName: '', // 隐患所在管线名称
+    dangerPosition: '', //隐患部位
+    positionDetail: '', //隐患详细地址描述
+    geographicalPosition: '', //地理位置
+    dangerLocationArea: '', //隐患所在片区
+    //隐患原因
+    dangerReason: [
+      { value: 0, label: '占压' },
+      { value: 1, label: '渗水' },
+      { value: 2, label: '周边打围开挖' },
+      { value: 3, label: '其他管线穿越或并行' }
+    ],
+    dangerReasonNote: '', //隐患原因备注
+    dangerOccurTime: '', // 隐患发生时间
+    isIntoWorkStageManage: '', //是否进入工地管理
+    constructionUnitName: '', //施工单位名称
+    constructionLeader: '', //施工负责人
+    phoneNo: '', // 联系电话
+    removeDangerAdvice: '', //消除隐患建议
+    annex: '' //附件
+  }
+  dialogDelete = false //控制是否确认删除弹框显示
+  multipleSelection = []
 
-      dateShow={      //时期选择切换
-          moreDate:true,
-          singeDate:false,
-      }
-      // 规则
-      auditRule= {}
-      // 上报隐患数据
-      hiddendangerData= []
+  // 上报审核弹窗
+  auditDialog = false
 
-      //码表
-      groupDeptUser= []   //分组、部门人员组合
-      periodData= []  //巡检周期
+  //审核结果码表
+  auditStatus = [
+    { id: '1', name: '通过' },
+    { id: '2', name: '未通过' }
+  ]
+  //是否需要人员巡查
+  respectStatus = [
+    { id: '0', name: '否' },
+    { id: '1', name: '是' }
+  ]
+  dispatchingtatus = [
+    //码表 => 是否需要派工
+    { id: '0', name: '否' },
+    { id: '1', name: '是' }
+  ]
+  // 上报审核表单信息
+  auditForm = {
+    dangerId: '', //隐患主键编号
+    isrespect: '0', //是否需要人员巡查
+    auditResult: undefined, //审核结果 1：通过；2：未通过
+    auditNotes: '', //审核意见
+    templateServiceType: '02', //审核类型:  02:隐患审核 03:隐患消除审核
+    inspectGroupId: undefined, //巡检组
+    inspectUsers: undefined, //巡检人员(可多人)
+    periodId: undefined, //巡检周期
+    intervalDay: undefined, //间隔天数
+    inspectionTime: undefined, //起止时间
+    // planBegindate: undefined,     //计划开始时间
+    // planEnddate: undefined,     //计划结束时间
+    planPercent: 100, //计划完成率
+    isDispatching: '1', //是否自动派工 => 1 默认派工
+    planType: '1', //计划类型；0：计划性；1：隐患 2:工地 3:临时性任务
+    inspectType: 14, //巡查类型：14=隐患点
+    planState: '0', //巡检计划状态；0：未提交；1：未审核，2：未开始，3：正在执行 4：计划完成 5: 已开始未执行 7：申请暂停 8：计划已暂停 9：申请作废 10：计划已作废
+    totalCount: 1, //总点数=> 隐患默认为1个
+    totalLength: 1, //记录计划任务情况（点是个数，线是长度）=> 隐患默认为1个
+    planBegindate: '', //起始时间
+    planEnddate: '', //终止时间
+    planBegindate2: '', //巡查时间
+    planEnddate2: '',
+    planBegindatePick: { disabledDate(time) {} }, //起始时间选择控制
+    planEnddatePick: { disabledDate(time) {} }, //终止时间选择控制
+    planBegindate2Pick: { disabledDate(time) {} }, //终止时间选择控制
+    planEnddate2Pick: { disabledDate(time) {} }
+  }
 
-      groupData= []   //组数据
-      userData= []    //人员数据
+  // 隐患基础信息 => 详情
+  reportDetailForm = {
+    pipeName: '',
+    location: '',
+    typeName: '',
+    toubleRangeName: '',
+    address: '',
+    regionId: '',
+    regionName: '',
+    submitUserName: '',
+    submitTime: '',
+    notes: '',
+    isbuild: '',
+    suggest: '',
+    lgtd: '',
+    lttd: '',
+    sgdw: '',
+    gdfzr: '',
+    phone: ''
+  }
+  filelist = []
+  audioFileList = []
+  isrespect = true //未通过，隐藏是否需要人员巡查信息
+  isdispatching = false //是否需要派工：否=>隐藏,是=>展示
+  isxjshow = false //巡检信息是否隐藏
 
-      //巡检日期
-      pickerOptions= { disabledDate(time) {} }
+  dateShow = {
+    //时期选择切换
+    moreDate: true,
+    singeDate: false
+  }
+  // 规则
+  auditRule = {}
+  // 上报隐患数据
+  hiddendangerData = []
+
+  //码表
+  groupDeptUser = [] //分组、部门人员组合
+  periodData = [] //巡检周期
+
+  groupData = [] //组数据
+  userData = [] //人员数据
+
+  //巡检日期
+  pickerOptions = { disabledDate(time) {} }
+  mapV:Map=null
+  graphicsLayer:VectorLayer<VectorSource<any>>=null
   mounted() {
-    var that = this
-    var div = this.$refs.cctvMap
-    var mapV = this.data.mapView
-    var map = mapV.map
-    // loadModules(['esri/views/MapView'],{ url: esriConfig.baseUrl }).then(([MapView]) => {
-    //     const mapview = new MapView({
-    //         container: div,
-    //         map: map,
-    //     })
-    //     that.mapV = mapview
-    //     mapview.ui.components = []
-    //     mapview.constraints.lods = mapV.constraints.lods
-    //     that.mapV.on('click', function(e) {   
-    //         if(that.flag === true) {
-    //             that.reportForm.pointLon = e.mapPoint.longitude //经度
-    //             that.reportForm.pointLat = e.mapPoint.latitude //纬度
-    //             that.drawPoint()
-    //         that.flag = false
-    //       }
-    //     })
-    // })
-
+    this.addMap()
     //隐患审核、详情
     this.dangerCheckArrangeQuery() //渲染主页表格
-    this.getGroupUserMap()    //巡检组、巡检人
-    this.getPeriodData()    //巡检周期
+    this.getGroupUserMap() //巡检组、巡检人
+    this.getPeriodData() //巡检周期
   }
   destroyed() {
-    console.log('实例销毁完成');
+    console.log('实例销毁完成')
     //地图相关数据
-    let mapV = this.data.mapView;
-    let map = mapV.map;
+    let mapV = this.data.mapView
+    let map = mapV.map
     // if (this.click) {
     //   this.click.remove();
     // }
     // if (this.graphicsLayer) {
     //   map.remove(this.graphicsLayer);
     // }
-    this.clearPageInfo();
+    this.clearPageInfo()
   }
-    		/**
-		 * 渲染数据处理
-		*/
-		formatter(row, column){
-				let typeValue=typeof row[column.property];
-				if(typeValue=="undefined"){
-						return "-"
-				}else if(typeValue=="object"||typeValue=="string"){
-						if(!row[column.property]){
-								return "-"
-						}else{
-								return row[column.property]
-						}
-				}else{
-						return row[column.property]
-				}
-		}
-    /*--------------------- 地图相关 ---------------*/
-    /**
-		 * @description 加载地图
-		 */
-     //加载地图
-		loadMap() {
-      //@ts-ignore
-			this.$refs.mapBox.appendChild(this.$refs.cctvMap)
-      //@ts-ignore
-      this.$refs.cctvMap.style.display = ''
-      //this.mapV.extent = this.data.mapView.extent
+  /**
+   * 在模块打开的时候预先加载地图
+   */
+  addMap() {
+    if(!this.$store.getters.appconfig){
+      this.$message('服务加载失败 启用默认服务配置')
+      return;
     }
-
-    /**
-		 * @description 绘制坐标
-		 */
-		drawPoint(lon, lat) {
-			let that = this;
-			let mapV = this.data.mapView;
-			let map = mapV.map;
-			// loadModules(
-			// 	[
-			// 		"esri/views/MapView",
-			// 		"esri/Graphic",
-			// 		"esri/layers/GraphicsLayer",
-			// 		"esri/symbols/PictureMarkerSymbol"
-			// 	],
-			// 	{ url: esriConfig.baseUrl }
-			// ).then(([MapView, Graphic, GraphicsLayer, PictureMarkerSymbol]) => {
-			// 	const point = {
-      //     type: "point",
-      //     x: lon,
-      //     y: lat,
-      //     spatialReference: mapV.spatialReference
-			// 	};
-			// 	const simpleMarkerSymbol = {
-      //       path: "M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z",
-      //       color: "red", outline: { color: 'red', width: "1px" },
-      //       size: '30px', yoffset: '15px', xoffset: '0px', type: "simple-marker",
-      //   };
-			// 	const pointGraphic = new Graphic({
-			// 	  geometry: point,
-			// 	  symbol: simpleMarkerSymbol
-			// 	});
-			// 	if (that.graphicsLayer) {
-			// 	  that.graphicsLayer.removeAll();
-			// 	} else {
-			//     that.graphicsLayer = new GraphicsLayer();
-			// 	  map.add(that.graphicsLayer);
-			// 	}
-			// 	that.graphicsLayer.add(pointGraphic);
-			// });
-		}
-    /**
-	 * @description 定位到点
-	 */
-    toPoint(lon, lat) {
-      if(lon==""||lat==""){
-        return;
+    let { initCenter, initZoom } = this.$store.getters.appconfig
+    var div = this.$refs.cctvMap as HTMLElement
+    let layerResource = this.$store.getters.appconfig.gisResource['iserver_resource'].layerService.layers
+    const map = new Map({
+      target: div,
+      view: new View({
+        center: initCenter,
+        zoom: initZoom,
+        maxZoom: 21,
+        minZoom: 5,
+        projection: 'EPSG:4326'
+      })
+    })
+    this.mapV = map
+    //添加矢量点图层
+    const vectorLayer = new VectorLayer({
+      source: new VectorSource()
+    })
+    this.graphicsLayer = vectorLayer
+    new TF_Layer().createLayers(layerResource).then((layers:any[]) => {
+      layers.forEach((layer) => {
+        layer && map.addLayer(layer)
+      })
+      map.addLayer(this.graphicsLayer)
+    })
+  }
+  /**
+   * 渲染数据处理
+   */
+  formatter(row, column) {
+    let typeValue = typeof row[column.property]
+    if (typeValue == 'undefined') {
+      return '-'
+    } else if (typeValue == 'object' || typeValue == 'string') {
+      if (!row[column.property]) {
+        return '-'
+      } else {
+        return row[column.property]
       }
-	    this.drawPoint(lon,lat)
-      let mapV = this.data.mapView;
-      let gotoJson = {
-        target: new mapV.TF_graphic({
-          geometry: {
-            type: "point",
-            x: lon,
-            y: lat,
-            spatialReference: mapV.spatialReference
-          }
-        }),
-        zoom: 10
-      };
-      // if (this.mapV) {
-      //   this.mapV.goTo(gotoJson, { duration: 1000 });
+    } else {
+      return row[column.property]
+    }
+  }
+  /*--------------------- 地图相关 ---------------*/
+  /**
+   * @description 加载地图
+   */
+  //加载地图
+  loadMap() {
+    //@ts-ignore
+    this.$refs.mapBox.appendChild(this.$refs.cctvMap)
+    //@ts-ignore
+    this.$refs.cctvMap.style.display = ''
+    if(this.mapV){
+      this.toPoint(this.reportDetailForm.lgtd,this.reportDetailForm.lttd)
+      this.mapV.updateSize();
+      
+    }
+  }
+
+  /**
+   * @description 绘制坐标
+   */
+  drawPoint(lon, lat) {
+    if (!this.graphicsLayer) {
+      this.$message.error('隐患图层创建失败')
+      return
+    } else {
+      this.graphicsLayer.getSource().clear()
+    }
+    const style = new Style({
+      image: new Icon({
+        src: locationIcon,
+        scale: 0.5,
+        color: '#2D74E7'
+      })
+    })
+    const feature = new Feature({
+      geometry: new Point([lon, lat])
+    })
+    feature.setStyle(style)
+    this.graphicsLayer.getSource().addFeature(feature)
+  }
+  /**
+   * @description 定位到点
+   */
+  toPoint(lon, lat) {
+    if (lon == '' || lat == '') {
+      return
+    }
+    this.drawPoint(lon, lat)
+    const options = {
+      center: [lon, lat],
+      zoom: 17
+    }
+    if (this.mapV) {
+      this.mapV.getView().animate(options)
+    }
+  }
+
+  /*--------------------- 分页查询 ---------------*/
+  /**
+   * @description 分页每页条数
+   */
+  handleSizeChange(pageSize) {
+    this.pageInfo.size = pageSize
+    this.getData()
+  }
+  /**
+   * @description 改变当前页
+   */
+  handleCurrentChange(currentPage) {
+    this.pageInfo.current = currentPage
+    this.getData()
+  }
+
+  /*--------------------- 界面操作 ----------------*/
+  /**
+   * @description 清除页面相关数据 => Map、表单数据
+   */
+  clearPageInfo() {
+    //表单数据
+    // this.dangerId = ""; //隐患主键编号
+    // this.isrespect = "0"; //是否需要人员巡查
+    // this.auditResult= undefined; //审核结果 1：通过；2：未通过
+    // this.auditNotes= "";   //审核意见
+    // this.templateServiceType= '02';    //审核类型:  02:隐患审核 03:隐患消除审核
+    // this.inspectGroupId= undefined;    //巡检组
+    // this.inspectUsers= undefined;      //巡检人员(可多人)
+    // this.periodId= undefined;    //巡检周期
+    // this.intervalDay= undefined;   //间隔天数
+    // this.inspectionTime= undefined;     //起止时间
+    // this.planBegindate= undefined;     //计划开始时间
+    // this.planEnddate= undefined;     //计划结束时间
+    // this.planPercent= 100;   //计划完成率
+    // this.isDispatching= "1"; //是否自动派工 => 1 默认派工
+    // this.planType= "1";      //计划类型；0：计划性；1：隐患 2:工地 3:临时性任务
+    // this.inspectType= 14;  //巡查类型：14=隐患点
+    // this.planState= "0";   //巡检计划状态；0：未提交；1：未审核，2：未开始，3：正在执行 4：计划完成 5: 已开始未执行 7：申请暂停 8：计划已暂停 9：申请作废 10：计划已作废
+    // this.totalCount= 1;    //总点数=> 隐患默认为1个
+    // this.totalLength= 1;   //记录计划任务情况（点是个数，线是长度）=> 隐患默认为1个
+  }
+
+  /*--------------------- API请求 ----------------*/
+
+  /**
+   * @description  双击事件
+   */
+  dblclick(e) {
+    if (this.isCheak) {
+      this.reportClick(e)
+    } else {
+      this.showTrouble(e)
+    }
+  }
+
+  /**
+   * @description  审核派工
+   */
+  reportClick(e) {
+    const that = this
+    //主键编号
+    var dangerId = e.id
+    that.auditForm.dangerId = dangerId
+    //选中行
+    ;(that.$refs.table1 as ElTable).toggleRowSelection(e)
+    // //审核派工前初始化数据
+    // this.clearPageInfo();
+    //获取隐患展示的基础信息
+    that.$nextTick(() => {
+      that.getTroubleById(dangerId)
+    })
+  }
+
+  //获取主页面表格数据
+  getData() {
+    var that = this
+    console.log('page参数：' + JSON.stringify(that.pageInfo))
+    //追加分页参数
+    const query = that.pageInfo
+    delete query.auditResult
+    if (this.isCheak) {
+      query.auditResults = '0'
+    } else {
+      query.auditResults = '1,2'
+    }
+    that.postProblems.pipeName = that.problems.pipeName
+    that.postProblems.address = that.problems.address
+    that.postProblems.auditUser = this.$store.state.user.userId || ''
+    // that.getDateDiff()
+    if (!((!that.problems.startTime && !that.problems.endTime) || (that.problems.startTime && that.problems.endTime))) {
+      this.$message.info('时间段请选择完整！')
+      return
+    }
+    that.postProblems.startDate = that.problems.startTime ? that.problems.startTime + ' 00:00:00' : ''
+    that.postProblems.endDate = that.problems.endTime ? that.problems.endTime + ' 23:59:59' : ''
+    if (that.strIsNull(that.postProblems.auditUser)) {
+      that.$message.error('获取审核人失败!')
+      return
+    }
+    Object.assign(query, that.postProblems)
+    // this.disableReport = true
+    that.hiddendangerData = []
+    queryDangerReport(query).then((res) => {
+      if (res.code !== 1) {
+        that.$message.error('获取隐患审核列表出错!')
+        return
+      }
+      //数据总数
+      that.pageInfo.tableTotal = res.result.total
+      that.hiddendangerData = res.result.records
+    })
+  }
+
+  //点击主页面查询按钮，获取接口数据渲染主页面表格
+  dangerCheckArrangeQuery() {
+    this.pageInfo.current = 1
+    this.getData()
+  }
+
+  //点击主页面上报审核按钮，确定上报后调用接口上传审核数据
+  dangerCheckReport() {
+    var that = this
+    console.log('隐患时间：' + that.auditForm.inspectionTime)
+    //获取当前登录人员
+    var auditUserId = that.$store.state.user.userId
+    if (that.strIsNull(auditUserId)) {
+      that.$message.error('获取当前审核人员失败!')
+      return
+    }
+    //组合审核相关数据
+    let time = [that.auditForm.planBegindate, that.auditForm.planEnddate]
+    if (that.auditForm.periodId == 3) {
+      time = [that.auditForm.planBegindate2, that.auditForm.planEnddate2]
+    }
+    let times = that.DateDiff(time, that.auditForm.periodId, that.auditForm.intervalDay) //获取时间段及时间间隔
+    ;[that.auditForm.planBegindate, that.auditForm.planEnddate, that.auditForm.intervalDay] = [
+      times.planBegindate,
+      times.planEnddate,
+      times.intervalDay
+    ]
+    var dangerId = that.auditForm.dangerId
+    if (that.strIsNull(dangerId)) {
+      that.$message.error('请选择需要审核的隐患')
+      return
+    }
+    if (that.strIsNull(that.auditForm.auditResult)) {
+      that.$message.error('请选择审核结果')
+      return
+    }
+    if (that.auditForm.isrespect == '1') {
+      if (that.strIsNull(that.auditForm.periodId)) {
+        that.$message.error('请选择巡检周期')
+        return
+      }
+
+      if (that.strIsNull(that.auditForm.inspectUsers.join(';'))) {
+        that.$message.error('请选择巡检人员')
+        return
+      }
+      if (that.strIsNull(that.auditForm.planBegindate)) {
+        that.$message.error('请选择计划开始时间')
+        return
+      }
+      if (that.strIsNull(that.auditForm.planEnddate)) {
+        that.$message.error('请选择计划结束时间')
+        return
+      }
+
+      // //校验计算开始巡检开始日期、结束日期是否一致
+      // if(that.auditForm.periodId==2){
+      //     let first=new Date(this.auditForm.planBegindate);
+      //     let second=new Date(this.auditForm.planEnddate);
+      //     //一周一巡
+      //     const datesAreOnSameDay = (first, second) =>
+      //       first.getFullYear() === second.getFullYear() &&
+      //       first.getMonth() === second.getMonth() &&
+      //       first.getDate() === second.getDate();
+
+      //     if(datesAreOnSameDay(first,second)){
+      //         that.$message.error("一周一巡起止日期错误,请重新选择")
+      //         return;
+      //     }
+      // }else if(that.auditForm.periodId==4){
+      //   if(that.strIsNull(that.auditForm.intervalDay)){
+      //     that.$message.error("自定义周期请输入间隔天数")
+      //     return;
+      //   }
+      //   let first=new Date(this.auditForm.planBegindate);
+      //   let second=new Date(this.auditForm.planEnddate);
+      //   //一周一巡
+      //   const datesAreOnSameDay = (first, second) =>
+      //     first.getFullYear() === second.getFullYear() &&
+      //     first.getMonth() === second.getMonth() &&
+      //     first.getDate() === second.getDate();
+      //   if(that.auditForm.intervalDay > 1 && datesAreOnSameDay(first,second) ){
+      //     that.$message.error("自定义周期起止日期和间隔日期不符,请重新选择")
+      //     return;
+      //   }
       // }
-      // mapV.goTo(gotoJson, { duration: 1000 });
-    }
-   
-    /*--------------------- 分页查询 ---------------*/
-    /**
-		 * @description 分页每页条数
-		 */
-		handleSizeChange(pageSize) {
-			this.pageInfo.size = pageSize
-			this.getData()
-		}
-		/**
-		 * @description 改变当前页
-		 */
-		handleCurrentChange(currentPage) {
-			this.pageInfo.current = currentPage
-			this.getData()
-		}
-
-    /*--------------------- 界面操作 ----------------*/
-		/**
-		 * @description 清除页面相关数据 => Map、表单数据
-		 */
-		clearPageInfo(){
-			
-			//表单数据
-			// this.dangerId = ""; //隐患主键编号
-      // this.isrespect = "0"; //是否需要人员巡查
-      // this.auditResult= undefined; //审核结果 1：通过；2：未通过
-      // this.auditNotes= "";   //审核意见
-      // this.templateServiceType= '02';    //审核类型:  02:隐患审核 03:隐患消除审核 
-      // this.inspectGroupId= undefined;    //巡检组
-      // this.inspectUsers= undefined;      //巡检人员(可多人)
-      // this.periodId= undefined;    //巡检周期
-      // this.intervalDay= undefined;   //间隔天数
-      // this.inspectionTime= undefined;     //起止时间
-      // this.planBegindate= undefined;     //计划开始时间
-      // this.planEnddate= undefined;     //计划结束时间
-      // this.planPercent= 100;   //计划完成率
-      // this.isDispatching= "1"; //是否自动派工 => 1 默认派工
-      // this.planType= "1";      //计划类型；0：计划性；1：隐患 2:工地 3:临时性任务
-      // this.inspectType= 14;  //巡查类型：14=隐患点
-      // this.planState= "0";   //巡检计划状态；0：未提交；1：未审核，2：未开始，3：正在执行 4：计划完成 5: 已开始未执行 7：申请暂停 8：计划已暂停 9：申请作废 10：计划已作废    
-      // this.totalCount= 1;    //总点数=> 隐患默认为1个
-      // this.totalLength= 1;   //记录计划任务情况（点是个数，线是长度）=> 隐患默认为1个
-		}
-
-    /*--------------------- API请求 ----------------*/
-
-    /**
-     * @description  双击事件
-     */
-    dblclick(e){
-      if(this.isCheak){
-        this.reportClick(e);
-      }else{
-        this.showTrouble(e);
-      }
     }
 
-    /**
-     * @description  审核派工
-     */
-		reportClick(e) {
-      const that = this
-      //主键编号
-			var dangerId = e.id;
-      that.auditForm.dangerId = dangerId;
-			//选中行
-			(that.$refs.table1 as ElTable).toggleRowSelection(e)
-      // //审核派工前初始化数据
-			// this.clearPageInfo();
-      //获取隐患展示的基础信息
-      that.$nextTick(() => {
-        that.getTroubleById(dangerId)
-      });
-		}
-
-    //获取主页面表格数据
-		getData() {
-			var that = this;
-			console.log("page参数："+JSON.stringify(that.pageInfo));
-			//追加分页参数
-      const query = that.pageInfo
-      delete query.auditResult;
-      if(this.isCheak){
-        query.auditResults='0'
-      }else{
-        query.auditResults='1,2'
-      }
-      that.postProblems.pipeName = that.problems.pipeName
-			that.postProblems.address = that.problems.address
-      that.postProblems.auditUser = this.$store.state.user.userId || ''
-      // that.getDateDiff()
-			if(!((!that.problems.startTime&&!that.problems.endTime)||(that.problems.startTime&&that.problems.endTime))){
-				this.$message.info("时间段请选择完整！");
-				return
-			}
-			that.postProblems.startDate=(that.problems.startTime?(that.problems.startTime+" 00:00:00"):"");
-			that.postProblems.endDate=(that.problems.endTime?(that.problems.endTime+" 23:59:59"):"");
-			if(that.strIsNull(that.postProblems.auditUser)){
-				that.$message.error("获取审核人失败!")
-				return;
-			}
-      Object.assign(query, that.postProblems)
-			// this.disableReport = true
-			that.hiddendangerData = []
-			queryDangerReport(query).then(res => {
-        if(res.code !== 1){
-          that.$message.error("获取隐患审核列表出错!")
-          return;
-        }
-				//数据总数
-				that.pageInfo.tableTotal = res.result.total
-				that.hiddendangerData = res.result.records
-			})
-		}
-
-		 //点击主页面查询按钮，获取接口数据渲染主页面表格
-		dangerCheckArrangeQuery() {
-			this.pageInfo.current=1
-			this.getData()
-		}
-
-    //点击主页面上报审核按钮，确定上报后调用接口上传审核数据
-    dangerCheckReport() {
-      var that = this
-      console.log("隐患时间："+ that.auditForm.inspectionTime)
-      //获取当前登录人员
-      var auditUserId = that.$store.state.user.userId 
-      if(that.strIsNull(auditUserId)){
-        that.$message.error("获取当前审核人员失败!")
-				return;
-      }
-      //组合审核相关数据
-      let time=[that.auditForm.planBegindate,that.auditForm.planEnddate];
-      if(that.auditForm.periodId==3){
-          time=[that.auditForm.planBegindate2,that.auditForm.planEnddate2];
-      };
-      let times=that.DateDiff(time,that.auditForm.periodId,that.auditForm.intervalDay);//获取时间段及时间间隔
-      [that.auditForm.planBegindate,that.auditForm.planEnddate,that.auditForm.intervalDay]=[times.planBegindate,times.planEnddate,times.intervalDay];
-      var dangerId = that.auditForm.dangerId
-      if(that.strIsNull(dangerId)){
-        that.$message.error("请选择需要审核的隐患")
-				return;
-      }
-      if(that.strIsNull(that.auditForm.auditResult)){
-        that.$message.error("请选择审核结果")
-				return;
-      }
-      if(that.auditForm.isrespect=="1"){
-        if(that.strIsNull(that.auditForm.periodId)){
-          that.$message.error("请选择巡检周期")
-          return;
-        }
-        
-        if(that.strIsNull(that.auditForm.inspectUsers.join(";"))){
-          that.$message.error("请选择巡检人员")
-          return;
-        }
-        if(that.strIsNull(that.auditForm.planBegindate)){
-          that.$message.error("请选择计划开始时间")
-          return;
-        }
-        if(that.strIsNull(that.auditForm.planEnddate)){
-          that.$message.error("请选择计划结束时间")
-          return;
-        }
-
-        // //校验计算开始巡检开始日期、结束日期是否一致
-        // if(that.auditForm.periodId==2){
-        //     let first=new Date(this.auditForm.planBegindate);
-        //     let second=new Date(this.auditForm.planEnddate);
-        //     //一周一巡
-        //     const datesAreOnSameDay = (first, second) =>
-        //       first.getFullYear() === second.getFullYear() &&
-        //       first.getMonth() === second.getMonth() &&
-        //       first.getDate() === second.getDate();
-
-        //     if(datesAreOnSameDay(first,second)){
-        //         that.$message.error("一周一巡起止日期错误,请重新选择")
-        //         return;
-        //     }
-        // }else if(that.auditForm.periodId==4){
-        //   if(that.strIsNull(that.auditForm.intervalDay)){
-        //     that.$message.error("自定义周期请输入间隔天数")
-        //     return;
-        //   }
-        //   let first=new Date(this.auditForm.planBegindate);
-        //   let second=new Date(this.auditForm.planEnddate);
-        //   //一周一巡
-        //   const datesAreOnSameDay = (first, second) =>
-        //     first.getFullYear() === second.getFullYear() &&
-        //     first.getMonth() === second.getMonth() &&
-        //     first.getDate() === second.getDate();
-        //   if(that.auditForm.intervalDay > 1 && datesAreOnSameDay(first,second) ){
-        //     that.$message.error("自定义周期起止日期和间隔日期不符,请重新选择")
-        //     return;
-        //   }
-        // }
-        
-      }
-
-      var auditModel = {
-        id: dangerId,    //选中的隐患ID
-        auditId: auditUserId,   //审核人员编号 => 登录人员
-        isrespect: that.auditForm.isrespect,     //是否需要巡查人员
-        auditNotes: that.auditForm.auditNotes,   //审核意见 备注
-        auditResult: that.auditForm.auditResult,   ////审核结果 1：通过；2：未通过
-        planDto:{
-          //巡检计划(含有点到位信息列表)
-          isDispatching: that.auditForm.isDispatching,    //自动派工
-          inspectGroupId: that.auditForm.inspectGroupId,    //巡检组id
-          inspectType: that.auditForm.inspectType,      //巡查类型
-          periodId: that.auditForm.periodId,      //巡检周期
-          inspectUsers: that.auditForm.inspectUsers.join(";"),    //巡检人员 多个逗号隔开
-          planBegindate: that.auditForm.planBegindate,    //计划开始时间
-          planEnddate: that.auditForm.planEnddate,    //计划结束时间
-          intervalDay: that.auditForm.intervalDay,    //间隔天数
-          // planPercent: that.auditForm.planPercent,    //计划完成率
-          planState: that.auditForm.planState,    //巡检计划状态；0：未提交；1：未审核，2：未开始，3：正在执行
-          planPercent: that.auditForm.planPercent,    //计划完成率
-          regionId: that.reportDetailForm.regionId,   //所属片区编码
-          regionName: that.reportDetailForm.regionName,   //片区名称
-          totalCount: that.auditForm.totalCount,    //总点数=> 隐患默认为1个
-          totalLength: that.auditForm.totalLength,    //记录计划任务情况（点是个数，线是长度）=> 隐患默认为1个
-          planTypeOverList:[{
-                        completionRate:that.auditForm.planPercent,
-                        typeId:that.auditForm.inspectType,
-                        typeName: "隐患点",
-                        totalCount:1
-                    }],
-          //巡检内容
-          inspectContents: JSON.stringify([{
+    var auditModel = {
+      id: dangerId, //选中的隐患ID
+      auditId: auditUserId, //审核人员编号 => 登录人员
+      isrespect: that.auditForm.isrespect, //是否需要巡查人员
+      auditNotes: that.auditForm.auditNotes, //审核意见 备注
+      auditResult: that.auditForm.auditResult, ////审核结果 1：通过；2：未通过
+      planDto: {
+        //巡检计划(含有点到位信息列表)
+        isDispatching: that.auditForm.isDispatching, //自动派工
+        inspectGroupId: that.auditForm.inspectGroupId, //巡检组id
+        inspectType: that.auditForm.inspectType, //巡查类型
+        periodId: that.auditForm.periodId, //巡检周期
+        inspectUsers: that.auditForm.inspectUsers.join(';'), //巡检人员 多个逗号隔开
+        planBegindate: that.auditForm.planBegindate, //计划开始时间
+        planEnddate: that.auditForm.planEnddate, //计划结束时间
+        intervalDay: that.auditForm.intervalDay, //间隔天数
+        // planPercent: that.auditForm.planPercent,    //计划完成率
+        planState: that.auditForm.planState, //巡检计划状态；0：未提交；1：未审核，2：未开始，3：正在执行
+        planPercent: that.auditForm.planPercent, //计划完成率
+        regionId: that.reportDetailForm.regionId, //所属片区编码
+        regionName: that.reportDetailForm.regionName, //片区名称
+        totalCount: that.auditForm.totalCount, //总点数=> 隐患默认为1个
+        totalLength: that.auditForm.totalLength, //记录计划任务情况（点是个数，线是长度）=> 隐患默认为1个
+        planTypeOverList: [
+          {
+            completionRate: that.auditForm.planPercent,
+            typeId: that.auditForm.inspectType,
+            typeName: '隐患点',
+            totalCount: 1
+          }
+        ],
+        //巡检内容
+        inspectContents: JSON.stringify([
+          {
             // geometryInfo: {
             //   points: [
             //     [that.reportDetailForm.lgtd,that.reportDetailForm.lttd]
@@ -813,158 +828,162 @@ export default class HiddendangerAuditAssignment extends Vue {
             // },
             // type:"xjyh",
             // ids:dangerId,
-            
 
-            typeId: that.auditForm.inspectType, 
-            layerName: "隐患点",
-            layerId:"",
-            data:[dangerId]
-          }]),
-          //点集合
-          pointTempList:[
-            {
-              geometry: JSON.stringify({
-                                    type: "point",
-                                    latitude: that.reportDetailForm.lttd,
-                                    longitude: that.reportDetailForm.lgtd,
-                                    spatialReference: that.data.mapView.spatialReference
-                            }),     //巡检点几何坐标信息
-              lng: that.reportDetailForm.lgtd, //经度坐标
-              lat: that.reportDetailForm.lttd, //纬度度坐标
-              pipeLength: 0,    //管线长度
+            typeId: that.auditForm.inspectType,
+            layerName: '隐患点',
+            layerId: '',
+            data: [dangerId]
+          }
+        ]),
+        //点集合
+        pointTempList: [
+          {
+            geometry: JSON.stringify({
+              type: 'point',
+              latitude: that.reportDetailForm.lttd,
+              longitude: that.reportDetailForm.lgtd,
+              spatialReference: that.data.mapView.spatialReference
+            }), //巡检点几何坐标信息
+            lng: that.reportDetailForm.lgtd, //经度坐标
+            lat: that.reportDetailForm.lttd, //纬度度坐标
+            pipeLength: 0, //管线长度
 
-              typeId: that.auditForm.inspectType, 
-              layerName: "隐患点",
-            }
-          ]
-        }
+            typeId: that.auditForm.inspectType,
+            layerName: '隐患点'
+          }
+        ]
       }
+    }
 
-      console.log("隐患参数："+JSON.stringify(auditModel))
+    console.log('隐患参数：' + JSON.stringify(auditModel))
 
-      //提交审核
-      let auditData=JSON.parse(JSON.stringify(auditModel))
+    //提交审核
+    let auditData = JSON.parse(JSON.stringify(auditModel))
 
-      if(that.auditForm.isrespect=='0'){
-        delete auditData.planDto
+    if (that.auditForm.isrespect == '0') {
+      delete auditData.planDto
+    }
+    reportDangerCheck(that.auditForm.templateServiceType, auditData).then((res) => {
+      if (res.code == -1) {
+        that.$message.error('上报审核出错,请重试')
+        return
+      } else {
+        that.$message({ message: '上报审核成功!', type: 'success' })
+        that.getData()
       }
-      reportDangerCheck(that.auditForm.templateServiceType,auditData).then(res => {
-        if(res.code==-1){
-          that.$message.error("上报审核出错,请重试");
-          return;
-        }else{
-          that.$message({ message: '上报审核成功!',type: 'success' });
-          that.getData();
-        }
-      })
-      that.auditDialog = false
-    }
+    })
+    that.auditDialog = false
+  }
 
-    //自定义开始时间的改变
-    changeCustomS(){
-        // let input=this.auditForm
-        // if(input.periodId== 4){
-        //     let timeSplit=24 * 60 * 60 * 1000 * parseInt(input.intervalDay - 1);
-        //     let planBegindate=new Date(input.planBegindate);
-        //     let nextDay = new Date(planBegindate.getTime() + timeSplit);
-        //     let nextDate = nextDay.getFullYear() + "-" + (nextDay.getMonth()+1) + "-" + nextDay.getDate();
-        //     input.planEnddate=nextDate;
-        // }
-    }
+  //自定义开始时间的改变
+  changeCustomS() {
+    // let input=this.auditForm
+    // if(input.periodId== 4){
+    //     let timeSplit=24 * 60 * 60 * 1000 * parseInt(input.intervalDay - 1);
+    //     let planBegindate=new Date(input.planBegindate);
+    //     let nextDay = new Date(planBegindate.getTime() + timeSplit);
+    //     let nextDate = nextDay.getFullYear() + "-" + (nextDay.getMonth()+1) + "-" + nextDay.getDate();
+    //     input.planEnddate=nextDate;
+    // }
+  }
 
-    //自定义结束时间的改变
-    changeCustomE(){
-        // let input=this.auditForm;
-        // if(input.periodId== 4){
-        //     let timeSplit=24 * 60 * 60 * 1000 * parseInt(input.intervalDay - 1);
-        //     let planEnddate=new Date(input.planEnddate);
-        //     let nextDay = new Date(planEnddate - timeSplit);
-        //     let nextDate = nextDay.getFullYear() + "-" + (nextDay.getMonth()+1) + "-" + nextDay.getDate();
-        //     input.planBegindate=nextDate;
-        // }
-    }
+  //自定义结束时间的改变
+  changeCustomE() {
+    // let input=this.auditForm;
+    // if(input.periodId== 4){
+    //     let timeSplit=24 * 60 * 60 * 1000 * parseInt(input.intervalDay - 1);
+    //     let planEnddate=new Date(input.planEnddate);
+    //     let nextDay = new Date(planEnddate - timeSplit);
+    //     let nextDate = nextDay.getFullYear() + "-" + (nextDay.getMonth()+1) + "-" + nextDay.getDate();
+    //     input.planBegindate=nextDate;
+    // }
+  }
 
-  
-    // 获取下个月的全日期
-    getNextTime(time) {
-        const nextMonthString = time.split('-')[0] + '-' + (parseInt(time.split('-')[1]) + 1) + '-01'
-        const date = new Date(new Date(nextMonthString).getTime() - 8.64e7)
-        const year = date.getFullYear()
-        const month = date.getMonth() + 1
-        const day = date.getDate()
-        return year + '-' + month + '-' + day + ' 23:59:59'
-  	}
+  // 获取下个月的全日期
+  getNextTime(time) {
+    const nextMonthString = time.split('-')[0] + '-' + (parseInt(time.split('-')[1]) + 1) + '-01'
+    const date = new Date(new Date(nextMonthString).getTime() - 8.64e7)
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    return year + '-' + month + '-' + day + ' 23:59:59'
+  }
 
   /**
-     * 计算间隔天数,设置计划开始时间和计划结束时间
-    */
-    DateDiff(dayPlanTime,periodId,periodDay){
-        let planBegindate=null;
-        let planEnddate=null;
-        let intervalDay=0;
-        if(periodId != 3){
-            planBegindate=dayPlanTime[0]+" 00:00:00";
-            planEnddate=dayPlanTime[1].split(' ')[0]+" 23:59:59";
-        }else{
-					  planBegindate=dayPlanTime[0]+"-01 00:00:00";
-            planEnddate=this.getNextTime(dayPlanTime[1])
-        }
-        if(periodId == 1) { //一天一巡
-            intervalDay=1;
-        } else if(periodId == 2) { //一周一巡
-            intervalDay=7;
-        } else if(periodId == 3) { //一月一巡
-            intervalDay=0;
-        } else if(periodId == 4) { //自定义
-            intervalDay=periodDay
-        }
-        return{
-            planBegindate:planBegindate,
-            planEnddate:planEnddate,
-            intervalDay:intervalDay
-        }
+   * 计算间隔天数,设置计划开始时间和计划结束时间
+   */
+  DateDiff(dayPlanTime, periodId, periodDay) {
+    let planBegindate = null
+    let planEnddate = null
+    let intervalDay = 0
+    if (periodId != 3) {
+      planBegindate = dayPlanTime[0] + ' 00:00:00'
+      planEnddate = dayPlanTime[1].split(' ')[0] + ' 23:59:59'
+    } else {
+      planBegindate = dayPlanTime[0] + '-01 00:00:00'
+      planEnddate = this.getNextTime(dayPlanTime[1])
     }
-
-    /**
-     * @description 时间选择器切换
-     */
-    changeDate(show){
-        if(show){
-            this.dateShow.moreDate=true;
-            this.dateShow.singeDate=false;          
-        }else{
-            this.dateShow.moreDate=false;
-            this.dateShow.singeDate=true; 
-        }
+    if (periodId == 1) {
+      //一天一巡
+      intervalDay = 1
+    } else if (periodId == 2) {
+      //一周一巡
+      intervalDay = 7
+    } else if (periodId == 3) {
+      //一月一巡
+      intervalDay = 0
+    } else if (periodId == 4) {
+      //自定义
+      intervalDay = periodDay
     }
+    return {
+      planBegindate: planBegindate,
+      planEnddate: planEnddate,
+      intervalDay: intervalDay
+    }
+  }
 
-    //获取巡检分组及分组人员
-		getGroupUserMap(){
-      var that = this
-      let data={
-          size:10000,
-          current:1,
-          enableFlag:1
-      }
-			queryGroupUserMap(data).then(res => {
-          if(res.code !== 1){
-            that.$message.error("获取分组信息出错")
-            return;
-          }
-          var groupUserVoList = res.result.groupUserVoList    //分组信息
-          var groupUserDeptVoList = res.result.groupUserDeptVoList    //部门用户
-          
-        if(that.arrayIsNull(groupUserVoList) && that.arrayIsNull(groupUserDeptVoList)){
-            that.$message.error("获取分组信息出错")
-            return;
+  /**
+   * @description 时间选择器切换
+   */
+  changeDate(show) {
+    if (show) {
+      this.dateShow.moreDate = true
+      this.dateShow.singeDate = false
+    } else {
+      this.dateShow.moreDate = false
+      this.dateShow.singeDate = true
+    }
+  }
+
+  //获取巡检分组及分组人员
+  getGroupUserMap() {
+    var that = this
+    let data = {
+      size: 10000,
+      current: 1,
+      enableFlag: 1
+    }
+    queryGroupUserMap(data)
+      .then((res) => {
+        if (res.code !== 1) {
+          that.$message.error('获取分组信息出错')
+          return
         }
-        if(that.arrayIsNull(groupUserVoList) && !that.arrayIsNull(groupUserDeptVoList)){
+        var groupUserVoList = res.result.groupUserVoList //分组信息
+        var groupUserDeptVoList = res.result.groupUserDeptVoList //部门用户
+
+        if (that.arrayIsNull(groupUserVoList) && that.arrayIsNull(groupUserDeptVoList)) {
+          that.$message.error('获取分组信息出错')
+          return
+        }
+        if (that.arrayIsNull(groupUserVoList) && !that.arrayIsNull(groupUserDeptVoList)) {
           //分组为空，部门用户信息不为空
-          that.groupData.push({ id:'',name:'全部' })
+          that.groupData.push({ id: '', name: '全部' })
           var deptUserData = []
-          groupUserDeptVoList.forEach(element => {
+          groupUserDeptVoList.forEach((element) => {
             deptUserData.push({
-              userId:element.userId,
+              userId: element.userId,
               userIdName: element.userName
             })
           })
@@ -974,16 +993,15 @@ export default class HiddendangerAuditAssignment extends Vue {
             groupName: '全部',
             data: deptUserData
           })
+        } else if (!that.arrayIsNull(groupUserVoList) && !that.arrayIsNull(groupUserDeptVoList)) {
+          //获取组合后的数据
+          that.groupDeptUser = that.arrayGroupUser(groupUserVoList)
 
-        }else if(!that.arrayIsNull(groupUserVoList) && !that.arrayIsNull(groupUserDeptVoList)){
-            //获取组合后的数据
-            that.groupDeptUser = that.arrayGroupUser(groupUserVoList);
-
-           //分组不为空，部门用户信息也不为空，表示当前登录人员不在巡检组中，增加全部
-           var deptUserData = []
-           groupUserDeptVoList.forEach(element => {
-             deptUserData.push({
-              userId:element.userId,
+          //分组不为空，部门用户信息也不为空，表示当前登录人员不在巡检组中，增加全部
+          var deptUserData = []
+          groupUserDeptVoList.forEach((element) => {
+            deptUserData.push({
+              userId: element.userId,
               userIdName: element.userName
             })
           })
@@ -993,398 +1011,395 @@ export default class HiddendangerAuditAssignment extends Vue {
             groupName: '全部',
             data: deptUserData
           })
-        }else if(!that.arrayIsNull(groupUserVoList) && that.arrayIsNull(groupUserDeptVoList)){
+        } else if (!that.arrayIsNull(groupUserVoList) && that.arrayIsNull(groupUserDeptVoList)) {
           //分组不为空，部门用户信息为空，表示当前登录人员在巡检组中
-          that.groupDeptUser = that.arrayGroupUser(groupUserVoList);
+          that.groupDeptUser = that.arrayGroupUser(groupUserVoList)
         }
 
-        console.log("参数："+JSON.stringify(that.groupDeptUser))
+        console.log('参数：' + JSON.stringify(that.groupDeptUser))
         //利用组合后的参数，拆分巡检组 和 巡检人
         that.groupDeptUser.forEach((element, index) => {
           that.groupData.push({
             groupId: element.groupId,
-            groupName: element.groupName,
+            groupName: element.groupName
           })
-          if(index===0){
+          if (index === 0) {
             //默认显示第一个
             that.userData = element.data
           }
         })
-
-			}).catch(err => {
-				console.log(err);
-			})
-		}
-
-    /**
-     * @description 巡检周期
-     */
-    getPeriodData(){
-      var that = this
-      queryPeriod({}).then(res => {
-        if(res.code !== 1){
-           that.$message.error("获取巡检周期出错!")
-          return;
-        }
-				this.periodData = res.result.records
-			})
-    }
-    
-    /**
-     * @description 组合当前分组用户信息
-     */
-    arrayGroupUser(aryList){
-      let map = {}
-
-      for (let i = 0; i < aryList.length; i++) {
-          let ai = aryList[i]
-          if (!map[ai.groupId]) {
-              map[ai.groupId] = [{userId:ai.userId,userIdName:ai.userIdName}]
-              map[ai.groupId].groupName = ai.groupName;
-          } else {
-              map[ai.groupId].push({userId:ai.userId,userIdName:ai.userIdName})
-              map[ai.groupId].groupName = ai.groupName;
-          }
-      }
-      let res = []
-      Object.keys(map).forEach(key => {
-          res.push({
-              groupId: key,
-              groupName:map[key].groupName,
-              data: map[key],
-          })
       })
-      return res;
-    }
+      .catch((err) => {
+        console.log(err)
+      })
+  }
 
-    /**
-     * @description 判断数组是否为空
-     */
-    arrayIsNull(aryList) {
-      return (typeof(aryList) == "undefined" || aryList == null || aryList.length == 0);
-    }
-
-
-    /**
-		 * @description 审核结果 change事件
-		 */
-		changeAuditResult(auditStatus){
-			console.log("审核结果："+auditStatus)
-			if(auditStatus==="2"){		//审核不通过，不需要派工、巡查
-				this.isrespect = false
-				// this.isdispatching = false
-				this.isxjshow = false
-				this.auditForm.isrespect = "0"
-				// this.auditForm.isDispatching = "0"
-			}else{
-				this.isrespect = true
-				// this.isdispatching = false
-				this.isxjshow = false
-				this.auditForm.isrespect = "0"
-				// this.auditForm.isDispatching = "1"
-			}
-		}
-
-		/**
-		 * @description 是否需要巡检人员 change事件
-		 */
-		changeIsRespect(isrespect){
-			if(isrespect === "0"){
-				this.isxjshow = false
-				// this.isdispatching = false
-				// this.auditForm.isDispatching = "0"
-			}else{
-				this.isxjshow = true
-				// this.isdispatching = true
-				// this.auditForm.isDispatching = "1"
-			}
-		}
-
-    /**
-     * @description 巡检组 change事件
-     */
-    changeGroupData(groupId){
-      //根据选择项，选择项中的巡检人员
-      var newAryList = this.groupDeptUser.filter(item => item.groupId == groupId )
-      if(newAryList.length>0){
-        this.userData = newAryList[0].data;
-      }else{
-        this.userData = []
+  /**
+   * @description 巡检周期
+   */
+  getPeriodData() {
+    var that = this
+    queryPeriod({}).then((res) => {
+      if (res.code !== 1) {
+        that.$message.error('获取巡检周期出错!')
+        return
       }
+      this.periodData = res.result.records
+    })
+  }
 
-      this.auditForm.inspectGroupId = groupId
-    }
+  /**
+   * @description 组合当前分组用户信息
+   */
+  arrayGroupUser(aryList) {
+    let map = {}
 
-    /**
-     * @description 巡检周期 change事件
-     */
-    changePeriodId(periodId){
-        console.log("周期："+periodId)
-        var obj = {};
-        obj = this.periodData.find(function(item) {
-          return item.id == periodId;
-        });
-        let input =this.auditForm;
-        //input.planBegindatePick.onPick = item => { };
-        //input.planEnddatePick.onPick = item => { };
-        input.planBegindatePick.disabledDate = item => { };
-        input.planEnddatePick.disabledDate = item => { };
-				input.planBegindate2Pick.disabledDate = item => { };
-				input.planEnddate2Pick.disabledDate=item=>{};
-        input.planBegindate="";
-				input.planBegindate2="";
-				input.planEnddate2="";
-        input.planEnddate="";
-        //禁用时间控件
-        if(periodId == 1) {
-          //一天一巡
-          this.changeDate(true);
-          //只能选择当天及以后并且小于等于结束时间
-          input.planBegindatePick.disabledDate=time =>{
-              let greaterThanNew=(time.getTime() < Date.now() - 8.64e7);//大于等于当前
-              if(input.planEnddate){
-                  let lessThanEnd=(time.getTime() >=new Date(input.planEnddate));//小于等于最后一天
-                  return lessThanEnd||greaterThanNew;
-              }else{
-                  return greaterThanNew;
-              }
-          };
-          //只能选择当天及以后并且大于等于结束时间
-          input.planEnddatePick.disabledDate=time=>{ 
-              let greaterThanNew=(time.getTime() < Date.now() - 8.64e7);//大于等于当前
-              if(input.planBegindate){
-                  let greaterThanStart=(new Date(input.planBegindate).getTime()-1000*60*60*24>time.getTime());//大于等于开始时间
-                  return  greaterThanStart||greaterThanNew;
-              }else{
-                  return greaterThanNew;
-              }
-          }
-        } else if(periodId == 2) {
-             //一周一巡
-            this.changeDate(true);
-            let dayList=this.getTime();
-            // let mondayTime = new Date(dayList.mondayTime).getDay();
-            // let sundayTime = new Date(dayList.sundayTime).getDay();
-            input.planBegindatePick.disabledDate=time=>{
-                let greaterThanNew=(time.getTime() < Date.now() - 8.64e7);//大于等于当前
-                // let isMonDay=(time.getDay() != mondayTime);//是否是周一
-                if(input.planEnddate){
-                    let lessThanEnd=new Date(input.planEnddate)>time.getTime();//小于等于最后一天
-                    return  greaterThanNew||!lessThanEnd
-                }else{
-                    return greaterThanNew
-                }
-            }
-            input.planEnddatePick.disabledDate=time=>{
-                let greaterThanNew=(time.getTime() < Date.now() - 8.64e7);//大于等于当前
-                // let isSunDay= (time.getDay() != sundayTime);//是否是周天
-                if(input.planBegindate){
-                    let greaterThanStart=(new Date(input.planBegindate).getTime()-1000*60*60*24>time.getTime());//大于等于开始时间
-                    return greaterThanNew||greaterThanStart;
-                }else{
-                    return greaterThanNew;
-                }
-            }
-        } else if(periodId == 3) {
-            //一月一巡
-          this.changeDate(false);
-          //一月一巡
-						input.planBegindate2Pick.disabledDate=time =>{
-								let greaterThanNew=(time.getTime() < Date.now() - 8.64e7);//大于等于当前
-								if(input.planEnddate2){
-										let lessThanEnd=(time.getTime() >=new Date(input.planEnddate2));//小于等于最后一天
-										return lessThanEnd||greaterThanNew;
-								}else{
-										return greaterThanNew;
-								}
-						};
-							//只能选择当天及以后并且大于等于结束时间
-						input.planEnddate2Pick.disabledDate=time=>{ 
-								let greaterThanNew=(time.getTime() < Date.now() - 8.64e7);//大于等于当前
-								if(input.planBegindate2){
-										let greaterThanStart=(new Date(input.planBegindate2).getTime()-1000*60*60*24>time.getTime());//大于等于开始时间
-										return  greaterThanStart||greaterThanNew;
-								}else{
-										return greaterThanNew;
-								}
-						}
-        } else if(periodId == 4) {	
-          this.changeDate(true);
-          input.intervalDay="";
-          input.planBegindatePick.disabledDate=time =>{
-                let greaterThanNew=(time.getTime() < Date.now() - 8.64e7);//大于等于当前
-                if(input.planEnddate){
-                    let lessThanEnd=(time.getTime() >=new Date(input.planEnddate));//小于等于最后一天
-                    return lessThanEnd||greaterThanNew;
-                }else{
-                    return greaterThanNew;
-                }
-            };
-              //只能选择当天及以后并且大于等于结束时间
-            input.planEnddatePick.disabledDate=time=>{ 
-                let greaterThanNew=(time.getTime() < Date.now() - 8.64e7);//大于等于当前
-                if(input.planBegindate){
-                    let greaterThanStart=(new Date(input.planBegindate).getTime()-1000*60*60*24>time.getTime());//大于等于开始时间
-                    return  greaterThanStart||greaterThanNew;
-                }else{
-                    return greaterThanNew;
-                }
-            }
-          }
-    }
-
-    //获取本周的周一和周末
-    getTime(){
-        var now = new Date();
-        var nowTime = now.getTime() ;
-        var day = now.getDay();
-        var oneDayTime = 24*60*60*1000 ;
-        if(day==1){
-            nowTime=nowTime-oneDayTime;
-            day=7;
-        }
-        var MondayTime = nowTime - (day-1)*oneDayTime ;//显示周一
-        var SundayTime =  nowTime + (7-day)*oneDayTime ;//显示周日
-        return{
-            mondayTime:MondayTime,
-            sundayTime:SundayTime
-        }
-    }
-
-
-    /**
-	   * @description 获取隐患信息
-	   */
-	  getTroubleById(troubleId){
-		  var that = this
-		  // that.reportDetailForm = {}
-		  //this.disableReport = true
-		  getHiddenDangerId(troubleId).then(res => {
-        // console.log("隐患上报："+JSON.stringify(res))
-        if(res.code==-1){
-          that.$message.error(res.message);
-          return;
-        }
-        var result = res.result;
-        console.log("隐患上报："+JSON.stringify(result))
-        //隐患基础信息
-        var troubleVo = result.troubleVo		//隐患基础信息
-        
-       
-        /*------------- 隐患基础信息 ------------*/
-        that.reportDetailForm.pipeName = troubleVo.pipeName	//管线名称
-        that.reportDetailForm.location = troubleVo.location 	//隐患部位
-        that.reportDetailForm.typeName = troubleVo.typeName //隐患原因
-        that.reportDetailForm.toubleRangeName = troubleVo.toubleRangeName //隐患等级
-        that.reportDetailForm.address = troubleVo.address	//隐患地址
-        that.reportDetailForm.regionId = troubleVo.regionId //隐患所在片区
-        that.reportDetailForm.regionName = troubleVo.regionName //隐患所在片区
-
-  	    that.reportDetailForm.submitUserName = troubleVo.submitUserName  //隐患上报人名称
-				that.reportDetailForm.submitTime = troubleVo.submitTime  //隐患上报时间
-
-        that.reportDetailForm.notes = troubleVo.notes	//隐患原因备注
-        that.reportDetailForm.isbuild = troubleVo.isbuild	//是否进入工地
-        that.reportDetailForm.suggest = troubleVo.suggest	//消除隐患建议
-        
-        //经纬度坐标，地图点定位
-        that.reportDetailForm.lgtd = troubleVo.lgtd		//经度
-        that.reportDetailForm.lttd = troubleVo.lttd		//纬度
-       
-        //获取工地的详情
-        that.getBuildById(troubleVo.buildId);
-
-       
-        //清空图片
-        that.getFilePaths(troubleVo.filePathList);		//图片信息
-
-        that.drawPoint(that.reportDetailForm.lgtd ,that.reportDetailForm.lttd)
-
-        that.auditDialog = true
-        that.$nextTick(that.loadMap)
-		  })
-	  }
-
-    /**
-	 * @description 获取工地详情
-	 */
-	  getBuildById(buildId){
-		  var that = this
-			if(that.strIsNull(buildId)){
-			  return;
-		  }
-
-		  getHiddenDangerBuildId(buildId).then(res => {
-        if(res.code !== 1){
-          that.$message.error("获取工地信息错误")
-          return;
-        }
-        var result = res.result;
-        //工地基础信息
-        var buildVo = result.buildVo		//隐患基础信息
-        if(!that.arrayIsNull(buildVo)){
-          that.reportDetailForm.sgdw = buildVo.sgdw	//施工单位名称
-          that.reportDetailForm.gdfzr = buildVo.gdfzr	//施工负责人
-          that.reportDetailForm.phone = buildVo.phone	//联系电话
-        }
-		  });
-	  }
-
-    /**
-		 * @description 附件处理
-		 */
-		getFilePaths(filePathList){
-			var that = this
-      that.filelist = []
-      that.audioFileList = []
-      if(that.arrayIsNull(filePathList)){
-        return;
+    for (let i = 0; i < aryList.length; i++) {
+      let ai = aryList[i]
+      if (!map[ai.groupId]) {
+        map[ai.groupId] = [{ userId: ai.userId, userIdName: ai.userIdName }]
+        map[ai.groupId].groupName = ai.groupName
+      } else {
+        map[ai.groupId].push({ userId: ai.userId, userIdName: ai.userIdName })
+        map[ai.groupId].groupName = ai.groupName
       }
-			var token = that.$store.state.user.token;
-			
-			filePathList.map(es => {
-        //判断后缀，是否是语音文件
-        let esuffixt = es.substr(es.lastIndexOf(".")+1)
-        if(esuffixt==='amr'){
-          let audioPath = `${IP}/base/file/loadAudio?remotePath=${es}&access_token=${token}`
-				  that.audioFileList.push(audioPath)
-        }
-        if(esuffixt==='jpeg' || esuffixt==='png' || esuffixt==='jpg'){
-          let imagePath = `${IP}/base/file/loadImg?remotePath=${es}&access_token=${token}`
-          that.filelist.push(imagePath)
-        }
-				// getFileImg(token,es).then(src => {
-				// if (src) {
-				// 	var reader = new FileReader();
-				// 	reader.readAsDataURL(src);
-				// 	reader.onload = (s) => that.filelist.push(s.target.result)
-				// }
-				// else 
-				// 	this.$message.error('工地图片加载失败：' + src.message)
-				// })
-			})
-		}
+    }
+    let res = []
+    Object.keys(map).forEach((key) => {
+      res.push({
+        groupId: key,
+        groupName: map[key].groupName,
+        data: map[key]
+      })
+    })
+    return res
+  }
 
-    /**
-		 * @description 判断字符串是否为空
-		 */
-		strIsNull(strVal){
-			strVal = strVal || ''
-			return (typeof(strVal) == "undefined" || strVal == null || strVal == "");
-		}
+  /**
+   * @description 判断数组是否为空
+   */
+  arrayIsNull(aryList) {
+    return typeof aryList == 'undefined' || aryList == null || aryList.length == 0
+  }
 
-    /*------------------ 查看详情 -------------------*/
-		/**
-		 * @description 查看隐患详情
-		 */
-		showTrouble(e){
-			var id =e.id;
-			this.dialogDetail = true;
-			this.troubleAry = {
-				troubleId:id,
-				optionType:"1"			//1=>详情，2=审核操作
-			}
-		}
+  /**
+   * @description 审核结果 change事件
+   */
+  changeAuditResult(auditStatus) {
+    console.log('审核结果：' + auditStatus)
+    if (auditStatus === '2') {
+      //审核不通过，不需要派工、巡查
+      this.isrespect = false
+      // this.isdispatching = false
+      this.isxjshow = false
+      this.auditForm.isrespect = '0'
+      // this.auditForm.isDispatching = "0"
+    } else {
+      this.isrespect = true
+      // this.isdispatching = false
+      this.isxjshow = false
+      this.auditForm.isrespect = '0'
+      // this.auditForm.isDispatching = "1"
+    }
+  }
+
+  /**
+   * @description 是否需要巡检人员 change事件
+   */
+  changeIsRespect(isrespect) {
+    if (isrespect === '0') {
+      this.isxjshow = false
+      // this.isdispatching = false
+      // this.auditForm.isDispatching = "0"
+    } else {
+      this.isxjshow = true
+      // this.isdispatching = true
+      // this.auditForm.isDispatching = "1"
+    }
+  }
+
+  /**
+   * @description 巡检组 change事件
+   */
+  changeGroupData(groupId) {
+    //根据选择项，选择项中的巡检人员
+    var newAryList = this.groupDeptUser.filter((item) => item.groupId == groupId)
+    if (newAryList.length > 0) {
+      this.userData = newAryList[0].data
+    } else {
+      this.userData = []
+    }
+
+    this.auditForm.inspectGroupId = groupId
+  }
+
+  /**
+   * @description 巡检周期 change事件
+   */
+  changePeriodId(periodId) {
+    console.log('周期：' + periodId)
+    var obj = {}
+    obj = this.periodData.find(function (item) {
+      return item.id == periodId
+    })
+    let input = this.auditForm
+    //input.planBegindatePick.onPick = item => { };
+    //input.planEnddatePick.onPick = item => { };
+    input.planBegindatePick.disabledDate = (item) => {}
+    input.planEnddatePick.disabledDate = (item) => {}
+    input.planBegindate2Pick.disabledDate = (item) => {}
+    input.planEnddate2Pick.disabledDate = (item) => {}
+    input.planBegindate = ''
+    input.planBegindate2 = ''
+    input.planEnddate2 = ''
+    input.planEnddate = ''
+    //禁用时间控件
+    if (periodId == 1) {
+      //一天一巡
+      this.changeDate(true)
+      //只能选择当天及以后并且小于等于结束时间
+      input.planBegindatePick.disabledDate = (time) => {
+        let greaterThanNew = time.getTime() < Date.now() - 8.64e7 //大于等于当前
+        if (input.planEnddate) {
+          let lessThanEnd = time.getTime() >= new Date(input.planEnddate) //小于等于最后一天
+          return lessThanEnd || greaterThanNew
+        } else {
+          return greaterThanNew
+        }
+      }
+      //只能选择当天及以后并且大于等于结束时间
+      input.planEnddatePick.disabledDate = (time) => {
+        let greaterThanNew = time.getTime() < Date.now() - 8.64e7 //大于等于当前
+        if (input.planBegindate) {
+          let greaterThanStart = new Date(input.planBegindate).getTime() - 1000 * 60 * 60 * 24 > time.getTime() //大于等于开始时间
+          return greaterThanStart || greaterThanNew
+        } else {
+          return greaterThanNew
+        }
+      }
+    } else if (periodId == 2) {
+      //一周一巡
+      this.changeDate(true)
+      let dayList = this.getTime()
+      // let mondayTime = new Date(dayList.mondayTime).getDay();
+      // let sundayTime = new Date(dayList.sundayTime).getDay();
+      input.planBegindatePick.disabledDate = (time) => {
+        let greaterThanNew = time.getTime() < Date.now() - 8.64e7 //大于等于当前
+        // let isMonDay=(time.getDay() != mondayTime);//是否是周一
+        if (input.planEnddate) {
+          let lessThanEnd = new Date(input.planEnddate) > time.getTime() //小于等于最后一天
+          return greaterThanNew || !lessThanEnd
+        } else {
+          return greaterThanNew
+        }
+      }
+      input.planEnddatePick.disabledDate = (time) => {
+        let greaterThanNew = time.getTime() < Date.now() - 8.64e7 //大于等于当前
+        // let isSunDay= (time.getDay() != sundayTime);//是否是周天
+        if (input.planBegindate) {
+          let greaterThanStart = new Date(input.planBegindate).getTime() - 1000 * 60 * 60 * 24 > time.getTime() //大于等于开始时间
+          return greaterThanNew || greaterThanStart
+        } else {
+          return greaterThanNew
+        }
+      }
+    } else if (periodId == 3) {
+      //一月一巡
+      this.changeDate(false)
+      //一月一巡
+      input.planBegindate2Pick.disabledDate = (time) => {
+        let greaterThanNew = time.getTime() < Date.now() - 8.64e7 //大于等于当前
+        if (input.planEnddate2) {
+          let lessThanEnd = time.getTime() >= new Date(input.planEnddate2) //小于等于最后一天
+          return lessThanEnd || greaterThanNew
+        } else {
+          return greaterThanNew
+        }
+      }
+      //只能选择当天及以后并且大于等于结束时间
+      input.planEnddate2Pick.disabledDate = (time) => {
+        let greaterThanNew = time.getTime() < Date.now() - 8.64e7 //大于等于当前
+        if (input.planBegindate2) {
+          let greaterThanStart = new Date(input.planBegindate2).getTime() - 1000 * 60 * 60 * 24 > time.getTime() //大于等于开始时间
+          return greaterThanStart || greaterThanNew
+        } else {
+          return greaterThanNew
+        }
+      }
+    } else if (periodId == 4) {
+      this.changeDate(true)
+      input.intervalDay = ''
+      input.planBegindatePick.disabledDate = (time) => {
+        let greaterThanNew = time.getTime() < Date.now() - 8.64e7 //大于等于当前
+        if (input.planEnddate) {
+          let lessThanEnd = time.getTime() >= new Date(input.planEnddate) //小于等于最后一天
+          return lessThanEnd || greaterThanNew
+        } else {
+          return greaterThanNew
+        }
+      }
+      //只能选择当天及以后并且大于等于结束时间
+      input.planEnddatePick.disabledDate = (time) => {
+        let greaterThanNew = time.getTime() < Date.now() - 8.64e7 //大于等于当前
+        if (input.planBegindate) {
+          let greaterThanStart = new Date(input.planBegindate).getTime() - 1000 * 60 * 60 * 24 > time.getTime() //大于等于开始时间
+          return greaterThanStart || greaterThanNew
+        } else {
+          return greaterThanNew
+        }
+      }
+    }
+  }
+
+  //获取本周的周一和周末
+  getTime() {
+    var now = new Date()
+    var nowTime = now.getTime()
+    var day = now.getDay()
+    var oneDayTime = 24 * 60 * 60 * 1000
+    if (day == 1) {
+      nowTime = nowTime - oneDayTime
+      day = 7
+    }
+    var MondayTime = nowTime - (day - 1) * oneDayTime //显示周一
+    var SundayTime = nowTime + (7 - day) * oneDayTime //显示周日
+    return {
+      mondayTime: MondayTime,
+      sundayTime: SundayTime
+    }
+  }
+
+  /**
+   * @description 获取隐患信息
+   */
+  getTroubleById(troubleId) {
+    var that = this
+    // that.reportDetailForm = {}
+    //this.disableReport = true
+    getHiddenDangerId(troubleId).then((res) => {
+      // console.log("隐患上报："+JSON.stringify(res))
+      if (res.code == -1) {
+        that.$message.error(res.message)
+        return
+      }
+      var result = res.result
+      console.log('隐患上报：' + JSON.stringify(result))
+      //隐患基础信息
+      var troubleVo = result.troubleVo //隐患基础信息
+
+      /*------------- 隐患基础信息 ------------*/
+      that.reportDetailForm.pipeName = troubleVo.pipeName //管线名称
+      that.reportDetailForm.location = troubleVo.location //隐患部位
+      that.reportDetailForm.typeName = troubleVo.typeName //隐患原因
+      that.reportDetailForm.toubleRangeName = troubleVo.toubleRangeName //隐患等级
+      that.reportDetailForm.address = troubleVo.address //隐患地址
+      that.reportDetailForm.regionId = troubleVo.regionId //隐患所在片区
+      that.reportDetailForm.regionName = troubleVo.regionName //隐患所在片区
+
+      that.reportDetailForm.submitUserName = troubleVo.submitUserName //隐患上报人名称
+      that.reportDetailForm.submitTime = troubleVo.submitTime //隐患上报时间
+
+      that.reportDetailForm.notes = troubleVo.notes //隐患原因备注
+      that.reportDetailForm.isbuild = troubleVo.isbuild //是否进入工地
+      that.reportDetailForm.suggest = troubleVo.suggest //消除隐患建议
+
+      //经纬度坐标，地图点定位
+      that.reportDetailForm.lgtd = troubleVo.lgtd //经度
+      that.reportDetailForm.lttd = troubleVo.lttd //纬度
+
+      //获取工地的详情
+      that.getBuildById(troubleVo.buildId)
+
+      //清空图片
+      that.getFilePaths(troubleVo.filePathList) //图片信息
+
+      that.drawPoint(that.reportDetailForm.lgtd, that.reportDetailForm.lttd)
+
+      that.auditDialog = true
+      that.$nextTick(that.loadMap)
+    })
+  }
+
+  /**
+   * @description 获取工地详情
+   */
+  getBuildById(buildId) {
+    var that = this
+    if (that.strIsNull(buildId)) {
+      return
+    }
+
+    getHiddenDangerBuildId(buildId).then((res) => {
+      if (res.code !== 1) {
+        that.$message.error('获取工地信息错误')
+        return
+      }
+      var result = res.result
+      //工地基础信息
+      var buildVo = result.buildVo //隐患基础信息
+      if (!that.arrayIsNull(buildVo)) {
+        that.reportDetailForm.sgdw = buildVo.sgdw //施工单位名称
+        that.reportDetailForm.gdfzr = buildVo.gdfzr //施工负责人
+        that.reportDetailForm.phone = buildVo.phone //联系电话
+      }
+    })
+  }
+
+  /**
+   * @description 附件处理
+   */
+  getFilePaths(filePathList) {
+    var that = this
+    that.filelist = []
+    that.audioFileList = []
+    if (that.arrayIsNull(filePathList)) {
+      return
+    }
+    var token = that.$store.state.user.token
+
+    filePathList.map((es) => {
+      //判断后缀，是否是语音文件
+      let esuffixt = es.substr(es.lastIndexOf('.') + 1)
+      if (esuffixt === 'amr') {
+        let audioPath = `${IP}/base/file/loadAudio?remotePath=${es}&access_token=${token}`
+        that.audioFileList.push(audioPath)
+      }
+      if (esuffixt === 'jpeg' || esuffixt === 'png' || esuffixt === 'jpg') {
+        let imagePath = `${IP}/base/file/loadImg?remotePath=${es}&access_token=${token}`
+        that.filelist.push(imagePath)
+      }
+      // getFileImg(token,es).then(src => {
+      // if (src) {
+      // 	var reader = new FileReader();
+      // 	reader.readAsDataURL(src);
+      // 	reader.onload = (s) => that.filelist.push(s.target.result)
+      // }
+      // else
+      // 	this.$message.error('工地图片加载失败：' + src.message)
+      // })
+    })
+  }
+
+  /**
+   * @description 判断字符串是否为空
+   */
+  strIsNull(strVal) {
+    strVal = strVal || ''
+    return typeof strVal == 'undefined' || strVal == null || strVal == ''
+  }
+
+  /*------------------ 查看详情 -------------------*/
+  /**
+   * @description 查看隐患详情
+   */
+  showTrouble(e) {
+    var id = e.id
+    this.dialogDetail = true
+    this.troubleAry = {
+      troubleId: id,
+      optionType: '1' //1=>详情，2=审核操作
+    }
+  }
 }
 </script>
 
