@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <div class="actions small">
-      <QueryForm @query="onQuery" @report="onReport" @assign="onAssign" :loading="loading" />
+      <QueryForm @query="onQuery" @report="onReport" @assign="onAssign" :loading="loading" :selected="selected" />
     </div>
     <BaseTable
       v-loading="loading.query"
@@ -12,7 +12,15 @@
       @page-change="onPageChange"
       :pagination="pagination"
     />
-    <ReportAndAssignForm :visible.sync="visible" :data="current" :loading="loading.report || loading.assign" />
+    <ReportAndAssignForm
+      :visible.sync="visible"
+      :data="current"
+      :loading="loading.report || loading.assign"
+      :users="users"
+      title="事件上报"
+      @submit="onSubmit"
+    />
+    <MainMap :view="view" :isActive="isActive" />
   </div>
 </template>
 
@@ -20,14 +28,25 @@
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { eventCols } from '../../utils'
-import { addEvent, addEventAssign, eventsPage, IEvent, IEventAssign, IPagination, updateEventAssign } from '../../api'
+import {
+  addEvent,
+  addAssign,
+  eventsPage,
+  getUsers,
+  IEvent,
+  IAssign,
+  IPagination,
+  IDepartment,
+  updateAssign
+} from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
 import QueryForm from './QueryForm.vue'
 import ReportAndAssignForm from './ReportAndAssignForm.vue'
+import MainMap from './MainMap.vue'
 
-@Component({ name: 'EventReport', components: { BaseTable, QueryForm, ReportAndAssignForm } })
+@Component({ name: 'EventReport', components: { BaseTable, QueryForm, ReportAndAssignForm, MainMap } })
 export default class EventReport extends Vue {
-  // @Prop({ type: Boolean, default: false }) isActive!: boolean
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   columns = eventCols
   events: IEvent[] = []
   selected: IEvent[] = []
@@ -36,12 +55,17 @@ export default class EventReport extends Vue {
   query: Partial<IEvent> = {}
   current: IEvent | {} = {}
   visible: boolean = false
+  users: IDepartment[] = []
+  view = null
 
   onSelectionChange(selections) {
     this.selected = [...selections]
   }
 
-  onDblClick(row: IEvent) {}
+  onDblClick(row: IEvent) {
+    this.current = { ...row }
+    this.visible = true
+  }
 
   onReport() {
     this.current = {}
@@ -49,33 +73,39 @@ export default class EventReport extends Vue {
   }
 
   onAssign() {
-    this.current = {}
+    this.current = { ...this.selected[0] }
     this.visible = true
   }
 
-  async onSubmit({ event, assign }: { event: IEvent; assign: IEventAssign }) {
-    let eventId: IEvent['id'] = null
-    if (event.id) {
+  async onSubmit({ event, assign }: { event: IEvent; assign: IAssign }) {
+    let { id } = event
+    if (!id) {
       this.loading.report = true
       try {
         const { result } = await addEvent(event)
         this.$message[result.id ? 'success' : 'error'](`上报${result ? '成功!' : '失败!'}`)
-        eventId = result.id
+        id = result.id
       } catch (error) {
         console.log(error)
       }
       this.loading.report = false
     }
-    this.loading.assign = true
-    try {
-      const { result } = await (assign.id
-        ? updateEventAssign(assign)
-        : addEventAssign({ ...assign, sourceId: eventId }))
-      this.$message[result ? 'success' : 'error'](`${assign.id ? '修改' : ''}派工${result ? '成功!' : '失败!'}`)
-    } catch (error) {
-      console.log(error)
+    if (id && assign.majorHandler) {
+      this.loading.assign = true
+      try {
+        const { result } = await (assign.id ? updateAssign(assign) : addAssign({ ...assign, sourceId: id }))
+        this.$message[result ? 'success' : 'error'](`${assign.id ? '修改' : ''}派工${result ? '成功!' : '失败!'}`)
+      } catch (error) {
+        console.log(error)
+      }
+      this.loading.assign = false
     }
-    this.loading.assign = false
+    this.visible = false
+  }
+
+  async getUsers() {
+    const { result } = await getUsers()
+    this.users = result
   }
 
   onPageChange(pagination) {
@@ -103,6 +133,8 @@ export default class EventReport extends Vue {
 
   preparing() {
     this.doQuery()
+    this.getUsers()
+    this.view = (this.$attrs.data as any).mapView
   }
 
   mounted() {

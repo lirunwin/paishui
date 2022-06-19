@@ -10,7 +10,11 @@ const alignLeft = (tooltips: boolean = true): Partial<ElTableColumn> => ({
 export const DICTONARY = {
   event: {
     category: { '1': '普通事件', '2': '紧急事件' },
+    type: { '1': '事件类型1', '2': '事件类型2', '3': '事件类型3' },
     status: { '0': '未审核', '1': '不处理', '2': '未派工', '3': '待处理', '4': '处理中', '5': '处理完成' }
+  },
+  assign: {
+    type: { '1': '1事件管理', '2': '汛情管理' }
   }
 }
 

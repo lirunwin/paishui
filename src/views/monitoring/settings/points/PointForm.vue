@@ -343,27 +343,6 @@ export default class PointForm extends Vue {
     }
   }
 
-  onFileChange(file, fileList) {
-    const isJPG = file.raw.type === 'image/jpeg'
-    const isPng = file.raw.type === 'image/png'
-    const isLt2M = file.size / 1024 / 1024 < 2
-    let needRemove = false
-    if (!isJPG && !isPng) {
-      this.$message.error('上传图片只能是 JPG/JPEG或png 格式!')
-      needRemove = true
-    }
-    if (!isLt2M) {
-      this.$message.error('上传头像图片大小不能超过 2MB!')
-      needRemove = true
-    }
-    if (fileList.length > 9) {
-      this.$message.error('最多可以上传9张图片!')
-      needRemove = true
-    }
-
-    this.formData.fileList = needRemove ? fileList.filter((item) => item.uid !== file.uid) : [...fileList]
-  }
-
   onSubmit() {
     const form = this.$refs['form'] as any
     form.validate((valid) => {
@@ -372,6 +351,28 @@ export default class PointForm extends Vue {
         this.$emit('submit', { ...basis, bindDevice, siteFacility, fileList: fileList.map(({ raw }) => raw) })
       }
     })
+  }
+
+  onFileChange(file) {
+    const isJPG = file.raw.type === 'image/jpeg'
+    const isPng = file.raw.type === 'image/png'
+    const isLt2M = file.size / 1024 / 1024 < 2
+    const max = 9
+    let pass = true
+    if (!isJPG && !isPng) {
+      this.$message.error('上传图片只能是 JPG/JPEG或png 格式!')
+      pass = false
+    }
+    if (!isLt2M) {
+      this.$message.error('上传图片大小不能超过 2MB!')
+      pass = false
+    }
+    if (this.formData.fileList.length >= max) {
+      this.$message.error(`最多可以上传${max}张图片!`)
+      pass = false
+    }
+
+    this.formData.fileList = pass ? [...this.formData.fileList, file] : [...this.formData.fileList]
   }
 
   handleRemovePic(file, fileList) {

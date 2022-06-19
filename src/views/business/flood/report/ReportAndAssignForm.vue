@@ -5,87 +5,21 @@
         <el-col :span="14">
           <BaseTitle>基本信息</BaseTitle>
           <el-row>
-            <el-col :span="12">
-              <el-form-item label="事件类别" required prop="event.category">
-                <el-radio-group v-model="formData.event.category" size="small" :disabled="!!data.id">
-                  <el-radio v-for="(value, key) of DICTONARY.event.category" :key="key" :label="key">
-                    {{ value }}
-                  </el-radio>
+            <el-col :span="24">
+              <el-form-item label="是否为警情" required prop="flood.police">
+                <el-radio-group v-model="formData.flood.police" size="small" :disabled="!!data.id">
+                  <el-radio :label="1">是</el-radio>
+                  <el-radio :label="0">否</el-radio>
                 </el-radio-group>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
-              <el-form-item label="事件类型" required prop="event.type">
-                <el-select
-                  v-model="formData.event.type"
-                  size="small"
-                  clearable
-                  placeholder="请选择事件类型"
-                  :disabled="!!data.id"
-                >
-                  <el-option v-for="(value, key) of DICTONARY.event.type" :key="key" :value="key" :label="value" />
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="事件名称" prop="event.name">
-                <el-input
-                  v-model="formData.event.name"
-                  size="small"
-                  placeholder="请输入事件名称"
-                  clearable
-                  maxlength="30"
-                  :disabled="!!data.id"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="发现日期" prop="event.findDate">
-                <el-date-picker
-                  v-model="formData.event.findDate"
-                  clearable
-                  value-format="yyyy-MM-dd"
-                  placeholder="请选择发现日期"
-                  style="width: 100%"
-                  :disabled="!!data.id"
-                />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="发现人员" prop="event.findUser">
-                <el-select
-                  v-model="formData.event.findUser"
-                  size="small"
-                  clearable
-                  filterable
-                  placeholder="请选择发现人员"
-                  @change="onFindUserChange"
-                  :disabled="!!data.id"
-                >
-                  <el-option v-for="user of allUsers" :key="user.id" :value="String(user.id)" :label="user.realName">
-                    <span>{{ user.realName }}</span>
-                  </el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="联系电话" prop="event.findPhone">
-                <el-input
-                  v-model="formData.event.findPhone"
-                  size="small"
-                  placeholder="请输入联系电话"
-                  clearable
-                  maxlength="30"
-                  :disabled="!!data.id"
-                />
-              </el-form-item>
-            </el-col>
+
             <el-col :span="24">
-              <el-form-item label="事件地址" prop="event.address">
+              <el-form-item label="汛期位置" prop="flood.address">
                 <el-input
-                  v-model="formData.event.address"
+                  v-model="formData.flood.address"
                   size="small"
-                  placeholder="请输入事件地址"
+                  placeholder="请输入汛期位置"
                   clearable
                   maxlength="100"
                   :disabled="!!data.id"
@@ -93,9 +27,9 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="关联设施" prop="event.facility">
+              <el-form-item label="关联设施" prop="flood.facility">
                 <el-input
-                  v-model="formData.event.facility"
+                  v-model="formData.flood.facility"
                   size="small"
                   placeholder="请选择关联设施"
                   clearable
@@ -123,9 +57,9 @@
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="详细描述" prop="event.detail">
+              <el-form-item label="详细描述" prop="flood.detail">
                 <el-input
-                  v-model="formData.event.detail"
+                  v-model="formData.flood.detail"
                   type="textarea"
                   size="small"
                   placeholder="请输入详细描述"
@@ -136,9 +70,9 @@
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="处理建议" prop="event.handingAdvice">
+              <el-form-item label="处理建议" prop="flood.suggest">
                 <el-input
-                  v-model="formData.event.handingAdvice"
+                  v-model="formData.flood.suggest"
                   type="textarea"
                   size="small"
                   placeholder="请输入处理建议"
@@ -291,14 +225,14 @@ import { ElForm } from 'element-ui/types/form'
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
-import { IEvent, IAssign, IDepartment, assignPage } from '../../api'
+import { IEvent, IAssign, IDepartment, assignPage, IFlood } from '../../api'
 import { DICTONARY } from '../../utils'
 import { telAndMobileReg } from '@/utils/constant'
 import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
 import Map from './Map.vue'
 
 interface IFormData {
-  event: Partial<Omit<IEvent, 'findDate'>> & { findDate?: string | Date }
+  flood: Partial<Omit<IFlood, 'police'>> & { police?: number }
   assign: Partial<Omit<IAssign, 'collaborateHanler' | 'isPush' | 'findDate'>> & {
     collaborateHanler?: string[]
     isPush?: number
@@ -310,7 +244,7 @@ interface IFormData {
 }
 
 const getDefaultData = (): IFormData => ({
-  event: { category: '1', findPhone: '' },
+  flood: { police: 1 },
   assign: { collaborateHanler: [] },
   phones: [],
   fileList: [],
@@ -346,12 +280,9 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   rules = {
-    'event.category': [{ required: true, message: '请选事件别' }],
-    'event.type': [{ required: true, message: '请选择事件类型' }],
-    'event.name': [{ max: 30, message: '事件名称不能超过30个字符' }],
-    'event.findPhone': [{ pattern: telAndMobileReg(), message: '请输入正确的联系方式' }],
-    'event.detail': [{ max: 255, message: '详细描述不能超过255个字符' }],
-    'event.handingAdvice': [{ max: 255, message: '处理建议不能超过255个字符' }],
+    'flood.police': [{ required: true, message: '是否为警情' }],
+    'flood.detail': [{ max: 255, message: '详细描述不能超过255个字符' }],
+    'flood.suggest': [{ max: 255, message: '处理建议不能超过255个字符' }],
     'assign.phone': [{ pattern: telAndMobileReg(), message: '请输入正确的联系方式' }],
     'assign.message': [{ max: 255, message: '短信内容不能超过255个字符' }]
   }
@@ -360,14 +291,14 @@ export default class ReportAndAssignForm extends Vue {
     this.$refs.form.validate((valid) => {
       if (valid) {
         const {
-          event,
+          flood,
           assign: { collaborateHanler, ...resetAssign },
           coordinate,
           fileList
         } = this.formData
         const [x, y] = !coordinate ? [] : (coordinate || '').split(',')
         const data = {
-          event: { ...event, x, y, fileList: fileList.map(({ raw }) => raw) },
+          flood: { ...flood, x, y, fileList: fileList.map(({ raw }) => raw) },
           assign: { ...resetAssign, collaborateHanler: collaborateHanler.join(), type: '1' }
         }
         console.log(JSON.stringify(data, null, 2))
@@ -386,13 +317,9 @@ export default class ReportAndAssignForm extends Vue {
       id,
       properties: { ADDRESS, LNO, TYPE }
     } = geo
-    this.formData.event.facility = id
+    this.formData.flood.facility = id
   }
 
-  onFindUserChange(id: string) {
-    const { phone } = this.allUsers.find((item) => String(item.id) === id) || {}
-    this.formData.event.findPhone = phone || ''
-  }
   onMajorHandlerChange(id: string) {
     const { phone } = this.usersInMyDepartment.find((item) => String(item.id) === id) || {}
     this.formData.phone = phone || ''
@@ -463,7 +390,7 @@ export default class ReportAndAssignForm extends Vue {
     if (id) {
       this.formData = {
         ...this.formData,
-        event: { id, x, y, findDate: findDate ? this.$moment(findDate).toDate() : '', ...rest },
+        flood: { id, x, y, ...rest },
         coordinate: `${x},${y}`,
         fileList: (filePathList || []).map((path, index) => ({
           name: path,
