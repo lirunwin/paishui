@@ -11,5 +11,5 @@ export const getRemoteImg = (path: string) =>
     ? `${String(IP.startsWith('http://192') ? 'http://221.182.8.141:1118' : IP).replace(
         /\/$/,
         ''
-      )}/base/file/loadImg?access_token=${tokenFormSession()}&remotePath=${path}`
+      )}/base/user/loadImg?access_token=${tokenFormSession()}&remotePath=${path}`
     : ''

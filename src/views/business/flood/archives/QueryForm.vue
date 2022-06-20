@@ -4,7 +4,7 @@
       <el-input v-model="formData.queryLike" placeholder="汛情位置地址模糊查询" size="small" maxlength="50" clearable />
     </el-form-item>
     <el-form-item label="是否为警情:">
-      <el-checkbox-group v-model="formData.police" size="small">
+      <el-checkbox-group v-model="formData.police" size="small" :max="1">
         <el-checkbox :label="1">是</el-checkbox>
         <el-checkbox :label="0">否</el-checkbox>
       </el-checkbox-group>
@@ -84,6 +84,7 @@ export default class QueryForm extends Vue {
 
   onQuery() {
     const { queryLike, police, statusMulti, ...rest } = this.formData
+
     this.$emit('query', { ...rest, queryLike, police: police.join(), statusMulti: statusMulti.join() })
   }
 

@@ -53,9 +53,15 @@
                   placeholder="请选择发现人员"
                   @change="onFindUserChange"
                 >
-                  <el-option v-for="user of allUsers" :key="user.id" :value="String(user.id)" :label="user.realName">
-                    <span>{{ user.realName }}</span>
-                  </el-option>
+                  <el-option-group v-for="dept in users" :key="dept.id" :label="dept.name">
+                    <el-option
+                      v-for="user in dept.users"
+                      :key="user.id"
+                      :label="user.realName"
+                      :value="String(user.id)"
+                    >
+                    </el-option>
+                  </el-option-group>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -461,7 +467,7 @@ export default class ReportAndAssignForm extends Vue {
         result: { records }
       } = await assignPage({ current: 1, size: 1, sourceId: id })
       this.assign = records[0] || {}
-      const { collaborateHanler, majorHandler, isPush, ...assign } = this.assign
+      const { collaborateHanler, isPush, ...assign } = this.assign
       this.formData = {
         ...this.formData,
         assign: {
@@ -472,10 +478,6 @@ export default class ReportAndAssignForm extends Vue {
       }
       this.setPhones()
     }
-  }
-  @Watch('formData.fileList')
-  adsad(val) {
-    console.log(val)
   }
 }
 </script>

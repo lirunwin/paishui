@@ -9,12 +9,13 @@
       :data="vehicleArchives"
       @page-change="onPageChange"
       :pagination="pagination"
+      style="max-height:100%"
     >
       <template v-for="(_, index) of vehicleArchives" v-slot:[`name1-${index}`]="{ row }">
-        <el-button type="text">{{ row.id }}</el-button>
+        <el-button type="text" :key="index">{{ row.id }}</el-button>
       </template>
       <template v-for="(_, index) of vehicleArchives" v-slot:[`name2-${index}`]="{ row }">
-        <el-button type="text" @click="() => onShow(row)">{{ row.id }}</el-button>
+        <el-button type="text" :key="index" @click="() => onShow(row)">{{ row.id }}</el-button>
       </template>
     </BaseTable>
     <MainMap :view="view" :isActive="isActive" :selected="selected" :data="current" />

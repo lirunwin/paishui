@@ -8,7 +8,9 @@
         clearable
         @change="onDeviceTypeChange"
       >
-        <el-option v-for="param of deviceTypes" :value="String(param.id)" :key="param.id" :label="param.name" />
+        <el-option v-for="param of deviceTypes" :value="String(param.id)" :key="param.id" :label="param.name">
+          <span>{{ param.name }}</span>
+        </el-option>
       </el-select>
     </el-form-item>
     <el-form-item label="监测站点" prop="siteId">
@@ -23,7 +25,7 @@
             @change="onSiteIdChange"
           >
             <el-option v-for="point of points" :value="String(point.id)" :key="point.id" :label="point.name">
-              {{ point.name }} | {{ point.code }}
+              <span>{{ point.name }} | {{ point.code }}</span>
             </el-option>
           </el-select>
         </el-col>
@@ -34,7 +36,9 @@
     </el-form-item>
     <el-form-item label="监测指标" prop="indicateNames">
       <el-select v-model="formData.indexCode" placeholder="请选择监测指标" size="small" clearable multiple>
-        <el-option v-for="name of thresholdNames" :value="name" :key="name" :label="name" />
+        <el-option v-for="name of thresholdNames" :value="name" :key="name" :label="name">
+          <span>{{ name }}</span>
+        </el-option>
       </el-select>
     </el-form-item>
     <el-form-item label="采集时间" prop="date">

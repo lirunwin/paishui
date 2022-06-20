@@ -7,12 +7,12 @@ const uris = {
   users: '/base/user/getUserByDepts',
   events: {
     base: `${base}/eventmange`,
-    page: `${base}/eventmange/page`,
-    assign: {
-      base: `${base}/dispatch`,
-      page: `${base}/dispatch/page`,
-      delBatch: `${base}/dispatch/deleteByIds`
-    }
+    page: `${base}/eventmange/page`
+  },
+  assign: {
+    base: `${base}/dispatch`,
+    page: `${base}/dispatch/page`,
+    delBatch: `${base}/dispatch/deleteByIds`
   },
   flood: {
     base: `${base}/floodseasonw`,
@@ -273,26 +273,26 @@ export const vehicleArchivePage = (params: Partial<IVehicleArchiveQuery & IQuery
   })
 
 export const addAssign = (data: Partial<Omit<IAssign, 'id'>>) =>
-  axios.request<IRes<boolean>>({ url: uris.events.assign.base, method: 'post', data })
+  axios.request<IRes<boolean>>({ url: uris.assign.base, method: 'post', data })
 
 export const deleteAssign = (id: string) =>
-  axios.request<IRes<boolean>>({ url: `${uris.events.assign.base}/${id}`, method: 'delete' })
+  axios.request<IRes<boolean>>({ url: `${uris.assign.base}/${id}`, method: 'delete' })
 
 export const updateAssign = (data: Partial<IAssign>) =>
-  axios.request<IRes<boolean>>({ url: uris.events.assign.base, method: 'put', data })
+  axios.request<IRes<boolean>>({ url: uris.assign.base, method: 'put', data })
 
 export const getAssign = (id: string) =>
-  axios.request<IResult<IAssign>>({ url: `${uris.events.assign.base}/${id}`, method: 'get' })
+  axios.request<IResult<IAssign>>({ url: `${uris.assign.base}/${id}`, method: 'get' })
 
 export const assignPage = (params: Partial<IAssign & IQueryCommon>) =>
   axios.request<IRes<(IAssign & { createUserDetail: IEasyUserInfo; collaborateHandlers: IEasyUserInfo[] })[]>>({
-    url: uris.flood.page,
+    url: uris.assign.page,
     method: 'get',
     params
   })
 
 export const deleteAssignBatch = (ids: string) =>
-  axios.request<IRes<boolean>>({ url: uris.events.assign.delBatch, method: 'delete', params: { ids } })
+  axios.request<IRes<boolean>>({ url: uris.assign.delBatch, method: 'delete', params: { ids } })
 
 export const getUsers = (depts?: string) =>
   axios.request<IResult<IDepartment[]>>({

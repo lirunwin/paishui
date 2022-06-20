@@ -398,10 +398,14 @@ export default class ReportAndAssignForm extends Vue {
         result: { records }
       } = await assignPage({ current: 1, size: 1, sourceId: id })
       this.assign = records[0] || {}
-      const { collaborateHanler, majorHandler, isPush, ...assign } = this.assign
+      const { collaborateHanler, isPush, ...assign } = this.assign
       this.formData = {
         ...this.formData,
-        assign
+        assign: {
+          ...assign,
+          collaborateHanler: collaborateHanler ? collaborateHanler.split(',') : [],
+          isPush: Number(isPush)
+        }
       }
       this.setPhones()
     }

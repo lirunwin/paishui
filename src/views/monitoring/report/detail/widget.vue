@@ -117,13 +117,13 @@ const getDefaultMapData = ({ title, names }: { title: string; names?: string[] }
     yAxis: [{ type: 'value' }],
     xAxis: [{ type: 'category', boundaryGap: false }],
     dataZoom: [{ type: 'inside', start: 0, end: 100 }, { start: 0, end: 100 }],
-    // legend: { data: names },
+    legend: { show: true },
     toolbox: {
       show: true,
       feature: {
-        mark: { show: true },
-        dataView: { show: true, readOnly: false },
-        magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
+        // mark: { show: true },
+        // dataView: { show: true, readOnly: false },
+        // magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
         restore: { show: true },
         saveAsImage: { show: true }
       }
@@ -181,10 +181,16 @@ export default class ReportDetail extends Vue {
                 return {
                   id: `${name}-${key}`,
                   dimensions: [x, y],
-                  source: data[key].map(({ [y]: val, ...rest }) => ({
-                    ...rest,
-                    [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-                  }))
+                  source: data[key]
+                    .map((item) => {
+                      if (!item) return item
+                      const { [y]: val, ...rest } = item
+                      return {
+                        ...rest,
+                        [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
+                      }
+                    })
+                    .filter((item) => !!item)
                 }
               })
             })
@@ -216,10 +222,16 @@ export default class ReportDetail extends Vue {
         const second = Object.keys(data).reduce((acc, key) => {
           const dataset = {
             name: `${name}-${key}`,
-            source: data[key].map(({ [y]: val, ...rest }) => ({
-              ...rest,
-              [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-            })),
+            source: data[key]
+              .map((item) => {
+                if (!item) return item
+                const { [y]: val, ...rest } = item
+                return {
+                  ...rest,
+                  [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
+                }
+              })
+              .filter((item) => !!item),
             dimensions: [x, y]
           }
           return {
@@ -236,7 +248,7 @@ export default class ReportDetail extends Vue {
       return Object.keys(grouped).map((key) => {
         return {
           ...getDefaultMapData({ title: key }),
-          dataset: grouped[key],
+          dataset: grouped[key].filter((item) => !!item),
           series: grouped[key].map(({ name }, index) => {
             return {
               name,
@@ -254,10 +266,16 @@ export default class ReportDetail extends Vue {
         return {
           ...getDefaultMapData({ title: name }),
           dataset: Object.keys(data).map((key) => ({
-            source: data[key].map(({ [y]: val, ...rest }) => ({
-              ...rest,
-              [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-            })),
+            source: data[key]
+              .map((item) => {
+                if (!item) return item
+                const { [y]: val, ...rest } = item
+                return {
+                  ...rest,
+                  [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
+                }
+              })
+              .filter((item) => !!item),
             dimensions: [x, y]
           })),
           series: Object.keys(data).map((key, index) => {
@@ -279,10 +297,16 @@ export default class ReportDetail extends Vue {
           return {
             ...getDefaultMapData({ title: `${name}-${key}` }),
             dataset: {
-              source: data[key].map(({ [y]: val, ...rest }) => ({
-                ...rest,
-                [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-              })),
+              source: data[key]
+                .map((item) => {
+                  if (!item) return item
+                  const { [y]: val, ...rest } = item
+                  return {
+                    ...rest,
+                    [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
+                  }
+                })
+                .filter((item) => !!item),
               dimensions: [x, y]
             },
             series: { name: key, type: 'line', symbol: 'none', smooth: true }
