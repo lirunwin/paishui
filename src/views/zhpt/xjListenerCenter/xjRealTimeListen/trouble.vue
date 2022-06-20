@@ -177,23 +177,23 @@ export default {
         current:1,
         size:1000,
       }
-      // this.loading=true;
-      // getTrouble(params).then(res=>{
-      //   res.result.records.forEach(item=>{
-      //     this.initPeopleInfo(item)
-      //   })
-      //   this.troubleList=res.result.records
-      //   this.mapShowPeople(this.troubleList);
-      //   this.loading=false;
-      // }).catch(e=>{
-      //   this.loading=false;
-      // })
-      const troubleList={"code":1,"message":null,"result":{"records":[{"id":13,"pipeName":"测试隐患上报2","location":"管线","padId":null,"typeId":3,"typeName":"施工范围内有给水管线","lgtd":104.377537,"lttd":30.850514,"address":"测试隐患上报2","notes":"测试隐患上报2","createTime":"2022-06-15 13:56:04","createUser":208,"createUserName":null,"isbuild":"是","buildId":9,"suggest":"测试隐患上报2","uploadType":"","uploadFileids":null,"isrespect":"否","state":"无需处理","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:56:04","submitUser":208,"submitUserName":"管网-王海","auditResult":"已通过","auditTime":"2022-06-15 13:56:46","auditUser":208,"auditUserName":"管网-王海","auditNotes":"123","regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":2,"toubleRangeName":"严重"},{"id":12,"pipeName":"测试管线上报","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.497862,"lttd":30.876064,"address":"测试管线上报","notes":"测试管线上报","createTime":"2022-06-15 13:55:25","createUser":208,"createUserName":null,"isbuild":"是","buildId":35,"suggest":"测试管线上报","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:55:25","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":201,"auditUserName":"冯茂","auditNotes":null,"regionId":"A","regionName":"A片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"},{"id":11,"pipeName":"测试隐患","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.433392,"lttd":30.836141,"address":"测试地址","notes":"测试地址2","createTime":"2022-06-14 15:26:02","createUser":208,"createUserName":null,"isbuild":"是","buildId":10,"suggest":"测试地址三","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-14 15:26:02","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":208,"auditUserName":"管网-王海","auditNotes":null,"regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"}],"total":3,"size":10,"current":1,"orders":[],"optimizeCountSql":true,"hitCount":false,"searchCount":true,"pages":1}}
-      troubleList.result.records.forEach(item=>{
-        this.initPeopleInfo(item)
+      this.loading=true;
+      getTrouble(params).then(res=>{
+        res.result.records.forEach(item=>{
+          this.initPeopleInfo(item)
+        })
+        this.troubleList=res.result.records
+        this.mapShowPeople(this.troubleList);
+        this.loading=false;
+      }).catch(e=>{
+        this.loading=false;
       })
-      this.troubleList=troubleList.result.records;
-      this.mapShowPeople(this.troubleList);
+      // const troubleList={"code":1,"message":null,"result":{"records":[{"id":13,"pipeName":"测试隐患上报2","location":"管线","padId":null,"typeId":3,"typeName":"施工范围内有给水管线","lgtd":104.377537,"lttd":30.850514,"address":"测试隐患上报2","notes":"测试隐患上报2","createTime":"2022-06-15 13:56:04","createUser":208,"createUserName":null,"isbuild":"是","buildId":9,"suggest":"测试隐患上报2","uploadType":"","uploadFileids":null,"isrespect":"否","state":"无需处理","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:56:04","submitUser":208,"submitUserName":"管网-王海","auditResult":"已通过","auditTime":"2022-06-15 13:56:46","auditUser":208,"auditUserName":"管网-王海","auditNotes":"123","regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":2,"toubleRangeName":"严重"},{"id":12,"pipeName":"测试管线上报","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.497862,"lttd":30.876064,"address":"测试管线上报","notes":"测试管线上报","createTime":"2022-06-15 13:55:25","createUser":208,"createUserName":null,"isbuild":"是","buildId":35,"suggest":"测试管线上报","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:55:25","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":201,"auditUserName":"冯茂","auditNotes":null,"regionId":"A","regionName":"A片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"},{"id":11,"pipeName":"测试隐患","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.433392,"lttd":30.836141,"address":"测试地址","notes":"测试地址2","createTime":"2022-06-14 15:26:02","createUser":208,"createUserName":null,"isbuild":"是","buildId":10,"suggest":"测试地址三","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-14 15:26:02","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":208,"auditUserName":"管网-王海","auditNotes":null,"regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"}],"total":3,"size":10,"current":1,"orders":[],"optimizeCountSql":true,"hitCount":false,"searchCount":true,"pages":1}}
+      // troubleList.result.records.forEach(item=>{
+      //   this.initPeopleInfo(item)
+      // })
+      // this.troubleList=troubleList.result.records;
+      // this.mapShowPeople(this.troubleList);
     },
 
     /**初始化轨迹、设备、计划内容*/
