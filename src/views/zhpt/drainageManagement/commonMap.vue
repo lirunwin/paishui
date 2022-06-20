@@ -57,9 +57,9 @@ export default {
         height: 100%;
         width: 100%;
         // float: left;
-        /deep/ .ol-zoom {
-        display: none !important;
-        }
+        // /deep/ .ol-zoom {
+        // display: none !important;
+        // }
         /deep/ .ol-attribution {
             display: none !important;
         }

@@ -26,19 +26,20 @@ export default {
             const {getRequestResult} = this.$listeners
             getRequestResult({deviceSn: this.deviceSn,blockCode:'singleDevice'}).then(res=>{
                 const Final = res.filter((item) => (new Date(item.scadaTime).getTime() > Date.now() - intervalDays * 24 * 60 * 60 * 1000));
-                console.log(res)
                 let xData=[],yData=[],alarmData=[];
                 Final.forEach(item => {
                     xData.push(moment(item.scadaTime).format('MM-DD'))
                     yData.push(item.itstrVal)
                     alarmData.push(this.warningWl)
                 });
+                const minColor=Math.min(...yData)>this.warningWl?[234, 58, 59]:[14, 167, 255]
+                const maxColor=Math.max(...yData)>this.warningWl?[234, 58, 59]:[14, 167, 255]
                 this.$nextTick(()=>{
-                    this.showChart(xData,yData,alarmData)
+                    this.showChart(xData,yData,alarmData,minColor,maxColor)
                 })
             })
         },
-        showChart(xData,yData,alarmData){
+        showChart(xData,yData,alarmData,minColor,maxColor){
             let ref=this.$refs.chart
             let option = {
                 grid: {
@@ -176,33 +177,33 @@ export default {
                                 {
                                     type: "min",
                                     itemStyle: {
-                                        color: 'rgb(0,136,212)',
-                                        borderColor: 'rgba(0,136,212,0.5)',
+                                        color: "rgb("+minColor.join(',')+")",
+                                        borderColor: "rgba("+minColor.join(',')+",0.5)",//'rgba(0,136,212,0.5)'
                                         borderWidth: 12
                                     },
                                     label: {
-                                        color: "rgba(14, 167, 255, 0.8)",
+                                        color: "rgb("+minColor.join(',')+")",
                                         show: true,
                                         fontSize: this.$listeners.fontSize(12),
                                         fontWeight:600,
                                         position: "top"
                                     }
                                 },
-                                // {
-                                //     type: "max",
-                                //     itemStyle: {
-                                //         color: 'rgb(234, 58, 59)',
-                                //         borderColor: 'rgba(234, 58, 59,0.5)',
-                                //         borderWidth: 12
-                                //     },
-                                //     label: {
-                                //         color: "rgba(234, 58, 59, 0.8)",
-                                //         show: true,
-                                //         fontSize: this.$listeners.fontSize(12),
-                                //         fontWeight:600,
-                                //         position: "top"
-                                //     }
-                                // }
+                                {
+                                    type: "max",
+                                    itemStyle: {
+                                        color: "rgb("+maxColor.join(',')+")",
+                                        borderColor: "rgba("+maxColor.join(',')+",0.5)",//'rgba(234, 58, 59,0.5)'
+                                        borderWidth: 12
+                                    },
+                                    label: {
+                                        color: "rgb("+maxColor.join(',')+")",
+                                        show: true,
+                                        fontSize: this.$listeners.fontSize(12),
+                                        fontWeight:600,
+                                        position: "top"
+                                    }
+                                }
                             ],
                             symbol:'circle',
                             symbolSize :5,
@@ -251,11 +252,11 @@ export default {
                         pieces:[
                             {
                                 gt:0,
-                                lt:180,
+                                lt:this.warningWl,
                                 color:"rgb(0,136,212)",
                             },
                             {
-                                gte:180,
+                                gte:this.warningWl,
                                 color:"rgb(234, 58, 59)"
                             },
                         ],
