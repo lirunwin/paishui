@@ -151,10 +151,12 @@ export interface IVehicle {
 export interface IVehicleArchive {
   beginDate: string
   carNo: string
+  carId: string
   chargePersonName: string
   departmentName: string
   endDate: string
   eventMangeList: IEvent[]
+  id: string | number
   length: string
   type: string
   userId: string

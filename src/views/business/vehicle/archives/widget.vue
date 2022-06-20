@@ -18,7 +18,20 @@
         <el-button type="text" :key="index" @click="() => onShow(row)">{{ row.id }}</el-button>
       </template>
     </BaseTable>
-    <MainMap :view="view" :isActive="isActive" :selected="selected" :data="current" />
+    <!-- <CommonPopup
+      v-for="key of popupIds"
+      :key="key"
+      :ref="`popup-${key}`"
+      :popupPosition="popups[key].coordinate"
+      :mapView="popups[key].map"
+      :isSetCenter="popups[key].center"
+      @close="() => onPopupClose(key)"
+    >
+      <InfoCard
+        :data="popups[key].data"
+        :colors="levelColors"
+      />
+    </CommonPopup> -->
   </div>
 </template>
 
@@ -28,18 +41,19 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { vehicleArchiveCols } from '../../utils'
 import { vehicleArchivePage, getUsers, IPagination, IDepartment, IVehicleArchive } from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
+import CommonPopup from '@/components/CommonPopup/index.vue'
 import QueryForm from './QueryForm.vue'
 
-@Component({ name: 'VehicleArchives', components: { BaseTable, QueryForm } })
+@Component({ name: 'VehicleArchives', components: { BaseTable, QueryForm, CommonPopup } })
 export default class VehicleArchives extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
-  columns = vehicleArchiveCols
+  columns = vehicleArchiveCols.filter((col) => col.type !== 'selection')
   vehicleArchives: IVehicleArchive[] = []
   pagination: IPagination = getDefaultPagination()
   loading: Partial<Record<'query', boolean>> = { query: false }
   query: Partial<IVehicleArchive & { statusMuti: string }> = {}
   departments: IDepartment[] = []
-  selected: IVehicleArchive[] = []
+  opened: IVehicleArchive[] = []
   current: Partial<IVehicleArchive> = {}
   view = null
 
@@ -48,12 +62,9 @@ export default class VehicleArchives extends Vue {
     this.departments = result
   }
 
-  onSelectionChange(selections) {
-    this.selected = [...selections]
-  }
-
   onShow(row: IVehicleArchive) {
     this.current = { ...row }
+    this.opened = [...this.opened.filter((item) => item.id !== row.id), { ...row }]
   }
 
   onPageChange(pagination) {

@@ -11,11 +11,6 @@
       </el-checkbox-group>
     </el-form-item>
 
-    <el-form-item label="状态:">
-      <el-checkbox-group v-model="formData.status" size="small">
-        <el-checkbox v-for="(value, key) of DICTONARY.event.status" :key="key" :label="key">{{ value }}</el-checkbox>
-      </el-checkbox-group>
-    </el-form-item>
     <el-form-item class="btns">
       <el-button
         type="primary"
