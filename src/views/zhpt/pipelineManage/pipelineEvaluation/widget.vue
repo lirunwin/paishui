@@ -665,6 +665,7 @@ export default {
       this.popup && this.popup.setPosition(null)
       this.currentInfoCard = false
       this.drawer && this.drawer.end()
+      this.vectorLayer = this.lightLayer = this.clickEvent = this.popup = null
     },
     // 获取缺陷数据
     getPipeDefectData() {
@@ -674,6 +675,7 @@ export default {
             let reportInfo = res.result[0] ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
+            if (!(this.vectorLayer && this.lightLayer)) return
             this.lightLayer.getSource().clear()
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
@@ -829,16 +831,14 @@ export default {
       let features = this.vectorLayer.getSource().getFeatures()
       let filterFea = features.find((fea) => fea.get('id') === id)
       if (filterFea) {
+        this.lightLayer.getSource().clear()
         let feature = new Feature({
           geometry: filterFea.getGeometry().clone(),
           style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')
         })
-        this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(feature)
-        let center = new mapUtil().getCenterFromFeatures(feature)
-        this.map.getView().setZoom(19)
-        this.map.getView().setCenter(center)
-
+        let center = mapUtil.getCenter(feature)
+        this.map.getView().animate({ zoom: 19 }, { center }, { duration: 0.5 })
         return center
       }
     },
@@ -874,6 +874,7 @@ export default {
     openPromptBox(row, column, cell, event) {
       console.log('打开弹框')
       this.handleRowClick(row)
+      if(!(this.vectorLayer && this.lightLayer)) return
       if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
       histroyPipeData({ expNo: row.expNo }).then(res => {
         if (res.code === 1) {

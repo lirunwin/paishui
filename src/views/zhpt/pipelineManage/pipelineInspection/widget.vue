@@ -458,11 +458,11 @@ export default {
       currentForm2: [],
       currentIndex2: 0,
       popup: null,
+      hasLoad: false
 
     }
   },
   created() {
-    let res = this.getDate()
   },
   mounted() {
     this.map = this.data.mapView
@@ -633,6 +633,7 @@ export default {
       }
     },
     init() {
+      this.getDate()
       this.vectorLayer = new VectorLayer({ source: new VectorSource() })
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
@@ -660,15 +661,18 @@ export default {
       this.clickEvent && unByKey(this.clickEvent)
       this.popup && this.popup.setPosition(null)
       this.currentInfoCard2 = false
+      this.vectorLayer = this.lightLayer = this.clickEvent = this.popup = null
     },
     // 获取缺陷数据
     getPipeDefectData() {
       getDefectData({ state: 1 }).then((res) => {
+        this.hasLoad = true
         if (res.code === 1) {
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
+            if (!(this.vectorLayer && this.lightLayer)) return
             this.vectorLayer.getSource().clear()
             this.lightLayer.getSource().clear()
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
@@ -805,6 +809,7 @@ export default {
 
     async openPromptBox(row) {
       console.log('打开弹窗')
+      if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
       // 点击行勾选数据
       let length = this.multipleSelection.length
       let expNo = this.multipleSelection.length == 1 ? this.multipleSelection[0].expNo : null
@@ -819,17 +824,18 @@ export default {
           this.$refs.multipleTable.toggleRowSelection(row)
         }
       }
-      // 
+      
+      if (!(this.vectorLayer && this.lightLayer)) return
       let fea = this.vectorLayer.getSource().getFeatures().find(fea => fea.get('expNo') === row.expNo)
       let center = mapUtil.getCenter(fea)
-      if (fea) {
+      if (center instanceof Array) {
         let resEV = await histroyPipeData({ expNo: row.expNo })
+        this.lightLayer.getSource().clear()
         this.currentIndex2 = 0
         this.currentForm2 = resEV.result
         this.currentInfoCard2 = true
         this.popup = new Overlay({
           element: document.getElementById('popupCardIns'),
-          //当前窗口可见
           autoPan: true,
           positioning: 'bottom-center',
           stopEvent: true,
@@ -841,8 +847,7 @@ export default {
 
         this.lightLayer.getSource().addFeature(new Feature({ geometry: fea.getGeometry().clone() }))
         let view = this.map.getView()
-        view.setCenter(center)
-        view.setZoom(18)
+        this.map.getView().animate({ zoom: 19 }, { center }, { duration: 0.5 })
       } else this.$message.error('该管线无位置信息!')
     },
     // 上一页

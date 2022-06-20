@@ -461,15 +461,9 @@ export default {
   },
   watch: {
     '$store.state.map.halfP_editableTabsValue': function (n, o) {
-      if (n !== 'testResultDiagram') {
+      console.log('底部变化')
+      if (n !== 'testPipelineDefect' && n !== 'testPipeEvaluation') {
         this.clearAll()
-        this.$store.dispatch('map/handelClose', {
-          box: 'Panel',
-          pathId: 'testReportManagement',
-          widgetid: 'Panel'
-        })
-      } else {
-        this.init()
       }
     }
   },
@@ -494,12 +488,6 @@ export default {
       this.projUtil.resgis(this.currentDataProjName)
 
       this.mapView = this.data.mapView
-      // this.heatLayer = new Heatmap({
-      //   source: new VectorSource(),
-      //   gradient: ['#3ce10f', '#ff0602'],
-      //   radius: 16,
-      //   visble: false
-      // })
       this.pipeDefectLayer = new VectorLayer({ source: new VectorSource(), visible: true })
       this.pipeFuncLayer = new VectorLayer({ source: new VectorSource(), visible: true })
       this.pipeStrucLayer = new VectorLayer({ source: new VectorSource(), visible: true })
@@ -509,13 +497,10 @@ export default {
       })
       this.addLayers([this.pipeFuncLayer, this.pipeStrucLayer, this.pipeDefectLayer, this.lightLayer])
 
-      // // 添加缺陷数据
-      // this.setAllDefect()
-      // 添加项目
+      // 添加缺陷数据
       this.setProjectData()
     },
     clearAll() {
-      
       this.popup && this.popup.setPosition(null)
       this.pipeDefectLayer && this.mapView.removeLayer(this.pipeDefectLayer)
       this.pipeStrucLayer && this.mapView.removeLayer(this.pipeStrucLayer)
@@ -524,6 +509,12 @@ export default {
       this.clickEvent && unByKey(this.clickEvent)
       this.currentInfoCard = false
       this.currentInfoCard2 = false
+      this.popup = this.pipeDefectLayer = this.pipeStrucLayer = this.pipeFuncLayer = this.lightLayer = this.clickEvent = null
+      this.$store.dispatch('map/handelClose', {
+        box: 'Panel',
+        pathId: 'testResultDiagram',
+        widgetid: 'Panel'
+      })
     },
     setProjectData() {
       getProject({ current: 1, size: 1e4 }).then((res) => {
@@ -586,9 +577,6 @@ export default {
       let filterFeas = features.filter(
         (fea) => fea.get(filter.key) && fea.get(filter.key).includes(filter.value[level])
       )
-      // let lightFeas = filterFeas.map(fea => new Feature({ geometry: fea.getGeometry().clone() }))
-      // this.lightLayer.getSource().clear()
-      // this.lightLayer.getSource().addFeatures(lightFeas)
       let lv = filter.value[level] === '/' ? '未定' : filter.value[level]
       this.openDefect(filter.key, lv, layerName, filterFeas)
     },
@@ -606,7 +594,8 @@ export default {
       // 管网缺陷
       let pipeData = data.map((item) => item.pipeStates).flat()
       let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
-
+      
+      if (!(this.lightLayer && this.pipeStrucLayer && this.pipeFuncLayer && this.pipeDefectLayer)) return
       if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
         this.lightLayer.getSource().clear()
         this.pipeStrucLayer.getSource().clear()
@@ -888,24 +877,25 @@ export default {
     // 打开弹窗
     async openPromptBox (id, layerName) {
       let type = layerName === "pipeDefectLayer" ? 1 : 2
-      console.log('打开弹窗')
-      let position = []
-      if (type === 1) {
-        let res = await queryDefectdetails(id)
-        position = this.lightFea(id, layerName)
-        this.DetailsForm = res.result
-        this.currentInfoCard = true
-      } else {
-        let resEV = await histroyPipeData({ expNo: id })
-        position = this.lightFea(id, layerName)
-        this.currentIndex = 0
-        this.currentForm = resEV.result
-        this.currentInfoCard2 = true
-      }
+      if (!this[layerName]) return
+      let position = this.lightFea(id, layerName)
       // 
-      if (position) {
-        let popupId = type === 1 ? 'popupCardDefRes' : 'popupCardRes'
-        let showId = type === 1 ? 'currentInfoCard' : 'currentInfoCard2'
+      if (position instanceof Array) {
+        let popupId = '', showId = ''
+        if (type === 1) {
+          let res = await queryDefectdetails(id)
+          this.DetailsForm = res.result
+          this.currentInfoCard = true
+          popupId = 'popupCardDefRes'
+          showId = 'currentInfoCard'
+        } else {
+          let resEV = await histroyPipeData({ expNo: id })
+          this.currentIndex = 0
+          this.currentForm = resEV.result
+          this.currentInfoCard2 = true
+          popupId = 'popupCardRes'
+          showId = 'currentInfoCard2'
+        }
         this.popup = new Overlay({
           element: document.getElementById(popupId),
           //当前窗口可见
@@ -916,10 +906,11 @@ export default {
           autoPanAnimation: { duration: 250 }
         })
         this.mapView.addOverlay(this.popup)
-        this.popup.setPosition(position)
-        this.mapView.getView().setCenter(position)
-        this.mapView.getView().setZoom(18)
+        this.popup.setPosition(position)        
+        this.map.getView().animate({ zoom: 18 }, { center })
         this[showId] = true
+      } else {
+        position.errorText && this.$message.error(position.errorText)
       }
     },
     clearLightFeas() {
@@ -936,8 +927,7 @@ export default {
         let center = mapUtil.getCenter(fea)
         return center
       } else {
-        // this.$message.warning('该点无位置信息')
-        return null
+        this.$message.warning('该点无位置信息')
       }
     },
     openDetails() {
