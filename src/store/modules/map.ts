@@ -57,9 +57,11 @@ const mutations = {
   SET_FULLPALL: (state: dStore.map.state, data) => {
     // console.log('22322', some(state.fullPanels, data.com), data)
     state.fullP_editableTabsValue = data.com
-    if (!some(state.fullPanels, data.com)) {
-      state.fullPanels.push(data)
-    }
+    state.fullPanels = [...state.fullPanels.filter((item) => item.com !== data.com), data]
+    // if (!some(state.fullPanels, data.com)) {
+    //   state.fullPanels.push(data)
+
+    // }
   },
   SET_BOX: (state: dStore.map.state, data) => {
     state.halfP_editableTabsValue = data.com
