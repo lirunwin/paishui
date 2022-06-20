@@ -66,7 +66,6 @@ export default {
     },
     methods:{
         initVideo(){
-            console.log('调试');
             let url = 'http://223.87.72.104:7086/live/cameraid/1000000%240/substream/1.m3u8';
             const video = this.$refs.video_player
             if (this.hlsPlayer != null) {
