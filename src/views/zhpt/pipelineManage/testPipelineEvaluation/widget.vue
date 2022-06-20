@@ -591,14 +591,13 @@ export default {
               { level: 'Ⅳ', color: 'red', index: 3 }
             ]
             let findColor = colors.find((colorObj) => feaObj['funcClass'].includes(colorObj.level))
-
-            if (findColor) {
-              feature.setStyle(comSymbol.getLineStyle(5, findColor.color))
+              let color = findColor ? findColor.color : "#070358"
+              feature.setStyle(comSymbol.getLineStyle(5, color))
               for (let i in feaObj) {
                 i !== 'geometry' && feature.set(i, feaObj[i])
               }
               features.push(feature)
-            }
+            
           }
         })
       } else {

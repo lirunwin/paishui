@@ -645,6 +645,7 @@ export default {
         } else {
           this.currentInfoCard2 = false
           this.dialogFormVisible = false
+          this.popup && this.popup.setPosition(null)
           this.lightLayer.getSource().clear()
         }
       })
@@ -654,6 +655,7 @@ export default {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
+      this.popup && this.popup.setPosition(null)
       this.currentInfoCard2 = false
     },
     // 获取缺陷数据
@@ -710,23 +712,24 @@ export default {
           )
 
           // 功能性缺陷
-          if (findFuncColor) {
             let fFea = feature.clone()
-            fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
+            let fColor = findFuncColor ? findFuncColor.color : '#070358'
+            fFea.setStyle(comSymbol.getLineStyle(5, fColor))
             for (let i in feaObj) {
               i !== 'geometry' && fFea.set(i, feaObj[i])
             }
             features.funcDefectFeatures.push(fFea)
-          }
+          
           // 结构性缺陷
-          if (findStrucColor) {
+
             let sFea = feature.clone()
-            sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
+            let sColor = findStrucColor ? findStrucColor.color : '#070358'
+            sFea.setStyle(comSymbol.getLineStyle(5, sColor))
             for (let i in feaObj) {
               i !== 'geometry' && sFea.set(i, feaObj[i])
             }
             features.strucDefectFeatures.push(sFea)
-          }
+          
           // 管道缺陷等级数据
           feaObj.pipeDefects.forEach((feaObj, index) => {
             if (feaObj.geometry) {
