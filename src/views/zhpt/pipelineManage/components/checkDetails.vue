@@ -409,21 +409,21 @@ export default {
         let zn = endDepth > startDepth ? 1 : -1 // 正向 逆向
         let dir = this.DetailsForm.detectDir.includes("顺流") // 检测方向
         // X轴
-        let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, ...new Array(num - 1).fill(""), { value: '起点' + this.DetailsForm.startPoint }]
+        let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, ...new Array(num - 1).fill(""), { value: '终点' + this.DetailsForm.endPoint }]
         // 管线位置
         let pipeArr = nullArr.map((item, index) => {
           let relHeight = index / num * height
           return { value: startDepth + zn * relHeight }
         })
         // 缺陷位置
-        let defectsArr = this.DetailsForm.pipeDefects.map(defect => {
+        let defectsArr = this.DetailsForm.pipeDefects.filter(d => d.defectCode !== 'ZC').map(defect => {
           let startLength = dir ? defect.distanceStartPoint : length - defect.distanceStartPoint
           let x = Math.round((startLength / length) * 10)
           let y = startDepth + (Math.abs(height) * (defect.distanceStartPoint / length)).toFixed(2) * zn
           return [x, y, defect.defectCode, defect.defectName, defect.distanceStartPoint]
         })
         // 环纵向
-        let defectsLine = this.DetailsForm.pipeDefects.map(defect => {
+        let defectsLine = this.DetailsForm.pipeDefects.filter(d => d.defectCode !== 'ZC').map(defect => {
           let pipeNote = defect.pipeNote
           let position = defect.distanceStartPoint
           if (pipeNote.includes('纵向长度')) {

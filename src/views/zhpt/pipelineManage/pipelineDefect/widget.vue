@@ -543,6 +543,7 @@ export default {
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
       this.currentInfoCard = false
+      this.popup && this.popup.setPosition(null)
     },
     init() {
       this.vectorLayer = new VectorLayer({ source: new VectorSource() })
@@ -560,6 +561,7 @@ export default {
           this.openPromptBox({ id })
         } else {
           this.currentInfoCard = false
+          this.popup && this.popup.setPosition(null)
           this.lightLayer.getSource().clear()
         }
       })

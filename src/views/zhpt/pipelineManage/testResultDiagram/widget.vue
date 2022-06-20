@@ -13,7 +13,7 @@
           ></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="检测报告:">
+      <el-form-item label="检测报告:" prop="rpt">
         <el-select :disabled="!form.project" v-model="form.report" placeholder="请选择检测报告" multiple clearable>
           <el-option
             v-for="(item, index) in reportOpt"
@@ -294,7 +294,10 @@ export default {
       rules: {
         name: [
           { required: true, message: '不能为空', trigger: 'blur' },
-          { max: 100, message: '内容不能超过100个字符串', trigger: 'blur' }
+          { max: 100, message: '内容不能超过100个字符串', trigger: 'change' }
+        ],
+        rpt: [
+          { required: true, message: '不能为空', trigger: 'blur' },
         ]
       },
       form: {
@@ -512,6 +515,8 @@ export default {
       this.setProjectData()
     },
     clearAll() {
+      
+      this.popup && this.popup.setPosition(null)
       this.pipeDefectLayer && this.mapView.removeLayer(this.pipeDefectLayer)
       this.pipeStrucLayer && this.mapView.removeLayer(this.pipeStrucLayer)
       this.pipeFuncLayer && this.mapView.removeLayer(this.pipeFuncLayer)
@@ -627,6 +632,7 @@ export default {
           } else {
             this.currentInfoCard = false
             this.currentInfoCard2 = false
+            this.popup && this.popup.setPosition(null)
             this.lightLayer.getSource().clear()
           }
         })
@@ -701,24 +707,26 @@ export default {
             (colorObj) => feaObj['structClass'] && feaObj['structClass'].includes(colorObj.level)
           )
 
-          if (findFuncColor) {
             let fFea = feature.clone()
-            funcNum[findFuncColor.index] += 1
-            fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
+            let findex = findFuncColor ? findFuncColor.index : 4
+            funcNum[findex] += 1
+            let fColor = findFuncColor ? findFuncColor.color : "#070358"
+            fFea.setStyle(comSymbol.getLineStyle(5, fColor))
             for (let i in feaObj) {
               i !== 'geometry' && fFea.set(i, feaObj[i])
             }
             features.funcDefectFeatures.push(fFea)
-          }
-          if (findStrucColor) {
+          
             let sFea = feature.clone()
-            strucNum[findStrucColor.index] += 1
-            sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
+            let sindex = findFuncColor ? findFuncColor.index : 4
+            strucNum[sindex] += 1
+            let sColor = findStrucColor ? findStrucColor.color : "#070358"
+            sFea.setStyle(comSymbol.getLineStyle(5, sColor))
             for (let i in feaObj) {
               i !== 'geometry' && sFea.set(i, feaObj[i])
             }
             features.strucDefectFeatures.push(sFea)
-          }
+          
           // 缺陷数据
           feaObj.pipeDefects.forEach((feaObj, index) => {
             if (feaObj.geometry) {
@@ -800,6 +808,7 @@ export default {
 
     showLayer(projectId, reportId) {
       if (!this.form.project) return this.$message.warning('请先填写工程名称')
+      if (!reportId && this.form.report.length === 0) return this.$message.warning('请先选择报告')
       this.loading = true
       let ids = '', prjNo = ''
       if (reportId) {
@@ -893,6 +902,7 @@ export default {
       // 
       if (position) {
         let popupId = type === 1 ? 'popupCardDefRes' : 'popupCardRes'
+        let showId = type === 1 ? 'currentInfoCard' : 'currentInfoCard2'
         this.popup = new Overlay({
           element: document.getElementById(popupId),
           //当前窗口可见
@@ -906,6 +916,7 @@ export default {
         this.popup.setPosition(position)
         this.mapView.getView().setCenter(position)
         this.mapView.getView().setZoom(18)
+        this[showId] = true
       }
     },
     clearLightFeas() {
@@ -922,7 +933,7 @@ export default {
         let center = mapUtil.getCenter(fea)
         return center
       } else {
-        this.$message.warning('该点无位置信息')
+        // this.$message.warning('该点无位置信息')
         return null
       }
     },

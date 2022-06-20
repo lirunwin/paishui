@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { queryDefectFormDetails } from '@/api/pipelineManage'
+import { queryPipeState } from '@/api/pipelineManage'
 
 export default {
   props: ['paramId'],
@@ -37,20 +37,42 @@ export default {
         { label: '管段材质', name: 'material' },
         { label: '管段长度(m)', name: 'pipeLength' },
         { label: '检测长度(m)', name: 'checkLength' },
-        { label: '结构性缺陷', name: 'structEstimate' },
-        { label: '功能性缺陷', name: 'funcEstimate' }
+        { label: '结构性缺陷', name: 'sPipeNote' },
+        { label: '功能性缺陷', name: 'fPipeNote' },
       ],
       tableData: []
     }
   },
-  async mounted() {
-    //
-    let resPrj = await queryDefectFormDetails(this.paramId)
-    this.tableData = resPrj.result
-    console.log('管道缺陷表单', resPrj)
-    console.log('上面传来的id', this.paramId)
+  mounted() {
+    this.init()
+  },
+  watch: {
+    paramId () {
+      this.init()
+    }
   },
   methods: {
+    init () {
+      queryPipeState(this.paramId).then(resPrj => {
+        console.log('管道缺陷表单', resPrj)
+        if (resPrj.code === 1 && resPrj.result) {
+          this.tableData = resPrj.result.pipeStates.map(item => {
+            let sPipeNote = ''
+            let fPipeNote = ''
+            item.pipeDefects.forEach(defect => {
+              if (defect.defectCode === 'ZC') {
+                sPipeNote = ''
+                fPipeNote = ''
+              } else {
+                if (defect.defectType === '功能性缺陷') { fPipeNote = defect.pipeNote }
+                else if (defect.defectType === '结构性缺陷') { sPipeNote = defect.pipeNote }
+              }
+            })
+            return { ...item, fPipeNote, sPipeNote}
+          })
+        }
+      })
+    },
     getSummaries(param) {
       const { columns, data } = param
       const sums = []

@@ -654,7 +654,7 @@ export default {
     async removeDatas() {
       let idArr = this.multipleSelection.map(v => v.id)
       let res = await deleteDatas({ ids: idArr.join(',') })
-      if (res.result) {
+      if (res.code === 1) {
         this.$message({
           message: '删除成功',
           type: 'success'
