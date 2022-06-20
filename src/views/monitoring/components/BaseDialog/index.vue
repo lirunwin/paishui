@@ -77,7 +77,7 @@ export default class BaseDialog extends Vue {
   align-items: center;
   /deep/ .el-dialog {
     background-color: transparent;
-    max-width: 1280px;
+    max-width: 85vw;
     margin-top: 0 !important;
 
     &__header {

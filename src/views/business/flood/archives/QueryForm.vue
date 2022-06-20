@@ -9,7 +9,7 @@
         <el-checkbox :label="0">否</el-checkbox>
       </el-checkbox-group>
     </el-form-item>
-    <el-form-item label="部门" prop="department">
+    <el-form-item label="部门:" prop="department">
       <el-select
         v-model="department"
         size="small"
@@ -21,12 +21,12 @@
         <el-option v-for="dept of departments" :key="dept.id" :value="String(dept.id)" :label="dept.name" />
       </el-select>
     </el-form-item>
-    <el-form-item label="上报人" prop="findUser">
+    <el-form-item label="上报人:" prop="findUser">
       <el-select v-model="formData.createUserid" size="small" clearable filterable placeholder="请选择上报人">
         <el-option v-for="user of users" :key="user.id" :value="String(user.id)" :label="user.realName" />
       </el-select>
     </el-form-item>
-    <el-form-item label="状态:">
+    <!-- <el-form-item label="状态:">
       <el-checkbox-group v-model="formData.statusMulti" size="small" min="1">
         <template v-for="(value, key) of DICTONARY.event.status">
           <template v-if="!['0', '1'].includes(key)">
@@ -34,7 +34,7 @@
           </template>
         </template>
       </el-checkbox-group>
-    </el-form-item>
+    </el-form-item> -->
     <el-form-item class="btns">
       <el-button
         type="primary"
@@ -71,10 +71,16 @@ export default class QueryForm extends Vue {
     return users
   }
 
-  formData: Partial<Omit<IFlood, 'police'> & { police: string[]; queryLike: string; statusMulti: string[] }> = {
+  formData: Partial<
+    Omit<IFlood, 'police'> & {
+      police: string[]
+      queryLike: string
+      //  statusMulti: string[]
+    }
+  > = {
     queryLike: '',
     police: [],
-    statusMulti: ['2', '3', '4', '5'],
+    // statusMulti: ['2', '3', '4', '5'],
     createUserid: ''
   }
 
@@ -83,9 +89,19 @@ export default class QueryForm extends Vue {
   }
 
   onQuery() {
-    const { queryLike, police, statusMulti, ...rest } = this.formData
+    const {
+      queryLike,
+      police,
+      // statusMulti,
+      ...rest
+    } = this.formData
 
-    this.$emit('query', { ...rest, queryLike, police: police.join(), statusMulti: statusMulti.join() })
+    this.$emit('query', {
+      ...rest,
+      queryLike,
+      police: police.join()
+      // statusMulti: statusMulti.join()
+    })
   }
 
   mounted() {

@@ -14,7 +14,7 @@
         <el-checkbox v-for="(value, key) of DICTONARY.event.category" :key="key" :label="key">{{ value }}</el-checkbox>
       </el-checkbox-group>
     </el-form-item>
-    <el-form-item label="部门" prop="department">
+    <el-form-item label="部门:" prop="department">
       <el-select
         v-model="department"
         size="small"
@@ -26,7 +26,7 @@
         <el-option v-for="dept of departments" :key="dept.id" :value="String(dept.id)" :label="dept.name" />
       </el-select>
     </el-form-item>
-    <el-form-item label="发现人" prop="findUser">
+    <el-form-item label="发现人:" prop="findUser">
       <el-select v-model="formData.findUser" size="small" clearable filterable placeholder="请选择发现人">
         <el-option v-for="user of users" :key="user.id" :value="String(user.id)" :label="user.realName" />
       </el-select>
