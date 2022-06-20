@@ -1,21 +1,15 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'small' }" :model="formData" inline>
     <el-form-item label="关键字:">
-      <el-input v-model="formData.queryLike" placeholder="汛情位置地址模糊查询" size="small" maxlength="50" clearable />
-    </el-form-item>
-
-    <el-form-item label="是否为警情:">
-      <el-checkbox-group v-model="formData.police" size="small">
-        <el-checkbox :label="1">是</el-checkbox>
-        <el-checkbox :label="0">否</el-checkbox>
-      </el-checkbox-group>
+      <el-input v-model="formData.queryLike" placeholder="支持车牌号、负责人" size="small" maxlength="50" clearable />
     </el-form-item>
 
     <el-form-item label="状态:">
       <el-checkbox-group v-model="formData.status" size="small">
-        <el-checkbox v-for="(value, key) of DICTONARY.event.status" :key="key" :label="key">{{ value }}</el-checkbox>
+        <el-checkbox v-for="(value, key) of DICTONARY.vehicle.status" :key="key" :label="key">{{ value }}</el-checkbox>
       </el-checkbox-group>
     </el-form-item>
+
     <el-form-item class="btns">
       <el-button
         type="primary"
@@ -32,22 +26,32 @@
         <el-button
           type="primary"
           size="small"
-          :loading="loading.report"
-          :disabled="loading.report"
-          @click="$emit('report')"
+          :loading="loading.add"
+          :disabled="loading.add"
+          @click="$emit('add')"
           icon="el-icon-plus"
         >
-          上报
+          新增
         </el-button>
         <el-button
           type="primary"
           size="small"
-          :loading="loading.assign"
-          :disabled="loading.assign || ids.length !== 1"
-          @click="$emit('assign', ids)"
-          icon="el-icon-plus"
+          :loading="loading.update"
+          :disabled="loading.update || ids.length !== 1"
+          @click="$emit('update')"
+          icon="el-icon-edit"
         >
-          派工
+          修改
+        </el-button>
+        <el-button
+          type="danger"
+          size="small"
+          :loading="loading.delete"
+          :disabled="loading.delete || ids.length !== 1"
+          @click="$emit('delete', ids)"
+          icon="el-icon-delete"
+        >
+          删除
         </el-button>
       </div>
     </el-form-item>
@@ -56,22 +60,22 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
-import { IFlood } from '../../api'
+import { IEvent } from '../../api'
 import { DICTONARY } from '../../utils'
 
 @Component({ name: 'QueryForm' })
 export default class QueryForm extends Vue {
-  @Prop({ type: Object, default: () => ({ query: false, report: false, assign: false }) })
-  loading!: { query?: boolean; report?: boolean; assign?: boolean }
-  @Prop({ type: Array, default: () => [] }) selected!: IFlood[]
+  @Prop({ type: Object, default: () => ({ query: false, add: false, update: false, delete: false }) })
+  loading!: Partial<Record<'query' | 'add' | 'update' | 'delete', boolean>>
+  @Prop({ type: Array, default: () => [] }) selected!: IEvent[]
 
   DICTONARY = DICTONARY
 
-  formData: { queryLike: string; police: string[]; status: string[] } = { queryLike: '', police: [], status: [] }
+  formData: { queryLike: string; category: string[]; status: string[] } = { queryLike: '', category: [], status: [] }
 
   onQuery() {
-    const { queryLike, police, status } = this.formData
-    this.$emit('query', { queryLike, police: police.join(), status: status.join() })
+    const { queryLike, status } = this.formData
+    this.$emit('query', { queryLike, status: status.join() })
   }
 
   get ids() {

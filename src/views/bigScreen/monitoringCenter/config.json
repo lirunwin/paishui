@@ -1,15 +1,15 @@
 {
     "PNLLMColumn":[
         {
-            "prop":"expNo",
+            "prop":"deviceNum",
             "label":"设备号"
         },
         {
-            "prop":"outfalltype",
+            "prop":"deviceName",
             "label":"设备名称"
         },
         {
-            "prop":"outfallshape",
+            "prop":"installAddress",
             "label":"安装地址"
         },
         {
@@ -17,21 +17,24 @@
             "label":"设备状态"
         },
         {
-            "prop":"monitorStatus",
+            "prop":"isAlarm",
             "label":"监测状态"
         },
         {
-            "prop":"receivewater",
+            "prop":"itstrVal",
             "label":"液位值"
         },
         {
-            "prop":"address",
+            "prop":"shreshold",
             "label":"阈值上下限"
         },
         {
-            "prop":"datasource",
+            "prop":"scadaTime",
             "label":"上报时间",
             "width":150
         }
-    ]
+    ],
+    "dateRange":{
+        "hours":["10:00", "12:00", "14:00", "16:00", "18:00", "20:00", "22:00"]
+    }
 }

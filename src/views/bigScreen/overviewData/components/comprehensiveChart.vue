@@ -39,7 +39,7 @@ export default {
                         margin: 10,
                         color: '#e2e9ff',
                         textStyle: {
-                            fontSize: 14
+                            fontSize: this.$listeners.fontSize(14)
                         },
                     },
                 }],

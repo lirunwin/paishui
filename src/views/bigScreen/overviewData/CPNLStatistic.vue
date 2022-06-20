@@ -13,7 +13,7 @@
                 </div>
             </div>
             <div class="content-info">
-                <comprehensiveChart />
+                <comprehensiveChart v-on="$listeners"/>
             </div>
         </div>
     </transition>
@@ -28,12 +28,6 @@ export default {
     },
     props:{
         show:{},
-        fontSize:{
-            type:Function,
-            default:()=>{
-                return Function
-            }
-        }
     },
     data(){
         return{

@@ -9,19 +9,19 @@
                 <div class="title">
                     <div class="icon"></div>
                     <span class="site-info">易漏点水位监测统计</span>
-                    <el-select v-model="value" placeholder="请选择" size="mini" ref="date-select" > 
+                    <el-select v-model="selectValue" placeholder="请选择" size="mini" ref="date-select" > 
                         <el-option
                         v-for="item in options"
                         :key="item.value"
                         :label="item.label"
-                        :value="item.label"
+                        :value="item.value"
                         @click.native="showDatePicker(item)">
                         </el-option>
                     </el-select>
                     <div class="datePicker" v-if="isShowDatePicker">
                         <el-date-picker
                         size="mini"
-                        v-model="value2"
+                        v-model="customDataValue"
                         type="daterange"
                         align="right"
                         unlink-panels
@@ -33,10 +33,10 @@
                 </div>
             </div>
             <div class="content-info">
-                <div class="content-item" v-for="item in siteList" :key="item.name">
-                    <div class="title"><div class="icon"></div><span class="site-name">易漏点{{item.name}}水位监测</span></div>
+                <div class="content-item" v-for="item in siteList" :key="item.deviceName">
+                    <div class="title"><div class="icon"></div><span class="site-name">{{item.deviceName}}水位监测</span></div>
                     <div class="content">
-                        <waterLevelChart :fontSize="fontSize"/>
+                        <waterLevelChart v-on="$listeners" :intervalDays="selectValue" :deviceSn="item.deviceSn"/>
                     </div>
                 </div>
             </div>
@@ -53,27 +53,21 @@ export default {
     },
     props:{
         show:{},
-        fontSize:{
-            type: Function,
-            default: () => {
-                return Function
-            }
-        }
     },
     data(){
         return{
             isShowDatePicker:false,
             options: [
             {
-                value: '选项1',
+                value: '1',
                 label: '近24小时'
             }, 
             {
-                value: '选项2',
+                value: '7',
                 label: '近一周'
             },
             {
-                value: '选项3',
+                value: '365',
                 label: '最近一年'
             },
             {
@@ -81,19 +75,9 @@ export default {
                 label: '自定义'
             },
             ],
-            value: '近24小时',
-            value2: [],
-            siteList:[
-                {
-                    name:'(1)',
-                },
-                {
-                    name:'(2)',
-                },
-                {
-                    name:'(3)',
-                },
-            ],
+            selectValue: '7',
+            customDataValue: [],
+            siteList:[],
         }
     },
     watch:{
@@ -105,7 +89,7 @@ export default {
                 }
             }
         },
-        value2:{
+        customDataValue:{
             handler(n,o){
                 if(n){
                     // this.isShowDatePicker=false
@@ -114,9 +98,16 @@ export default {
         }
     },
     mounted(){
-
+        this.getPageData()
     },
     methods:{
+        getPageData(){
+            const {getRequestResult} = this.$listeners
+            getRequestResult({typeCode: "ywj",blockCode:'yldPage'}).then(res=>{
+                this.siteList= res.records.filter(item=>item.typeCode=='ywj')
+            })
+        },
+        //显示自定义事件项
         showDatePicker(item){
             this.isShowDatePicker=(item.label==='自定义')?true:false
         },
@@ -220,14 +211,12 @@ export default {
         width: 100%;
         height: calc(100% - .166667rem);
         overflow: auto;
-        display: flex;
-        flex-flow: row wrap;
         padding: 2px;
         .content-item{
             width: 100%;
             height: 33%;
-            display: flex;
-            flex-flow: column;
+            float: left;
+            overflow: hidden;
             .title{
                 width: 100%;
                 display:flex;
@@ -246,9 +235,8 @@ export default {
                 }
             }
             .content{
-                height:calc(100% - .072917rem);
+                height:calc(100% - .338542rem /* 65/192 */);
                 width: 100%;
-                overflow: hidden;
             } 
         }
     }

@@ -14,12 +14,12 @@
             <div class="content-info">
                 <div class="sta-info">
                     <div class="sta-item" v-for="(item,index) in staList" :key="item.title">
-                        <div class="title">{{item.title}}</div>
+                        <div class="title">{{item.title}}：</div>
                         <div class="value" :class="'value'+index">{{item.num}}个</div>
                     </div>
                 </div>
                 <div class="table-info">
-                    <specificTable :column="column" :tableData="tableData" isScroll/>
+                    <statisticTable :column="column" :tableData="tableData" isScroll/>
                 </div>
             </div>
         </div>
@@ -27,12 +27,12 @@
 </template>
 
 <script>
-import specificTable from './components/statisticTable.vue'
+import statisticTable from './components/statisticTable.vue'
 import Config from './config.json'
 export default {
     name:"EMDStatistic",//设备监测详情统计
         components:{
-        specificTable
+        statisticTable
     },
     props:{
         show:{},
@@ -40,61 +40,12 @@ export default {
     data(){
         return{
             staList:[
-                {
-                    title:'视频：',
-                    num:22,
-                },
-                {
-                    title:'水位：',
-                    num:22,
-                },
-                {
-                    title:'液位：',
-                    num:22,
-                },
-                {
-                    title:'井盖：',
-                    num:22,
-                },
+                {title:'视频',num:0,},
+                {title:'水位',num:0,},
+                {title:'液位',num:0,},
+                {title:'井盖',num:0,},
             ],
-            tableData:[
-                {
-                    "expNo":"水位监测仪",
-                    "outfalltype":"管网监测",
-                    "outfallshape":"暂无",
-                    "deviceStatus":"正常",
-                },
-                {
-                    "expNo":"水位监测仪",
-                    "outfalltype":"管网监测",
-                    "outfallshape":"暂无",
-                    "deviceStatus":"报警",
-                },
-                {
-                    "expNo":"水位监测仪",
-                    "outfalltype":"管网监测",
-                    "outfallshape":"暂无",
-                    "deviceStatus":"正常",
-                },
-                {
-                    "expNo":"水位监测仪",
-                    "outfalltype":"管网监测",
-                    "outfallshape":"暂无",
-                    "deviceStatus":"报警",
-                },
-                {
-                    "expNo":"水位监测仪",
-                    "outfalltype":"管网监测",
-                    "outfallshape":"暂无",
-                    "deviceStatus":"离线",
-                },
-                {
-                    "expNo":"水位监测仪",
-                    "outfalltype":"管网监测",
-                    "outfallshape":"暂无",
-                    "deviceStatus":"正常",
-                },
-            ],
+            tableData:[],
             column:[],
         }
     },
@@ -105,7 +56,32 @@ export default {
     },
     mounted(){
         this.column=this.config.EMDColumn
+        this.getPageData()
     },
+    methods:{
+        getPageData(){
+            const {getRequestResult} = this.$listeners
+            getRequestResult({blockCode:'deviceMonitorDetail'}).then(res=>{
+                let result=res.filter(item=>item.typeCode)
+                this.tableData=result.map((item)=>{
+                    this.resetStaList(item)
+                    return{
+                        ...item,
+                        deviceStatus:item.deviceStatus=='0'?'正常':"报警",
+                        address:item.address?item.address:'无'
+                    }
+                })
+            })
+        },
+        resetStaList(item){
+            switch(item.typeName){
+                case '液位监测仪':this.staList[this.staList.findIndex(child => (child.title === '液位' ))].num++
+                                break;
+                case '智慧井盖':this.staList[this.staList.findIndex(child => (child.title === '井盖' ))].num++
+                                break;
+            }
+        }
+    }
 }
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <div style="height:100%;width:100%">
+  <div class="statisticTable">
     <el-table
     ref="statisticTable"
     :data="tableData"
@@ -118,6 +118,7 @@ export default {
             },
             selectionRow:[],
             hasScroll:null,
+            timerId:null,
         }
     },
     mounted(){
@@ -132,6 +133,7 @@ export default {
     },
     methods:{
         tableScroll(){
+            const that=this;
             const table = this.$refs.statisticTable;
             // 拿到表格中承载数据的div元素
             const area = table.bodyWrapper;
@@ -147,14 +149,37 @@ export default {
             if(!this.hasScroll) {
                 this.hasScroll=true;
                 let time = 50;
-                let timer=setInterval(scrollUp,time);
+                this.setAnimationFrame(scrollUp,time)
                 area.onmouseover=function(){
-                    clearInterval(timer);
+                    cancelAnimationFrame(that.timerId);
                 }
                 area.onmouseout=function(){
-                    timer=setInterval(scrollUp,time);
+                    that.setAnimationFrame(scrollUp,time)
                 }
             }
+        },
+        //使用requestAnimationFrame重写setInterval，进行性能优化
+        setAnimationFrame(render,time) {
+            //当前执行时间
+            var nowTime = 0;
+            //记录每次动画执行结束的时间
+            var lastTime = Date.now();
+            //我们自己定义的动画时间差值
+            var diffTime = time;
+            //当前requestAnimationFrame的id
+            //此处使用对象，对象存储在地址空间，函数内部更新了对象的值，函数外部也可以接收到
+            var that = this;
+            function animloop() {
+                //记录当前时间
+                nowTime = Date.now();
+                if (nowTime - lastTime > diffTime) {
+                    lastTime = nowTime
+                    render();
+                }
+                //timerid为数字
+                that.timerId = requestAnimationFrame(animloop);
+            }
+            animloop()
         },
         tableRowClassName({ row, rowIndex }) {
             let rowName = ''
@@ -194,48 +219,52 @@ export default {
 </script>
 
 <style lang='scss' scoped>
-    .el-table{
+.statisticTable{
+    height:100%;
+    width:100%;
+    >>> .el-table{
         background: transparent;
         font-size: .072917rem /* 14/192 */;
         color: #FFFFFF;
+        &.el-table--border::after, &.el-table--group::after, &::before{
+            height: 0;
+        }
+        tr{
+            background-color: transparent;
+        }
+        th.el-table__cell>.cell{
+            padding: .026042rem /* 5/192 */ 0;
+        }
+        td.el-table__cell div {
+            padding: .026042rem /* 5/192 */;
+        }
+        &.el-table--scrollable-y .el-table__body-wrapper{
+            // height: 240px !important;
+            overflow-y: var(--tableScroll);
+            // overflow-x:hidden;
+        }
+        th.gutter {
+            width: 0px !important;
+            display: table-cell !important;
+            background: transparent;
+        }
+        // 去除自定义表格header和body不对其方式
+        &.el-table--border th.gutter:last-of-type {
+            display: block !important;
+        }
+        th > .cell {
+            white-space: nowrap;
+        }
+        //实现hover前行样式背景高亮
+        &.el-table--enable-row-hover .el-table__body tr:hover>td {
+            color: #5991ff;
+            background-color: rgb(62, 70, 112);
+        }
+        //行样式
+        .el-table__body tr.current-row>td{
+            background-color: rgba(105, 167, 234,0.3) !important;
+            color: #fff;
+        }
     }
-    .el-table--border::after, .el-table--group::after, .el-table::before{
-        height: 0;
-    }
-    /deep/ .el-table tr{
-        background-color: transparent;
-    }
-    /deep/ .el-table th.el-table__cell>.cell{
-        padding: .026042rem /* 5/192 */ 0;
-    }
-    /deep/ .el-table td.el-table__cell div {
-        padding: .026042rem /* 5/192 */;
-    }
-    /deep/ .el-table--scrollable-y .el-table__body-wrapper{
-        // height: 240px !important;
-        overflow-y: var(--tableScroll);
-        // overflow-x:hidden;
-    }
-    /deep/ .el-table th.gutter {
-        width: 0px !important;
-        display: table-cell !important;
-        background: transparent;
-    }
-    // 去除自定义表格header和body不对其方式
-    .el-table--border th.gutter:last-of-type {
-        display: block !important;
-    }
-    .el-table th > .cell {
-        white-space: nowrap;
-    }
-    //实现hover前行样式背景高亮
-    /deep/ .el-table--enable-row-hover .el-table__body tr:hover>td {
-        color: #5991ff;
-        background-color: rgb(62, 70, 112);
-    }
-    //行样式
-    /deep/ .el-table__body tr.current-row>td{
-        background-color: rgba(105, 167, 234,0.3) !important;
-        color: #fff;
-    }
+}
 </style>

@@ -1,0 +1,42 @@
+{
+    "column":[
+        {
+            "prop":"sortName",
+            "label":"视频点位名称",
+            "sortable":true
+        },
+        {
+            "prop":"sort",
+            "label":"视频点位编号",
+            "sortable":true
+        },
+        {
+            "prop":"codeid",
+            "label":"设备型号",
+            "sortable":true
+        },
+        {
+            "prop":"xxxx",
+            "label":"设备厂家",
+            "sortable":true
+        },
+        {
+            "prop":"tel",
+            "label":"所属权属状态",
+            "sortable":true
+        },
+        {
+            "prop":"manager",
+            "label":"负责人",
+            "sortable":true
+        },
+        {
+            "label": "操作",
+            "slotScoped": "action",
+            "width":150,
+            "acts": [
+                {"emitWay": "detail", "operation": "详情", "color": "blue" }
+            ]
+        }
+    ]
+}

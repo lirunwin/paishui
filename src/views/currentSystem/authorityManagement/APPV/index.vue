@@ -1,7 +1,7 @@
 <template>
   <div
     class="app-container"
-    style="height:calc(100% - 40px);width:100%;position: absolute;overflow-y: auto;overflow-x: hidden;"
+    style="height: calc(100% - 40px); width: 100%; position: absolute; overflow-y: auto; overflow-x: hidden"
   >
     <div style="line-height: 54px">
       <!-- APP版本 -->
@@ -60,7 +60,7 @@
         发布
       </el-button>
     </div>
-    <div style="height:calc(100% - 76px);margin-top: 20px">
+    <div style="height: calc(100% - 76px); margin-top: 20px">
       <table-item
         :table-data="list"
         :column="column"
@@ -138,7 +138,12 @@
           <el-row type="flex" justify="space-around">
             <el-col :span="24">
               <el-form-item style="margin-bottom: 15px" prop="appType" label="应用类型">
-                <el-select v-model="appForm.appType" size="small" placeholder="请选择应用类型">
+                <el-select
+                  v-model="appForm.appType"
+                  size="small"
+                  placeholder="请选择应用类型"
+                  @change="appForm.version = ''"
+                >
                   <el-option v-for="item in options1" :key="item.id" :label="item.name" :value="item.id" />
                 </el-select>
               </el-form-item>
@@ -167,13 +172,7 @@
                   :limit="2"
                   accept=".txt,.apk,.zip"
                 >
-                  <div
-                    style="
-                      width: 100%;
-                      display: flex;
-                      justify-content: space-around;
-                    "
-                  >
+                  <div style="width: 100%; display: flex; justify-content: space-around">
                     <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
                     <el-button
                       v-if="fileList.length !== 0"
@@ -332,12 +331,14 @@ export default class APPV extends Vue {
   detailInfo: { [x: string]: any } = {}
   fileList = []
   uploadWaiting = false
-  appFormRules = {
-    version: [{ required: true, message: '请输入版本号' }],
-    appType: [{ required: true, message: '请选择上传类型' }]
+  get appFormRules() {
+    return {
+      version: [{ required: this.appForm.appType !== '1', message: '请输入版本号' }],
+      appType: [{ required: true, message: '请选择上传类型' }]
+    }
   }
   appForm = {
-    appType: '2', // app类型 1 APP；2 前端平台
+    appType: '', // app类型 1 APP；2 前端平台
     version: ''
   }
   get deleteDisabled() {
@@ -428,8 +429,11 @@ export default class APPV extends Vue {
       if (item.type === 'text/plain') {
         form.append('txtFile', item)
       } else if (
-        item.type === 'application/vnd.android.package-archive' ||
-        item.type === 'application/x-zip-compressed'
+        [
+          'application/vnd.android.package-archive', // .apk
+          'application/x-zip-compressed', // .zip
+          'application/zip' // .zip
+        ].includes(item.type)
       ) {
         form.append('appFile', item)
       }
