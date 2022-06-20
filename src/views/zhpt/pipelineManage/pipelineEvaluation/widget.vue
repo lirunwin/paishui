@@ -61,6 +61,7 @@
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
+          <!-- <el-button size="small" type="primary" @click="rect">框选</el-button> -->
           <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
@@ -310,6 +311,7 @@ import axios from 'axios'
 // 引入管道检测组件
 import checkDialog from '../components/checkDetails.vue'
 import { mapUtil } from '../../common/mapUtil/common'
+import iDraw from '../../common/mapUtil/draw'
 
 export default {
   props: ['data'],
@@ -418,20 +420,23 @@ export default {
       // 
       showVideo: false,
       videoUrl: '',
-      videoTitle: '视频'
+      videoTitle: '视频',
+      drawer: null,
+      drawFea: null,
     }
   },
-  created() {
-    let res = this.getDate()
-  },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '管道评估结果管理') {
+    '$store.state.map.halfP_editableTabsValue': function (n, o) {
+      console.log('底部栏变化')
+      if (n !== 'pipelineEvaluation') {
         this.clearAll()
         this.hasData = false
       } else {
         this.init()
       }
+    },
+    '$store.state.gis.activeSideItem': function (n, o) {
+      if (n === '检测成果专题图') this.clearAll()
     },
     'searchValue.testTime.startDate': function (n) {
       this.searchValue.testTime.finishDate = n
@@ -480,6 +485,19 @@ export default {
     }
   },
   methods: {
+    rect () {
+      this.removeEvent()
+      this.drawer = new iDraw(this.map, 'rect', {
+        showCloser: false,
+        endDrawCallBack: fea => {
+          this.addEvent()
+          this.drawer.remove()
+          this.drawFea = fea
+          console.log('绘制的图形', fea)
+        }
+      })
+      this.drawer.start()
+    },
     //导出表格
     startDownload() {
       let self = this
@@ -612,6 +630,7 @@ export default {
     },
 
     init() {
+      this.getDate()
       this.vectorLayer = new VectorLayer({ source: new VectorSource() })
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
@@ -619,22 +638,33 @@ export default {
       })
       this.map.addLayer(this.vectorLayer)
       this.map.addLayer(this.lightLayer)
+      this.addEvent()
+      this.getPipeDefectData()
+    },
+    addEvent () {
       this.clickEvent = this.map.on('click', (evt) => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
-          this.openPromptBox(feas[0].values_)
+          let filterFea = feas.filter(fea => fea.get('id'))
+          if (filterFea.length === 0) return
+          this.openPromptBox(filterFea[0].values_)
         } else {
           this.currentInfoCard = false
+          this.popup && this.popup.setPosition(null)
           this.lightLayer.getSource().clear()
         }
       })
-      this.getPipeDefectData()
+    },
+    removeEvent() {
+      this.clickEvent && unByKey(this.clickEvent)
     },
     clearAll() {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
-      this.clickEvent && unByKey(this.clickEvent)
+      this.removeEvent()
+      this.popup && this.popup.setPosition(null)
       this.currentInfoCard = false
+      this.drawer && this.drawer.end()
     },
     // 获取缺陷数据
     getPipeDefectData() {
@@ -690,23 +720,21 @@ export default {
           )
 
           // 功能性缺陷
-          if (findFuncColor) {
             let fFea = feature.clone()
-            fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
+            let fColor = findFuncColor ? findFuncColor.color : '#070358'
+            fFea.setStyle(comSymbol.getLineStyle(5, fColor))
             for (let i in feaObj) {
               i !== 'geometry' && fFea.set(i, feaObj[i])
             }
             features.funcDefectFeatures.push(fFea)
-          }
           // 结构性缺陷
-          if (findStrucColor) {
             let sFea = feature.clone()
-            sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
+            let sColor = findStrucColor ? findStrucColor.color : '#070358'
+            sFea.setStyle(comSymbol.getLineStyle(5, sColor))
             for (let i in feaObj) {
               i !== 'geometry' && sFea.set(i, feaObj[i])
             }
             features.strucDefectFeatures.push(sFea)
-          }
           // 管道缺陷等级数据
           feaObj.pipeDefects.forEach((feaObj, index) => {
             if (feaObj.geometry) {
@@ -808,8 +836,9 @@ export default {
         this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(feature)
         let center = new mapUtil().getCenterFromFeatures(feature)
-        this.map.getView().setCenter(center)
         this.map.getView().setZoom(19)
+        this.map.getView().setCenter(center)
+
         return center
       }
     },
@@ -842,29 +871,32 @@ export default {
       }
     },
     // 打开缩略提示框
-    async openPromptBox(row, column, cell, event) {
+    openPromptBox(row, column, cell, event) {
+      console.log('打开弹框')
       this.handleRowClick(row)
       if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
-      let position = this.setPositionByPipeId(row.id)
-      console.log('打开缩略提示框', row)
-      let res = await histroyPipeData({ expNo: row.expNo })
-      this.currentIndex = 0
-      this.currentForm = res.result
-      // 定位
-      if (position) {
-        this.popup = new Overlay({
-          element: document.getElementById('popupCardEva'),
-          //当前窗口可见
-          autoPan: true,
-          positioning: 'bottom-center',
-          stopEvent: true,
-          offset: [18, -25],
-          autoPanAnimation: { duration: 250 }
-        })
-        this.map.addOverlay(this.popup)
-        this.popup.setPosition(position)
-        this.currentInfoCard = true
-      } else this.$message.warning('该管段无位置信息')
+      histroyPipeData({ expNo: row.expNo }).then(res => {
+        if (res.code === 1) {
+          // 定位
+          let position = this.setPositionByPipeId(row.id)
+          if (position) {
+            this.currentForm = res.result
+            this.currentIndex = 0
+            this.popup = new Overlay({
+              element: document.getElementById('popupCardEva'),
+              //当前窗口可见
+              autoPan: true,
+              positioning: 'bottom-center',
+              stopEvent: true,
+              offset: [18, -25],
+              autoPanAnimation: { duration: 250 }
+            })
+            this.map.addOverlay(this.popup)
+            this.popup.setPosition(position)
+            this.currentInfoCard = true
+          } else this.$message.warning('该管段无位置信息')
+        } else this.$message.error('查询详细数据出错!')
+      })
     },
 
     // 详情
@@ -874,7 +906,7 @@ export default {
       this.dialogFormVisible = true
     },
     // 重置
-    async resetBtn() {
+    resetBtn() {
       this.pagination = { current: 1, size: 30 }
       this.searchValue = {
         testTime: {
@@ -886,10 +918,12 @@ export default {
         structClass: '' // 结构型缺陷等级
       }
       this.changeDate()
-      await this.getDate()
+      this.getDate()
+      this.drawer && this.drawer.end()
     },
     // 搜索
     searchApi() {
+      console.log('搜索')
       this.pagination.current = 1
       this.getDate()
       this.searchMap({
@@ -913,15 +947,18 @@ export default {
       source.addFeatures(features)
 
       let center = mapUtil.getCenter(features[0])
-      let view = this.map.getView()
-      view.setCenter(center)
-      view.setZoom(17)
+      if (center.length !== 0) {
+        let view = this.map.getView()
+        view.setCenter(center)
+        view.setZoom(17)
+      }
       function filter (fea) {
-        if (!fea.get('expNo').includes(filterObj.queryText) && !fea.get('material').includes(filterObj.queryText)) return false
+        if (!fea.get('expNo').toLowerCase().includes(filterObj.queryText.toLowerCase()) 
+        && !fea.get('material').toLowerCase().includes(filterObj.queryText.toLowerCase())) return false
 
-        if (!fea.get('funcClass').includes(filterObj.funcClass)) return false
+        if (!fea.get('funcClass') || !fea.get('funcClass').includes(filterObj.funcClass)) return false
 
-        if (!fea.get('structClass').includes(filterObj.structClass)) return false
+        if (!fea.get('funcClass') || !fea.get('structClass').includes(filterObj.structClass)) return false
 
         let date = fea.get('sampleTime')
         let startDate = filterObj.startDate
@@ -942,7 +979,7 @@ export default {
       this.multipleSelection = val
     },
     // 查询数据
-    async getDate() {
+    getDate() {
       let data = this.pagination
       data.wordInfoState = 1
         data.jcStartDate = this.searchValue.testTime.startDate
@@ -950,11 +987,9 @@ export default {
         data.queryParams = this.searchValue.queryParams
         data.funcClass = this.searchValue.funcClass
         data.structClass = this.searchValue.structClass
-      await queryPageAssessment(data).then((res) => {
-        // console.log('接口返回', res)
+      queryPageAssessment(data).then((res) => {
         this.tableData = res.result.records
         this.paginationTotal = res.result.total
-        // this.$message.success("上传成功");
       })
     },
     // 分页触发的事件(主表格)
