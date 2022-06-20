@@ -460,8 +460,8 @@ export default {
     },
   },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '检测成果专题图') {
+    '$store.state.map.halfP_editableTabsValue': function (n, o) {
+      if (n !== 'testResultDiagram') {
         this.clearAll()
         this.$store.dispatch('map/handelClose', {
           box: 'Panel',
@@ -526,29 +526,32 @@ export default {
       this.currentInfoCard2 = false
     },
     setProjectData() {
-      getProject({ current: 1, size: 1e5 }).then((res) => {
+      getProject({ current: 1, size: 1e4 }).then((res) => {
         if (res.code === 1) {
           // label, value
           this.projectOpt = res.result.records.map((record) => {
             return { label: record.prjName, value: record.prjNo }
           })
-          this.form.project = this.projectOpt[0].label
-          let prjNo = this.projectOpt[0].value
-          getReportByProjecetId({ prjNo, state: 1 }).then(res => {
-            if (res.code === 1) {
-              let data = res.result
-              this.reportOpt = data.map(d => {
-                return { label: d.wordInfoName, value: d.id }
-              })
-              if (this.reportOpt.length !== 0) {
-                this.form.report = [this.reportOpt[0].label]
-                this.showLayer(this.projectOpt[0].value, this.reportOpt[0].value)
-              } else {
-                this.loading = false
-                this.hasLoad = true
-              }
-            } else this.$message.error('获取报告失败!')
-          })
+          if (this.projectOpt.length > 0) {
+            this.form.project = this.projectOpt[0].label
+            let prjNo = this.projectOpt[0].value
+            getReportByProjecetId({ prjNo, state: 1 }).then(res => {
+              if (res.code === 1) {
+                let data = res.result
+                this.reportOpt = data.map(d => {
+                  return { label: d.wordInfoName, value: d.id }
+                })
+                if (this.reportOpt.length !== 0) {
+                  this.form.report = [this.reportOpt[0].label]
+                  this.showLayer(this.projectOpt[0].value, this.reportOpt[0].value)
+                } else {
+                  this.loading = false
+                  this.hasLoad = true
+                }
+              } else this.$message.error('获取报告失败!')
+            })
+          }
+
           // 默认选择第一项
           // if (this.projectOpt.length !== 0) {
           //   this.$set(this.form, 'project', this.projectOpt[0].label)

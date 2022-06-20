@@ -23,8 +23,9 @@
                         <el-checkbox-group v-model="checkList">
                             <el-checkbox label="巡检人员"></el-checkbox>
                             <el-checkbox label="工程车辆"></el-checkbox>
-                            <el-checkbox label="上报隐患"></el-checkbox>
-                            <el-checkbox label="上报汛情"></el-checkbox>
+                            <el-checkbox label="隐患位置"></el-checkbox>
+                            <el-checkbox label="汛情位置"></el-checkbox>
+                            <el-checkbox label="事件位置"></el-checkbox>
                         </el-checkbox-group>
                     </div>
                 </div>

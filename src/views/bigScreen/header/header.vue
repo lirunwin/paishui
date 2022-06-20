@@ -25,7 +25,7 @@
                     <div class="entrySys" @click="enterSys()"><span>{{operationName}}</span></div>
                 </div>
             </div>  
-            <div class="underline"></div>
+            <!-- <div class="underline"></div> -->
         </div>
     </transition>
 </template>
@@ -152,7 +152,8 @@ export default {
     width: 100%;
     position: absolute;
     z-index: 2;
-    background: linear-gradient(#021a2a, rgba(2, 26, 42, 0));
+    // background: linear-gradient(#021a2a, rgba(2, 26, 42, 0));
+    background: linear-gradient(#021a2a, rgba(2,26,42,0.3));
     font-family: Source Han Sans CN;
     //public size
     $size30:.15625rem /* 30/192 */;
@@ -281,7 +282,7 @@ export default {
         .otherItem{
             width: 20%;
             height: 100%;
-            font-size: $size20;
+            font-size: $size14;
             font-weight: 400;
             display: flex;
             align-items: center;
@@ -293,17 +294,18 @@ export default {
                 color: #A8D3F1;
             }
             .entrySys {
-                flex: 0.7;
-                color: #eee;
+                flex: 0.6;
+                color: #A8D3F1;
                 background: url("./images/entrySys.png") no-repeat;
                 background-size: 100% 100%;
                 height: 50%;
                 display: flex;
                 align-items: center;
+                justify-content: center;
             }
             .entrySys:hover {
                 cursor: pointer;
-                color: #eee;
+                color: #A8D3F1;
                 background: url("./images/entrySysHover.png") no-repeat;
                 background-size: 100% 100%;
             }

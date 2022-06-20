@@ -8,7 +8,7 @@
             <div class="head">
                 <div class="title">
                     <div class="icon"></div>
-                    <span class="site-info">易漏点视频监测</span>
+                    <span class="site-info">易涝点视频监测</span>
 
                 </div>
             </div>
@@ -40,7 +40,7 @@
 import liquidFillChart from '../overviewData/components/liquidFillChart.vue'
 import hlsVideo from './components/hlsVideo.vue'
 export default {
-    name:"ELPVmonitoring",//易漏点视频监测
+    name:"ELPVmonitoring",//易涝点视频监测
     components:{
         liquidFillChart,
         hlsVideo

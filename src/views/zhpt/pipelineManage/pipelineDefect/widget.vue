@@ -416,12 +416,15 @@ export default {
     }
   },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '管道缺陷管理') {
+    '$store.state.map.halfP_editableTabsValue': function (n, o) {
+      if (n !== 'pipelineDefect') {
         this.clearAll()
       } else {
         this.init()
       }
+    },
+    '$store.state.gis.activeSideItem': function (n, o) {
+      if (n === '检测成果专题图') this.clearAll()
     },
     'searchValue.testTime.startDate': function (n) {
       this.searchValue.testTime.finishDate = n

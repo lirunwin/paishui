@@ -889,12 +889,15 @@ export default {
     this.initdefectQuantityStatisticsB = JSON.parse(JSON.stringify(this.defectQuantityStatisticsB))
   },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '检测报告管理') {
+    '$store.state.map.halfP_editableTabsValue': function (n, o) {
+      if (n !== 'testReportManagement') {
         this.clearAll()
       } else {
         this.init()
       }
+    },
+    '$store.state.gis.activeSideItem': function (n, o) {
+      if (n === '检测成果专题图') this.clearAll()
     },
     'searchValue.dateTime.startDate': function (n) {
       this.searchValue.dateTime.finishDate = n
@@ -1542,16 +1545,12 @@ export default {
           if (resValue.defectCode == sumValue.type) {
             if (resValue.defectLevel == '一级') {
               sumValue.oneValue = resValue.defectNums
-              return
             } else if (resValue.defectLevel == '二级') {
               sumValue.twoValue = resValue.defectNums
-              return
             } else if (resValue.defectLevel == '三级') {
               sumValue.threeValue = resValue.defectNums
-              return
             } else if (resValue.defectLevel == '四级') {
               sumValue.fourValue = resValue.defectNums
-              return
             }
           }
         })
@@ -1560,16 +1559,12 @@ export default {
           if (resValue.defectCode == sumValue.type) {
             if (resValue.defectLevel == '一级') {
               sumValue.oneValue = resValue.defectNums
-              return
             } else if (resValue.defectLevel == '二级') {
               sumValue.twoValue = resValue.defectNums
-              return
             } else if (resValue.defectLevel == '三级') {
               sumValue.threeValue = resValue.defectNums
-              return
             } else if (resValue.defectLevel == '四级') {
               sumValue.fourValue = resValue.defectNums
-              return
             }
           }
         })

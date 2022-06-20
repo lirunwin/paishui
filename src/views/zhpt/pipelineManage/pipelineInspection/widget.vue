@@ -474,13 +474,16 @@ export default {
     this.clearAll()
   },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '管道检测历史管理') {
+    '$store.state.map.halfP_editableTabsValue': function (n, o) {
+      if (n !== 'pipelineInspection') {
         this.clearAll()
         this.hasData = false
       } else {
         this.init()
       }
+    },
+    '$store.state.gis.activeSideItem': function (n, o) {
+      if (n === '检测成果专题图') this.clearAll()
     },
     'searchParams.jcDate.startDate': function (n) {
       this.searchParams.jcDate.finishDate = n
