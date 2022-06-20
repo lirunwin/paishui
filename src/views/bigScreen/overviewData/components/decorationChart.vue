@@ -30,7 +30,7 @@ export default {
             let angle = 0; //角度，用来做简单的动画效果的
             this.timerId=null;
             let option = {
-                backgroundColor: '#000E1A',
+                backgroundColor: 'transparent',
                 title: {
                     text: '{a|' + value + '}\n{c|'+unit+'}',
                     x: 'center',

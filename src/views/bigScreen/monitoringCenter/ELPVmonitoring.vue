@@ -27,7 +27,11 @@
                             <div class="currentLevel">当前水位：<div class="value">42.3m</div></div>
                         </div>
                     </div>
-                    <div class="content"></div>
+                    <div class="content">
+						<video  ref="video_player" width=100% height=100% 
+                          autoplay muted controls>
+                        </video>
+                    </div>
                 </div>
             </div>
         </div>
@@ -35,6 +39,7 @@
 </template>
 
 <script>
+import Hls from "hls.js"
 import liquidFillChart from '../overviewData/components/liquidFillChart.vue'
 export default {
     name:"ELPVmonitoring",//易漏点视频监测
@@ -46,9 +51,38 @@ export default {
     },
     data(){
         return{
-            value:"易漏点（1）"
+            value:"易漏点（1）",
+            hlsPlayer:null
         }
     },
+    watch:{
+        show(n,o){
+            if(n) {
+                this.$nextTick(()=>{
+                    this.initVideo()
+                })
+            }
+        }
+    },
+    methods:{
+        initVideo(){
+            console.log('调试');
+            let url = 'http://223.87.72.104:7086/live/cameraid/1000000%240/substream/1.m3u8';
+            const video = this.$refs.video_player
+            if (this.hlsPlayer != null) {
+                this.hlsPlayer.destroy();
+            }
+			this.hlsPlayer = new Hls();
+			this.hlsPlayer.loadSource(url);
+			this.hlsPlayer.attachMedia(video);
+			this.hlsPlayer.on(Hls.Events.MEDIA_ATTACHED, () => {
+				this.hlsPlayer.loadSource(url)
+			})
+			this.hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+				video.play()
+			});
+        }
+    }
 }
 </script>
 
@@ -161,6 +195,7 @@ export default {
             .content{
                 height:calc(100% - .072917rem);
                 width: 100%;
+                padding: .052083rem /* 10/192 */;
             } 
         }
     }

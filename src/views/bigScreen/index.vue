@@ -8,22 +8,23 @@
     <!--头部菜单模块-->
     <Header/>
     <!--监测中心模块-->
-    <ELPWLMStatistic :show="showMonitoringCenter" :fontSize="fontSize"/><!--左侧模块-->
-    <PNLLMonitoring :show="showMonitoringCenter" v-on:fontSize="fontSize"/> <!--底部模块-->
-    <ELPVmonitoring :show="showMonitoringCenter" />                     <!--右侧模块-->
-    <MMIStatistic :show="showMonitoringCenter" />                       <!--中部模块-->
+    <ELPWLMStatistic :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/><!--左侧模块-->
+    <PNLLMonitoring :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/> <!--底部模块-->
+    <ELPVmonitoring :show="showMonitoringCenter" />                                   <!--右侧模块-->
+    <MMIStatistic :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/>   <!--中部模块-->
     <!--数据总览模块-->
-    <PNIARStatistic :show="showOverviewData" :fontSize="fontSize"/>
+    <PNIARStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
     <WFStatistic :show="showOverviewData" />
-    <DPNLStatistic :show="showOverviewData" :fontSize="fontSize"/>
-    <EMDStatistic :show="showOverviewData" />
+    <DPNLStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
+    <EMDStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
     <WPSVMStatistic :show="showOverviewData" />
-    <MIDStatistic :show="showOverviewData" />
-    <CPNLStatistic :show="showOverviewData" :fontSize="fontSize"/>
+    <MIDStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}"/>
+    <CPNLStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}"/>
   </div>
 </template>
 
 <script>
+import {getBlockPage,getResultList} from '@/api/bigScreenAPI/bigScreenRequest'
 import Flexible from './flexible'
 import Header from './header/header.vue';
 //地图模块
@@ -60,10 +61,18 @@ export default {
   },
   mounted(){
     this.flexibleObject=new Flexible()
+    getBlockPage().then(res=>{
+        console.log('code列表',res)
+    })
   },
   methods:{
-    change(){
-
+    async getRequestResult(params) {
+      let returnData = await new Promise((resolve,reject) => {
+        getResultList(params).then(res => {
+          if(res.code==1) resolve(res.result)
+        }).catch(err=>{})
+      })
+      return returnData
     },
     //图表字体自适配函数
     fontSize(res) {

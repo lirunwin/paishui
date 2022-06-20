@@ -4,23 +4,38 @@
 
 <script>
 import echarts from 'echarts'
+import moment from 'moment'
+// import config from '../config.json'
 export default {
     name:"waterLevelChart",//水位图
     props:{
-        fontSize:{
-            type:Function,
-            default:()=>{
-                return Function
-            }
+        intervalDays:{default:1},
+        deviceSn:{}
+    },
+    watch:{
+        intervalDays:{
+            handler(n,o){
+                this.getPageData(n)
+            },
+            immediate:true
         }
     },
-    mounted(){
-        this.$nextTick(()=>{
-            this.showChart()
-        })
-    },
     methods:{
-        showChart(){
+        getPageData(intervalDays){
+            const {getRequestResult} = this.$listeners
+            getRequestResult({deviceSn: this.deviceSn,blockCode:'singleDevice'}).then(res=>{
+                const Final = res.filter((item) => (new Date(item.scadaTime).getTime() > Date.now() - intervalDays * 24 * 60 * 60 * 1000));
+                let xData=[],yData=[];
+                Final.forEach(item => {
+                    xData.push(moment(item.scadaTime).format('MM-DD'))
+                    yData.push(item.itstrVal)
+                });
+                this.$nextTick(()=>{
+                    this.showChart(xData,yData)
+                })
+            })
+        },
+        showChart(xData,yData){
             let ref=this.$refs.chart
             let option = {
                 grid: {
@@ -29,11 +44,14 @@ export default {
                     right: 25,
                     bottom:'15%'
                 },
+                dataZoom:{
+                    type: 'inside' ,
+                },
                 legend: {
                     right: 0,
                     textStyle: {
                         color: "rgba(254, 255, 255, 0.7)",
-                        fontSize:this.fontSize(12)
+                        fontSize:this.$listeners.fontSize(12)
                     }
                 },
                 tooltip : {
@@ -54,15 +72,15 @@ export default {
                 xAxis: {
                     type: 'category',
                     boundaryGap: false,
-                    data: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
+                    data: xData,
                     splitLine: {
                         show: false
                     },
                     axisLabel:{
                         show:true,
-                        interval:0,
+                        // interval:0,
                         color:'rgba(254, 255, 255, 0.7)',
-                        fontSize:this.fontSize(12),
+                        fontSize:this.$listeners.fontSize(12),
                         fontFamily:'Source Han Sans CN',
                         fontWeight:400
                     },
@@ -86,7 +104,7 @@ export default {
                     nameTextStyle:{
                         align:'right',
                         fontFamily: 'Source Han Sans CN',
-                        fontSize: this.fontSize(12),
+                        fontSize: this.$listeners.fontSize(12),
                         fontStyle: 'normal',
                         fontWeight: '400',
                         color: 'rgba(254, 255, 255, 0.7)'
@@ -100,7 +118,7 @@ export default {
                     axisLabel:{
                         show:true,
                         color:'rgba(254, 255, 255, 0.7)',
-                        fontSize:this.fontSize(12),
+                        fontSize:this.$listeners.fontSize(12),
                         fontFamily:'Source Han Sans CN',
                         fontWeight:400
                     },
@@ -162,26 +180,26 @@ export default {
                                     label: {
                                         color: "rgba(14, 167, 255, 0.8)",
                                         show: true,
-                                        fontSize: this.fontSize(12),
+                                        fontSize: this.$listeners.fontSize(12),
                                         fontWeight:600,
                                         position: "top"
                                     }
                                 },
-                                {
-                                    type: "max",
-                                    itemStyle: {
-                                        color: 'rgb(234, 58, 59)',
-                                        borderColor: 'rgba(234, 58, 59,0.5)',
-                                        borderWidth: 12
-                                    },
-                                    label: {
-                                        color: "rgba(234, 58, 59, 0.8)",
-                                        show: true,
-                                        fontSize: this.fontSize(12),
-                                        fontWeight:600,
-                                        position: "top"
-                                    }
-                                }
+                                // {
+                                //     type: "max",
+                                //     itemStyle: {
+                                //         color: 'rgb(234, 58, 59)',
+                                //         borderColor: 'rgba(234, 58, 59,0.5)',
+                                //         borderWidth: 12
+                                //     },
+                                //     label: {
+                                //         color: "rgba(234, 58, 59, 0.8)",
+                                //         show: true,
+                                //         fontSize: this.$listeners.fontSize(12),
+                                //         fontWeight:600,
+                                //         position: "top"
+                                //     }
+                                // }
                             ],
                             symbol:'circle',
                             symbolSize :5,
@@ -203,7 +221,7 @@ export default {
                         //     } ] ],
                         //     silent: true,
                         // },
-                        data: [120, 110, 125, 145,220, 210, 191]
+                        data:yData
                     },
                     {
                         name: '报警水位',
@@ -221,7 +239,7 @@ export default {
                             borderColor: 'rgba(234, 58, 59, 0.27)',
                             borderWidth: 12
                         },
-                        data: [180,180,180,180,180,180,180],
+                        data: [],
                     }, 
                 ],
                 visualMap:[

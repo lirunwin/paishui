@@ -26,7 +26,7 @@
                             <decorationChart  
                             :color="item.color" 
                             :data="{value:item.value,unit:item.unit}" 
-                            :fontSize="fontSize"/>
+                            :fontSize="$listeners.fontSize"/>
                         </div>
                         <div class="title">{{item.title}}</div>
                     </div>
@@ -34,7 +34,7 @@
                 <div class="barChartArea">
                     <div class="bItem" v-for="item in orderList" :key="item.title">
                         <div class="bchart">
-                            <animateChart :img="item.img" :fontSize="fontSize"/>
+                            <animateChart :img="item.img" :fontSize="$listeners.fontSize"/>
                         </div>
                         <div class="bcomb">
                             <div class="sta">
@@ -75,12 +75,6 @@ export default {
     },
     props:{
         show:{},
-        fontSize:{
-            type: Function,
-            default: () => {
-                return Function
-            }
-        }
     },
     data(){
         return{
@@ -95,19 +89,22 @@ export default {
             staList:[
                 {
                     title:"巡检里程",
-                    value:100,
+                    code:'length',
+                    value:0,
                     unit:'km',
                     color:'#05BCD7'
                 },
                 {
                     title:"巡检任务数",
-                    value:100,
+                    code:'taskNum',
+                    value:0,
                     unit:'个',
                     color:'#FFB54C'
                 },
                 {
                     title:"工单总数",
-                    value:600,
+                    code:"",
+                    value:0,
                     unit:'个',
                     color:'#0EA7FF'
                 }
@@ -172,22 +169,22 @@ export default {
             ]
         }
     },
-    watch:{
-        show:{
-            handler(n,o){
-                if(n){
-                    this.$nextTick(()=>{
-
-                    })
-                }
-            },
-        }
-    },
     mounted(){
-        
+        this.getPageData()
     },
     methods:{
-
+        getPageData(){
+            const {getRequestResult} = this.$listeners
+            getRequestResult({blockCode:'patrolCount'}).then(res=>{
+                for(let i in res){
+                    if(i=='length'){
+                        this.staList[this.staList.findIndex(item=>item.code==i)].value=(res[i]/1000).toFixed(0)
+                    }else{
+                        this.staList[this.staList.findIndex(item=>item.code==i)].value=res[i]
+                    }
+                }
+            })
+        },
     }
 }
 </script>

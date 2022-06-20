@@ -6,14 +6,14 @@
     leave-active-class="animate__zoomOut">
         <div class="widget-MMIStatistic" v-if="show">
             <div class="boxpanel">
-                <div class='statisticitem' v-for="item in dataList" :key="item.title">
+                <div class='statisticitem' v-for="(item,index) in dataList" :key="item.name">
                     <div class='itemName'>
-                        <div class="title">{{item.title}}</div>
-                        <div class="img" :class="item.imgClass"></div>
+                        <div class="title">{{item.name}}</div>
+                        <div class="img" :class="('img'+index)"></div>
                     </div>
                     <div class='itemCount'>
-                        <div class="wrap"><div class="status">正常：</div><div class="normal">{{item.normalNum}}个</div></div>
-                        <div class="wrap"><div class="status">异常：</div><div class="error">{{item.errorNum}}个</div></div>
+                        <div class="wrap"><div class="status">正常：</div><div class="normal">{{item.normal}}个</div></div>
+                        <div class="wrap"><div class="status">异常：</div><div class="error">{{item.warning}}个</div></div>
                     </div>
                 </div>
             </div>
@@ -30,32 +30,28 @@ export default {
     data(){
         return{
             dataList:[
-                {
-                    title:'管网液位监测',
-                    imgClass:'img0',
-                    normalNum:22,
-                    errorNum:22,
-                },
-                {
-                    title:'易涝点水位',
-                    imgClass:'img1',
-                    normalNum:22,
-                    errorNum:22,
-                },
-                {
-                    title:'易涝点视频',
-                    imgClass:'img2',
-                    normalNum:22,
-                    errorNum:22,
-                },
-                {
-                    title:'智慧井盖',
-                    imgClass:'img3',
-                    normalNum:22,
-                    errorNum:22,
-                },
+                {name:'液位监测仪',normal:0,warning:0,},
+                {name:'易涝点水位',normal:0,warning:0,},
+                {name:'易涝点视频',normal:0,warning:0,},
+                {name:'智慧井盖',normal:0,warning:0,},
             ]
         }
+    },
+    mounted(){
+        this.getPageData()
+    },
+    methods:{
+        getPageData(){
+            const {getRequestResult} = this.$listeners
+            getRequestResult({blockCode:'typeOnline'}).then(res=>{
+                res.forEach(item => {
+                    let index = this.dataList.findIndex(i=>i.name==item.name)
+                    if(index!=-1){
+                         this.dataList[index]=item
+                    }
+                });
+            })
+        },
     }
 }
 </script>
@@ -100,19 +96,19 @@ export default {
                     width: .385417rem /* 74/192 */;
                 }
                 .img0{
-                    background: url('./images/管网液位.png') no-repeat center center;
+                    background: url('~@/views/bigScreen/monitoringCenter/images/管网液位.png') no-repeat center center;
                     background-size: 100% 100%;
                 }
                 .img1{
-                    background: url('./images/水位.png') no-repeat center center;
+                    background: url('~@/views/bigScreen/monitoringCenter/images/水位.png') no-repeat center center;
                     background-size: 100% 100%;
                 }
                 .img2{
-                    background: url('./images/视频.png') no-repeat center center;
+                    background: url('~@/views/bigScreen/monitoringCenter/images/视频.png') no-repeat center center;
                     background-size: 100% 100%;
                 }
                 .img3{
-                    background: url('./images/井盖.png') no-repeat center center;
+                    background: url('~@/views/bigScreen/monitoringCenter/images/井盖.png') no-repeat center center;
                     background-size: 100% 100%;
                 }
             }

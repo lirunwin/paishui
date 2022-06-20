@@ -9,6 +9,8 @@ import View from 'ol/View'
 import { appconfig } from 'staticPub/config'
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import request from '@/utils/request'
+import TileLayer from 'ol/layer/Tile'
+import { TileSuperMapRest, SuperMap, LayerInfoService, DatasetService } from '@supermap/iclient-ol'
 export default {
     name:"mapView",//地图
     data(){
@@ -18,7 +20,8 @@ export default {
     },
     mounted(){
         this.$nextTick(()=>{
-            this.initConfig()
+            // this.initConfig()
+            this.initMap()
         })
     },
     methods:{
@@ -104,6 +107,8 @@ export default {
             this.view = new Map({
                 target: this.mapTarget,
                 view: new View({
+                    // center: [104.22,30.02],
+                    // zoom: 10,
                     center: initCenter,
                     zoom: initZoom,
                     maxZoom: 20,
@@ -115,16 +120,25 @@ export default {
         },
         //图层添加
         addLayers(){
-            let layersSource = appconfig.gisResource['iserver_resource'].layerService.layers
-            this.$store.state.bigScreen.layersSource=layersSource
-            new TF_Layer().createLayers(layersSource).then(layers => {
-                layers.forEach(layer => {
-                    layer && this.view.addLayer(layer)
-                })
-                // console.log(this.view.getLayers())
-                this.$parent.view=this.view
-                this.$store.state.bigScreen.view=this.view
-            })
+            // let layersSource = appconfig.gisResource['iserver_resource'].layerService.layers
+            // this.$store.state.bigScreen.layersSource=layersSource
+            // new TF_Layer().createLayers(layersSource).then(layers => {
+            //     layers.forEach(layer => {
+            //         layer && this.view.addLayer(layer)
+            //     })
+            //     // console.log(this.view.getLayers())
+            //     this.$parent.view=this.view
+            //     this.$store.state.bigScreen.view=this.view
+            // })
+            //添加图层
+            var layer = new TileLayer({
+                source: new TileSuperMapRest({
+                    url: 'http://221.182.8.141:8090/iserver/services/map-renshou/rest/maps/city',
+                    wrapX: true
+                }),
+                projection: 'EPSG:4326'
+            });
+            this.view.addLayer(layer);
         },
     }
 }
@@ -134,10 +148,10 @@ export default {
     .mapView{
         height: 100%;
         width: 100%;
-        /deep/ .ol-layer{
-            filter: invert(100%) hue-rotate(180deg);//实现天地图从白色变成暗黑模式的地图服务
-            -webkit-filter: invert(100%) hue-rotate(180deg);
-        }
+        // /deep/ .ol-layer{
+        //     filter: invert(100%) hue-rotate(180deg);//实现天地图从白色变成暗黑模式的地图服务
+        //     -webkit-filter: invert(100%) hue-rotate(180deg);
+        // }
         /**地图控件隐藏 */
         /deep/ .ol-zoom {
             display: none !important;

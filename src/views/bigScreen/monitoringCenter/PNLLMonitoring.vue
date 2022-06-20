@@ -44,109 +44,7 @@ export default {
     },
     data(){
         return{
-            tableData:[
-                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"在线",
-                    "monitorStatus":"正常",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-                                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"离线",
-                    "monitorStatus":"正常",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"离线",
-                    "monitorStatus":"报警",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"在线",
-                    "monitorStatus":"正常",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-
-                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"在线",
-                    "monitorStatus":"报警",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },{
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"在线",
-                    "monitorStatus":"正常",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"在线",
-                    "monitorStatus":"正常",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"在线",
-                    "monitorStatus":"正常",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"在线",
-                    "monitorStatus":"正常",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-                {
-                    "expNo":"213124324",
-                    "outfalltype":"管井监测设备1",
-                    "outfallshape":"管井监测站",
-                    "deviceStatus":"在线",
-                    "monitorStatus":"正常",
-                    "receivewater":"0",
-                    "address":"0",
-                    "datasource":"2021-6-10  12:2:34",
-                },
-                
-            ],
+            tableData:[],
             column:[],
             dialogVisible:false,
             title:"",
@@ -159,8 +57,21 @@ export default {
     },
     mounted(){
         this.column=this.config.PNLLMColumn
+        this.getPageData()
     },
     methods:{
+        getPageData(){
+            const {getRequestResult} = this.$listeners
+            getRequestResult({blockCode:'gwywjc'}).then(res=>{
+                this.tableData=res.map(item=>{
+                    return {
+                        ...item,
+                        deviceStatus:item.deviceStatus=='0'?'离线':"在线",
+                        isAlarm:!item.isAlarm?'正常':'报警'
+                    }
+                })
+            })
+        },
         cellStyle({ row, column, rowIndex, columnIndex }) {
             let color='';
             if(columnIndex==4){
@@ -179,7 +90,7 @@ export default {
         rowClick(row){
             console.log("点击结果",row)
             this.dialogVisible=true
-            this.title=row.outfalltype+"-"+"监测数据"
+            this.title=row.deviceName+"-"+"监测数据"
         },
     }
 }
