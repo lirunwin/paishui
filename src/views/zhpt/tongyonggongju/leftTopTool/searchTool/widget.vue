@@ -12,7 +12,7 @@
       <div v-for="(item, index) in resData" :key="index" class="more res-box-item" @click="setlocation(item.geometry, item.name)">
         <div class="box-address" :title="item.title" v-html='item.mark'></div>
         <div>
-          <span class="res-box-item-span" style="float:left;">编号：{{ item.name }}</span>
+          <span class="res-box-item-span" style="float:left;" :title="item.name">编号：{{ item.name }}</span>
           <span class="res-box-item-span" style="float:right;">设备类型：{{ item.type }}</span>
         </div>
       </div>
@@ -33,6 +33,7 @@ import { mapUtil } from '@/views/zhpt/common/mapUtil/common';
 import { comSymbol } from '@/utils/comSymbol';
 import GeoJSON from 'ol/format/GeoJSON';
 import markImg from './img/locate.png'
+import { appconfig } from 'staticPub/config';
 
 export default {
   name: 'searchTool',
@@ -125,10 +126,18 @@ export default {
      * 查询地址
     */
     searchAdress () {
-      // eg: 攀枝花大道南段
+      console.log('搜索')
       this.isloading = true
       let queryText = `ADDRESS like '%${this.searchInput}%'`
-      new iQuery({ dataSetInfo: [{ label: '排水管线', name: 'TF_PSPS_PIPE_B' }] }).sqlQuery(queryText, this.maxLength).then(res => {
+      let dataSetInfo = []
+      let [name, type] = appconfig.initLayers.split("&&")
+      let layer = mapUtil.getAllSubLayerNames(name, type)
+      layer.sublayers.forEach(group => {
+        group.sublayers.forEach(sub => {
+          dataSetInfo.push({ name: sub.name.split('@')[0], label: sub.title })
+        })
+      })
+      new iQuery({ dataSetInfo }).sqlQuery(queryText, this.maxLength).then(res => {
         this.isloading = false
         let resData = res.filter(item => item.type === "processCompleted" && item.result.featureCount !== 0)
         if (resData.length !== 0) {
@@ -141,8 +150,11 @@ export default {
             this.lightInfo = this.searchInput
             let add = item.properties['ADDRESS']
             let geometry = item.geometry
-            let mark = add.replace(this.searchInput, '<span class="light-text">' + this.searchInput +'</span>')
-            return { name: item.properties['LNO'], type: item.properties['TYPE'], mark, geometry, title: add }
+            let mark = add.replace(this.searchInput, '<span class="light-text">地址:  ' + this.searchInput +'</span>')
+            return { 
+              name: item.properties['LNO'] || item.properties['SID'],
+              type: item.properties['TYPE'], 
+              mark, geometry, title: add }
           })
           this.searchData = [...this.resData]
           this.resData.length = this.currDataIndex
@@ -177,6 +189,7 @@ export default {
      * 定位
     */
     location (center, features) {
+      this.vectorLayer.getSource().clear()
       this.vectorLayer.getSource().addFeatures(features)
       this.map.getView().setCenter(center)
       this.map.getView().setZoom(19)
@@ -255,6 +268,10 @@ export default {
   .res-box-item-span {
     font-size: 13px;
     color:#bbb;
+    max-width: 50%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   #searchBox .res-box-item:hover div {
     color: #fff;

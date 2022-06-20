@@ -14,8 +14,8 @@
                 <el-col :span="21">
                     <div class="btnGroup">
                         <el-button type="primary" size="mini" >查询</el-button>
-                        <el-button type="success" size="mini" >新增</el-button>
-                        <el-button type="warning" size="mini" @click="infoDetail">修改</el-button>
+                        <el-button type="success" size="mini" @click="addData()">新增</el-button>
+                        <el-button type="warning" size="mini" @click="infoDetail()">修改</el-button>
                         <el-button type="danger" size="mini" >删除</el-button>
                     </div>
                 </el-col>
@@ -105,6 +105,12 @@ export default {
         handleSelectionChange(value){
             this.selectedData=value
         },
+        //新增数据
+        addData(){
+            this.dialogVisible=true;
+            this.dialogName="新增"
+        },
+        //编辑查看详情
         infoDetail(row,field){
             console.log("详情",row)
             this.dialogVisible=true;

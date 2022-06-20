@@ -28,9 +28,7 @@
                         </div>
                     </div>
                     <div class="content">
-						<video  ref="video_player" width=100% height=100% 
-                          autoplay muted controls>
-                        </video>
+                        <hls-video></hls-video>
                     </div>
                 </div>
             </div>
@@ -39,12 +37,13 @@
 </template>
 
 <script>
-import Hls from "hls.js"
 import liquidFillChart from '../overviewData/components/liquidFillChart.vue'
+import hlsVideo from './components/hlsVideo.vue'
 export default {
     name:"ELPVmonitoring",//易漏点视频监测
     components:{
-        liquidFillChart
+        liquidFillChart,
+        hlsVideo
     },
     props:{
         show:{},
@@ -52,36 +51,12 @@ export default {
     data(){
         return{
             value:"易漏点（1）",
-            hlsPlayer:null
         }
     },
     watch:{
-        show(n,o){
-            if(n) {
-                this.$nextTick(()=>{
-                    this.initVideo()
-                })
-            }
-        }
+        show(n,o){}
     },
-    methods:{
-        initVideo(){
-            let url = 'http://223.87.72.104:7086/live/cameraid/1000000%240/substream/1.m3u8';
-            const video = this.$refs.video_player
-            if (this.hlsPlayer != null) {
-                this.hlsPlayer.destroy();
-            }
-			this.hlsPlayer = new Hls();
-			this.hlsPlayer.loadSource(url);
-			this.hlsPlayer.attachMedia(video);
-			this.hlsPlayer.on(Hls.Events.MEDIA_ATTACHED, () => {
-				this.hlsPlayer.loadSource(url)
-			})
-			this.hlsPlayer.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-				video.play()
-			});
-        }
-    }
+    methods:{},
 }
 </script>
 

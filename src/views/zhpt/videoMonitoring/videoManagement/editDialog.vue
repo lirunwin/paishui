@@ -16,69 +16,73 @@
                     <el-row type="flex" align="center">
                         <el-col :span="12">
                             <el-form-item label="视频点位名称">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入视频点位名称"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="视频点位编号">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="自动产生" disabled></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row type="flex" align="center">
                         <el-col :span="12">
                             <el-form-item label="所属权属状态">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入所属权属状态"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row type="flex" align="center">
                         <el-col :span="12">
                             <el-form-item label="设备厂家">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入设备厂家"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="设备型号">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入设备型号"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row type="flex" align="center">
                         <el-col :span="24">
                             <el-form-item label="安装地址">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入安装地址"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row type="flex" align="center">
                         <el-col :span="12">
                             <el-form-item label="安装单位">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入安装单位"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row type="flex" align="center">
                         <el-col :span="12">
                             <el-form-item label="安装人员">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入安装人员"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="安装时间">
-                                <el-input v-model="form.name"></el-input>
+                                <el-date-picker
+                                    v-model="form.name"
+                                    type="date"
+                                    placeholder="选择安装时间">
+                                </el-date-picker>
                             </el-form-item>
                         </el-col>
                     </el-row>
                     <el-row type="flex" align="center">
                         <el-col :span="12">
                             <el-form-item label="负责人">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入负责人姓名"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="电话">
-                                <el-input v-model="form.name"></el-input>
+                                <el-input v-model="form.name" placeholder="请输入电话号码"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -98,7 +102,7 @@
                                 <el-input
                                     type="textarea"
                                     :rows="2"
-                                    placeholder="请输入内容"
+                                    placeholder="请输入详细描述"
                                     v-model="form.name">
                                     </el-input>
                             </el-form-item>
@@ -112,7 +116,9 @@
             </span>
         </div>
         <div class="rightPanel">
-            <div class="map">地图</div>
+            <div class="map">
+                <common-map :mapname="'videoManagementMap'"></common-map>
+            </div>
             <div class="video">视频</div>
         </div>
     </div>
@@ -120,8 +126,12 @@
 </template>
 
 <script>
+import commonMap from '@/views/zhpt/drainageManagement/commonMap.vue'
 export default {
     name:"editDialog",//排水户档案添加、修改
+    components:{
+        commonMap
+    },
     props:{
         visible:{required:true},
         showName:{required:true},
@@ -129,6 +139,7 @@ export default {
     data(){
         return{
             dialogVisible:false,
+            view:null,
             form:{
                 name:""
             }
@@ -139,6 +150,9 @@ export default {
             return this.showName+"视频监控点";
         }
     },
+    mounted(){
+        console.log('地图对象',this.$children[0].view)
+    },
     methods:{
         submit(){
             // this.$refs['baseInfoForm'].validate((valid) => {
@@ -148,6 +162,7 @@ export default {
             //         return false;
             //     }
             // });
+            
         },
         cancel(){
             this.$emit('cancelOperation')
@@ -168,19 +183,21 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/deep/ .el-dialog .el-dialog__header {
-    background-color: royalblue !important;
-}
-/deep/ .el-dialog .el-dialog__header .el-dialog__title {
-    color: white !important;
-}
-/deep/ .el-dialog .el-dialog__header .el-dialog__headerbtn .el-dialog__close{
-    color: white !important;
-}
-/deep/ .el-dialog__body{
-    .dialog-footer{
-        display: flex;
-        justify-content: flex-end;
+/deep/ .el-dialog {
+    .el-dialog__header {
+        background-color: royalblue !important;
+        .el-dialog__title {
+            color: white !important;
+        }
+        .el-dialog__headerbtn .el-dialog__close{
+            color: white !important;
+        }
+    }
+    .el-dialog__body{
+        .dialog-footer{
+            display: flex;
+            justify-content: flex-end;
+        }
     }
 }
 .contentInfo{
@@ -210,6 +227,9 @@ export default {
         }
         .content{
             padding:10px;
+            /deep/ .el-form-item__content{
+                display: flex;
+            }
         }
     }
     .rightPanel{
