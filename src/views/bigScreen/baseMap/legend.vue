@@ -55,6 +55,18 @@ export default {
                     img:require('@/views/bigScreen/baseMap/images/工程车.png'),
                     name:'工程车辆'
                 },
+                {
+                    img:require('@/views/bigScreen/baseMap/images/事件.png'),
+                    name:'上报事件'
+                },
+                {
+                    img:require('@/views/bigScreen/baseMap/images/汛情.png'),
+                    name:'上报汛情'
+                },
+                {
+                    img:require('@/views/bigScreen/baseMap/images/隐患.png'),
+                    name:'上报隐患'
+                },
             ]
         }
     },
@@ -118,7 +130,7 @@ export default {
         .legendBoard{
             margin-left: .052083rem /* 10/192 */;
             width: 1.84375rem /* 354/192 */;
-            height: .541667rem /* 104/192 */;
+            // height: .541667rem /* 104/192 */;
             background: rgba(3, 109, 190,0.4);
             border-radius: 2px;
             display: flex;

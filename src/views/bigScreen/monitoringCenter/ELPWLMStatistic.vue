@@ -36,7 +36,10 @@
                 <div class="content-item" v-for="item in siteList" :key="item.deviceName">
                     <div class="title"><div class="icon"></div><span class="site-name">{{item.deviceName}}水位监测</span></div>
                     <div class="content">
-                        <waterLevelChart v-on="$listeners" :intervalDays="selectValue" :deviceSn="item.deviceSn"/>
+                        <waterLevelChart v-on="$listeners"
+                         :intervalDays="selectValue" 
+                         :deviceSn="item.deviceSn"
+                         :warningWl="item.warningWl"/>
                     </div>
                 </div>
             </div>

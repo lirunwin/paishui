@@ -10,7 +10,8 @@ export default {
     name:"waterLevelChart",//水位图
     props:{
         intervalDays:{default:1},
-        deviceSn:{}
+        deviceSn:{},
+        warningWl:{},
     },
     watch:{
         intervalDays:{
@@ -25,17 +26,19 @@ export default {
             const {getRequestResult} = this.$listeners
             getRequestResult({deviceSn: this.deviceSn,blockCode:'singleDevice'}).then(res=>{
                 const Final = res.filter((item) => (new Date(item.scadaTime).getTime() > Date.now() - intervalDays * 24 * 60 * 60 * 1000));
-                let xData=[],yData=[];
+                console.log(res)
+                let xData=[],yData=[],alarmData=[];
                 Final.forEach(item => {
                     xData.push(moment(item.scadaTime).format('MM-DD'))
                     yData.push(item.itstrVal)
+                    alarmData.push(this.warningWl)
                 });
                 this.$nextTick(()=>{
-                    this.showChart(xData,yData)
+                    this.showChart(xData,yData,alarmData)
                 })
             })
         },
-        showChart(xData,yData){
+        showChart(xData,yData,alarmData){
             let ref=this.$refs.chart
             let option = {
                 grid: {
@@ -239,7 +242,7 @@ export default {
                             borderColor: 'rgba(234, 58, 59, 0.27)',
                             borderWidth: 12
                         },
-                        data: [],
+                        data: alarmData,
                     }, 
                 ],
                 visualMap:[
