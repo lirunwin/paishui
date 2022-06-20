@@ -412,7 +412,8 @@ export default {
       // 
       showVideo: false,
       videoUrl: '',
-      videoTitle: '视频'
+      videoTitle: '视频',
+      hasLoad: false
     }
   },
   watch: {
@@ -431,7 +432,6 @@ export default {
     }
   },
   created() {
-    let res = this.getDate()
   },
   computed: {
     // 获取文件url
@@ -547,8 +547,10 @@ export default {
       this.clickEvent && unByKey(this.clickEvent)
       this.currentInfoCard = false
       this.popup && this.popup.setPosition(null)
+      this.vectorLayer = this.lightLayer = this.clickEvent = this.popup = null
     },
     init() {
+      this.getDate()
       this.vectorLayer = new VectorLayer({ source: new VectorSource() })
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
@@ -572,11 +574,13 @@ export default {
     // 获取缺陷数据
     getPipeDefectData() {
       getDefectData({ state: 1 }).then((res) => {
+        this.hasLoad = true
         if (res.code === 1) {
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
+            if (!(this.vectorLayer && this.lightLayer)) return
             this.vectorLayer.getSource().clear()
             this.lightLayer.getSource().clear()
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
@@ -700,19 +704,17 @@ export default {
       }
     },
     setPositionByPipeId(id) {
-      console.log('定位')
       let features = this.vectorLayer.getSource().getFeatures()
       let filterFea = features.find((fea) => fea.get('id') === id)
       if (filterFea) {
+        this.lightLayer.getSource().clear()
         let feature = new Feature({
           geometry: filterFea.getGeometry().clone(),
           style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')
         })
-        this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(feature)
         let center = new mapUtil().getCenterFromFeatures(feature)
-        this.map.getView().setCenter(center)
-        this.map.getView().setZoom(21)
+        this.map.getView().animate({ zoom: 20 }, { center }, { duration: 0.5 })
         return center
       }
     },
@@ -746,23 +748,18 @@ export default {
     },
     // 打开缩略提示框
     async openPromptBox(row, column, cell, event) {
+      if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
       this.handleRowClick(row)
-      if (!this.hadLoad) return this.$message.warning('地图数据未加载完')
+      if (!(this.vectorLayer && this.lightLayer)) return
       let position = this.setPositionByPipeId(row.id)
-      console.log('打开缩略提示框', row)
-      this.currentId = row.id
-      let res = await queryDefectdetails(row.id)
-      this.DetailsForm = res.result
-      // this.isPromptBox = { ...row }
-      // let res = await assessmentDefect(row.id)
-      // this.currentForm = res.result
-      this.currentInfoCard = true
-
       //
       if (position) {
+        this.currentId = row.id
+        let res = await queryDefectdetails(row.id)
+        this.DetailsForm = res.result
+        this.currentInfoCard = true
         this.popup = new Overlay({
           element: document.getElementById('popupCardDefect'),
-          //当前窗口可见
           autoPan: true,
           positioning: 'bottom-center',
           stopEvent: true,
@@ -771,8 +768,7 @@ export default {
         })
         this.map.addOverlay(this.popup)
         this.popup.setPosition(position)
-
-      }
+      } else this.$message.error('该点无位置信息')
 
       // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },

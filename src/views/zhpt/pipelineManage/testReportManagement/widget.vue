@@ -1225,15 +1225,13 @@ export default {
     clearAll() {
       console.log('报告清除')
       this.popup && this.popup.setPosition(null)
-      let dom = document.getElementById('popupCardRpt')
       this.currentInfoCard = false
       this.currentInfoCard2 = false
-      this.map.removeLayer(this.vectorLayer)
-      this.map.removeLayer(this.lightLayer)
-      this.$refs.myMap && this.$refs.myMap.map.removeLayer(this.vectorLayer2)
-      this.vectorLayer2.getSource().clear()
+      this.vectorLayer && this.map.removeLayer(this.vectorLayer)
+      this.lightLayer && this.map.removeLayer(this.lightLayer)
+      this.$refs.myMap && this.vectorLayer2 && this.$refs.myMap.map.removeLayer(this.vectorLayer2)
       this.clickEvent && unByKey(this.clickEvent)
-
+      this.popup = this.vectorLayer = this.lightLayer = this.vectorLayer2 = this.clickEvent = null
     },
     // 根据状态设置每列表格样式
     modality(obj) {
@@ -1304,6 +1302,7 @@ export default {
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData, !light)
             this.lightLayer.getSource().clear()
+            if (!layer) return
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
               let center = mapUtil.getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               if (light) {

@@ -389,8 +389,7 @@ export default class BaseMap extends Vue {
     console.log('=====', this.Comps)
   }
   mounted() {
-    // this.initBodySize() // 初始化弹出框位置
-    // this.registerEPSG4490(); // 注册 4490 坐标系
+    console.log('地图重新加载')
     this.initConfig() // 加载配置 ==> 加载地图
   }
   // 页面初始化
@@ -673,10 +672,7 @@ export default class BaseMap extends Vue {
     //这四个类型分别对应地图工具栏的左上角,左下角,右上角,右下角
     //这四个工具栏不在左边的功能列表中展示（改设置在src\layout\components\Sidebar\index.vue中）
     if (this.$store.state && this.$store.state.routeSetting && this.$store.state.routeSetting.routes) {
-      if (this.currTitle === 'psjc') {
-        this.currTitle = 'map'
-      }
-      const allModel = this.$store.state.routeSetting.dynamicRoutes[this.currTitle] //获取所有功能
+      const allModel = this.$store.state.routeSetting.dynamicRoutes['map'] //获取所有功能
       if (!allModel) return
       /**工具栏识别的字符集合*/
       const toolBoxList = ['leftTopTool', 'leftBottomTool', 'rightBottomTool', 'rightTopTool']
