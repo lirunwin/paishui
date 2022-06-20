@@ -143,17 +143,7 @@ export default {
       queTextName:'',
 
       // 
-      layerList: [ 
-        { title: '雨水口', name: 'TF_PSPS_COMB_B', open: false },
-        { title: '特征点', name: 'TF_PSPS_POINT_B', open: false },
-        { title: '检查井', name: 'TF_PSPS_MANHOLE_B', open: false },
-        { title: '排放口', name: 'TF_PSPS_OUTFALL_B', open: false },
-        // { title: '闸门', name: 'TF_PSPS_GATE_B', open: false },
-        { title: '给水节点', name: 'TF_JSJS_NODE_B', open: false },
-        { title: '燃气节点', name: 'TF_RQTQ_NODE_B', open: false },
-        { title: '电力节点', name: 'TF_DLLD_NODE_B', open: false },
-        { title: '电信节点', name: 'TF_TXDX_NODE_B', open: false },
-      ],
+      layerList: [],
       attList: [
         { name: "地址", field: "ADDRESS" },
         { name: "权属单位", field: "BELONG" },
@@ -171,6 +161,10 @@ export default {
     this.initLayer()
   },
   watch: {
+    sidePanelOn (n, o) {
+      if (n === 'countStat') this.initLayer()
+      else this.clearAll()
+    },
     queText(nv,ov){
       if(this.queText.length == 0 ) this.queTextName = '';
     },
@@ -218,6 +212,13 @@ export default {
     },
     initLayer () {
       var mapView = this.mapView = this.data.mapView
+      let [name, type] = appconfig.initLayers.split("&&")
+      let layer = mapUtil.getAllSubLayerNames(name, type)
+      let layers = []
+      layer.sublayers.forEach(layer => {
+        layer.sublayers.forEach(sub => layers.push({ name: sub.name.split("@")[0], title: sub.title }))
+      })
+      this.layerList = layers
     },
 
     analysis () {
@@ -263,7 +264,7 @@ export default {
             }
             feas[layerName] = queryFeatures
           })
-        } else return this.$message.error("无符合过滤条件数据")
+        } else this.$message.error("无符合过滤条件数据")
 
         this.addResData(feas)
         this.analysisDisable = false
@@ -302,6 +303,7 @@ export default {
         // echarts
         let dataX = [], dataY = [];
         let dataBox = new Map() // 以选择的属性的值为 x 轴
+        console.log('设置echart')
         features.forEach(fea => {
           let values = this.attSelectList.map(att => {
             return fea.values_[att.field]
@@ -332,18 +334,32 @@ export default {
           }
         })
       }
-      this.$store.dispatch('map/changeMethod', {
-        pathId: 'analysisResult',
-        widgetid: 'HalfPanel',
-        label: '统计结果表',
-        param: { that: this, title: '长度统计', tables: tableData }
-      })
-
-      this.$store.dispatch('map/changeMethod', {
+      this.$store.dispatch('map/handelClose', {
+        box:'FloatPanel',
         pathId: 'analysisBox',
         widgetid: 'FloatPanel',
-        label: '分析结果统计',
-        param: { that: this, title: '统计结果图', tabs: chartData }
+      });
+      //销毁底部窗口
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
+        pathId: 'analysisResult',
+        widgetid: 'HalfPanel',
+      });
+
+      this.$nextTick(() => {
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'analysisResult',
+          widgetid: 'HalfPanel',
+          label: '统计结果表',
+          param: { that: this, title: '长度统计', tables: tableData }
+        })
+
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'analysisBox',
+          widgetid: 'FloatPanel',
+          label: '分析结果统计',
+          param: { that: this, title: '统计结果图', tabs: chartData }
+        })
       })
       
     },

@@ -157,6 +157,9 @@ export default {
         { title: "燃气管道", open: false, name: 'TF_RQTQ_PIPE_B' },
         { title: "电力", open: false, name: 'TF_DLLD_PIPE_B' },
         { title: "中国电信", open: false, name: 'TF_TXDX_PIPE_B' },
+        { title: "排水渠道", open: false, name: 'TF_PSPS_CONDUIT_B' },
+        { title: "排水管道", open: false, name: 'TF_PSPS_PIPE_B' }
+
       ],
     }
   },
@@ -361,17 +364,32 @@ export default {
         })
       }
 
-      this.$store.dispatch('map/changeMethod', {
+      this.$store.dispatch('map/handelClose', {
+        box:'FloatPanel',
         pathId: 'analysisBox',
         widgetid: 'FloatPanel',
-        label: '分析结果统计',
-        param: { that: this, title: '统计结果图', tabs: chartData }
-      })
-      this.$store.dispatch('map/changeMethod', {
+      });
+      //销毁底部窗口
+      this.$store.dispatch('map/handelClose', {
+        box:'HalfPanel',
         pathId: 'analysisResult',
         widgetid: 'HalfPanel',
-        label: '统计结果表',
-        param: { that: this, title: '长度统计', tables: tableData }
+      });
+
+
+      this.$nextTick(() => {
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'analysisBox',
+          widgetid: 'FloatPanel',
+          label: '分析结果统计',
+          param: { that: this, title: '统计结果图', tabs: chartData }
+        })
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'analysisResult',
+          widgetid: 'HalfPanel',
+          label: '统计结果表',
+          param: { that: this, title: '长度统计', tables: tableData }
+        })
       })
     },
 

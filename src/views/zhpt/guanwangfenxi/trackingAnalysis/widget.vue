@@ -142,7 +142,7 @@ export default {
       this.clearResult()
     },
     openPopup (position, featureJson) {
-      this.rootPage.$refs.popupWindow.showPopup(position, featureJson, this.afterClosePopup)
+      // this.rootPage.$refs.popupWindow.showPopup(position, featureJson, this.afterClosePopup)
     },
     afterClosePopup () {
       this.vectorLayer && this.vectorLayer.getSource().clear()

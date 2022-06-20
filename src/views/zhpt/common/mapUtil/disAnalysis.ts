@@ -7,7 +7,10 @@ export default class DisAnalysisTool {
     private Field = {
         diaMeterField: "PSIZE", // 管径
         edeepField: "E_DEEP", // 终点埋深
-        sdeppField: "S_DEEP" // 起点埋深
+        sdeppField: "S_DEEP", // 起点埋深
+        diaMeterField2: "DIAMETER", // 管径
+        edeepField2: "END_DEPTH", // 终点埋深
+        sdeppField2: "START_DEPTH" // 起点埋深
     }
     /**
      * 是否相交
@@ -67,16 +70,16 @@ export default class DisAnalysisTool {
         let res = { dis: "", hasDis: false }
         let firstGeometry = firstFeature.getGeometry(), 
             secendGeometry = secendFeature.getGeometry()
-        let sdiameter = firstFeature.get(this.Field["diaMeterField"]),
-            cdiameter = secendFeature.get(this.Field["diaMeterField"])
+        let sdiameter = firstFeature.get(this.Field["diaMeterField"]) || firstFeature.get(this.Field["diaMeterField2"]),
+            cdiameter = secendFeature.get(this.Field["diaMeterField"]) || secendFeature.get(this.Field["diaMeterField2"])
 
         let sumDiameter = (this.formatSize(sdiameter, 0) + this.formatSize(cdiameter, 0)) / 2000
         let instersectPoints = this.isIntersect(firstGeometry, secendGeometry).features
 
-        let fStartDeep = firstFeature.get(this.Field["sdeppField"]),
-            fEndDeep = firstFeature.get(this.Field["edeepField"]),
-            sStartDeep = secendFeature.get(this.Field["sdeppField"]),
-            sEndDeep = secendFeature.get(this.Field["edeepField"])
+        let fStartDeep = firstFeature.get(this.Field["sdeppField"]) || firstFeature.get(this.Field["sdeppField2"]),
+            fEndDeep = firstFeature.get(this.Field["edeepField"]) || firstFeature.get(this.Field["edeepField2"]),
+            sStartDeep = secendFeature.get(this.Field["sdeppField"]) || secendFeature.get(this.Field["sdeppField2"]),
+            sEndDeep = secendFeature.get(this.Field["edeepField"]) || secendFeature.get(this.Field["edeepField2"])
 
         if (!(sdiameter && cdiameter && fStartDeep && fEndDeep && sStartDeep && sEndDeep)) return { errorText: '数据不完整' }
         

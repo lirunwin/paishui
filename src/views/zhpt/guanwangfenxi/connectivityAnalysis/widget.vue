@@ -127,6 +127,7 @@ export default {
       this.data.that.setPopupSwitch(false)
     },
     choosePipe () {
+      console.log('选择管线')
       this.selectedPipe = []
       this.drawer && this.drawer.end()
       this.vectorLayer && this.vectorLayer.getSource().clear()
@@ -138,7 +139,9 @@ export default {
               let featureJson = resObj.result.features.features[0]
               let feature = new GeoJSON().readFeature(featureJson)
               this.vectorLayer.getSource().addFeature(feature)
-              let sid = feature.get("LNO"), startid = feature.get("S_POINT"), endid = feature.get("E_POINT")
+              let sid = feature.get("LNO") || feature.get("SID"), 
+              startid = feature.get("S_POINT") || feature.get("START_SID"), 
+              endid = feature.get("E_POINT") || feature.get("END_SID")
 
               if (this.selectedPipe.length === 0) {
                 this.selectedPipe.push({ oid: sid, STARTSID: startid, ENDSID: endid, feature })
@@ -158,7 +161,13 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
+      let dataSetInfo = [
+        { label: "排水管道", name: "TF_PSPS_PIPE_B",},
+        { label: "给水管道", name: 'TF_JSJS_PIPE_B' },
+        { label: "燃气管道", name: 'TF_RQTQ_PIPE_B' },
+        { label: "电力路灯", name: 'TF_DLLD_PIPE_B' },
+        { label: "中国电信", name: 'TF_TXDX_PIPE_B' },
+      ]
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresObj = resArr.find(res => res && res.result.featureCount !== 0)
@@ -186,7 +195,7 @@ export default {
             })
             this.layerData = [{ name: "排水管线", value: pathFeatures.length, pathFeatures }]
           }
-        } else this.$message.error("分析失败, 管线间不连通")  
+        } else this.$message.error("分析失败, 管线间不连通或者网络分析不可用")  
       })
     },
     showLayer (row) {

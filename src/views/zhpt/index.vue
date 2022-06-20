@@ -109,7 +109,7 @@
           <leftTopTool
             :toolList="leftTopTool.children"
             :map="view"
-            v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
+            v-if="leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
           ></leftTopTool>
           <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
@@ -268,7 +268,6 @@ import GeoJSON from 'ol/format/GeoJSON'
 export default class BaseMap extends Vue {
   LOADING!: (payload: boolean) => void
   currTitle = ''
-  showTool = true
   showMapLengend = false
   /** 开启点击事件弹窗 */
   openPopupSwitch = true
@@ -385,7 +384,6 @@ export default class BaseMap extends Vue {
   @Watch('activeHeaderItem', { immediate: true })
   activeHeaderItemChange(n, o) {
     this.currTitle = n
-    this.showTool = n === 'map'
   }
   created() {
     console.log('=====', this.Comps)

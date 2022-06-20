@@ -164,7 +164,7 @@ export default {
                 })
                 
                 let feature = featuresArr[0].result.features.features[0]
-                this.selectPipeID = feature.properties["LNO"]
+                this.selectPipeID = feature.properties["LNO"] || feature.properties["SID"]
                 let feaJson = turf.buffer(turf.lineString(new GeoJSON().readFeature(feature).getGeometry().getCoordinates()), this.bufferDistance / 1000, { units: 'kilometers' })
                 this.queryFeature = new GeoJSON().readFeature(feaJson)
                 this.queryFeature.setStyle(comSymbol.getDrawStyle(2, "f00", 3, '#66B1FF', 'rgba(255,255,255,0.3)',[15, 15]))
@@ -177,7 +177,13 @@ export default {
       this.drawer.start()
     },
     getAnalysisPipe (fea) {
-      let dataSetInfo = [{ name: "TF_PSPS_PIPE_B", label: "排水管道" }]
+      let dataSetInfo = [
+        { label: "排水管道", name: "TF_PSPS_PIPE_B",},
+        { label: "给水管道", name: 'TF_JSJS_PIPE_B' },
+        { label: "燃气管道", name: 'TF_RQTQ_PIPE_B' },
+        { label: "电力路灯", name: 'TF_DLLD_PIPE_B' },
+        { label: "中国电信", name: 'TF_TXDX_PIPE_B' },
+      ]
       return new Promise(resolve => {
         new iQuery({ dataSetInfo }).spaceQuery(fea).then(resArr => {
           let featuresArr = resArr.filter(res => res && res.result.featureCount !== 0)
@@ -211,7 +217,8 @@ export default {
     // 垂直净距分析
     // 相连管线、埋设不是管埋不进行分析，
     disAnalysis (data) {
-      const diamaterFiled = 'PSIZE'
+      const diamaterFiled = 'PSIZE',
+             diamaterFiled2 = 'DIAMETER'
       // const typeField = "BURYTYPE"
 
       let disAnalysis = new DisAnalysisTool()
@@ -232,7 +239,7 @@ export default {
         let { vStandardDis } = standard
 
         let comparePipe = new GeoJSON().readFeature(featuresArr[i].feature)
-        let diameter1 = comparePipe.get(diamaterFiled)
+        let diameter1 = comparePipe.get(diamaterFiled) || comparePipe.get(diamaterFiled2)
         if (!diameter1) return this.$message.error("管线属性数据不完整，无法执行分析")
         // if (!comparePipe.get(typeField) || comparePipe.get(typeField) !== '管埋') continue
 
@@ -257,18 +264,18 @@ export default {
           features: [item.comparePipe, item.pipe],
           dis: item.dis, 
           sdis: item.sdis, 
-          diameter: item.comparePipe.get(diamaterFiled), 
-          pipeid: item.comparePipe.get("LNO"), 
-          secpipeid: item.pipe.get("LNO") 
+          diameter: item.comparePipe.get(diamaterFiled) || item.comparePipe.get(diamaterFiled2), 
+          pipeid: item.comparePipe.get("LNO") || item.comparePipe.get("SID"), 
+          secpipeid: item.pipe.get("LNO") || item.pipe.get("SID") 
         }
       })
 
       // 判断是否是前后连接的管段
       function isConnect(feature1, feature2) {
-        let sid1 = feature1.get("S_POINT"),
-            eid1 = feature1.get("E_POINT")
-        let sid2 = feature2.get("S_POINT"),
-            eid2 = feature2.get("E_POINT")
+        let sid1 = feature1.get("S_POINT") || feature1.get("START_SID"),
+            eid1 = feature1.get("E_POINT") || feature1.get("END_SID")
+        let sid2 = feature2.get("S_POINT") || feature2.get("START_SID"),
+            eid2 = feature2.get("E_POINT") || feature2.get("END_SID")
         return sid1 === eid2 || eid1 === sid2 || sid1 === sid2 || eid1 === eid2
       }
       
