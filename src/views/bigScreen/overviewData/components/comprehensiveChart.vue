@@ -62,6 +62,7 @@ export default {
                     show:false
                     },
                     splitLine: {
+                        show:false,
                         lineStyle: {
                             color: 'rgba(255,255,255,0.12)'
                         }

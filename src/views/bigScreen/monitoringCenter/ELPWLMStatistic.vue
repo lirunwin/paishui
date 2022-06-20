@@ -8,7 +8,7 @@
             <div class="head">
                 <div class="title">
                     <div class="icon"></div>
-                    <span class="site-info">易漏点水位监测统计</span>
+                    <span class="site-info">易涝点水位监测统计</span>
                     <el-select v-model="selectValue" placeholder="请选择" size="mini" ref="date-select" > 
                         <el-option
                         v-for="item in options"
@@ -50,7 +50,7 @@
 <script>
 import waterLevelChart from './components/waterLevelChart.vue'
 export default {
-    name:"ELPWLMStatistic",//易漏点水位监测统计
+    name:"ELPWLMStatistic",//易涝点水位监测统计
     components:{
         waterLevelChart
     },
@@ -61,6 +61,10 @@ export default {
         return{
             isShowDatePicker:false,
             options: [
+            {
+                value: '',
+                label: '近1小时'
+            }, 
             {
                 value: '1',
                 label: '近24小时'

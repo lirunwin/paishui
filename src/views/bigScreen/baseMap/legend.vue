@@ -57,15 +57,15 @@ export default {
                 },
                 {
                     img:require('@/views/bigScreen/baseMap/images/事件.png'),
-                    name:'上报事件'
+                    name:'事件位置'
                 },
                 {
                     img:require('@/views/bigScreen/baseMap/images/汛情.png'),
-                    name:'上报汛情'
+                    name:'汛情位置'
                 },
                 {
                     img:require('@/views/bigScreen/baseMap/images/隐患.png'),
-                    name:'上报隐患'
+                    name:'隐患位置'
                 },
             ]
         }

@@ -136,8 +136,15 @@ export default {
     },
     mounted(){
         this.column=this.config.WFColumn
+        this.getPageData()
     },
     methods:{
+        getPageData(){
+            const {getRequestResult} = this.$listeners
+            getRequestResult({blockCode:'troubleCount'}).then(res=>{
+                console.log('troubleCount',res)
+            })
+        },
         showTrack(data){
             console.log(data)
             this.showTrackPlayer=true

@@ -229,6 +229,9 @@ export default {
         &.el-table--border::after, &.el-table--group::after, &::before{
             height: 0;
         }
+        td,th{
+            padding: .010417rem /* 2/192 */ 0 !important;
+        }
         tr{
             background-color: transparent;
         }

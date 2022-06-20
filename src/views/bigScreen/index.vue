@@ -14,7 +14,7 @@
     <MMIStatistic :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/>   <!--中部模块-->
     <!--数据总览模块-->
     <PNIARStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
-    <WFStatistic :show="showOverviewData" />
+    <WFStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
     <DPNLStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
     <EMDStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
     <WPSVMStatistic :show="showOverviewData" />
@@ -61,7 +61,7 @@ export default {
   },
   mounted(){
     this.flexibleObject=new Flexible()
-    getBlockPage().then(res=>{
+    getBlockPage({size:999}).then(res=>{
         console.log('code列表',res)
     })
   },
