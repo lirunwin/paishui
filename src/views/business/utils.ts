@@ -61,9 +61,9 @@ export const floodCols: Partial<ElTableColumn>[] = [
     ...alignLeft(),
     formatter: ({ police }: IFlood) => (police ? '是' : '否')
   },
-  { prop: 'position', label: '汛情位置', minWidth: '150px', ...alignLeft() },
+  // { prop: 'position', label: '汛情位置', minWidth: '150px', ...alignLeft() },
   { prop: 'address', label: '详细地址', minWidth: '150px', ...alignLeft() },
-  { prop: 'facility', label: '关联设施', minWidth: '150px', ...alignLeft() },
+  { prop: 'facility', label: '隧道名称', minWidth: '150px', ...alignLeft() },
   { prop: 'detail', label: '详细描述', minWidth: '150px', ...alignLeft() },
   { prop: 'suggest', label: '处理建议', minWidth: '150px', ...alignLeft() },
   { prop: 'createTime', label: '上报时间', minWidth: '150px', ...alignLeft() },

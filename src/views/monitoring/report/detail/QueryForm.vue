@@ -30,7 +30,13 @@
           </el-select>
         </el-col>
         <div>
-          <el-button type="warning" size="small" style="margin-left:1em">图上选点</el-button>
+          <el-button
+            :type="enable ? 'primary' : 'warning'"
+            size="small"
+            style="margin-left:1em"
+            @click="enable = !enable"
+            >图上选点</el-button
+          >
         </div>
       </el-row>
     </el-form-item>
@@ -101,7 +107,7 @@
       type="primary"
       size="small"
       :loading="loading"
-      :disabled="loading || !formData.siteId.length"
+      :disabled="formData.siteId && !formData.siteId.length"
       icon="el-icon-search"
       @click="onQuery"
       style="width:100%"
@@ -113,7 +119,7 @@
 
 <script lang="ts">
 import moment from 'moment'
-import { Vue, Component, Prop, Emit, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop, Emit, Watch, PropSync } from 'vue-property-decorator'
 import { configuredPointParamPage, IDeviceType, IPointConnectDevice, IReportDetailQuery, pointsPage } from '../../api'
 interface IBesides {
   from: string
@@ -158,6 +164,7 @@ export default class QueryForm extends Vue {
   @Prop({ type: Boolean, default: false }) loading!: boolean
   @Prop({ type: Object, default: () => ({}) }) defaultQuery!: IReportDetailQuery
   @Prop({ type: Array, default: () => [] }) deviceTypes!: IDeviceType[]
+  @PropSync('enablePointSelect', { type: Boolean, default: false }) enable!: boolean
 
   params = []
 
@@ -177,17 +184,14 @@ export default class QueryForm extends Vue {
         .format(format),
       endTime: moment(endTime)
         .startOf('day')
-        .format(format)
+        .format(format),
+      besides: this.formData.besides
+        .flat()
+        .filter(({ checked, from, to }) => checked !== false && !(!from && !to))
+        .map(({ from, to }) => [from, to])
     }
-    // const data = {
-    //   ...this.formData,
-    //   besides: this.formData.besides
-    //     .flat()
-    //     .filter(({ checked }) => {
-    //       return checked !== false
-    //     })
-    //     .map(({ from, to }) => `${from || 0},${to}`)
-    // }
+
+    console.log(JSON.stringify(query, null, 2))
     this.$emit('query', query)
   }
 
@@ -253,7 +257,7 @@ export default class QueryForm extends Vue {
         status: String(status || '') || '0',
         besides: [getDefaultBeside()]
       }
-      await this.onSiteIdChange([siteId], (names: string[] = []) => {
+      await this.onSiteIdChange([String(siteId)], (names: string[] = []) => {
         this.formData = {
           ...this.formData,
           indexCode: indexCode ? [indexCode] : [...names]

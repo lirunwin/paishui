@@ -31,7 +31,7 @@
         <el-option v-for="user of users" :key="user.id" :value="String(user.id)" :label="user.realName" />
       </el-select>
     </el-form-item>
-    <el-form-item label="状态:">
+    <!-- <el-form-item label="状态:">
       <el-checkbox-group v-model="formData.statusMulti" size="small" min="1">
         <template v-for="(value, key) of DICTONARY.event.status">
           <template v-if="!['0', '1'].includes(key)">
@@ -39,7 +39,7 @@
           </template>
         </template>
       </el-checkbox-group>
-    </el-form-item>
+    </el-form-item> -->
     <el-form-item class="btns">
       <el-button
         type="primary"
@@ -79,7 +79,7 @@ export default class QueryForm extends Vue {
   formData: Partial<Omit<IEvent, 'category'> & { category: string[]; queryLike: string; statusMulti: string[] }> = {
     queryLike: '',
     category: [],
-    statusMulti: ['2', '3', '4', '5'],
+    // statusMulti: ['2', '3', '4', '5'],
     findUser: ''
   }
 

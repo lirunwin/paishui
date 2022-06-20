@@ -127,6 +127,9 @@ export interface IFlood {
   uploadFileids: string
   x: string | number
   y: string | number
+
+  filePathList: string[]
+  createUserDetail: IEasyUserInfo
 }
 
 export interface IVehicle {

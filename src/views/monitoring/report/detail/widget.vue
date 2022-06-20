@@ -10,6 +10,8 @@
               :defaultQuery="defaultQuery"
               :deviceTypes="deviceTypes"
               @change:point="onPointChange"
+              :loading="loading"
+              :enablePointSelect.sync="enablePointSelect"
             />
           </div>
           <div class="map-container">
@@ -24,8 +26,10 @@
                 </div>
               </el-row>
             </base-title>
+            {{ enablePointSelect }}
             <Map
               class="map"
+              :enable="enablePointSelect"
               :points="points"
               :display="{ all: display.includes('all'), selected: display.includes('selected') }"
             />
@@ -95,7 +99,7 @@ interface IDetail {
     name: string
   }
   data?: {
-    [x: string]: (IReportDetail & { siteId: string })[]
+    [x: string]: (IReportDetail & { siteId?: string })[]
   }
 }
 
@@ -131,17 +135,21 @@ const getDefaultMapData = ({ title, names }: { title: string; names?: string[] }
   }
 }
 
+const dateKey = 'scadaTime'
+const valueKey = 'itstrVal'
+
 @Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle, Map } })
 export default class ReportDetail extends Vue {
   @Prop({ type: Object, default: () => ({}) }) param!: IReportDetailQuery
   @Prop({ type: Boolean }) isActive!: boolean
   display: ('all' | 'selected')[] = ['all', 'selected']
   merge: ('point' | 'param')[] = ['point']
-
+  besides: number[][] = []
   query: IQuery = {}
   points: IPoint[] = []
   loading = false
   detail: IDetail[] = []
+  enablePointSelect: boolean = false
 
   deviceTypes: IDeviceTypeParam[] = []
 
@@ -164,10 +172,28 @@ export default class ReportDetail extends Vue {
     })
   }
 
-  get lines() {
-    const x = 'scadaTime'
-    const y = 'itstrVal'
+  filter(data: (IReportDetail & { siteId?: string })[]): (IReportDetail & { siteId?: string })[] {
+    let temp = [...data].filter((item) => !!item)
+    this.besides.forEach((item) => {
+      let [from, to] = item
+      from = from ? Number(from) : -Infinity
+      to = to ? Number(to) : Infinity
+      if (!(!to && !from)) {
+        temp = temp.filter((item) => {
+          const value = Number(item[valueKey])
+          // console.log(
+          //   [Number(item[valueKey]), Number(item[valueKey])],
+          //   [from, to],
+          //   [Number(item[valueKey]) > Number(from), Number(item[valueKey]) <= Number(to)]
+          // )
+          return !(value > from && value <= to)
+        })
+      }
+    })
+    return temp
+  }
 
+  get lines() {
     const mapData = this.detail
 
     /** 按监测点融合展示, 按指标融合展示: 多监测点, 多指标 */
@@ -180,17 +206,14 @@ export default class ReportDetail extends Vue {
               return Object.keys(data).map((key) => {
                 return {
                   id: `${name}-${key}`,
-                  dimensions: [x, y],
-                  source: data[key]
-                    .map((item) => {
+                  dimensions: [dateKey, valueKey],
+                  source: this.filter(
+                    data[key].map((item) => {
                       if (!item) return item
-                      const { [y]: val, ...rest } = item
-                      return {
-                        ...rest,
-                        [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-                      }
+                      const { [valueKey]: val, ...rest } = item
+                      return { ...rest, [valueKey]: val }
                     })
-                    .filter((item) => !!item)
+                  )
                 }
               })
             })
@@ -222,22 +245,16 @@ export default class ReportDetail extends Vue {
         const second = Object.keys(data).reduce((acc, key) => {
           const dataset = {
             name: `${name}-${key}`,
-            source: data[key]
-              .map((item) => {
+            source: this.filter(
+              data[key].map((item) => {
                 if (!item) return item
-                const { [y]: val, ...rest } = item
-                return {
-                  ...rest,
-                  [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-                }
+                const { [valueKey]: val, ...rest } = item
+                return { ...rest, [valueKey]: val }
               })
-              .filter((item) => !!item),
-            dimensions: [x, y]
+            ),
+            dimensions: [dateKey, valueKey]
           }
-          return {
-            ...acc,
-            [key]: !acc[key] ? [dataset] : [...acc[key], dataset]
-          }
+          return { ...acc, [key]: !acc[key] ? [dataset] : [...acc[key], dataset] }
         }, {})
         const temp = { ...acc }
         Object.keys(second).forEach((key) => {
@@ -248,7 +265,7 @@ export default class ReportDetail extends Vue {
       return Object.keys(grouped).map((key) => {
         return {
           ...getDefaultMapData({ title: key }),
-          dataset: grouped[key].filter((item) => !!item),
+          dataset: this.filter(grouped[key]),
           series: grouped[key].map(({ name }, index) => {
             return {
               name,
@@ -266,17 +283,14 @@ export default class ReportDetail extends Vue {
         return {
           ...getDefaultMapData({ title: name }),
           dataset: Object.keys(data).map((key) => ({
-            source: data[key]
-              .map((item) => {
+            source: this.filter(
+              data[key].map((item) => {
                 if (!item) return item
-                const { [y]: val, ...rest } = item
-                return {
-                  ...rest,
-                  [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-                }
+                const { [valueKey]: val, ...rest } = item
+                return { ...rest, [valueKey]: val }
               })
-              .filter((item) => !!item),
-            dimensions: [x, y]
+            ),
+            dimensions: [dateKey, valueKey]
           })),
           series: Object.keys(data).map((key, index) => {
             return {
@@ -297,19 +311,21 @@ export default class ReportDetail extends Vue {
           return {
             ...getDefaultMapData({ title: `${name}-${key}` }),
             dataset: {
-              source: data[key]
-                .map((item) => {
+              source: this.filter(
+                data[key].map((item) => {
                   if (!item) return item
-                  const { [y]: val, ...rest } = item
-                  return {
-                    ...rest,
-                    [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-                  }
+                  const { [valueKey]: val, ...rest } = item
+                  return { ...rest, [valueKey]: val }
                 })
-                .filter((item) => !!item),
-              dimensions: [x, y]
+              ),
+              dimensions: [dateKey, valueKey]
             },
-            series: { name: key, type: 'line', symbol: 'none', smooth: true }
+            series: {
+              name: key,
+              type: 'line',
+              symbol: 'none',
+              smooth: true
+            }
           }
         })
       })
@@ -384,7 +400,9 @@ export default class ReportDetail extends Vue {
   }
 
   onQuery(query) {
-    this.query = { ...query }
+    const { besides, ...rest } = query
+    this.query = rest
+    this.besides = [...besides]
     this.doQuery()
   }
 
@@ -411,11 +429,6 @@ export default class ReportDetail extends Vue {
         indexCode
       }
     }
-  }
-
-  @Watch('lines', { immediate: true })
-  log(lines) {
-    console.log(this.detail, lines)
   }
 }
 </script>

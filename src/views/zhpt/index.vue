@@ -441,7 +441,8 @@ export default class BaseMap extends Vue {
     this.$store.commit('map/LOADING', false)
     this.$nextTick(this.controlToolDisplay)
     // 触发地图视野变化
-    let timer = null, time = 500
+    let timer = null,
+      time = 500
     this.view.getView().on('change', (evt) => {
       // console.log('级别变化', this.view)
       timer && clearTimeout(timer)
@@ -468,7 +469,7 @@ export default class BaseMap extends Vue {
     const bufferDis = 1e-3
     let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
     let dataServerConfig = appconfig.gisResource.iserver_resource.dataService
-    new iQuery().spaceQuery(queryFeature).then(queryData => {
+    new iQuery().spaceQuery(queryFeature).then((queryData) => {
       let showData = []
       for (let data of queryData as any) {
         let features = data.result.features.features
@@ -477,7 +478,7 @@ export default class BaseMap extends Vue {
         }
       }
       if (showData.length !== 0) {
-        let openData = showData.find(data => data.result.features.features[0].geometry.type === 'Point')
+        let openData = showData.find((data) => data.result.features.features[0].geometry.type === 'Point')
         // 点优于线显示
         let featureData = openData ? openData : showData[0]
         let layerName = featureData.tableName
@@ -485,12 +486,12 @@ export default class BaseMap extends Vue {
         let layer = mapUtil.getAllSubLayerNames('pipemap', 'smlayergroup')
         let feature = featureData.result.features.features[0]
         let findLayer
-        layer.sublayers.forEach(p => {
+        layer.sublayers.forEach((p) => {
           let layername = p.title
-          let sublayer = p.sublayers.find(sub => sub.name.split("@")[0] === layerName)
+          let sublayer = p.sublayers.find((sub) => sub.name.split('@')[0] === layerName)
           if (sublayer) {
             feature.layerName = layername
-            feature.tableName = sublayer.name.split("@")[0]
+            feature.tableName = sublayer.name.split('@')[0]
           }
         })
 
@@ -514,13 +515,13 @@ export default class BaseMap extends Vue {
   }
 
   // 设置是否开启弹窗
-  setPopupSwitch (isopen) {
+  setPopupSwitch(isopen) {
     this.openPopupSwitch = isopen
   }
   // 加载图层
   addLayers(layersSource) {
-    new TF_Layer().createLayers(layersSource).then(layers => {
-      layers.forEach(layer => {
+    new TF_Layer().createLayers(layersSource).then((layers) => {
+      layers.forEach((layer) => {
         layer && this.view.addLayer(layer)
       })
     })
@@ -611,9 +612,9 @@ export default class BaseMap extends Vue {
               })
               .finally(() => {
                 // 服务配置名称
-                const MAP_CONFIG = { 
-                  mapService: '地图配置服务', 
-                  layerService: '图层服务', 
+                const MAP_CONFIG = {
+                  mapService: '地图配置服务',
+                  layerService: '图层服务',
                   dataService: '数据服务',
                   analysisService: '分析服务'
                 }
@@ -627,7 +628,7 @@ export default class BaseMap extends Vue {
                       source = resource.layerService.layers
                       console.log('图层服务配置')
                       resData.forEach((data) => {
-                        let findItem = source.find(sourceItem => {
+                        let findItem = source.find((sourceItem) => {
                           if (sourceItem.name.includes('底图')) {
                             return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
                           } else {
