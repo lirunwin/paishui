@@ -260,13 +260,13 @@ export const monitorPointReportCols: ColItem[] = [
   { prop: 'siteName', label: '监测站点', minWidth: '120px', ...alignLeft() },
   { prop: 'address', label: '地址', minWidth: '120px', ...alignLeft() },
   { prop: 'scadaTime', label: '数据时间', width: '170px' },
-  { prop: 'paraName', label: '监测指标', formatter: ({ paraName }: any) => paraName || '没有返指标名字' },
+  { prop: 'paraName', label: '监测指标' },
   { prop: 'itstrVal', label: '监测值', width: '110px' },
   { prop: 'unit', label: '单位', width: '100px' },
   { prop: 'levelName', label: '判定结果', width: '90px' },
   { prop: 'shreshold', label: '监测阈值', width: '110px' },
-  { prop: 'isValid', label: '数据有效性', width: '110px', formatter: ({ isValid }: any) => (isValid ? '是' : '否 ') },
-  { prop: 'actions', label: '操作', width: '80px' }
+  { prop: 'isValid', label: '数据有效性', width: '110px', formatter: ({ isValid }: any) => (isValid ? '是' : '否 ') }
+  // { prop: 'actions', label: '操作', width: '80px' }
 ]
 
 export const monitorWarningReportCols: ColItem[] = [
@@ -311,8 +311,8 @@ export const monitorWarningReportCols: ColItem[] = [
         return text.startsWith('上限容差') ? text.replace(/[^\.0-9]/g, '') : ''
       }
     }
-  },
-  { prop: 'actions', label: '操作', width: '80px' }
+  }
+  // { prop: 'actions', label: '操作', width: '80px' }
 ]
 
 export const monitorSiteReportCols: ColItem[] = [

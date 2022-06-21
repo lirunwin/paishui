@@ -24,7 +24,13 @@ export default class MainMap extends Vue {
     try {
       const {
         result: { records }
-      } = await floodPage({ current: 1, size: 9999999, createTime: this.$moment().format('YYYY-MM-DD HH:mm:ss') })
+      } = await floodPage({
+        current: 1,
+        size: 9999999,
+        createTime: this.$moment()
+          .startOf('day')
+          .format('YYYY-MM-DD HH:mm:ss')
+      })
 
       this.floods.urgency = records.filter((item) => item.police)
       this.floods.ordinary = records.filter((item) => !item.police)
@@ -51,5 +57,4 @@ export default class MainMap extends Vue {
 }
 </script>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>
