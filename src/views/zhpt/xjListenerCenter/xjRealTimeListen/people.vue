@@ -168,8 +168,6 @@ export default {
       currentUser:[],//当前的用户
       currentDate:'',//查询日期
       showUserList:[],//列表渲染的用户
-      peopleLayer:null,
-      peopleLayerId:'',
       showContent:{//明确当前查看的是什么内容
         path:'path',//展示内容轨迹
         equipment:'equipment',//展示设备内容
@@ -353,10 +351,15 @@ export default {
       }
       this.loading=true;
       getGPSAll(params).then(res=>{
-        const timeTable = res.result.map((e) => {return {
+        const timeTable = res.result.map((e) => {
+          e.userName=data.signUserName;
+          e.timeSplit=(pathitem.timeFrom.split(' ')[1]+"~"+pathitem.timeTo.split(' ')[1]);
+          return {
           x: e.locationLongitude,
           y: e.locationLatitude,
-          t: e.checkTime
+          t: e.checkTime,
+          data:e,
+          
         }})
         data.pagePathInfo.currentPath=timeTable
         this.loading=false;

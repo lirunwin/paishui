@@ -214,7 +214,8 @@ export default {
         const tempFea=new Feature({
           geometry:new Point([item.x,item.y]),
           labelPoint: new Point([item.x,item.y]),
-          name:item.name
+          name:item.name,
+          troubleId:item.troubleId||""
         });
         symbol.setText(new Text({
           text: item.name,
@@ -226,11 +227,6 @@ export default {
       })
       layer.getSource().addFeatures(feartures)
     },
-
-    /**控制图层*/
-    controlLayer(){
-
-    }
   },
 
   destroyed(){
