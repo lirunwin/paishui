@@ -1,13 +1,13 @@
 <template>
   <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData" inline>
     <el-form-item label="站点名称" prop="name">
-      <el-input v-model="formData.no" placeholder="请输入站点名称" size="small" clearable />
+      <el-input v-model="formData.name" placeholder="请输入站点名称" size="small" clearable />
     </el-form-item>
     <el-form-item label="站点地址" prop="address">
       <el-input v-model="formData.address" placeholder="请输入站点地址" size="small" clearable />
     </el-form-item>
-    <el-form-item label="SN序列号" prop="no">
-      <el-input v-model="formData.sn" placeholder="请输入SN序列号" size="small" clearable />
+    <el-form-item label="出厂编码" prop="no">
+      <el-input v-model="formData.sn" placeholder="请输入出厂编码" size="small" clearable />
     </el-form-item>
     <el-form-item label="设备类型" prop="type">
       <el-select v-model="formData.type" filterable placeholder="请选择设备类型" size="small" clearable>
@@ -124,7 +124,7 @@ export interface ILoading {
 }
 
 export interface IQuery {
-  no?: string
+  name?: string
   address?: string
   sn?: string
   type?: string

@@ -205,7 +205,7 @@ export default class QueryForm extends Vue {
         .map(({ from, to }) => [from, to])
     }
 
-    console.log(JSON.stringify(query, null, 2))
+    // console.log(JSON.stringify(query, null, 2))
     this.$emit('query', query)
   }
 
