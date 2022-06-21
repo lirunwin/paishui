@@ -132,7 +132,7 @@
         >
         </el-table-column>
 
-        <el-table-column
+        <!-- <el-table-column
           prop="structClass"
           header-align="center"
           label="结构性缺陷等级"
@@ -153,7 +153,7 @@
           :sortable="true"
           :sort-method="sortFunc"
         >
-        </el-table-column>
+        </el-table-column> -->
 
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="150">
           <template slot-scope="scope">
@@ -373,16 +373,20 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { width: '100', sortable: false, label: '工程名称', name: 'prjName' },
-        { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '200', sortable: false, label: '管段编号', name: 'expNo' },
+
+        { width: '100', sortable: false, label: '检测地点', name: 'checkAddress' },
         { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
         { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
-        { width: '100', sortable: false, label: '材质', name: 'material' },
-        { width: '', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
+        { width: '150', sortable: false, label: '材质', name: 'material' },
         { width: '100', sortable: true, label: '缺陷数量', name: 'defectnum' },
         { width: '100', sortable: true, label: '检测照片', name: 'picnum' },
-        { width: '100', sortable: false, label: '检测地点', name: 'checkAddress' },
-        { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' }
+        { width: '150', sortable: true, label: '结构性缺陷等级', name: 'structClass' },
+        { width: '150', sortable: true, label: '功能性缺陷等级', name: 'funcClass' },
+        { width: '200', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
+        { width: '200', sortable: false, label: '功能性缺陷评价', name: 'funcEstimate' },
+        { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' },
+        { width: '200', sortable: false, label: '工程名称', name: 'prjName' },
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
@@ -414,7 +418,7 @@ export default {
       lightLayer: null,
       clickEvent: null,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43', // 当前坐标系
+      currentDataProjName: 'proj44', // 当前坐标系
       popup: null,
       hasLoad: false,
       // 
@@ -694,8 +698,7 @@ export default {
      * @param featureArr 数组
      * */
     getFeatures(featureArr) {
-      let style = null,
-        features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
       featureArr.forEach((feaObj) => {
         let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
         if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {

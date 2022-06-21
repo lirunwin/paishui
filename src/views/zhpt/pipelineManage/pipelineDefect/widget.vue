@@ -406,7 +406,8 @@ export default {
       lightLayer: null,
       clickEvent: null,
       projUtil: null,
-      currentDataProjName: 'proj43',
+      currentDataProjName: 'proj44',
+      // 
       hadLoad: false,
       popup: null,
       // 

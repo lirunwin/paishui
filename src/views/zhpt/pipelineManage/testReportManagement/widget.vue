@@ -875,7 +875,8 @@ export default {
       //
       showId: 0,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43', // 当前坐标系
+      currentDataProjName: 'proj44', // 当前坐标系
+      // 
       vectorLayer: null,
       vectorLayer2: null,
       hasLoadMap: false,
@@ -1515,7 +1516,8 @@ export default {
       }
     },
     // 单行管段详情
-    async testReportDetails(id, isRelease) {
+    testReportDetails(id, isRelease) {
+      console.log('详情')
       // 显示加载
       const loading = this.$loading({
         lock: true,
@@ -1531,75 +1533,97 @@ export default {
 
       this.id = id
       isRelease ? (this.isRelease = true) : ''
-      let res = await queryPipecheckDetails(id)
-
-      if (res) {
-        loading.close()
-      }
-      // this.defectQuantityStatisticsA
-      // 按缺陷名称给数据分类
-      // 缺陷数量统计
-      res.result.forEach((resValue) => {
-        this.defectQuantityStatisticsA.forEach((sumValue) => {
-          if (resValue.defectCode == sumValue.type) {
-            if (resValue.defectLevel == '一级') {
-              sumValue.oneValue = resValue.defectNums
-            } else if (resValue.defectLevel == '二级') {
-              sumValue.twoValue = resValue.defectNums
-            } else if (resValue.defectLevel == '三级') {
-              sumValue.threeValue = resValue.defectNums
-            } else if (resValue.defectLevel == '四级') {
-              sumValue.fourValue = resValue.defectNums
+      queryPipecheckDetails(id).then(res => {
+        if (res) {
+          loading.close()
+        }
+        // this.defectQuantityStatisticsA
+        // 按缺陷名称给数据分类
+        // 缺陷数量统计
+      this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }, // 合计
+      this.defectQuantityStatisticsA = [
+        { title: '(AJ)支管暗接', type: 'AJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: '/', value: 0 },
+        { title: '(BX)变形', type: 'BX', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CK)错口', type: 'CK', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CR)异物穿入', type: 'CR', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: '/', value: 0 },
+        { title: '(FS)腐蚀', type: 'FS', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: '/', value: 0 },
+        { title: '(PL)破裂', type: 'PL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(QF)起伏', type: 'QF', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(SL)渗透', type: 'SL', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(TJ)脱节', type: 'TJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(TL)接口材料脱落', type: 'TL', oneValue: 0, twoValue: 0, threeValue: '/', fourValue: '/', value: 0 }
+      ], // 管道缺陷数量统计表
+      this.defectQuantityStatisticsB = [
+        { title: '(CJ)沉积', type: 'CJ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(CQ)残墙、坝根', type: 'CQ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(FZ)浮渣', type: 'FZ', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: '/', value: 0 },
+        { title: '(JG)结垢', type: 'JG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(SG)树根', type: 'SG', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 },
+        { title: '(ZW)障碍物', type: 'ZW', oneValue: 0, twoValue: 0, threeValue: 0, fourValue: 0, value: 0 }
+      ]
+        res.result.forEach((resValue) => {
+          this.defectQuantityStatisticsA.forEach((sumValue) => {
+            if (resValue.defectCode == sumValue.type) {
+              if (resValue.defectLevel == '一级') {
+                sumValue.oneValue = resValue.defectNums
+              } else if (resValue.defectLevel == '二级') {
+                sumValue.twoValue = resValue.defectNums
+              } else if (resValue.defectLevel == '三级') {
+                sumValue.threeValue = resValue.defectNums
+              } else if (resValue.defectLevel == '四级') {
+                sumValue.fourValue = resValue.defectNums
+              }
             }
-          }
+          })
+
+          this.defectQuantityStatisticsB.forEach((sumValue) => {
+            if (resValue.defectCode == sumValue.type) {
+              if (resValue.defectLevel == '一级') {
+                sumValue.oneValue = resValue.defectNums
+              } else if (resValue.defectLevel == '二级') {
+                sumValue.twoValue = resValue.defectNums
+              } else if (resValue.defectLevel == '三级') {
+                sumValue.threeValue = resValue.defectNums
+              } else if (resValue.defectLevel == '四级') {
+                sumValue.fourValue = resValue.defectNums
+              }
+            }
+          })
         })
 
-        this.defectQuantityStatisticsB.forEach((sumValue) => {
-          if (resValue.defectCode == sumValue.type) {
-            if (resValue.defectLevel == '一级') {
-              sumValue.oneValue = resValue.defectNums
-            } else if (resValue.defectLevel == '二级') {
-              sumValue.twoValue = resValue.defectNums
-            } else if (resValue.defectLevel == '三级') {
-              sumValue.threeValue = resValue.defectNums
-            } else if (resValue.defectLevel == '四级') {
-              sumValue.fourValue = resValue.defectNums
-            }
-          }
+        this.defectQuantityStatisticsA.forEach((v) => {
+          v.value = this.judge(v.oneValue) + this.judge(v.twoValue) + this.judge(v.threeValue) + this.judge(v.fourValue)
+          this.defectSumObj.oneSum += this.judge(v.oneValue)
+          this.defectSumObj.twoSum += this.judge(v.twoValue)
+          this.defectSumObj.threeSum += this.judge(v.threeValue)
+          this.defectSumObj.fourSum += this.judge(v.fourValue)
+          this.defectSumObj.total += v.value
         })
-      })
+        this.defectQuantityStatisticsB.forEach((v) => {
+          v.value = this.judge(v.oneValue) + this.judge(v.twoValue) + this.judge(v.threeValue) + this.judge(v.fourValue)
+          this.defectSumObj.oneSum += this.judge(v.oneValue)
+          this.defectSumObj.twoSum += this.judge(v.twoValue)
+          this.defectSumObj.threeSum += this.judge(v.threeValue)
+          this.defectSumObj.fourSum += this.judge(v.fourValue)
+          this.defectSumObj.total += v.value
+        })
 
-      this.defectQuantityStatisticsA.forEach((v) => {
-        v.value = this.judge(v.oneValue) + this.judge(v.twoValue) + this.judge(v.threeValue) + this.judge(v.fourValue)
-        this.defectSumObj.oneSum += this.judge(v.oneValue)
-        this.defectSumObj.twoSum += this.judge(v.twoValue)
-        this.defectSumObj.threeSum += this.judge(v.threeValue)
-        this.defectSumObj.fourSum += this.judge(v.fourValue)
-        this.defectSumObj.total += v.value
-      })
-      this.defectQuantityStatisticsB.forEach((v) => {
-        v.value = this.judge(v.oneValue) + this.judge(v.twoValue) + this.judge(v.threeValue) + this.judge(v.fourValue)
-        this.defectSumObj.oneSum += this.judge(v.oneValue)
-        this.defectSumObj.twoSum += this.judge(v.twoValue)
-        this.defectSumObj.threeSum += this.judge(v.threeValue)
-        this.defectSumObj.fourSum += this.judge(v.fourValue)
-        this.defectSumObj.total += v.value
-      })
+        queryPipeState(id).then(resUrl => {
+          this.remark = resUrl.result.remark
+          if (resUrl.result.pdfFilePath) {
+            this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
+          } else {
+            this.pdfUrl = null
+          }
+          this.dialogFormVisible3 = true
+          this.$nextTick(() => {
+            this.isOpen = true
 
-      let resUrl = await queryPipeState(id)
-      this.remark = resUrl.result.remark
-      if (resUrl.result.pdfFilePath) {
-        this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
-      } else {
-        this.pdfUrl = null
-      }
-      this.dialogFormVisible3 = true
-      this.$nextTick(() => {
-        this.isOpen = true
+            this.renderEcharts()
 
-        this.renderEcharts()
-
-        loading.close()
+            loading.close()
+          })
+        })
       })
     },
     // 单个发布

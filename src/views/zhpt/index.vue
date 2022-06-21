@@ -440,8 +440,7 @@ export default class BaseMap extends Vue {
     this.$store.commit('map/LOADING', false)
     this.$nextTick(this.controlToolDisplay)
     // 触发地图视野变化
-    let timer = null,
-      time = 500
+    let timer = null, time = 500
     this.view.getView().on('change', (evt) => {
       // console.log('级别变化', this.view)
       timer && clearTimeout(timer)
@@ -452,7 +451,8 @@ export default class BaseMap extends Vue {
     })
     // 点击查询管段详情
     this.view.on('click', (evt) => {
-      if (!this.openPopupSwitch) return
+      let filter = this.$store.state.routeSetting.routes[0].name === "leftBottomTool"
+      if (!filter || !this.openPopupSwitch) return
       this.spaceQuery(evt.coordinate)
     })
     this.vectorLayer = new VectorLayer({

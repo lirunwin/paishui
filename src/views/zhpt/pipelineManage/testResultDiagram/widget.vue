@@ -366,7 +366,8 @@ export default {
       pipeDefectLayer: null,
       manholeDefectLayer: null,
       pipeHealthLayer: null,
-      currentDataProjName: 'proj43',
+      currentDataProjName: 'proj44',
+      // 
       projUtil: null,
       clickEvent: null,
       loading: false,

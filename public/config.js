@@ -111,7 +111,7 @@ export const appconfig = {
             'name': 'pipemap',
             'title': '综合管网',
             'type': 'smlayergroup',
-            'url': iserverConfig.baseUrl + 'services/map-tf_rsps-2/rest/maps/pipemap',
+            'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/pipemap',
             'visible': true,
             'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/pipemap/layers/',
             'sublayers': []

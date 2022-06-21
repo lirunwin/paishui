@@ -452,8 +452,8 @@ export default {
       lightLayer: null,
       clickEvent: null,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43', // 当前坐标系
-
+      currentDataProjName: 'proj44', // 当前坐标系
+      // 
       currentInfoCard2: false,
       currentForm2: [],
       currentIndex2: 0,
