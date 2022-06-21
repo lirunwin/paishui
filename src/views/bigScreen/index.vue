@@ -4,7 +4,7 @@
     <BaseMap  v-on:fontSize="fontSize" />
     <MapLegend :show="showMonitoringCenter"/>
     <LayerControl :show="showMonitoringCenter"/>
-    <MonitorTree />
+    <MonitorTree v-on="{fontSize,getRequestResult}"/>
     <!--头部菜单模块-->
     <Header/>
     <!--监测中心模块-->

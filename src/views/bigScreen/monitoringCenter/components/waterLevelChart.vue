@@ -24,10 +24,17 @@ export default {
     methods:{
         getPageData(intervalDays){
             const {getRequestResult} = this.$listeners
-            getRequestResult({deviceSn: this.deviceSn,blockCode:'singleDevice'}).then(res=>{
-                const Final = res.filter((item) => (new Date(item.scadaTime).getTime() > Date.now() - intervalDays * 24 * 60 * 60 * 1000));
+            let data={code: this.deviceSn,
+            blockCode:'singleDevice',
+            // 'paras[0].name':'beginTime',
+            // 'paras[0].val':'2022-06-17',
+            // 'paras[1].name':'endTime',
+            // 'paras[1].val':'2022-06-20',
+            }
+            getRequestResult(data).then(res=>{
+                // const Final = res.filter((item) => (new Date(item.scadaTime).getTime() > Date.now() - intervalDays * 24 * 60 * 60 * 1000));
                 let xData=[],yData=[],alarmData=[];
-                Final.forEach(item => {
+                res.forEach(item => {
                     xData.push(moment(item.scadaTime).format('MM-DD'))
                     yData.push(item.itstrVal)
                     alarmData.push(this.warningWl)

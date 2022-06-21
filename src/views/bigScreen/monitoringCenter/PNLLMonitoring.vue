@@ -18,6 +18,7 @@
                 :cellStyle="cellStyle"
                 isScroll
                 @rowClick="rowClick"
+                @rowDblclick="rowDblclick"
                 />
             </div>
             <infoDialog :visible="dialogVisible" :title="title">
@@ -32,6 +33,11 @@ import Config from './config.json'
 import specificTable from './components/specificTable.vue'
 import infoDialog from './components/infoDialog.vue'
 import historyInfo from './components/historyInfo.vue'
+import { Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorSource } from "ol/source";
+import Feature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import {Style,Icon,} from 'ol/style';
 export default {
     name:"PNLLMonitoring",//管网液位监测
     components:{
@@ -48,26 +54,47 @@ export default {
             column:[],
             dialogVisible:false,
             title:"",
+            vectorLayer:null,
+            feature:null,
         }
     },
     computed:{
         config(){
             return Config
+        },
+        view(){
+            return this.$store.state.bigScreen.view
         }
     },
     mounted(){
         this.column=this.config.PNLLMColumn
         this.getPageData()
     },
+    watch:{
+        view:{
+            handler(n,o){
+                if(n) this.initVector()
+            }
+        }
+    },
     methods:{
+        initVector(){
+            //创建矢量层
+            this.vectorLayer = new VectorLayer({
+                source: new VectorSource({wrapX: false,})
+            });
+            //将图层添加到地图中
+            this.view.addLayer(this.vectorLayer);
+        },
         getPageData(){
             const {getRequestResult} = this.$listeners
             getRequestResult({blockCode:'gwywjc'}).then(res=>{
                 this.tableData=res.map(item=>{
+                    Object.keys(item).forEach((val) => (item[val] = item[val] || "/"));
                     return {
                         ...item,
                         deviceStatus:item.deviceStatus=='0'?'离线':"在线",
-                        isAlarm:!item.isAlarm?'正常':'报警'
+                        isAlarm:item.deviceStatus=='0'?'/':(!item.isAlarm?'正常':'报警')
                     }
                 })
             })
@@ -78,7 +105,7 @@ export default {
                 if(row.deviceStatus=='离线') color='#FF3F40'
             }
             if(columnIndex==5){
-                if(row.monitorStatus=='报警') color='#FF3F40'
+                if(row.isAlarm=='报警') color='#FF3F40'
             }
             return {
                 color:color,
@@ -88,9 +115,41 @@ export default {
             }
         },
         rowClick(row){
-            console.log("点击结果",row)
+            this.located(row,[parseFloat(104.146864578),parseFloat(30.013916023)]);
+        },
+        rowDblclick(row){
             this.dialogVisible=true
             this.title=row.deviceName+"-"+"监测数据"
+        },
+        //定位方法
+        located(info,position){
+            this.showPointSymbol(info,position)
+            this.view.getView().setCenter(position)
+        },
+        showPointSymbol(info,position){
+            this.vectorLayer.getSource().clear()
+            //创建Feature，并添加进矢量容器中
+            this.feature = new Feature({
+                geometry: new Point(position),
+                name: 'My point',
+                info
+            });
+            //创建标记的样式
+            this.feature.setStyle(this.setFeatureStyle());
+            this.vectorLayer.getSource().addFeature(this.feature);
+        },
+        /**
+         * @description 为要素设置样式
+         */
+        setFeatureStyle() {
+            return new Style({
+                image: new Icon({
+                    anchor: [0.5, 0.7],
+                    scale:1,
+                    //图标的url
+                    src: require('@/views/bigScreen/monitoringCenter/images/液位.png')
+                })
+            });
         },
     }
 }

@@ -280,10 +280,35 @@ export class mapUtil {
             findLayer.setVisible(true)
         }
     }
+    /**
+      * 大屏超图图层组子图层显隐, 只适合图层组, 会修改 config 公共配置
+      * @param layersConfig 图层配置
+      */
+     setBigScreenGroupLayerVisible(layersConfig?) {
+        let layers =  layersConfig || appconfig.bigScreenMapService['layerService'].layers
+        let parentLayer = layers.find(layer => layer.type === 'bigScreenPipeMap')
+        let ids = [], idsStr = ''
+        let url = parentLayer.url
+        parentLayer.sublayers.forEach(group => {
+            group.sublayers.forEach(sub => {
+                if (sub.visible) { ids.push(sub.id) }
+            })
+        })
+        let findLayer = this.map.getLayers().getArray().find(layer => layer.get('type') === 'bigScreenPipeMap')
+        if (ids.length === 0) {
+            idsStr = '[]'
+            findLayer.setVisible(false)
+        } else { 
+            idsStr = `[0:${ids.join(",")}]`
+            let source = new TileSuperMapRest({ url, layersID: idsStr, cacheEnabled: false, crossOrigin: 'anonymous', wrapX: true })
+            findLayer.setSource(source)
+            findLayer.setVisible(true)
+        }
+    }
     // 设置获取图层组显隐 source
     getChangeResource (layers,layerName, visible) {
         layers.forEach(group => {
-            if(group.type!=='smlayergroup') return
+            // if(group.type!=='smlayergroup') return
             group.sublayers.forEach(sub => {
                 sub.sublayers.forEach(child=>{
                     if (child.name === layerName) { child.visible = visible }

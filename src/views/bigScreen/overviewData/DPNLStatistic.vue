@@ -32,10 +32,23 @@ export default {
     methods:{
         getPageData(){
             const {getRequestResult} = this.$listeners
-            getRequestResult({blockCode:'pipeCount'}).then(res=>{
-                this.$nextTick(()=>{
-                    this.showPieChart(res)
-                })
+            // getRequestResult({blockCode:'pipeCount'}).then(res=>{
+            //     this.$nextTick(()=>{
+            //         this.showPieChart(res)
+            //     })
+            // })
+            let res=[
+                {
+                    "length": 268.2,
+                    "pipeType": "雨水管道"
+                },
+                {
+                    "length": 120.4,
+                    "pipeType": "污水管道"
+                }
+            ]
+            this.$nextTick(()=>{
+                this.showPieChart(res)
             })
         },
         //显示饼图
@@ -105,7 +118,7 @@ export default {
                             },
                         },
                         labelLine: {
-                            length: 25,
+                            length: 15,
                             length2: 15,
                             show: true,
                             color: '#00ffff'

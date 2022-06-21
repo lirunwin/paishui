@@ -264,6 +264,32 @@ export const appconfig = {
         { 'name': '图形服务', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/Utilities/Geometry/GeometryServer' }
       ]
     }
+  },
+  //大屏地图服务
+  'bigScreenMapService':{
+    'initCenter': [104.1629, 30.0039], 
+    'initZoom': 16,
+    'layerService': {
+      'name': '大屏图层服务',
+      'layers': [
+        {
+          'name': 'citymap',
+          'title': '底图服务',
+          'type': 'bigScreenBaseMap',
+          'url': iserverConfig.baseUrl + 'services/map-tf_rsps_dp/rest/maps/citymap',
+          'visible': true,
+          'sublayers': []
+        },
+        {
+          'name': 'pipemap',
+          'title': '管线服务',
+          'type': 'bigScreenPipeMap',
+          'url': iserverConfig.baseUrl + 'services/map-tf_rsps_dp/rest/maps/pipemap',
+          'visible': true,
+          'sublayers': []
+        }
+      ]
+    }
   }
 }
 

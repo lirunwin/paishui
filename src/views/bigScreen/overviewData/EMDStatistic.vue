@@ -65,6 +65,7 @@ export default {
                 let result=res.filter(item=>item.typeCode)
                 this.tableData=result.map((item)=>{
                     this.resetStaList(item)
+                    Object.keys(item).forEach((val) => (item[val] = item[val] || "/"));
                     return{
                         ...item,
                         deviceStatus:item.deviceStatus=='0'?'正常':"报警",

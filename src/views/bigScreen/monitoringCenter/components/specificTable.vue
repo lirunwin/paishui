@@ -14,6 +14,7 @@
     :row-style="rowStyle"
     @selection-change="handleSelectionChange"
     @row-click="rowClick"
+    @row-dblclick="rowDblclick"
     >
     <el-table-column label="序号" type="index" width="50" />
     <el-table-column
@@ -157,6 +158,9 @@ export default {
             }
             this.$refs.specificTable.clearSelection()
             this.$refs.specificTable.toggleRowSelection(row, true) // 点击行选中效果
+        },
+        rowDblclick(row, column, event) {
+            this.$emit('rowDblclick', row)
         },
         // 选择数据
         handleSelectionChange(value) {

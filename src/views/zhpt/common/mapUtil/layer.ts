@@ -61,6 +61,8 @@ export class TF_Layer {
                     break
                 case "wmtslayer": layer = this.WMTS_Layer(url)
                     break
+                case 'bigScreenPipeMap':layer = this.SM_BigScreenLayerGroup(url, visible, properties)
+                    break
                 default:
                     break
             }
@@ -217,6 +219,45 @@ export class TF_Layer {
                 projection: projection,
                 tileGrid
             })
+        })
+    }
+
+    //大屏地图图层组
+    SM_BigScreenLayerGroup (url = '', visible = true, properties = {}) {
+        let layerInfo = new LayerInfoService(url)
+        return new Promise(resolve => {
+            layerInfo.getLayersInfo(res => {
+                let layer = null
+                if (res) {
+                    this.setBigScreenLayerConfig(res.result)
+                    let source = new TileSuperMapRest({ url, cacheEnabled: false, crossOrigin: 'anonymous', wrapX: true })
+                    let layer = new TileLayer({ source, properties: { projection: this.projection } })
+                    for (let i in properties) {
+                        layer.set(i, properties[i])
+                    }
+                    layer.setVisible(visible)
+                    resolve(layer)
+                } else resolve(layer)
+                
+            })
+        })
+    }
+    //配置大屏子图层服务
+    setBigScreenLayerConfig(layerData){
+        let layerConfig = appconfig.bigScreenMapService['layerService'].layers
+        let layerGroups = layerData.subLayers.layers,
+            parentName = layerData.name
+            
+        layerConfig.forEach(parentlayer => {
+            if (parentlayer.name === parentName) {
+                parentlayer.sublayers = layerGroups.map((groups, pi) => {
+                    let layers = groups.subLayers.layers
+                    let sublayers = layers.map((layer, si) => {
+                        return { title: layer.caption, visible: true, id: `${pi}.${si}`, name: layer.name }
+                    })
+                    return { name: groups.name, visible: true, sublayers, title: groups.caption }
+                })
+            }
         })
     }
 } 

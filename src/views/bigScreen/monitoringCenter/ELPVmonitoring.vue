@@ -13,18 +13,18 @@
                 </div>
             </div>
             <div class="content-info">
-                <div class="content-item">
+                <div class="content-item" v-for="item of siteList" :key="item.name">
                     <div class="title">
                         <div class="siteInfo">
                             <div class="icon"></div>
-                            <span class="site-name">{{value}}</span>
+                            <span class="site-name">{{item.name}}</span>
                             <div class="siteIcon"></div>
                         </div>
                         <div class="waterLevel">
                             <div class="liquidFill">
                                 <liquidFillChart isNormal/>
                             </div>
-                            <div class="currentLevel">当前水位：<div class="value">42.3m</div></div>
+                            <div class="currentLevel">当前水位：<div class="value">{{item.waterLevel}}m</div></div>
                         </div>
                     </div>
                     <div class="content">
@@ -50,7 +50,10 @@ export default {
     },
     data(){
         return{
-            value:"易漏点（1）",
+            siteList:[{name:'易涝点(1)',waterLevel:1.3},
+            {name:'易涝点(2)',waterLevel:1.3},
+            {name:'易涝点(3)',waterLevel:1.3}
+            ]
         }
     },
     watch:{
@@ -110,17 +113,17 @@ export default {
     .content-info{
         width: 100%;
         height: calc(100% - .166667rem);
-        display: flex;
-        flex-flow: row wrap;
+        overflow: auto;
+        padding: 2px;
         .content-item{
             width: 100%;
             height: 33%;
-            display: flex;
-            flex-flow: column;
+            float: left;
+            overflow: hidden;
             .title{
                 width: 100%;
                 display:flex;
-                padding: .145833rem 0 .104167rem 0;
+                padding: .145833rem 0 0 0;
                 justify-content: space-between;
                 align-items: center;
                 .siteInfo{

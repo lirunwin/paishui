@@ -82,7 +82,7 @@ export default {
                 label: '自定义'
             },
             ],
-            selectValue: '7',
+            selectValue: '',
             customDataValue: [],
             siteList:[],
         }
@@ -110,8 +110,10 @@ export default {
     methods:{
         getPageData(){
             const {getRequestResult} = this.$listeners
-            getRequestResult({typeCode: "ywj",blockCode:'yldPage'}).then(res=>{
-                this.siteList= res.records.filter(item=>item.typeCode=='ywj')
+            let data ={blockCode:'yldPage','paras[0].name':'typeCode','paras[0].val':'yldywj'}
+            getRequestResult(data).then(res=>{
+                // this.siteList= res.records.filter(item=>item.typeCode=='ywj')
+                this.siteList=res.records
             })
         },
         //显示自定义事件项
@@ -227,7 +229,8 @@ export default {
             .title{
                 width: 100%;
                 display:flex;
-                padding: .145833rem 0 .104167rem 0;
+                // padding: .145833rem 0 .104167rem 0;
+                padding: .145833rem 0 .026042rem /* 5/192 */ 0;
                 .icon{
                     height: .072917rem /* 14/192 */;
                     width: .052083rem /* 10/192 */;

@@ -31,7 +31,7 @@ export default {
     },
     data(){
         return{
-            pipeLength:20000
+            pipeLength:1262
         }
     },
     methods:{

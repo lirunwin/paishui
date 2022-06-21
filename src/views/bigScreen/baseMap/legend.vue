@@ -10,8 +10,8 @@
                 <div class="legendBoard" v-if="legendBoardShow">
                     <div class="title">地图图例</div>
                     <div class="legendItem">
-                        <div class="citem" v-for="(item,index) in legendList" :key="item.name">
-                            <div class="iconWrap"><img class="legendIcon" :src="item.img" :class="'legendIcon'+index"/></div>
+                        <div class="citem" v-for="(item) in legendList" :key="item.name">
+                            <div class="iconWrap"><img class="legendIcon" :src="item.img"/></div>
                             <div class="legendName">{{item.name}}</div>
                         </div>
                     </div>
@@ -164,30 +164,6 @@ export default {
                         color: #FEFEFF;
                         padding: .026042rem /* 5/192 */;
                         white-space: nowrap;
-                    }
-                    .legendIcon0{
-                        width: .083333rem /* 16/192 */;
-                        height: .09375rem /* 18/192 */;
-                    }
-                    .legendIcon1{
-                        width: .09375rem /* 18/192 */;
-                        height: .088542rem /* 17/192 */;  
-                    }
-                    .legendIcon2{
-                        width: .052083rem /* 10/192 */;
-                        height: .104167rem /* 20/192 */;
-                    }
-                    .legendIcon3{
-                        width: .098958rem /* 19/192 */;
-                        height: .098958rem /* 19/192 */;
-                    }
-                    .legendIcon4{
-                        width: .088542rem /* 17/192 */;
-                        height: .088542rem /* 17/192 */; 
-                    }
-                    .legendIcon5{
-                        width: .109375rem /* 21/192 */;
-                        height: .067708rem /* 13/192 */;  
                     }
                 }
             }

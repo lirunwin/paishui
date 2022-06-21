@@ -87,14 +87,14 @@ export default {
     methods:{
         //初始化图层列表
         setLayerList(){
-            let layersSource = this.layerSource.filter(item=>item.type=='smlayergroup')
+            let layersSource = this.layerSource.filter(item=>item.type=='bigScreenPipeMap')
             this.layerGroup=layersSource[0].sublayers
         },
         //设置图层显隐
         setLayerVisible(layerName,visible){
             let source = this.mapUtilObj.getChangeResource(this.layerSource,layerName, visible)
             this.$store.state.bigScreen.layersSource =source
-            this.mapUtilObj.setGroupLayerVisible(source)
+            this.mapUtilObj.setBigScreenGroupLayerVisible(source)
         }
     }
 }

@@ -22,7 +22,7 @@
                 </div>
                 <div class="otherItem">
                     <div class="specificTime" >{{specificTime}}</div>
-                    <div class="entrySys" @click="enterSys()"><span>{{operationName}}</span></div>
+                    <div class="entrySys" @click="enterSys()">{{operationName}}</div>
                 </div>
             </div>  
             <!-- <div class="underline"></div> -->
@@ -286,6 +286,7 @@ export default {
             font-weight: 400;
             display: flex;
             align-items: center;
+            margin-left: .21875rem /* 42/192 */;
             .specificTime{
                 flex: 2;
                 top: 25%;
@@ -302,6 +303,7 @@ export default {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                white-space: nowrap;
             }
             .entrySys:hover {
                 cursor: pointer;
