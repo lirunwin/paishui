@@ -30,6 +30,8 @@
                                 :props="defaultProps"
                                 default-expand-all
                                 :filter-node-method="filterNode"
+                                @check="getCheckList()"
+                                @node-click="handleTreeNodeClick"
                                 ref="tree">
                                 <span slot-scope="{ node }">
                                     {{ node.label }}
@@ -46,6 +48,11 @@
 
 <script>
 import axios from '@/utils/request'
+import { Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorSource } from "ol/source";
+import Feature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import {Style,Icon,} from 'ol/style';
 export default {
     name:"monitorTree",//监测树
     props:{
@@ -63,7 +70,7 @@ export default {
                 {code:"normalNum",type:'正常',num:20},
                 {code:"warnNum",type:'报警',num:20},
             ],
-            deviceList:[],
+            deviceCheckList:[],
             //
             filterText: '',
             data: [],
@@ -75,13 +82,26 @@ export default {
             offlineIcon:require('@/views/bigScreen/baseMap/images/离线.png'),
             normalIcon:require('@/views/bigScreen/baseMap/images/正常.png'),
             warnIcon:require('@/views/bigScreen/baseMap/images/报警.png'),
+            swjcyLayer:null,
+            zhjgLayer:null,
+            ywjcyLayer:null,
         }
     },
     mounted(){
         this.getPageData()
     },
+    computed:{
+        view(){
+            return this.$store.state.bigScreen.view
+        }
+    },
     watch:{
         show:{
+        },
+        view:{
+            handler(){
+                this.initLayer()
+            }
         },
         showContent:{
             handler(n,o){
@@ -91,6 +111,12 @@ export default {
         },
         filterText(val) {
             this.$refs.tree.filter(val);
+        },
+        deviceCheckList:{
+            handler(n,o){
+                this.showMapPoint()
+            },
+            deep:true
         }
     },
     methods:{
@@ -109,8 +135,6 @@ export default {
                             this.data.push({id:index,name:item,children:result[item]})
                         }
                     })
-                    this.deviceList=result
-                    console.log(this.deviceList)
                 })
             })
         },
@@ -132,6 +156,79 @@ export default {
                 iconSrc=(type==='在线')?this.onlineIcon:(type==='离线'?this.offlineIcon:(type==='正常'?this.normalIcon:this.warnIcon))
             }
             return iconSrc
+        },
+        handleTreeNodeClick(data){
+            let position =[data.coordiateX,data.coordiateY]
+            this.view.getView().setCenter(position)
+        },
+        getCheckList(){
+            this.resetLayerSource()
+            this.deviceCheckList = this.$refs.tree.getCheckedNodes().filter(item=>!item.children)
+            console.log('选中',this.deviceCheckList)
+        },
+        showMapPoint(){
+            this.deviceCheckList.forEach(item=>{
+                let position = [item.coordiateX,item.coordiateY]
+                let feature = new Feature({
+                    geometry: new Point(position),
+                    name: 'My point',
+                });
+                this.getTypeToShow(feature,item.typeName)
+            })
+        },
+        getTypeToShow(feature,type){
+            switch(type){
+                case '易涝点水位监测仪':this.swjcyLayer.getSource().addFeature(feature)
+                                        break;
+                case '智慧井盖':this.zhjgLayer.getSource().addFeature(feature)
+                                        break;
+                case '液位监测仪':this.ywjcyLayer.getSource().addFeature(feature)
+                                        break;
+            }
+        },
+        // 初始化图层
+        initLayer() {
+            this.swjcyLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    image: new Icon({
+                        anchor: [0.5, 0.7],
+                        scale:1,
+                        //图标的url
+                        src: require('@/views/bigScreen/baseMap/images/液位计.png')
+                    })
+                })
+            })
+            this.zhjgLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    image: new Icon({
+                        anchor: [0.5, 0.7],
+                        scale:1,
+                        //图标的url
+                        src: require('@/views/bigScreen/baseMap/images/井盖.png')
+                    })
+                })
+            })
+            this.ywjcyLayer = new VectorLayer({
+                source: new VectorSource(),
+                style: new Style({
+                    image: new Icon({
+                        anchor: [0.5, 0.7],
+                        scale:1,
+                        //图标的url
+                        src: require('@/views/bigScreen/baseMap/images/液位仪.png')
+                    })
+                })
+            })
+            this.view.addLayer(this.swjcyLayer)
+            this.view.addLayer(this.zhjgLayer)
+            this.view.addLayer(this.ywjcyLayer)
+        },
+        resetLayerSource(){
+            this.swjcyLayer.getSource().clear()
+            this.zhjgLayer.getSource().clear()
+            this.ywjcyLayer.getSource().clear()
         }
     }
 }
