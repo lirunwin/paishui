@@ -37,10 +37,10 @@ export default {
   data() {
     return {
       dataList: [
-        { name: '管网液位', normal: 0, warning: 0 },
-        { name: '易涝点水位', normal: 0, warning: 0 },
-        { name: '易涝点视频', normal: 0, warning: 0 },
-        { name: '智慧井盖', normal: 0, warning: 0 }
+        { code:"ywj",name: '管网液位', normal: 0, warning: 0 },
+        { code:"yldywj",name: '易涝点水位', normal: 0, warning: 0 },
+        { code:"",name: '易涝点视频', normal: 0, warning: 0 },
+        { code:"znjg",name: '智慧井盖', normal: 0, warning: 0 }
       ]
     }
   },
@@ -52,7 +52,7 @@ export default {
       const { getRequestResult } = this.$listeners
       getRequestResult({ blockCode: 'typeOnline' }).then((res) => {
         res.forEach((item) => {
-          let index = this.dataList.findIndex((i) => i.name == item.name)
+          let index = this.dataList.findIndex((i) => i.code == item.code)
           if (index != -1) {
             this.dataList[index] = item
           }

@@ -37,7 +37,7 @@ export default {
             const {getRequestResult} = this.$listeners
             getRequestResult({blockCode:'dtzbtj'}).then(res=>{
                 res.forEach(item => {
-                    let index = this.dataList.findIndex(i=>i.title==item.name)
+                    let index = this.dataList.findIndex(i=>i.code==item.typeCode)
                     if(index!=-1) this.dataList[index].num=item.total
                 });
             })
@@ -80,7 +80,7 @@ export default {
                     font-size: .072917rem /* 14/192 */;
                     font-weight: bold;
                     color: rgb(43, 167, 255);
-                    text-shadow: 0 0 10px rgba(43, 167, 255,0.3),0 0 20px rgba(43, 167, 255,0.3),0 0 30px rgba(43, 167, 255,0.3),0 0 40px rgba(43, 167, 255,0.3);  
+                    // text-shadow: 0 0 10px rgba(43, 167, 255,0.3),0 0 20px rgba(43, 167, 255,0.3),0 0 30px rgba(43, 167, 255,0.3),0 0 40px rgba(43, 167, 255,0.3);  
                 }
                 .img{
                     height: .447917rem /* 86/192 */;

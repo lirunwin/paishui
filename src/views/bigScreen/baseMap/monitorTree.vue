@@ -164,7 +164,6 @@ export default {
         getCheckList(){
             this.resetLayerSource()
             this.deviceCheckList = this.$refs.tree.getCheckedNodes().filter(item=>!item.children)
-            console.log('选中',this.deviceCheckList)
         },
         showMapPoint(){
             this.deviceCheckList.forEach(item=>{
@@ -195,7 +194,7 @@ export default {
                         anchor: [0.5, 0.7],
                         scale:1,
                         //图标的url
-                        src: require('@/views/bigScreen/baseMap/images/液位计.png')
+                        src: require('@/views/bigScreen/baseMap/images/汛情上报.png')
                     })
                 })
             })
@@ -217,7 +216,7 @@ export default {
                         anchor: [0.5, 0.7],
                         scale:1,
                         //图标的url
-                        src: require('@/views/bigScreen/baseMap/images/液位仪.png')
+                        src: require('@/views/bigScreen/baseMap/images/液位.png')
                     })
                 })
             })
