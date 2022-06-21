@@ -329,13 +329,14 @@ export default class Login extends Vue {
   background-size: cover;
   .company-name {
     position: absolute;
-    font-size: 30px;
+    font-size: 40px;
     color: white;
-    font-weight: 700;
+    font-weight: 500;
     letter-spacing: 4px;
     width: 100%;
     text-align: center;
     top: calc((100% - 534px) / 2);
+    -webkit-box-reflect: below 1px -webkit-gradient(linear, 0 0, 0 50%, from(transparent), color-stop(0.2, transparent), to(rgba(3, 3, 3, 0.1)));
   }
   img {
     user-select: none;
