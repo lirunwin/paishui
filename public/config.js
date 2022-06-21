@@ -113,7 +113,7 @@ export const appconfig = {
             'type': 'smlayergroup',
             'url': iserverConfig.baseUrl + 'services/map-tf_rsps-2/rest/maps/pipemap',
             'visible': true,
-            'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps-2/rest/maps/pipemap/layers/',
+            'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/pipemap/layers/',
             'sublayers': []
           }
         ]

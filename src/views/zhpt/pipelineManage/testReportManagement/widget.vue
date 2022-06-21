@@ -343,7 +343,7 @@
                     type="primary"
                     :icon="isLoading"
                     @click.stop="uploadVideoWord"
-                    :disabled="this.loadingBool || !this.fileList.length"
+                    :disabled="this.loadingBool || !this.vdieofileList.length"
                     >确 定</el-button
                   >
                 </span>

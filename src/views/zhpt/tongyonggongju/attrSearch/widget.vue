@@ -37,7 +37,7 @@
         <tf-legend class="legend_dept" label="图层名称" isopen="true" title="指定查询的图层。">
           <el-select v-model="layerName" size="small" placeholder="请选择">
           <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
-             <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+             <el-option v-for="item in group.layers" :key="item.label" :label="item.label" :value="item.value"></el-option>
           </el-option-group>
           </el-select>
         </tf-legend>

@@ -452,7 +452,7 @@ export default class BaseMap extends Vue {
     })
     // 点击查询管段详情
     this.view.on('click', (evt) => {
-      if (this.activeHeaderItem !== 'map' || !this.openPopupSwitch) return
+      if (!this.openPopupSwitch) return
       this.spaceQuery(evt.coordinate)
     })
     this.vectorLayer = new VectorLayer({
@@ -464,14 +464,15 @@ export default class BaseMap extends Vue {
     // this.view.getView().setCenter([101.724022, 26.580702])
   }
 
-  async spaceQuery(position) {
-    const bufferDis = 1e-3
-    let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
+  spaceQuery(position) {
+    console.log('查询')
+    let queryFeature = turf.buffer(turf.point(position), 2, { units: 'meters' }) as any
+    queryFeature = new GeoJSON().readFeature(queryFeature)
     let dataServerConfig = appconfig.gisResource.iserver_resource.dataService
     new iQuery().spaceQuery(queryFeature).then((queryData) => {
       let showData = []
       for (let data of queryData as any) {
-        let features = data.result.features.features
+        let features = data ? data.result.features.features : []
         if (features.length !== 0) {
           showData.push(data)
         }
@@ -615,10 +616,10 @@ export default class BaseMap extends Vue {
                   mapService: '地图配置服务',
                   layerService: '图层服务',
                   dataService: '数据服务',
-                  analysisService: '分析服务'
+                  analysisService: '网络分析服务'
                 }
-                // 替换服务
-                const repItems = [MAP_CONFIG.mapService, MAP_CONFIG.layerService, MAP_CONFIG.dataService]
+                // 需要替换的服务
+                const repItems = [MAP_CONFIG.mapService, MAP_CONFIG.layerService, MAP_CONFIG.dataService, MAP_CONFIG.analysisService]
                 res.forEach((service) => {
                   let resData = service.child,
                     source = null
@@ -647,7 +648,7 @@ export default class BaseMap extends Vue {
                           source.initZoom = item.cval
                         }
                       })
-                    } else if (service.name === '网络分析服务') {
+                    } else if (service.name === MAP_CONFIG.analysisService) {
                       source = resource.netAnalysisService
                       source.url = resData[0].cval
                     } else if (service.name === MAP_CONFIG.dataService) {

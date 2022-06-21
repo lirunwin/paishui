@@ -8,7 +8,7 @@
         <tf-legend class="legend_dept" label="图层选择" isopen="true" title="选择将要进行查询的图层">
           <el-select v-model="layerId" placeholder="请选择图层">
             <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
-               <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+               <el-option v-for="item in group.layers" :key="item.label" :label="item.label" :value="item.value"></el-option>
             </el-option-group>
           </el-select>
         </tf-legend>        
@@ -311,6 +311,7 @@ export default {
       isField && this.getUniqueValue(text)
     },
     getUniqueValue (filed) {
+      console.log('获取唯一值')
       mapUtil.getUniqueValue(this.layerId, filed.trim()).then(res => {
         if(res) {
           this.layerFix = res
@@ -487,14 +488,14 @@ export default {
 
     deleteSelectFeas() {
       var selects = this.$refs.multipleTable.selection
-      if(selects.length == 0) return this.$message('请选中至少一个专题图')
+      if(selects.length !== 1) return this.$message('请选择一个专题图')
       var view = this.mapView
       this.$confirm('确定删除选中的 ' + selects.length + '个图层信息', '提示',
         { distinguishCancelAndClose: true, confirmButtonText: '确定', cancelButtonText: '取消' }).then(_ => {
         deleteThemLayer(selects[0].id).then(res => {
             console.log('删除')
             if (res.code == 1) {
-              this.$message.success(`已删除 ${row.mapName} 专题图`)
+              this.$message.success(`已删除 ${selects[0].mapName} 专题图`)
               this.updateThemLayerTable()
             }
           })

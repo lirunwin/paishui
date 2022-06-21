@@ -6,7 +6,7 @@
         <el-form-item label="选取图层" style="margin:0">
           <el-select v-model="selectLayer" value-key="value" placeholder="请选择图层" style="width:100%" size="small" multiple clearable>
             <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
-               <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+               <el-option v-for="item in group.layers" :key="item.label" :label="item.label" :value="item.value"></el-option>
             </el-option-group>
           </el-select>
         </el-form-item>

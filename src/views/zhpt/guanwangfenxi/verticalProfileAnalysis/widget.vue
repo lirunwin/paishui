@@ -162,7 +162,7 @@ export default {
     },
     // 点查询
     getPipeLineByPoint (feature) {
-      let queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
+      let queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 2e-3, { units: 'kilometers' }))
       let dataSetInfo = [
         { label: "排水管道", name: "TF_PSPS_PIPE_B",},
         { label: "给水管道", name: 'TF_JSJS_PIPE_B' },
@@ -208,17 +208,19 @@ export default {
     openBox(features, mapCenter) {
       let xminDistance = 0, xmaxDistance = 1, xmin = 0, xmax = 0
       let dataYPipe = [], dataYGround = []
-      const SH = "IN_ELEV",
-            EH = 'OUT_ELEV',
-            SD = "S_DEEP",
-            ED = 'E_DEEP';
+      const SH = "IN_ELEV", SH2 = 'START_HEIGHT',
+            EH = 'OUT_ELEV', EH2 = 'END_HEIGHT',
+            SD = "S_DEEP", SD2 = '',
+            ED = 'E_DEEP', ED2 = ''
 
         let startX = 0
         console.log('数据不完整')
         for (let len = features.length, i = 0; i < len; i++) {
           let fea = features[i], { properties, geometry } = fea
-          let sheight = properties[SH], eheight = properties[EH],
-              sdeep = properties[SD], edeep = properties[ED]
+          let sheight = properties[SH] || properties[SH2], 
+              eheight = properties[EH] || properties[EH2],
+              sdeep = properties[SD] || properties[SD2], 
+              edeep = properties[ED] || properties[ED2]
           if (!(sheight && eheight && sdeep && edeep)) return this.$message.error("管线数据不完整")
           
           let length = olSphere.getLength(new LineString(geometry.coordinates), { projection: "EPSG:4326" })
@@ -229,8 +231,10 @@ export default {
           dataYGround.push([Number(startX), Math.round((Number(eheight) + Number(edeep)) * 1000) / 1000 ])
         }
         // 添加起点管线
-      dataYPipe.unshift([0, features[0].properties[SH], features[0].properties[SD]])
-      dataYGround.unshift([0, Math.round((Number(features[0].properties[SH]) + Number(features[0].properties[SD])) * 1000) / 1000 ])
+        let firstSH = features[0].properties[SH] || features[0].properties[SH2],
+            firstSD = features[0].properties[SD] || features[0].properties[SD2]
+      dataYPipe.unshift([0, firstSH, firstSD])
+      dataYGround.unshift([0, Math.round((Number(firstSH) + Number(firstSD)) * 1000) / 1000 ])
 
       let chartOption = {
         title: { text: '纵剖面分析', left: 'center' }, 
@@ -300,7 +304,8 @@ export default {
       this.mapView.removeLayer(this.vectorLayer)
       this.mapView.removeLayer(this.lightLayer)
       this.closePanel()
-      this.tip && this.tip.setPosition(null)
+      this.moveEvent && unByKey(this.moveEvent)
+      this.tip && this.mapView.removeOverlay(this.tip)
       this.data.that.setPopupSwitch(true)
     }
   },

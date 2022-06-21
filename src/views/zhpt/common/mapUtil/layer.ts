@@ -122,9 +122,14 @@ export class TF_Layer {
         serviceConfig.dataSetInfo = layers.map(layer => layer.subLayers.layers.map(sub => {
             return { name: sub.name.split('@')[0], title: sub.caption, label: sub.caption }
         })).flat()
-        // new DatasetService(url).getDatasets(dataSetInfo, res => {
-        //     console.log('获取数据服务', res)
-        //     console.log('获取数据服务', layers)
+        console.log('配置数据服务', serviceConfig.dataSetInfo)
+        // let { url, dataSource } = serviceConfig
+        // new DatasetService(url).getDatasets(dataSource, res => {
+        //     let dataSets = res.result.datasetNames.filter(item => !item.includes('_3D') && item.includes('TF_'))
+        //     console.log('获取数据服务', dataSets)
+        //     serviceConfig.dataSetInfo = dataSets.map(item => {
+        //         return { name: item, title: '', label: '' }
+        //     })
         // })
     }
     // 超图切片图层

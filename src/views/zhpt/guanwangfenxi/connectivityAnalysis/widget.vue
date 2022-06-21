@@ -133,7 +133,7 @@ export default {
       this.vectorLayer && this.vectorLayer.getSource().clear()
       this.drawer = new iDraw(this.map, "point", {
         endDrawCallBack: drawFea => {
-          let fea = new GeoJSON().readFeature(turf.buffer(turf.point(drawFea.getGeometry().getCoordinates()), 0.5 / 1000, { units: 'kilometers' }))
+          let fea = new GeoJSON().readFeature(turf.buffer(turf.point(drawFea.getGeometry().getCoordinates()), 2e-3, { units: 'kilometers' }))
           this.getAnalysisPipe(fea).then(resObj => {
             if (resObj) {
               let featureJson = resObj.result.features.features[0]
@@ -187,39 +187,44 @@ export default {
       new iNetAnalysis().findPath(points[0], points[1]).then(res => {
         if (res) {
           if (res.result.pathList.length !== 0) {
+            let name = '排水管道'
+            let tableName = 'TF_PSPS_PIPE_B'
             let pathList = res.result.pathList
             let pathFeatures = []
             pathList.forEach(item => {
               this.ractSelect && this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(item.edgeFeatures))
               pathFeatures = [ ...pathFeatures, ...item.edgeFeatures.features ]
             })
-            this.layerData = [{ name: "排水管线", value: pathFeatures.length, pathFeatures }]
+            this.layerData = [{ tableName, name, value: pathFeatures.length, pathFeatures }]
           }
         } else this.$message.error("分析失败, 管线间不连通或者网络分析不可用")  
       })
     },
     showLayer (row) {
       let features = row.pathFeatures
-      let colsData = []
-      for (let field in fieldDoc) {
-        colsData.push({ prop: field, label: fieldDoc[field] })
-      }
-      // 暂时展示15条属性
-      colsData.length = 15
-      let rowData = features.map(fea => {
-        return { ...fea.properties, geometry: fea.geometry }
-      })
-      this.$store.dispatch('map/changeMethod', {
-        pathId: 'queryResultMore', 
-        widgetid: 'HalfPanel', 
-        label: '详情', 
-        param: { rootPage: this, data: rowData || [], colsData }
+      mapUtil.getFields(row.tableName).then(res => {
+        let colsData = res.map(item => {
+          return { prop: item.field, label: item.name }
+        })
+        let rowData = features.map(fea => {
+          return { ...fea.properties, geometry: fea.geometry }
+        })
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'queryResultMore', 
+          widgetid: 'HalfPanel', 
+          label: '详情', 
+          param: { rootPage: this, data: rowData || [], colsData }
+        })
       })
     },
     gotoGeometry (geometry) {
       let source = this.lightLayer.getSource()
       source.clear()
       let feature = new Feature({ geometry: new LineString(geometry.coordinates) })
+      let center = mapUtil.getCenter(feature)
+      let view = this.map.getView()
+      view.setCenter(center)
+      view.setZoom(19)
       source.addFeature(feature)
     },
     clearAll() {

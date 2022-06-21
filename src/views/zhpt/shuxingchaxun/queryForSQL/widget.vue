@@ -4,7 +4,7 @@
     <tf-legend class="legend_dept" label="图层名称" isopen="true" title="选择将要进行查询的图层。">
       <el-select v-model="layerId" placeholder="请选择">
           <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
-             <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+             <el-option v-for="item in group.layers" :key="item.label" :label="item.label" :value="item.value"></el-option>
           </el-option-group>
       </el-select>
     </tf-legend>
@@ -260,6 +260,7 @@ export default {
             let themFeatures = features.map(feature => new GeoJSON().readFeature(feature))
 
             let layerName = featrueObj.layerName
+            let tableName = featrueObj.tableName
             // 范围限制
             if (this.limitFeature) {
               themFeatures = themFeatures.filter(feature => {
@@ -275,7 +276,7 @@ export default {
             }
             //
             this.queryLayer.getSource().addFeatures(themFeatures)
-            this.addResData(layerName, themFeatures)
+            this.addResData(layerName, tableName, themFeatures)
           })
         } else return this.$message.error("无符合过滤条件数据")
       })
@@ -287,13 +288,14 @@ export default {
         })
       }
     },
-    addResData (layerName, features) {
+    addResData (layerName, tableName, features) {
       const lengthField = 'SMLENGTH'
       let sumLength = features.reduce((prev, next) => {
         return { values_: { "SMLENGTH": Number(prev.values_[lengthField] || 0) + Number(next.values_[lengthField] || 0) } }
       }, { values_: { "SMLENGTH": 0 } })
       this.finalData.push({
         name: layerName,
+        tableName,
         value: features.length,
         length: sumLength.values_["SMLENGTH"],
         features
@@ -303,17 +305,17 @@ export default {
     rowC: function (row) {
       console.log('详情', row)
       let colsData = [], rowData = []
-      for (let key in fieldDoc) {
-          colsData.push({ prop: key, label: fieldDoc[key]})
-      }
-      rowData = row.features.map(fea => fea.values_ || {})
-      // 测试先显示20条
-      colsData.length = 15
-      this.$store.dispatch('map/changeMethod', {
-        pathId: 'queryResultMore',
-        widgetid: 'HalfPanel',
-        label: '更多信息',
-        param: { rootPage: this, data: rowData, colsData }
+      mapUtil.getFields(row.tableName).then(fieldArr => {
+        rowData = row.features.map(fea => fea.values_ || {})
+        colsData = fieldArr.map(item => {
+          return { prop: item.field, label: item.name }
+        })
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'queryResultMore',
+          widgetid: 'HalfPanel',
+          label: '更多信息',
+          param: { rootPage: this, data: rowData, colsData }
+        })
       })
     },
     gotoGeometry (geometry) {

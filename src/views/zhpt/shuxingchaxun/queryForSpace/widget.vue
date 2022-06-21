@@ -44,9 +44,9 @@
           <img src="@/assets/icon/null.png" alt="">
           <p class="empty-p">暂无数据</p>
         </template>
-        <el-table-column prop="layer" label="图层名称" width="100" />
-        <el-table-column prop="num" label="数量" />
-        <el-table-column prop="length" label="总长(m)">
+        <el-table-column align="center" prop="layer" label="图层名称" width="150" />
+        <el-table-column align="center" prop="num" label="数量" />
+        <el-table-column align="center" prop="length" label="总长(m)">
           <template slot-scope="props">{{ props.row.length ? props.row.length.toFixed(2) : '-' }}</template>
         </el-table-column>
       </el-table>

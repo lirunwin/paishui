@@ -155,7 +155,7 @@ export default {
       layerList: [
         { title: "给水管道", open: false, name: 'TF_JSJS_PIPE_B' },
         { title: "燃气管道", open: false, name: 'TF_RQTQ_PIPE_B' },
-        { title: "电力", open: false, name: 'TF_DLLD_PIPE_B' },
+        { title: "电力路灯", open: false, name: 'TF_DLLD_PIPE_B' },
         { title: "中国电信", open: false, name: 'TF_TXDX_PIPE_B' },
         { title: "排水渠道", open: false, name: 'TF_PSPS_CONDUIT_B' },
         { title: "排水管道", open: false, name: 'TF_PSPS_PIPE_B' }

@@ -195,7 +195,10 @@ export default {
     openBox (features, mapCenter) {
       let xminDistance = 0, xmaxDistance = 1, xmin = 0, xmax = 0
       let dataYPipe = [], dataYGround = []
-      const heightField = "IN_ELEV", deepFiled = "S_DEEP", heightField2 = 'START_HEIGHT', deepFiled2 = 'START_DEPTH'
+      const heightField = "IN_ELEV", 
+            deepFiled = "S_DEEP", 
+            heightField2 = 'START_HEIGHT', 
+            deepFiled2 = 'START_DEPTH'
 
       if (features.length === 1) {
         xminDistance = 0.1
