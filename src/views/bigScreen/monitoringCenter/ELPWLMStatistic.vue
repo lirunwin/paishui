@@ -34,10 +34,10 @@
             </div>
             <div class="content-info">
                 <div class="content-item" v-for="item in siteList" :key="item.deviceName">
-                    <div class="title"><div class="icon"></div><span class="site-name">{{item.deviceName}}水位监测</span></div>
+                    <div class="title"><div class="icon"></div><span class="site-name">{{item.deviceName+"（"+item.address+"）"}}</span></div>
                     <div class="content">
                         <waterLevelChart v-on="$listeners"
-                         :intervalDays="selectValue" 
+                         :dateRange="dateRange" 
                          :deviceSn="item.deviceSn"
                          :warningWl="item.warningWl"/>
                     </div>
@@ -78,11 +78,12 @@ export default {
                 label: '最近一年'
             },
             {
-                value: '选项4',
+                value: 'custom',
                 label: '自定义'
             },
             ],
             selectValue: '',
+            dateRange:{beginTime:Date.now(),endTime:new Date().setHours(new Date().getHours() - 1)},
             customDataValue: [],
             siteList:[],
         }
@@ -98,10 +99,12 @@ export default {
         },
         customDataValue:{
             handler(n,o){
-                if(n){
-                    // this.isShowDatePicker=false
-                }
             },
+        },
+        view:{
+            handler(n,o){
+                if(n) this.initVector()
+            }
         }
     },
     mounted(){
@@ -177,7 +180,7 @@ export default {
                 font-weight: bold;
                 font-size: .083333rem /* 16/192 */;
                 color: #ffffff;
-                text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
+                // text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
                 padding: .041667rem /* 8/192 */;
             }
             .el-select{

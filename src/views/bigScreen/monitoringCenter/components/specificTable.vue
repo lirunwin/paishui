@@ -177,7 +177,7 @@ export default {
     >>> .el-table{
         background: transparent;
         font-size: .072917rem /* 14/192 */;
-        color: #FFFFFF;
+        color: #8EB2CE;
         &.el-table--border::after, &.el-table--group::after, &::before{
             height: 0;
         }

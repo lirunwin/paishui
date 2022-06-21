@@ -40,8 +40,8 @@ export default {
     data(){
         return{
             staList:[
-                {title:'视频',num:0,},
-                {title:'水位',num:0,},
+                {title:'视频',num:3,},
+                {title:'水位',num:3,},
                 {title:'液位',num:0,},
                 {title:'井盖',num:0,},
             ],
@@ -68,7 +68,7 @@ export default {
                     Object.keys(item).forEach((val) => (item[val] = item[val] || "/"));
                     return{
                         ...item,
-                        deviceStatus:item.deviceStatus=='0'?'正常':"报警",
+                        deviceStatus:item.deviceStatus=='1'?'正常':"报警",
                         address:item.address?item.address:'无'
                     }
                 })
@@ -79,6 +79,10 @@ export default {
                 case '液位监测仪':this.staList[this.staList.findIndex(child => (child.title === '液位' ))].num++
                                 break;
                 case '智慧井盖':this.staList[this.staList.findIndex(child => (child.title === '井盖' ))].num++
+                                break;
+                case '易涝点水位':this.staList[this.staList.findIndex(child => (child.title === '水位' ))].num++
+                                break;
+                case '易涝点视频':this.staList[this.staList.findIndex(child => (child.title === '视频' ))].num++
                                 break;
             }
         }
@@ -129,7 +133,7 @@ export default {
                 font-weight: bold;
                 font-size: .083333rem /* 16/192 */;
                 color: #ffffff;
-                text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
+                // text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
                 padding: .041667rem /* 8/192 */;
             }
         }
@@ -161,7 +165,7 @@ export default {
                     font-size: .083333rem /* 16/192 */;
                     font-weight: bold;
                     white-space: nowrap;
-                    color: red;
+                    color: #FFB54C;
                 }
             }
         }

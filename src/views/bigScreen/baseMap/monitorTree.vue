@@ -7,7 +7,7 @@
         <div class="widget-monitorTree" ref="widget-monitorTree">
             <div class="wrap">
                 <div class="icon" title="监测树" @click="showContent=!showContent">监测树<img :src="buttonImg" /></div>
-                <div class="content" v-if="showContent">
+                <div class="content" v-show="showContent">
                     <div class="header">
                         <div class="title">设备监测树</div>
                         <el-input placeholder="设备名称搜索" v-model="filterText" class="input-with-select" size="mini">
@@ -29,6 +29,7 @@
                                 :data="data"
                                 :props="defaultProps"
                                 default-expand-all
+                                node-key="id"
                                 :filter-node-method="filterNode"
                                 @check="getCheckList()"
                                 @node-click="handleTreeNodeClick"
@@ -65,7 +66,7 @@ export default {
             upImg:require('./images/三角上.png'),
             downImg:require('./images/三角下.png'),
             statusList:[
-                {code:"onlineNum",type:'在线',num:20},
+                // {code:"onlineNum",type:'在线',num:20},
                 {code:"offlineNum",type:'离线',num:20},
                 {code:"normalNum",type:'正常',num:20},
                 {code:"warnNum",type:'报警',num:20},
@@ -116,16 +117,23 @@ export default {
             handler(n,o){
                 this.showMapPoint()
             },
-            deep:true
+            deep:true,
         }
     },
     methods:{
         getPageData(){
+            let nums;
             const {getRequestResult} = this.$listeners
             getRequestResult({blockCode:'deviceStatuCount'}).then(res=>{
                 Object.keys(res).forEach((item)=>{
-                    this.statusList[this.statusList.findIndex(c=>c.code===item)].num=res[item]
+                    if(item==='onlineNum'){
+                        nums=res[item];
+                        return
+                    }else{
+                        this.statusList[this.statusList.findIndex(c=>(c.code===item))].num=res[item]
+                    }
                 })
+                this.statusList[this.statusList.findIndex(c=>(c.code==='normalNum'))].num=nums
             }).then(()=>{
                 axios.request({ url: '/monitor/device/deviceTypeGroup', method: 'get', data:{} }).then(res=>{
                     let result = res.result
@@ -135,11 +143,19 @@ export default {
                             this.data.push({id:index,name:item,children:result[item]})
                         }
                     })
+                    // let child=this.data.filter((i,index)=>index<=1)
+                    // let child2=[]
+                    // child.forEach(item=>{
+                    //     child2.push(item.children)
+                    // })
+                    // console.log(child2)
+                    // this.deviceCheckList=child2
+                    // this.showMapPoint()
                 })
             })
         },
         setStatusIconColor(type){
-            let color=(type==='在线')?'#2BA7FF':(type==='离线'?'grey':(type==='正常'?"rgb(30, 203, 30)":'red'))
+            let color=(type==='在线')?'#2BA7FF':(type==='离线'?'grey':(type==='正常'?"#2BA7FF":'red'))
             return 'background-color:'+color
         },
         filterNode(value, data) {
@@ -153,11 +169,12 @@ export default {
             if(node.isLeaf == false && node.parent.parent == null){
                 iconSrc=""
             }else{
-                iconSrc=(type==='在线')?this.onlineIcon:(type==='离线'?this.offlineIcon:(type==='正常'?this.normalIcon:this.warnIcon))
+                iconSrc=(type==='在线')?this.onlineIcon:(type==='离线'?this.offlineIcon:(type==='正常'?this.onlineIcon:this.warnIcon))
             }
             return iconSrc
         },
         handleTreeNodeClick(data){
+            if(!data.coordiateX||!data.coordiateY) return
             let position =[data.coordiateX,data.coordiateY]
             this.view.getView().setCenter(position)
         },
@@ -192,7 +209,7 @@ export default {
                 style: new Style({
                     image: new Icon({
                         anchor: [0.5, 0.7],
-                        scale:1,
+                        scale:0.7,
                         //图标的url
                         src: require('@/views/bigScreen/baseMap/images/汛情上报.png')
                     })
@@ -203,7 +220,7 @@ export default {
                 style: new Style({
                     image: new Icon({
                         anchor: [0.5, 0.7],
-                        scale:1,
+                        scale:0.7,
                         //图标的url
                         src: require('@/views/bigScreen/baseMap/images/井盖.png')
                     })
@@ -214,7 +231,7 @@ export default {
                 style: new Style({
                     image: new Icon({
                         anchor: [0.5, 0.7],
-                        scale:1,
+                        scale:0.5,
                         //图标的url
                         src: require('@/views/bigScreen/baseMap/images/液位.png')
                     })
@@ -287,7 +304,7 @@ export default {
                 height: .208333rem /* 40/192 */;
                 margin: 0 .052083rem /* 10/192 */;
                 padding: .026042rem /* 5/192 */;
-                border-bottom: 1px solid rgba(255,255,255,0.7);
+                border-bottom: 1px solid rgba(255,255,255,0.1);
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -331,10 +348,12 @@ export default {
                     width: 100%;
                     height: .104167rem /* 20/192 */;
                     display: flex;
+                    justify-content: center;
                     margin: .052083rem /* 10/192 */ 0;
+                    color: #8EB2CE;
                     .statusItem{
                         height: 100%;
-                        width: 25%;
+                        width: 30%;
                         display: flex;
                         justify-content: center;
                         align-items: center;
@@ -359,7 +378,7 @@ export default {
                     overflow: auto;
                     /deep/ .el-tree {
                         background: transparent;
-                        color: #fff;
+                        color: #8EB2CE;
                         .el-tree-node__content:hover {
                             background-color: rgb(62, 70, 112);
                         }
@@ -370,7 +389,7 @@ export default {
                         .el-tree-node.is-current > .el-tree-node__content {
                             background: rgba(22, 119, 255, 0.1);
                             border-right: 3px solid #1677ff;
-                            color: #187aff;
+                            color: #4b95fe;
                             /deep/ .el-tree-node__expand-icon {
                                 color: rgb(0, 112, 255);
                             }

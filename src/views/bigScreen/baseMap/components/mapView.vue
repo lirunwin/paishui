@@ -101,6 +101,7 @@ export default {
 .mapView {
   height: 100%;
   width: 100%;
+  background: #000a23;
   // /deep/ .ol-layer{
   //     filter: invert(100%) hue-rotate(180deg);//实现天地图从白色变成暗黑模式的地图服务
   //     -webkit-filter: invert(100%) hue-rotate(180deg);

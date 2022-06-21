@@ -10,7 +10,8 @@
         },
         {
             "prop":"installAddress",
-            "label":"安装地址"
+            "label":"安装地址",
+            "width":150
         },
         {
             "prop":"deviceStatus",
@@ -23,10 +24,6 @@
         {
             "prop":"itstrVal",
             "label":"液位值"
-        },
-        {
-            "prop":"shreshold",
-            "label":"阈值上下限"
         },
         {
             "prop":"scadaTime",
