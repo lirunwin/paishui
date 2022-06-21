@@ -117,7 +117,7 @@
       type="primary"
       size="small"
       :loading="loading"
-      :disabled="formData.siteId && !formData.siteId.length"
+      :disabled="(formData.siteId && !formData.siteId.length) || (formData.indexCode && !formData.indexCode.length)"
       icon="el-icon-search"
       @click="onQuery"
       style="width:100%"

@@ -94,7 +94,7 @@ import {
   getDictKeys,
   IDictionary
 } from '../../api'
-import { defaultValuesForMonitorStandardLevel, monitorStandardLevelKey } from '@/utils/constant'
+import { monitorStandardLevelKey } from '@/utils/constant'
 import Map from './Map.vue'
 import { groupBy, keyBy } from 'lodash'
 interface IDetail {
