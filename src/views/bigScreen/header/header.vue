@@ -6,7 +6,7 @@
         leave-active-class="animate__slideOutUp">
         <div class="widget-bigScreenHeader">
             <div class='header'>
-                <div class='title'>
+                <div class='title' @click="close()">
                     <span class="caption">{{title}}</span>
                     <span class="border-trail"></span>
                 </div>
@@ -74,12 +74,21 @@ export default {
             getUserMenu(userId)
             .then((res) => {
                 let arr = res.result.filter((item)=>item.type ==='bigScreen')
+                let sort=0
                 arr[0].childrens.forEach(item => {
                     if(item.statusFlag==='1'){
-                        this.menuList.unshift({
-                            name:item.name,
-                            label:item.label
-                        })
+                        if(item.sort>sort){
+                            this.menuList.unshift({
+                                name:item.name,
+                                label:item.label
+                            })
+                        }else{
+                            this.menuList.push({
+                                name:item.name,
+                                label:item.label
+                            })   
+                        }
+                        sort=item.sort
                     }
                 });
                 this.currentActive=this.menuList[0].label
@@ -138,6 +147,11 @@ export default {
             setInterval(()=>{
                 this.specificTime=getnow();
             },100)
+        },
+        close(){
+            this.$parent.showMonitoringCenter=false
+            this.$parent.showOverviewData=false
+            this.currentActive=''
         }
     }
 }

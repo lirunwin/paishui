@@ -18,7 +18,7 @@
               <div class="normal">{{ item.normal }}个</div>
             </div>
             <div class="wrap">
-              <div class="status">异常：</div>
+              <div class="status">报警：</div>
               <div class="error">{{ item.warning }}个</div>
             </div>
           </div>
@@ -39,7 +39,7 @@ export default {
       dataList: [
         { code:"ywj",name: '管网液位', normal: 0, warning: 0 },
         { code:"yldywj",name: '易涝点水位', normal: 0, warning: 0 },
-        { code:"",name: '易涝点视频', normal: 0, warning: 0 },
+        { code:"",name: '易涝点视频', normal: 3, warning: 0 },
         { code:"znjg",name: '智慧井盖', normal: 0, warning: 0 }
       ]
     }
@@ -97,8 +97,8 @@ export default {
           font-weight: bold;
           white-space: nowrap;
           color: rgb(43, 167, 255);
-          text-shadow: 0 0 10px rgba(43, 167, 255, 0.3), 0 0 20px rgba(43, 167, 255, 0.3),
-            0 0 30px rgba(43, 167, 255, 0.3), 0 0 40px rgba(43, 167, 255, 0.3);
+          // text-shadow: 0 0 10px rgba(43, 167, 255, 0.3), 0 0 20px rgba(43, 167, 255, 0.3),
+          //   0 0 30px rgba(43, 167, 255, 0.3), 0 0 40px rgba(43, 167, 255, 0.3);
         }
         .img {
           height: 0.447917rem /* 86/192 */;

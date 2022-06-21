@@ -71,6 +71,11 @@ export default {
         this.getPageData()
     },
     watch:{
+        show(n,o){
+            if(!n){
+                this.vectorLayer.getSource().clear()
+            }
+        },
         view:{
             handler(n,o){
                 if(n) this.initVector()
@@ -79,6 +84,15 @@ export default {
     },
     methods:{
         initVector(){
+            const gl =this;
+            this.view.on('click',function(e){
+                let pixel = gl.view.getEventPixel(e.originalEvent)
+                gl.view.forEachFeatureAtPixel(pixel,function(feature){
+                    const {info} = feature.getProperties()
+                    gl.dialogVisible=true
+                    gl.title=info.deviceName+"-"+"监测数据"
+                });
+            })
             //创建矢量层
             this.vectorLayer = new VectorLayer({
                 source: new VectorSource({wrapX: false,})
@@ -94,7 +108,7 @@ export default {
                     return {
                         ...item,
                         deviceStatus:item.deviceStatus=='0'?'离线':"在线",
-                        isAlarm:item.deviceStatus=='0'?'/':(!item.isAlarm?'正常':'报警')
+                        isAlarm:item.deviceStatus=='0'?'/':(!item.isAlarm=='0'?'正常':'报警')
                     }
                 })
             })
@@ -111,7 +125,8 @@ export default {
                 color:color,
                 fontSize:'.067708rem',
                 textAlign: 'center',
-                'border-bottom':'1px solid rgba(236, 236, 236, 0.3)'
+                'border-bottom':'1px solid rgba(236, 236, 236, 0.3)',
+                'border':'none'
             }
         },
         rowClick(row){
@@ -190,7 +205,7 @@ export default {
                 font-weight: bold;
                 font-size: .083333rem /* 16/192 */;
                 color: #ffffff;
-                text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
+                // text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
                 padding: .041667rem /* 8/192 */;
             }
         }

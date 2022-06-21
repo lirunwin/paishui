@@ -9,12 +9,12 @@ import moment from 'moment'
 export default {
     name:"waterLevelChart",//水位图
     props:{
-        intervalDays:{default:1},
+        dateRange:{default:{beginTime:Date.now(),endTime:new Date().setHours(new Date().getHours() - 1)}},
         deviceSn:{},
         warningWl:{},
     },
     watch:{
-        intervalDays:{
+        dateRange:{
             handler(n,o){
                 this.getPageData(n)
             },
@@ -22,14 +22,16 @@ export default {
         }
     },
     methods:{
-        getPageData(intervalDays){
+        getPageData(dateRange){
+            const beginTime=moment(dateRange.beginTime).format('YYYY-MM-DD hh:mm:ss')
+            const endTime=moment(dateRange.endTime).format('YYYY-MM-DD hh:mm:ss')
             const {getRequestResult} = this.$listeners
             let data={code: this.deviceSn,
             blockCode:'singleDevice',
             // 'paras[0].name':'beginTime',
-            // 'paras[0].val':'2022-06-17',
+            // 'paras[0].val':beginTime,
             // 'paras[1].name':'endTime',
-            // 'paras[1].val':'2022-06-20',
+            // 'paras[1].val':endTime,
             }
             getRequestResult(data).then(res=>{
                 // const Final = res.filter((item) => (new Date(item.scadaTime).getTime() > Date.now() - intervalDays * 24 * 60 * 60 * 1000));
@@ -121,7 +123,7 @@ export default {
                         color: 'rgba(254, 255, 255, 0.7)'
                     },
                     splitLine: {
-                        show: true,
+                        show: false,
                         lineStyle:{
                             color:'rgba(255, 255, 255, 0.14)'
                         }

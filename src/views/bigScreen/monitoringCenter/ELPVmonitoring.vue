@@ -18,7 +18,7 @@
                         <div class="siteInfo">
                             <div class="icon"></div>
                             <span class="site-name">{{item.name}}</span>
-                            <div class="siteIcon"></div>
+                            <div class="siteIcon" @click="located(item.coor)"></div>
                         </div>
                         <div class="waterLevel">
                             <div class="liquidFill">
@@ -39,6 +39,11 @@
 <script>
 import liquidFillChart from '../overviewData/components/liquidFillChart.vue'
 import hlsVideo from './components/hlsVideo.vue'
+import { Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorSource } from "ol/source";
+import Feature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import {Style,Icon,} from 'ol/style';
 export default {
     name:"ELPVmonitoring",//易涝点视频监测
     components:{
@@ -50,16 +55,67 @@ export default {
     },
     data(){
         return{
-            siteList:[{name:'易涝点(1)',waterLevel:1.3},
-            {name:'易涝点(2)',waterLevel:1.3},
-            {name:'易涝点(3)',waterLevel:1.3}
+            siteList:[
+            {name:'陵州大道东一段下穿隧道',waterLevel:1.3,coor:[104.1637934,30.0103335]},
+            {name:'陵州大道东二段下穿隧道',waterLevel:1.3,coor:[104.1662752,30.0040547]},
+            {name:'迎宾大道与绿岛街交叉口',waterLevel:1.3,coor:[104.1467149,29.9836909]}
             ]
         }
     },
     watch:{
-        show(n,o){}
+        show(n,o){
+            if(!n) this.vectorLayer.getSource().clear()
+        },
+        view:{
+            handler(n,o){
+                if(n) this.initVector()
+            }
+        }
     },
-    methods:{},
+    computed:{
+        view(){
+            return this.$store.state.bigScreen.view
+        }
+    },
+    methods:{
+        initVector(){
+            //创建矢量层
+            this.vectorLayer = new VectorLayer({
+                source: new VectorSource({wrapX: false,})
+            });
+            //将图层添加到地图中
+            this.view.addLayer(this.vectorLayer);
+        },
+        //定位方法
+        located(position){
+            this.showPointSymbol(position)
+            this.view.getView().setCenter(position)
+        },
+        showPointSymbol(position){
+            this.vectorLayer.getSource().clear()
+            //创建Feature，并添加进矢量容器中
+            this.feature = new Feature({
+                geometry: new Point(position),
+                name: 'My point',
+            });
+            //创建标记的样式
+            this.feature.setStyle(this.setFeatureStyle());
+            this.vectorLayer.getSource().addFeature(this.feature);
+        },
+        /**
+         * @description 为要素设置样式
+         */
+        setFeatureStyle() {
+            return new Style({
+                image: new Icon({
+                    anchor: [0.5, 0.7],
+                    scale:1,
+                    //图标的url
+                    src: require('@/views/bigScreen/monitoringCenter/images/视频点.png')
+                })
+            });
+        },
+    },
 }
 </script>
 
@@ -105,7 +161,7 @@ export default {
                 font-weight: bold;
                 font-size: .083333rem /* 16/192 */;
                 color: #ffffff;
-                text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
+                // text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
                 padding: .041667rem /* 8/192 */;
             }
         }
@@ -147,6 +203,7 @@ export default {
                     width: 13px;
                     height: 16px;
                     margin-left: .0625rem /* 12/192 */;
+                    cursor: pointer;
                 }
                 .waterLevel{
                     display: flex;
