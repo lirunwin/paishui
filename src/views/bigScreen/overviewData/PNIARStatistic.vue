@@ -25,7 +25,7 @@
                         <div class="pchart">
                             <decorationChart  
                             :color="item.color" 
-                            :data="{value:item.value,unit:item.unit}" 
+                            :chartData="item" 
                             :fontSize="$listeners.fontSize"/>
                         </div>
                         <div class="title">{{item.title}}</div>
@@ -78,13 +78,7 @@ export default {
     },
     data(){
         return{
-            options: [{
-                value: '选项1',
-                label: '今年'
-            }, {
-                value: '选项2',
-                label: '昨年'
-            }],
+            options: [{value: '选项1',label: '今年'}],
             value: '今年',
             staList:[
                 {

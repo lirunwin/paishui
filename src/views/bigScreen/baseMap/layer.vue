@@ -7,7 +7,7 @@
         <div class="widget-LayerControl" ref="widget-LayerControl">
             <div class="wrap">
                 <div class="icon" title="图层控制" @click="layerBoardShow=!layerBoardShow"><div class="img"></div></div>
-                <div class="layerBoard" v-if="layerBoardShow">
+                <div class="layerBoard" v-show="layerBoardShow">
                     <div class="layerItem" v-for="item of layerGroup" :key="item.name">
                         <div class="layerCategory">{{item.title}}</div>
                         <el-checkbox-group v-model="layerList" v-for="layerItem of item.sublayers" :key="layerItem.name">

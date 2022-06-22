@@ -26,10 +26,11 @@
                             <el-tree
                                 class="filter-tree"
                                 show-checkbox
-                                :data="data"
+                                :data="treeData"
                                 :props="defaultProps"
                                 default-expand-all
                                 node-key="id"
+                                :default-checked-keys="[0,1]"
                                 :filter-node-method="filterNode"
                                 @check="getCheckList()"
                                 @node-click="handleTreeNodeClick"
@@ -61,6 +62,7 @@ export default {
     },
     data(){
         return{
+            deviceTypeGroupUrl:'/monitor/device/deviceTypeGroup',
             showContent:false,
             buttonImg:null,
             upImg:require('./images/三角上.png'),
@@ -74,11 +76,8 @@ export default {
             deviceCheckList:[],
             //
             filterText: '',
-            data: [],
-            defaultProps: {
-                children: 'children',
-                label: 'name'
-            },
+            treeData: [],
+            defaultProps: {children: 'children',label: 'name'},
             onlineIcon:require('@/views/bigScreen/baseMap/images/在线.png'),
             offlineIcon:require('@/views/bigScreen/baseMap/images/离线.png'),
             normalIcon:require('@/views/bigScreen/baseMap/images/正常.png'),
@@ -102,6 +101,7 @@ export default {
         view:{
             handler(){
                 this.initLayer()
+                this.showMapPoint()
             }
         },
         showContent:{
@@ -135,22 +135,18 @@ export default {
                 })
                 this.statusList[this.statusList.findIndex(c=>(c.code==='normalNum'))].num=nums
             }).then(()=>{
-                axios.request({ url: '/monitor/device/deviceTypeGroup', method: 'get', data:{} }).then(res=>{
+                axios.request({ url: this.deviceTypeGroupUrl, method: 'get', data:{} }).then(res=>{
                     let result = res.result
                     Object.keys(result).forEach((item,index)=>{
                         if(item==='device-type') delete result[item]
                         else{
-                            this.data.push({id:index,name:item,children:result[item]})
+                            this.treeData.push({id:index,name:item,children:result[item]})
                         }
                     })
-                    // let child=this.data.filter((i,index)=>index<=1)
-                    // let child2=[]
-                    // child.forEach(item=>{
-                    //     child2.push(item.children)
-                    // })
-                    // console.log(child2)
-                    // this.deviceCheckList=child2
-                    // this.showMapPoint()
+                    this.deviceCheckList = this.treeData
+                    .filter((i,index)=>index<=1)
+                    .map(item=>{return item.children}).flat()
+                    // .reduce(function(a, b) {return a.concat(b);}, []);
                 })
             })
         },
@@ -183,6 +179,7 @@ export default {
             this.deviceCheckList = this.$refs.tree.getCheckedNodes().filter(item=>!item.children)
         },
         showMapPoint(){
+            if(!this.view) return
             this.deviceCheckList.forEach(item=>{
                 let position = [item.coordiateX,item.coordiateY]
                 let feature = new Feature({
@@ -233,7 +230,7 @@ export default {
                         anchor: [0.5, 0.7],
                         scale:0.5,
                         //图标的url
-                        src: require('@/views/bigScreen/baseMap/images/液位.png')
+                        src: require('@/views/bigScreen/baseMap/images/液位计图.png')
                     })
                 })
             })
@@ -379,6 +376,9 @@ export default {
                     /deep/ .el-tree {
                         background: transparent;
                         color: #8EB2CE;
+                        .el-tree-node__content{
+                            background-color: transparent;
+                        }
                         .el-tree-node__content:hover {
                             background-color: rgb(62, 70, 112);
                         }

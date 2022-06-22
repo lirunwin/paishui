@@ -8,7 +8,7 @@ export default {
     name:'decorationChart',//动态装饰图表
     props:{
         color:{},
-        data:{},
+        chartData:{},
         fontSize:{
             type: Function,
             default: () => {
@@ -16,17 +16,32 @@ export default {
             }
         }
     },
+    watch:{
+        chartData:{
+            handler(n){
+                this.animateChart(this.color,n.value,n.unit)
+            },
+            deep:true,
+        },
+    },
     data(){
         return{
-            timerId:null
+            timerId:null,
+            chart:null,
         }
     },
     mounted(){
-        this.animateChart(this.color,this.data.value,this.data.unit,this.$refs.chart)
+        this.animateChart(this.color,this.chartData.value,this.chartData.unit)
     },
     methods:{
-        animateChart(maincolor,value,unit,ref){
-            let chart = echarts.init(ref);//this.$refs.chart
+        animateChart(maincolor,value,unit){
+            const that = this
+            let ref =this.$refs.chart
+            //清除上一个实例
+            if(this.chart) this.chart.dispose();
+            if (this.timerId) {clearInterval(this.timerId);}
+            //初始化实例
+            this.chart=echarts.init(ref);//this.$refs.chart
             let angle = 0; //角度，用来做简单的动画效果的
             this.timerId=null;
             let option = {
@@ -38,11 +53,11 @@ export default {
                     textStyle: {
                         rich: {
                             a: {
-                                fontSize: this.fontSize(16),
+                                fontSize: this.fontSize(14),
                                 color: '#ffffff'
                             },
                             c: {
-                                fontSize: this.fontSize(13),
+                                fontSize: this.fontSize(12), 
                                 color: '#ffffff',
                                 // padding: [5,0]
                             }
@@ -286,18 +301,16 @@ export default {
             }
             function draw() {
                 angle = angle + 3
-                chart.resize();
-                chart.setOption(option,{
+                that.chart.resize();
+                that.chart.setOption(option,{
                     notMerge: true,
                 });
                 //图表大小自适应
                 window.addEventListener("resize", ()=>{
-                    chart.resize()
+                    that.chart.resize()
                 })
             }
-            if (this.timerId) {
-                clearInterval(this.timerId);
-            }
+
             this.timerId = setInterval(function() {
                 //用setInterval做动画感觉有问题
                 draw()

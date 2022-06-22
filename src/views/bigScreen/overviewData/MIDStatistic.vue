@@ -24,9 +24,9 @@ export default {
     props:{
         show:{},
     },
-    computed:{
-        dataList(){
-            return config.MIDStatisticList
+    data(){
+        return{
+            dataList:config.MIDStatisticList
         }
     },
     mounted(){
