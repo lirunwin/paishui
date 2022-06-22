@@ -26,7 +26,7 @@
 export default {
   name: 'MapLegend', //地图图例
   props: {
-    show: {}
+    hideBoth:{}
   },
   data() {
     return {
@@ -44,7 +44,17 @@ export default {
       ]
     }
   },
-  watch: {},
+  watch: {
+    hideBoth(n){
+        if(!n){
+            this.$refs['widget-MapLegend'].style.setProperty('--bottom', '1.59375rem')
+            this.$refs['widget-MapLegend'].style.setProperty('--left', '2.34375rem')
+        }else{
+            this.$refs['widget-MapLegend'].style.setProperty('--bottom', '.052083rem')
+            this.$refs['widget-MapLegend'].style.setProperty('--left', '.052083rem')
+        }
+    }
+  },
   methods: {}
 }
 </script>
@@ -60,8 +70,8 @@ export default {
   $size20: 0.104167rem /* 20/192 */;
   z-index: 2;
   //position
-  bottom: 1.59375rem /* 306/192 */;
-  margin-left: 2.34375rem /* 450/192 */;
+  bottom: var(--bottom);//1.59375rem /* 306/192 */;
+  margin-left:var(--left); //2.34375rem /* 450/192 */;
   position: absolute;
   //background
   background-color: rgba(20, 24, 47, 0.5);

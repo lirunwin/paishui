@@ -58,7 +58,7 @@ import {Style,Icon,} from 'ol/style';
 export default {
     name:"monitorTree",//监测树
     props:{
-        show:{},
+        hideBoth:{}
     },
     data(){
         return{
@@ -96,7 +96,12 @@ export default {
         }
     },
     watch:{
-        show:{
+        hideBoth(n){
+            if(!n){
+                this.$refs['widget-monitorTree'].style.setProperty('--right', '2.34375rem')
+            }else{
+                this.$refs['widget-monitorTree'].style.setProperty('--right', '.052083rem')
+            }
         },
         view:{
             handler(){
@@ -258,7 +263,7 @@ export default {
     z-index: 2;
     //position
     top:.505208rem /* 97/192 */;
-    margin-right: 2.34375rem /* 450/192 */;
+    margin-right: var(--right);//2.34375rem /* 450/192 */;
     position: absolute;
     right: 0;
     //size
