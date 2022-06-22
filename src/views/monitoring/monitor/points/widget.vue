@@ -64,12 +64,7 @@ import {
   IDictionary,
   getMonitorItemCurrentInfoById
 } from '@/views/monitoring/api'
-import {
-  defaultValuesForMonitorStandardLevel,
-  getDefaultPagination,
-  monitorAutoRefreshInterval,
-  monitorStandardLevelKey
-} from '@/utils/constant'
+import { getDefaultPagination, monitorAutoRefreshInterval, monitorStandardLevelKey } from '@/utils/constant'
 
 type IPopupParam = Record<'id' | 'coordiateX' | 'coordiateY', string | number>
 
@@ -155,7 +150,7 @@ export default class PointsMonitor extends Vue {
 
   rowStyle({ row }) {
     const { level } = row
-    const { color } = defaultValuesForMonitorStandardLevel.find((item) => item.codeValue === String(level)) || {}
+    const { notes: color } = this.levelColors.find((item) => item.codeValue === String(level)) || {}
     return { color }
   }
 

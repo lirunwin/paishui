@@ -113,7 +113,6 @@
         <el-col :span="10">
           <Map
             @coordinate-change="onCoordinateChange"
-            @device-change="onDeviceChange"
             :enableCoordinateSelect="enable.coordinate"
             :enableDeviceSelect="enable.device"
             :center="(formData.coordinate || '').split(',')"
@@ -283,7 +282,7 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   get usersInMyDepartment() {
-    const { users } = this.users.find((item) => String(item.id) === this.$store.state.user.departmentId) || {}
+    const { users } = this.users.find((item) => String(item.id) === String(this.$store.state.user.departmentId)) || {}
     return users
   }
 
@@ -321,17 +320,18 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   onCoordinateChange(coordiate: number[]) {
-    this.formData.coordinate = coordiate.join()
+    const [x, y] = coordiate
+    this.formData.coordinate = `${Math.floor(x * 10000000) / 10000000},${Math.floor(y * 10000000) / 10000000}`
   }
 
-  onDeviceChange(geo) {
-    const {
-      geometry,
-      id,
-      properties: { ADDRESS, LNO, TYPE }
-    } = geo
-    this.formData.flood.facility = id
-  }
+  // onDeviceChange(geo) {
+  //   const {
+  //     geometry,
+  //     id,
+  //     properties: { ADDRESS, LNO, TYPE }
+  //   } = geo
+  //   this.formData.flood.facility = id
+  // }
 
   onMajorHandlerChange(id: string) {
     const { phone } = this.usersInMyDepartment.find((item) => String(item.id) === id) || {}
@@ -339,7 +339,7 @@ export default class ReportAndAssignForm extends Vue {
     this.setPhones()
   }
 
-  onCollaborateHanlerChange(ids: string[]) {
+  onCollaborateHanlerChange() {
     this.setPhones()
   }
 

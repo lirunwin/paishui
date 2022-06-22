@@ -10,7 +10,7 @@
     ref="dialog"
   >
     <div slot="title">
-      <span>{{ title }}</span>
+      <span class="title">{{ title }}</span>
     </div>
     <slot />
     <span slot="footer">
@@ -79,6 +79,10 @@ export default class BaseDialog extends Vue {
     background-color: transparent;
     max-width: 85vw;
     margin-top: 0 !important;
+    .title {
+      font-size: 14px;
+      font-weight: 500;
+    }
 
     &__header {
       background-color: $bg-color;

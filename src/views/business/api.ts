@@ -198,7 +198,7 @@ export const deleteEvent = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.events.base}/${id}`, method: 'delete' })
 
 export const updateEvent = (data: Partial<IEvent>) =>
-  axios.request<IRes<boolean>>({ url: uris.events.base, method: 'put', data })
+  axios.request<IResult<IEvent>>({ url: uris.events.base, method: 'put', data })
 
 export const getEvent = (id: string) =>
   axios.request<IResult<IEvent>>({ url: `${uris.events.base}/${id}`, method: 'get' })
@@ -227,7 +227,7 @@ export const deleteFlood = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.flood.base}/${id}`, method: 'delete' })
 
 export const updateFlood = (data: Partial<IFlood>) =>
-  axios.request<IRes<boolean>>({ url: uris.flood.base, method: 'put', data })
+  axios.request<IResult<IFlood>>({ url: uris.flood.base, method: 'put', data })
 
 export const getFlood = (id: string) =>
   axios.request<IResult<IFlood>>({ url: `${uris.flood.base}/${id}`, method: 'get' })

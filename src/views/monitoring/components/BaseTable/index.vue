@@ -69,6 +69,7 @@ export default Vue.extend({
         'tool-tip-effect': 'light',
         'show-overflow-tooltip': true,
         size: 'medium',
+        'row-key': 'id',
         stripe: true,
         'header-cell-style': {
           background: '#Eaf1Fd',
@@ -106,7 +107,7 @@ export default Vue.extend({
 </script>
 <style lang="scss" scoped>
 .base-table {
-  flex: 1 1 100%;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   position: relative;

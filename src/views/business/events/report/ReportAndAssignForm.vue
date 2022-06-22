@@ -327,7 +327,7 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   get usersInMyDepartment() {
-    const { users } = this.users.find((item) => String(item.id) === this.$store.state.user.departmentId) || {}
+    const { users } = this.users.find((item) => String(item.id) === String(this.$store.state.user.departmentId)) || {}
     return users
   }
 

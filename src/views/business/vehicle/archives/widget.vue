@@ -9,8 +9,9 @@
       :data="vehicleArchives"
       @page-change="onPageChange"
       :pagination="pagination"
-      style="max-height:100%"
+      :tree-props="{ children: 'eventMangeList', hasChildren: 'hasChildren' }"
     >
+      >
       <template v-for="(_, index) of vehicleArchives" v-slot:[`name1-${index}`]="{ row }">
         <el-button type="text" :key="index">{{ row.id }}</el-button>
       </template>
@@ -84,7 +85,16 @@ export default class VehicleArchives extends Vue {
         result: { records, size, total, current }
       } = await vehicleArchivePage({ ...this.query, ...this.pagination })
       this.pagination = { current, size, total }
-      this.vehicleArchives = records || []
+      this.vehicleArchives = (records || []).map((vehicle) => {
+        const { eventMangeList, id, ...reset } = vehicle
+        return {
+          id,
+          ...reset,
+          eventMangeList: (eventMangeList || []).map(({ id: eventId, ...resetEvent }) => {
+            return { ...resetEvent, ...reset, id: `${id}-${eventId}`, hasChildren: false }
+          })
+        }
+      })
     } catch (error) {
       console.log(error)
     }
@@ -110,4 +120,8 @@ export default class VehicleArchives extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.table {
+  flex: 1 1 auto;
+}
+</style>
