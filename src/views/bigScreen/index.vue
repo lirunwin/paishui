@@ -2,9 +2,9 @@
   <div class="widget-bigScreen" >
     <!--背景地图模块-->
     <BaseMap  v-on:fontSize="fontSize" />
-    <MapLegend :show="showMonitoringCenter"/>
-    <LayerControl :show="showMonitoringCenter"/>
-    <MonitorTree v-on="{fontSize,getRequestResult}"/>
+    <MapLegend :hideBoth="hideBoth" />
+    <LayerControl :hideBoth="hideBoth" />
+    <MonitorTree v-on="{fontSize,getRequestResult}" :hideBoth="hideBoth"/>
     <!--头部菜单模块-->
     <Header/>
     <!--监测中心模块-->
@@ -56,7 +56,16 @@ export default {
     return{
       showMonitoringCenter:false,//监测中心
       showOverviewData:false,//数据总览
-      flexibleObject:null
+      flexibleObject:null,
+    }
+  },
+  computed:{
+    hideBoth(){
+      if(!this.showMonitoringCenter&&!this.showOverviewData){
+        return true
+      }else{
+        return false
+      }
     }
   },
   mounted(){
@@ -90,7 +99,6 @@ export default {
   destroyed(){
     this.flexibleObject.removeflexible()
     this.flexibleObject=null
-    console.log('大屏实例销毁')
   }
 }
 </script>

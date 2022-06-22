@@ -54,7 +54,8 @@ export default {
         res.forEach((item) => {
           let index = this.dataList.findIndex((i) => i.code == item.code)
           if (index != -1) {
-            this.dataList[index] = item
+            this.dataList[index].normal=item.normal
+            this.dataList[index].warning=item.warning
           }
         })
       })

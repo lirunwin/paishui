@@ -35,8 +35,8 @@ export default {
                         type: "image",
                         style: {
                             image: img,
-                            width: this.fontSize(48),
-                            height: this.fontSize(48),
+                            width: this.fontSize(45),
+                            height: this.fontSize(45),
                         },
                         left: "center",
                         top: "center",

@@ -7,7 +7,7 @@
         <div class="widget-LayerControl" ref="widget-LayerControl">
             <div class="wrap">
                 <div class="icon" title="图层控制" @click="layerBoardShow=!layerBoardShow"><div class="img"></div></div>
-                <div class="layerBoard" v-if="layerBoardShow">
+                <div class="layerBoard" v-show="layerBoardShow">
                     <div class="layerItem" v-for="item of layerGroup" :key="item.name">
                         <div class="layerCategory">{{item.title}}</div>
                         <el-checkbox-group v-model="layerList" v-for="layerItem of item.sublayers" :key="layerItem.name">
@@ -39,7 +39,7 @@ import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
 export default {
     name:"LayerControl",//图层控制
     props:{
-        show:{},
+        hideBoth:{}
     },
     data(){
         return{
@@ -59,16 +59,15 @@ export default {
         }
     },
     watch:{
-        // show:{
-        //     handler(n,o){
-        //         this.$nextTick(()=>{
-        //             //变量赋值
-        //             n?this.$refs['widget-LayerControl'].style.setProperty('--bottom', '1.546875rem'):
-        //             this.$refs['widget-LayerControl'].style.setProperty('--bottom', '.052083rem')
-        //         })
-        //     },
-        //     immediate:true
-        // },
+        hideBoth(n){
+            if(!n){
+                this.$refs['widget-LayerControl'].style.setProperty('--bottom', '1.59375rem')
+                this.$refs['widget-LayerControl'].style.setProperty('--right', '2.34375rem')
+            }else{
+                this.$refs['widget-LayerControl'].style.setProperty('--bottom', '.052083rem')
+                this.$refs['widget-LayerControl'].style.setProperty('--right', '.052083rem')
+            }
+        },
         checkList:{
 
         },
@@ -110,8 +109,8 @@ export default {
     $size20:.104167rem /* 20/192 */;
     z-index: 2;
     //position
-    bottom: 1.59375rem /* 306/192 */;
-    margin-right: 2.34375rem /* 450/192 */;
+    bottom: var(--bottom);//1.59375rem /* 306/192 */;
+    margin-right: var(--right);//2.34375rem /* 450/192 */;
     position: absolute;
     right: 0;
     //background

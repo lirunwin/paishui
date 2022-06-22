@@ -197,7 +197,7 @@ export default {
                                 anchor: [0.5, 0.7],
                                 scale:0.7,
                                 //图标的url
-                                src: require('@/views/bigScreen/baseMap/images/视频.png')
+                                src: require('@/views/bigScreen/baseMap/images/视频图.png')
                             })
                         });
             }
