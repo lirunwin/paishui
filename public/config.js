@@ -1,87 +1,88 @@
 ﻿/*
  *公司初始化配置
-*/
+ */
 export const esriConfig = {
-  'baseUrl': 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/4.16/dojo/dojo.js',
-  'baseCssUrl': 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/4.16/esri/css/main.css',
-  'font_url': 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/fonts/',
+  baseUrl: 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/4.16/dojo/dojo.js',
+  baseCssUrl: 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/4.16/esri/css/main.css',
+  font_url: 'http://192.168.2.238:8080/arcgis_js_api/v416/arcgis_js_api/library/fonts/'
 }
 
 export const iserverConfig = {
   // 'baseUrl': 'http://117.174.10.73:8090/iserver/'
-  'baseUrl': 'http://192.168.2.238:8090/iserver/'
+  baseUrl: 'http://221.182.8.141:8090/iserver/'
 }
 
 export const appconfig = {
   // 底图是否采用在线地图，true在线，false离线
-  'isonline': true,
+  isonline: true,
   // 是否根据后台配置服务
-  'isloadServer': true,
+  isloadServer: true,
   // 天地图秘钥
   // 'tianMapKey': '700ea8c1e2dd873c349dc880169fd96d',
-  'tianMapKey':'9248d7f5b183142e4f1d5c908fba42e0',
+  tianMapKey: '9248d7f5b183142e4f1d5c908fba42e0',
   // 打印模板
-  'templateFolder': 'D:/xrty/template',
+  templateFolder: 'D:/xrty/template',
   // 地图初始视角中心
   // 'initCenter': { 'x': 104.44483, 'y': 30.85523 },
   // 临时使用
-  'initCenter': [101.724022, 26.580702], 
+  initCenter: [101.724022, 26.580702],
   // [101.724022, 26.580702] 攀枝花
   // [104.1958, 30.0181] 仁寿
-  'initLayers': 'pipemap&&smlayergroup', // 用于配置图层树 pipemap&&group
+  initLayers: 'pipemap&&smlayergroup', // 用于配置图层树 pipemap&&group
   // 地图初始视角级别
-  'initZoom': 15,
+  initZoom: 15,
   // token
-  'usertoken': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJVc2VySUQiOiIiLCJVU0VSTkFNRSI6IiIsIlJFQUxOQU1FIjoiIiwiV0tJRCI6NDU0NCwiUkFOR0UiOiJYUlRZIiwiUkFOR0VGSUVMRCI6bnVsbCwiQ09ERSI6IlhSVFkiLCJDT05ORUNUU1RSIjoiREFUQUJBU0U9b3JjbDtORVROQU1FPTE5Mi4xNjguMi4yNDIvb3JjbDtTRVJWRVI9MTkyLjE2OC4yLjI0MjtVU0VSSUQ9dGZfeHJ0eV9nZW87UEFTU1dPUkQ9dGZfeHJ0eV9nZW87UE9SVD0xNTIxQDUxNTEvdGNwO1ZFUlNJT049c2RlLkRFRkFVTFQiLCJCb3JuVGltZSI6MCwiQXBwSUQiOm51bGx9.bMNoX6nsvNYukk47_UnT9IHGlNIWclbmiXTj3ak1i5KuF5LGexfwV7TwF80nP08GEPaNwScgk7lbJkRHcqtT8w',
+  usertoken:
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJVc2VySUQiOiIiLCJVU0VSTkFNRSI6IiIsIlJFQUxOQU1FIjoiIiwiV0tJRCI6NDU0NCwiUkFOR0UiOiJYUlRZIiwiUkFOR0VGSUVMRCI6bnVsbCwiQ09ERSI6IlhSVFkiLCJDT05ORUNUU1RSIjoiREFUQUJBU0U9b3JjbDtORVROQU1FPTE5Mi4xNjguMi4yNDIvb3JjbDtTRVJWRVI9MTkyLjE2OC4yLjI0MjtVU0VSSUQ9dGZfeHJ0eV9nZW87UEFTU1dPUkQ9dGZfeHJ0eV9nZW87UE9SVD0xNTIxQDUxNTEvdGNwO1ZFUlNJT049c2RlLkRFRkFVTFQiLCJCb3JuVGltZSI6MCwiQXBwSUQiOm51bGx9.bMNoX6nsvNYukk47_UnT9IHGlNIWclbmiXTj3ak1i5KuF5LGexfwV7TwF80nP08GEPaNwScgk7lbJkRHcqtT8w',
   // 地图资源服务
-  'gisResource': {
-    'printer': {
-      'name': '打印地址',
-      'url': 'http://117.174.10.73:8090/iserver/services/webprinting/rest/webprinting/v1'
+  gisResource: {
+    printer: {
+      name: '打印地址',
+      url: 'http://117.174.10.73:8090/iserver/services/webprinting/rest/webprinting/v1'
     },
     // add iserverResource
-    "iserver_resource": {
-      'netAnalysisService': {
-        'name': '网络分析服务',
-        'url': iserverConfig.baseUrl + 'services/transportationAnalyst-tf_rsps/rest/networkanalyst/NETWORK_PSPS@tofly'
+    iserver_resource: {
+      netAnalysisService: {
+        name: '网络分析服务',
+        url: iserverConfig.baseUrl + 'services/transportationAnalyst-tf_rsps/rest/networkanalyst/NETWORK_PSPS@tofly'
       },
-      'dataService': {
-        'name': '数据服务',
-        'url': iserverConfig.baseUrl + "services/data-tf_rsps/rest/data",
-        'dataSource': "tofly",
-        'dataSet': ["psmap"],
-        'dataSetInfo': [
-            // { 'name': 'TF_PSPS_PIPE_B', 'label': '排水管线' },
-            // { 'name': 'TF_PSPS_POINT_B', 'label': '排水管点' },
-            // { 'name': 'TF_PSPS_OUTFALL_B', 'label': '排放口' },
+      dataService: {
+        name: '数据服务',
+        url: iserverConfig.baseUrl + 'services/data-tf_rsps/rest/data',
+        dataSource: 'tofly',
+        dataSet: ['psmap'],
+        dataSetInfo: [
+          // { 'name': 'TF_PSPS_PIPE_B', 'label': '排水管线' },
+          // { 'name': 'TF_PSPS_POINT_B', 'label': '排水管点' },
+          // { 'name': 'TF_PSPS_OUTFALL_B', 'label': '排放口' },
         ]
       },
-      'layerService': {
-        'name': '图层服务',
-        'layers': [
+      layerService: {
+        name: '图层服务',
+        layers: [
           {
-            'name': '矢量底图',
-            'type': 'wmtslayer',
-            'url': 'http://t0.tianditu.gov.cn/vec_c/wmts?tk=',
-            'visible': true
+            name: '矢量底图',
+            type: 'wmtslayer',
+            url: 'http://t0.tianditu.gov.cn/vec_c/wmts?tk=',
+            visible: true
           },
           {
-            'name': '影像底图',
-            'type': 'wmtslayer',
-            'url': 'http://t0.tianditu.gov.cn/img_c/wmts?tk=',
-            'visible': false
+            name: '影像底图',
+            type: 'wmtslayer',
+            url: 'http://t0.tianditu.gov.cn/img_c/wmts?tk=',
+            visible: false
           },
           {
-            'name': '矢量标注',
-            'type': 'wmtslayer',
-            'url': 'http://t0.tianditu.gov.cn/cva_c/wmts?tk=',
-            'visible': true
+            name: '矢量标注',
+            type: 'wmtslayer',
+            url: 'http://t0.tianditu.gov.cn/cva_c/wmts?tk=',
+            visible: true
           },
           {
-            'name': '影像标注',
-            'type': 'wmtslayer',
-            'url': 'http://t0.tianditu.gov.cn/cia_c/wmts?tk=',
-            'visible': false
+            name: '影像标注',
+            type: 'wmtslayer',
+            url: 'http://t0.tianditu.gov.cn/cia_c/wmts?tk=',
+            visible: false
           },
           // {
           //   'parentname': "底图",
@@ -92,7 +93,7 @@ export const appconfig = {
           //   "id": 2
           // },
           // {
-          //   'parentname': "底图", 
+          //   'parentname': "底图",
           //   'name': '影像底图',
           //   'type': 'tdtlayer',
           //   'url': 'http://t3.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=',
@@ -100,7 +101,7 @@ export const appconfig = {
           //   "id": 3
           // },
           // {
-          //   'parentname': "底图", 
+          //   'parentname': "底图",
           //   'name': '标注底图',
           //   'type': 'tdtlayer',
           //   'url': 'http://t4.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=',
@@ -108,185 +109,209 @@ export const appconfig = {
           //   "id": 4
           // // },
           {
-            'name': 'pipemap',
-            'title': '综合管网',
-            'type': 'smlayergroup',
-            'url': iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/pipemap',
-            'visible': true,
-            'legendUrl': 'http://192.168.2.238:8090/iserver/services/map-tf_rsps/rest/maps/pipemap/layers/',
-            'sublayers': []
+            name: 'pipemap',
+            title: '综合管网',
+            type: 'smlayergroup',
+            url: iserverConfig.baseUrl + 'services/map-tf_rsps/rest/maps/pipemap',
+            visible: true,
+            legendUrl: 'http://221.182.8.141:8090/iserver/services/map-tf_rsps/rest/maps/pipemap/layers/',
+            sublayers: []
           }
         ]
       }
     },
 
-    'tian_online_vector': {
-      'groupname': '天地图在线矢量服务',
-      'type': 'webTiled',
-      'config': [
+    tian_online_vector: {
+      groupname: '天地图在线矢量服务',
+      type: 'webTiled',
+      config: [
         // { 'name': '矢量地图', 'url': 'https://iserver.supermap.io/iserver/services/map-world/rest/maps/World' }
         // { 'name': '矢量地图', 'url': 'http://{subDomain}.tianditu.com/DataServer?T=vec_c&x={col}&y={row}&l={level}&tk=' }
       ]
     },
-    'tian_online_raster': {
-      'groupname': '天地图在线影像服务',
-      'type': 'webTiled',
-      'config': [
-        { 'name': '影像地图', 'url': 'http://{subDomain}.tianditu.com/DataServer?T=img_c&x={col}&y={row}&l={level}&tk=' }
+    tian_online_raster: {
+      groupname: '天地图在线影像服务',
+      type: 'webTiled',
+      config: [
+        { name: '影像地图', url: 'http://{subDomain}.tianditu.com/DataServer?T=img_c&x={col}&y={row}&l={level}&tk=' }
       ]
     },
-    'tian_online_vector_label': {
-      'groupname': '天地图在线矢量标注服务',
-      'type': 'webTiled',
-      'config': [
-        { 'name': '矢量标注图', 'url': 'http://{subDomain}.tianditu.com/DataServer?T=cva_c&x={col}&y={row}&l={level}&tk=' }
+    tian_online_vector_label: {
+      groupname: '天地图在线矢量标注服务',
+      type: 'webTiled',
+      config: [
+        { name: '矢量标注图', url: 'http://{subDomain}.tianditu.com/DataServer?T=cva_c&x={col}&y={row}&l={level}&tk=' }
       ]
     },
-    'tian_online_raster_label': {
-      'groupname': '天地图在线影像标注服务',
-      'type': 'webTiled',
-      'config': [
-        { 'name': '影像标注图', 'url': 'http://{subDomain}.tianditu.com/DataServer?T=cia_c&x={col}&y={row}&l={level}&tk=' }
+    tian_online_raster_label: {
+      groupname: '天地图在线影像标注服务',
+      type: 'webTiled',
+      config: [
+        { name: '影像标注图', url: 'http://{subDomain}.tianditu.com/DataServer?T=cia_c&x={col}&y={row}&l={level}&tk=' }
       ]
     },
-    'tian_offline_raster_label': {
-      'groupname': '天地图离线标注图服务',
-      'type': 'tiled',
-      'config': [
-        { 'name': '标注地图', 'url': 'http://192.168.100.202:6080/arcgis/rest/services/xrty/tysw_imgano/MapServer' }
+    tian_offline_raster_label: {
+      groupname: '天地图离线标注图服务',
+      type: 'tiled',
+      config: [{ name: '标注地图', url: 'http://192.168.100.202:6080/arcgis/rest/services/xrty/tysw_imgano/MapServer' }]
+    },
+    tian_offline_vector_label: {
+      groupname: '天地图离线标注图服务',
+      type: 'tiled',
+      config: [{ name: '标注地图', url: 'http://192.168.100.202:6080/arcgis/rest/services/xrty/tysw_vecano/MapServer' }]
+    },
+    tian_offline_raster: {
+      groupname: '天地图离线影像图服务',
+      type: 'tiled',
+      config: [{ name: '影像地图', url: 'http://192.168.100.202:6080/arcgis/rest/services/xrty/tysw_img/MapServer' }]
+    },
+    tian_offline_vector: {
+      groupname: '天地图离线矢量服务',
+      type: 'tiled',
+      config: [{ name: '矢量地图', url: 'http://192.168.100.202:6080/arcgis/rest/services/xrty/tysw_vec/MapServer' }]
+    },
+    river_thema: {
+      groupname: '水系专题图服务',
+      type: 'dynamic',
+      config: [{ name: '水系专题图', url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_river/MapServer' }]
+    },
+    business_map: {
+      groupname: '离线业务地图服务',
+      type: 'dynamic',
+      config: [{ name: '业务地图', url: 'http://221.182.8.141:8090/iserver/services/map-tf_rsps-2/rest/maps/pipemap' }]
+    },
+    print: {
+      groupname: '打印服务',
+      config: [
+        {
+          name: '打印地图',
+          url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/TyswPrint/GPServer/TFPrint/execute'
+        }
       ]
     },
-    'tian_offline_vector_label': {
-      'groupname': '天地图离线标注图服务',
-      'type': 'tiled',
-      'config': [
-        { 'name': '标注地图', 'url': 'http://192.168.100.202:6080/arcgis/rest/services/xrty/tysw_vecano/MapServer' }
+    layer_name: {
+      groupname: '获取图层名称服务',
+      config: [
+        {
+          name: '图层名称',
+          url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/getLayerInfor'
+        }
       ]
     },
-    'tian_offline_raster': {
-      'groupname': '天地图离线影像图服务',
-      'type': 'tiled',
-      'config': [
-        { 'name': '影像地图', 'url': 'http://192.168.100.202:6080/arcgis/rest/services/xrty/tysw_img/MapServer' }
+    field_intersect: {
+      groupname: '获取重复字段',
+      config: [
+        {
+          name: '字段名称',
+          url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/fieldIntersect'
+        }
       ]
     },
-    'tian_offline_vector': {
-      'groupname': '天地图离线矢量服务',
-      'type': 'tiled',
-      'config': [
-        { 'name': '矢量地图', 'url': 'http://192.168.100.202:6080/arcgis/rest/services/xrty/tysw_vec/MapServer' }
+    fieldUniqueValue: {
+      groupname: '获取字段唯一值',
+      config: [
+        {
+          name: '字段唯一',
+          url:
+            'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/getFieldUniqueValue'
+        }
       ]
     },
-    'river_thema': {
-      'groupname': '水系专题图服务',
-      'type': 'dynamic',
-      'config': [
-        { 'name': '水系专题图', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_river/MapServer' }
+    statistic: {
+      groupname: '属性统计',
+      config: [
+        {
+          name: '属性统计',
+          url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/statistic'
+        }
       ]
     },
-    'business_map': {
-      'groupname': '离线业务地图服务',
-      'type': 'dynamic',
-      'config': [
-        { 'name': '业务地图', 'url': 'http://221.182.8.141:8090/iserver/services/map-tf_rsps-2/rest/maps/pipemap' }
+    horizental_section_analysis: {
+      groupname: '横剖面分析',
+      config: [
+        {
+          name: '横剖面分析',
+          url:
+            'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/HorizentalSectionAnalysis'
+        }
       ]
     },
-    'print': {
-      'groupname': '打印服务',
-      'config': [
-        { 'name': '打印地图', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/TyswPrint/GPServer/TFPrint/execute' }
+    vertical_section_analysis: {
+      groupname: '纵剖面分析',
+      config: [
+        {
+          name: '纵剖面分析',
+          url:
+            'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/VerticalSectionAnalysis'
+        }
       ]
     },
-    'layer_name': {
-      'groupname': '获取图层名称服务',
-      'config': [
-        { 'name': '图层名称', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/getLayerInfor' }
+    shutOff_valve_extend_analysis: {
+      groupname: '关阀扩展分析',
+      config: [
+        {
+          name: '关阀扩展分析',
+          url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/tyswgp/GPServer/ShutOffValveExtendTysw'
+        }
       ]
     },
-    'field_intersect': {
-      'groupname': '获取重复字段',
-      'config': [
-        { 'name': '字段名称', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/fieldIntersect' }
+    shutOff_valve_analysis: {
+      groupname: '关阀分析',
+      config: [
+        {
+          name: '关阀分析',
+          url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/tyswgp/GPServer/ShutOffValveAnalyzeTysw'
+        }
       ]
     },
-    'fieldUniqueValue': {
-      'groupname': '获取字段唯一值',
-      'config': [
-        { 'name': '字段唯一', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/getFieldUniqueValue' }
+    burst_pipe_analyze_analysis: {
+      groupname: '爆管分析',
+      config: [
+        {
+          name: '爆管分析',
+          url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/tyswgp/GPServer/BurstPipeAnalyzeTysw'
+        }
       ]
     },
-    'statistic': {
-      'groupname': '属性统计', 
-      'config': [
-        { 'name': '属性统计', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/statistic' }
+    connected_analysis: {
+      groupname: '连通性分析',
+      config: [
+        {
+          name: '连通性分析',
+          url: 'http://192.168.2.245:6080/arcgis/rest/services/xrty/tyswgp/GPServer/ConnectedAnalyzeTysw'
+        }
       ]
     },
-    'horizental_section_analysis': {
-      'groupname': '横剖面分析',
-      'config': [
-        { 'name': '横剖面分析', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/HorizentalSectionAnalysis' }
-      ]
-    },
-    'vertical_section_analysis': {
-      'groupname': '纵剖面分析',
-      'config': [
-        { 'name': '纵剖面分析', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/pipe_tysw/MapServer/exts/TFGeoAPISOE/VerticalSectionAnalysis' }
-      ]
-    },
-    'shutOff_valve_extend_analysis': {
-      'groupname': '关阀扩展分析',
-      'config': [
-        { 'name': '关阀扩展分析', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/tyswgp/GPServer/ShutOffValveExtendTysw' }
-      ]
-    },
-    'shutOff_valve_analysis': {
-      'groupname': '关阀分析',
-      'config': [
-        { 'name': '关阀分析', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/tyswgp/GPServer/ShutOffValveAnalyzeTysw' }
-      ]
-    },
-    'burst_pipe_analyze_analysis': {
-      'groupname': '爆管分析',
-      'config': [
-        { 'name': '爆管分析', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/tyswgp/GPServer/BurstPipeAnalyzeTysw' }
-      ]
-    },
-    'connected_analysis': {
-      'groupname': '连通性分析',
-      'config': [
-        { 'name': '连通性分析', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/xrty/tyswgp/GPServer/ConnectedAnalyzeTysw' }
-      ]
-    },
-    'geometry': {
-      'groupname': '图形服务',
-      'type': 'geometry',
-      'config': [
-        { 'name': '图形服务', 'url': 'http://192.168.2.245:6080/arcgis/rest/services/Utilities/Geometry/GeometryServer' }
+    geometry: {
+      groupname: '图形服务',
+      type: 'geometry',
+      config: [
+        { name: '图形服务', url: 'http://192.168.2.245:6080/arcgis/rest/services/Utilities/Geometry/GeometryServer' }
       ]
     }
   },
   //大屏地图服务
-  'bigScreenMapService':{
-    'initCenter': [104.1629, 30.0039], 
-    'initZoom': 16,
-    'layerService': {
-      'name': '大屏图层服务',
-      'layers': [
+  bigScreenMapService: {
+    initCenter: [104.1629, 30.0039],
+    initZoom: 16,
+    layerService: {
+      name: '大屏图层服务',
+      layers: [
         {
-          'name': 'citymap',
-          'title': '底图服务',
-          'type': 'bigScreenBaseMap',
-          'url': iserverConfig.baseUrl + 'services/map-tf_rsps_dp/rest/maps/citymap',
-          'visible': true,
-          'sublayers': []
+          name: 'citymap',
+          title: '底图服务',
+          type: 'bigScreenBaseMap',
+          url: iserverConfig.baseUrl + 'services/map-tf_rsps_dp/rest/maps/citymap',
+          visible: true,
+          sublayers: []
         },
         {
-          'name': 'pipemap',
-          'title': '管线服务',
-          'type': 'bigScreenPipeMap',
-          'url': iserverConfig.baseUrl + 'services/map-tf_rsps_dp/rest/maps/pipemap',
-          'visible': true,
-          'sublayers': []
+          name: 'pipemap',
+          title: '管线服务',
+          type: 'bigScreenPipeMap',
+          url: iserverConfig.baseUrl + 'services/map-tf_rsps_dp/rest/maps/pipemap',
+          visible: true,
+          sublayers: []
         }
       ]
     }

@@ -129,7 +129,7 @@
 
 <script lang="ts">
 import moment from 'moment'
-import { Vue, Component, Prop, Emit, Watch, PropSync } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch, PropSync } from 'vue-property-decorator'
 import { configuredPointParamPage, IDeviceType, IPointConnectDevice, IReportDetailQuery, pointsPage } from '../../api'
 interface IBesides {
   from: string
@@ -174,7 +174,6 @@ export default class QueryForm extends Vue {
   @Prop({ type: Boolean, default: false }) loading!: boolean
   @Prop({ type: Object, default: () => ({}) }) defaultQuery!: IReportDetailQuery
   @Prop({ type: Array, default: () => [] }) deviceTypes!: IDeviceType[]
-  @Prop({ type: Array, default: () => ({}) }) selected!: (IPointConnectDevice & { selected: boolean })[]
   @PropSync('enablePointSelect', { type: Boolean, default: false }) enable!: boolean
 
   params = []
@@ -219,7 +218,7 @@ export default class QueryForm extends Vue {
         result: { records }
       } = await pointsPage({ deviceTypeId, current: 1, size: 9999999 })
       this.points = records
-      this.$emit('change:point', { selected: [], points: this.points })
+      this.$emit('change:point', { selected: [], points: [...this.points] })
     } catch (error) {
       console.log(error)
     }
@@ -228,7 +227,7 @@ export default class QueryForm extends Vue {
 
   onSiteIdChange(ids: (string | number)[], fallback?: Function) {
     if (this.pointParamTimer) clearTimeout(this.pointParamTimer)
-    this.$emit('change:point', { selected: ids, points: this.points })
+    this.$emit('change:point', { selected: ids, points: [...this.points] })
 
     this.formData.indexCode = []
     const deviceIds = this.points
@@ -262,11 +261,14 @@ export default class QueryForm extends Vue {
       this.formData = { ...this.formData, besides: this.formData.besides.filter((_, index) => index !== rowIndex) }
     }
   }
-  @Watch('selected')
-  onSelectedChange() {
-    this.formData.siteId = [...this.formData.siteId, ...this.selected.map((item) => String(item.id))]
-    this.onSiteIdChange(this.formData.siteId)
+
+  addPoint(id: string) {
+    this.formData.siteId = [...this.formData.siteId, id]
   }
+  removePoint(id: string) {
+    this.formData.siteId = this.formData.siteId.filter((item) => item !== id)
+  }
+
   @Watch('defaultQuery')
   async onDefaultQuery(query) {
     const { deviceType, siteId, startTime, endTime, status, indexCode } = query

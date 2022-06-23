@@ -6,6 +6,7 @@
           <div class="form">
             <base-title>查看设置</base-title>
             <QueryForm
+              ref="form"
               @query="onQuery"
               :defaultQuery="defaultQuery"
               :deviceTypes="deviceTypes"
@@ -27,13 +28,14 @@
                 </div>
               </el-row>
             </base-title>
-            <Map
-              class="map"
-              :enable="enablePointSelect"
-              :points="points"
-              :display="{ all: display.includes('all'), selected: display.includes('selected') }"
-              @change="onPointSelect"
-            />
+            <div class="map">
+              <Map
+                :enable="enablePointSelect"
+                :points="points"
+                :display="{ all: display.includes('all'), selected: display.includes('selected') }"
+                @change="onPointSelect"
+              />
+            </div>
           </div>
         </div>
       </el-col>
@@ -158,14 +160,15 @@ export default class ReportDetail extends Vue {
   merge: ('point' | 'param')[] = ['point']
   besides: number[][] = []
   query: IQuery = {}
-  points: IPoint[] = []
+  points: ISelectedPoint[] = []
   loading = false
   detail: IDetail[] = []
   enablePointSelect: boolean = false
+  $refs!: { form: QueryForm }
 
   deviceTypes: IDeviceTypeParam[] = []
 
-  selected: ISelectedPoint[] = []
+  selected: string[] = []
 
   thresholds: {
     [x: string]: {
@@ -383,7 +386,9 @@ export default class ReportDetail extends Vue {
 
   onPointSelect(point: ISelectedPoint) {
     const { selected, id } = point || {}
-    this.selected = [...this.selected.filter((item) => String(item.id) === id), { ...point, selected: !selected }]
+    const { addPoint, removePoint } = this.$refs.form
+    this.points = [...this.points.filter((item) => String(item.id) !== String(id)), { ...point, selected: !selected }]
+    selected ? removePoint(String(id)) : addPoint(String(id))
   }
 
   async doQuery() {

@@ -1,5 +1,5 @@
 <template>
-  <div id="siteMap">
+  <div id="siteMap" style="height:100%">
     <!-- <pre>
       {{ JSON.stringify(points, null, 2) }}
     </pre> -->
@@ -52,14 +52,14 @@ export default class Map extends Vue {
   showAll: Boolean = null
   showSelected: Boolean = null
   mapEvent = null
-  centerPoints:Array<any>=[]
+  centerPoints: Array<any> = []
 
   mounted() {
     this.initMap()
   }
 
   @Emit('change')
-  deviceChange(pointInfo: (IPointConnectDevice & { selected: boolean })) {
+  deviceChange(pointInfo: IPointConnectDevice & { selected: boolean }) {
     return pointInfo
   }
 
@@ -70,7 +70,7 @@ export default class Map extends Vue {
 
   @Watch('display', { deep: true })
   getDisplay({ all, selected }) {
-    if(!this.pointLayer||!this.selectedLayer) return
+    if (!this.pointLayer || !this.selectedLayer) return
     if (all && selected) {
       this.pointLayer.setVisible(true)
       this.selectedLayer.setVisible(true)
@@ -91,19 +91,22 @@ export default class Map extends Vue {
   @Watch('points', { deep: true, immediate: true })
   showPoints(points) {
     // console.log('点位', points)
-    if(!this.view||!points) return
+    if (!this.view || !points) return
     this.clear()
     points.forEach((item) => {
       const { coordiateX, coordiateY } = item
       const layer = item.selected ? this.selectedLayer : this.pointLayer
       this.showPointSymbol([coordiateX, coordiateY], item, layer)
     })
-    this.centerPoints = points.filter(item=>item.selected)
+    this.centerPoints = points.filter((item) => item.selected)
   }
-  @Watch('centerPoints',{deep:true})
-  setCenterPoints(newVal: Array<any>, oldVal: Array<any>){
-    let center =lodash.differenceWith(newVal,oldVal,lodash.isEqual)
-    if(center.length!=0) this.view.getView().setCenter([parseFloat(center[center.length-1].coordiateX), parseFloat(center[center.length-1].coordiateY)]) //给视图设置中心点坐标的时候，坐标值需要使用parseFloat转换，否则会出现问题
+  @Watch('centerPoints', { deep: true })
+  setCenterPoints(newVal: Array<any>, oldVal: Array<any>) {
+    let center = lodash.differenceWith(newVal, oldVal, lodash.isEqual)
+    if (center.length != 0)
+      this.view
+        .getView()
+        .setCenter([parseFloat(center[center.length - 1].coordiateX), parseFloat(center[center.length - 1].coordiateY)]) //给视图设置中心点坐标的时候，坐标值需要使用parseFloat转换，否则会出现问题
   }
 
   async initMap() {
@@ -144,7 +147,7 @@ export default class Map extends Vue {
       that.view.forEachFeatureAtPixel(pixel, function(feature) {
         that.siteInfo = []
         const geometry = feature.getProperties().property
-        if(!geometry) return
+        if (!geometry) return
         that.popupPosition = [geometry.coordiateX, geometry.coordiateY]
         for (let key in geometry) {
           if (key === 'name' || key === 'no') that.siteInfo.push({ key, value: geometry[key] })
@@ -171,7 +174,7 @@ export default class Map extends Vue {
   modifyPoints(id) {
     let index = this.points.findIndex((i) => i.id == id)
     if (index == -1) return
-    this.points[index].selected = true
+    // this.points[index].selected = true
     this.deviceChange(this.points[index])
   }
   //初始化矢量图层源
@@ -206,8 +209,8 @@ export default class Map extends Vue {
     layer.getSource().addFeature(feature)
   }
   clear() {
-    if(this.pointLayer) this.pointLayer.getSource().clear()
-    if(this.selectedLayer) this.selectedLayer.getSource().clear()
+    if (this.pointLayer) this.pointLayer.getSource().clear()
+    if (this.selectedLayer) this.selectedLayer.getSource().clear()
   }
 }
 </script>
