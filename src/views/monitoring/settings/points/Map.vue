@@ -98,7 +98,6 @@ export default class MapView extends Vue {
         id: feature.getId(),
         properties: feature.getProperties()
       }
-      console.log('要素信息',featureInfo)
       this.deviceChange(featureInfo)
     })
     //选择器注册
