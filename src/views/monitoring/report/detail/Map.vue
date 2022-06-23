@@ -3,7 +3,7 @@
     <!-- <pre>
       {{ JSON.stringify(points, null, 2) }}
     </pre> -->
-    <CommonPopup :popupPosition="popupPosition" :mapView="view" :right="-130">
+    <CommonPopup :popupPosition="popupPosition" :mapView="view" :right="-130" :showIcon="false">
       <div class="infoList">
         <div class="infoItem" v-for="(item, index) of siteInfo" :key="index">
           <div class="key">{{ item.key }}:</div>
@@ -26,6 +26,7 @@ import { Vector as VectorLayer } from 'ol/layer'
 import Feature from 'ol/Feature'
 import { Point } from 'ol/geom'
 import { Style, Icon } from 'ol/style'
+import lodash from 'lodash'
 @Component({
   name: 'Map',
   components: { CommonPopup }
@@ -51,13 +52,14 @@ export default class Map extends Vue {
   showAll: Boolean = null
   showSelected: Boolean = null
   mapEvent = null
+  centerPoints:Array<any>=[]
 
   mounted() {
     this.initMap()
   }
 
   @Emit('change')
-  deviceChange(pointInfo: (IPointConnectDevice & { selected: boolean })[]) {
+  deviceChange(pointInfo: (IPointConnectDevice & { selected: boolean })) {
     return pointInfo
   }
 
@@ -68,6 +70,7 @@ export default class Map extends Vue {
 
   @Watch('display', { deep: true })
   getDisplay({ all, selected }) {
+    if(!this.pointLayer||!this.selectedLayer) return
     if (all && selected) {
       this.pointLayer.setVisible(true)
       this.selectedLayer.setVisible(true)
@@ -87,14 +90,20 @@ export default class Map extends Vue {
   }
   @Watch('points', { deep: true, immediate: true })
   showPoints(points) {
-    console.log('点位', points)
+    // console.log('点位', points)
+    if(!this.view||!points) return
     this.clear()
     points.forEach((item) => {
       const { coordiateX, coordiateY } = item
       const layer = item.selected ? this.selectedLayer : this.pointLayer
       this.showPointSymbol([coordiateX, coordiateY], item, layer)
     })
-    this.view.getView().setCenter([parseFloat(points[0].coordiateX), parseFloat(points[0].coordiateY)]) //给视图设置中心点坐标的时候，坐标值需要使用parseFloat转换，否则会出现问题
+    this.centerPoints = points.filter(item=>item.selected)
+  }
+  @Watch('centerPoints',{deep:true})
+  setCenterPoints(newVal: Array<any>, oldVal: Array<any>){
+    let center =lodash.differenceWith(newVal,oldVal,lodash.isEqual)
+    if(center.length!=0) this.view.getView().setCenter([parseFloat(center[center.length-1].coordiateX), parseFloat(center[center.length-1].coordiateY)]) //给视图设置中心点坐标的时候，坐标值需要使用parseFloat转换，否则会出现问题
   }
 
   async initMap() {
@@ -124,7 +133,6 @@ export default class Map extends Vue {
       .then(() => {
         this.initVectorLayer()
         this.initMapMoveEvent()
-        this.initMapClickEvent()
       })
   }
   initMapMoveEvent() {
@@ -136,6 +144,7 @@ export default class Map extends Vue {
       that.view.forEachFeatureAtPixel(pixel, function(feature) {
         that.siteInfo = []
         const geometry = feature.getProperties().property
+        if(!geometry) return
         that.popupPosition = [geometry.coordiateX, geometry.coordiateY]
         for (let key in geometry) {
           if (key === 'name' || key === 'no') that.siteInfo.push({ key, value: geometry[key] })
@@ -163,7 +172,7 @@ export default class Map extends Vue {
     let index = this.points.findIndex((i) => i.id == id)
     if (index == -1) return
     this.points[index].selected = true
-    this.deviceChange(this.points)
+    this.deviceChange(this.points[index])
   }
   //初始化矢量图层源
   initVectorLayer() {
@@ -197,8 +206,8 @@ export default class Map extends Vue {
     layer.getSource().addFeature(feature)
   }
   clear() {
-    this.pointLayer.getSource().clear()
-    this.selectedLayer.getSource().clear()
+    if(this.pointLayer) this.pointLayer.getSource().clear()
+    if(this.selectedLayer) this.selectedLayer.getSource().clear()
   }
 }
 </script>

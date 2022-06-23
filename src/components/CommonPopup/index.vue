@@ -35,7 +35,8 @@ export default {
         headerStyle: {type: String,default:"border-bottom:1px solid #cccccc"},//头部样式
         isSetCenter:{type: Boolean,default: false},//是否视图定位至中心
         operationGroup:{type:Array,default: () => []},//例如：operationGroup:[{icon:"iconfont icondtbz",color:"royalblue",action:"detail"},],
-        right:{type:Number,default:-175}
+        right:{type:Number,default:-175},
+        showIcon:{type:Boolean,default:true}
     },
     data() {
         return {
@@ -116,7 +117,7 @@ export default {
             });
             this.mapView.addOverlay(this.dialogOverlay)
             this.dialogOverlay.setPosition(this.popupPosition)
-            this.showPointSymbol(this.popupPosition)
+            if(this.showIcon) this.showPointSymbol(this.popupPosition)
             if(this.isSetCenter) this.setCenter()
         },
         //设置视图定位
