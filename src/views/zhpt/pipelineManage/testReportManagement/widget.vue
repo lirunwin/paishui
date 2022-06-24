@@ -28,25 +28,25 @@
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
                 <el-date-picker
-                  v-model="searchValue.dateTime.startDate"
+                  v-model="searchValue.startDate"
                   type="date"
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions0"
-                  @change="changeDate"
+                  :picker-options="sOpition"
+                  @change="sDateChange"
                 ></el-date-picker>
               </el-col>
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
-                  v-model="searchValue.dateTime.finishDate"
+                  v-model="searchValue.finishDate"
                   type="date"
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions1"
-                  @change="changeDate"
+                  :picker-options="eOpition"
+                  @change="eDateChange"
                 ></el-date-picker>
               </el-col>
             </el-row>
@@ -826,14 +826,28 @@ export default {
         { sortable: true, label: '入库时间', name: 'createTime' }
       ],
       // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.finishDate) {
+            return time > new Date(this.searchValue.finishDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.startDate) {
+            return time < new Date(this.searchValue.startDate).getTime() - 8.64e7 || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
       // 搜索功能参数
       searchValue: {
-        dateTime: {
-          startDate: '',
-          finishDate: ''
-        }, // 检测日期
+        startDate: '',
+        finishDate: '',
         checkList: [], // 发布状态
         serchValue: '' // 搜索关键字
       },
@@ -899,9 +913,6 @@ export default {
     },
     '$store.state.gis.activeSideItem': function (n, o) {
       if (n === '检测成果专题图') this.clearAll()
-    },
-    'searchValue.dateTime.startDate': function (n) {
-      this.searchValue.dateTime.finishDate = n
     }
   },
   computed: {
@@ -1016,30 +1027,19 @@ export default {
         })
         .catch(console.error)
     },
-
-    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
-      if (!this.searchValue.dateTime.startDate) {
-        this.searchValue.dateTime.startDate = this.searchValue.dateTime.finishDate
+    sDateChange(t) {
+      console.log('起始时间变化')
+      if (!this.searchValue.finishDate) {
+        this.$nextTick(() => {
+          this.searchValue.finishDate = this.searchValue.startDate
+        })
       }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.dateTime.startDate).getTime()
-      let date2 = new Date(this.searchValue.dateTime.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() >= date2
-          } else {
-            return time.getTime() >= Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() <= date1 - 8.64e7
-        }
+    },
+    eDateChange(t) {
+      if (!this.searchValue.startDate) {
+        this.$nextTick(() => {
+          this.searchValue.startDate = this.searchValue.finishDate
+        })
       }
     },
     // 绘制统计饼图
@@ -1302,8 +1302,9 @@ export default {
             let reportInfo = Array.isArray(res.result) ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData, !light)
+            
+            if (!layer && !this.lightLayer) return
             this.lightLayer.getSource().clear()
-            if (!layer) return
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
               let center = mapUtil.getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
               if (light) {
@@ -1709,16 +1710,12 @@ export default {
       })
     },
     // 重置
-    async resetDate() {
+    resetDate() {
       this.searchValue.checkList = []
       this.searchValue.serchValue = ''
-      this.searchValue.dateTime = {
-        startDate: '',
-        finishDate: ''
-      }
-
-      this.changeDate()
-      await this.getDate()
+      this.searchValue.startDate = '',
+      this.searchValue.finishDate = ''
+      this.getDate()
     },
     // 报告上传取消按钮
     hideUpdataDocx() {
@@ -1897,8 +1894,8 @@ export default {
     getDate(params) {
       let data = { ...this.pagination }
       if (params) {
-        data.jcStartDate = params.dateTime.startDate
-        data.jcEndDate = params.dateTime.finishDate
+        data.jcStartDate = params.startDate
+        data.jcEndDate = params.finishDate
         data.state = params.checkList
         data.prjNo = params.serchValue
       }

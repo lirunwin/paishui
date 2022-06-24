@@ -451,8 +451,10 @@ export default {
   },
   methods: {
     uploadSuccess (file, fileList) {
+      console.log('上传结束')
       if (file.result[0].flag === 'fail') {
         this.$message.error(fileList.response.result[0].msg)
+        this.$refs['updataDocx'] && this.$refs['updataDocx'].clearFiles()
       } else {
         let tipType = this.isEdit ? '修改' : '添加'
         this.getDate()
@@ -600,6 +602,7 @@ export default {
       this.isEdit = false
       this.isDetails = false
       this.fileListData = []
+      this.fileList = []
       this.changeDate()
     },
     // 获取日期范围
@@ -651,19 +654,17 @@ export default {
       this.deleteDialogVisible = true
     },
     // 确认删除
-    async removeDatas() {
+    removeDatas() {
       let idArr = this.multipleSelection.map(v => v.id)
-      let res = await deleteDatas({ ids: idArr.join(',') })
-      if (res.code === 1) {
-        this.$message({
-          message: '删除成功',
-          type: 'success'
-        })
-        this.getDate()
-        this.deleteDialogVisible = false
-      } else {
-        this.$message.error('删除失败')
-      }
+      deleteDatas({ ids: idArr.join(',') }).then(res => {
+        if (res.code === 1) {
+          this.$message.success('删除成功')
+          this.getDate()
+          this.deleteDialogVisible = false
+        } else {
+          this.$message.error('删除失败')
+        }
+      })
     },
     uploadChange (a, b, c) {
       this.fileList.push(a)

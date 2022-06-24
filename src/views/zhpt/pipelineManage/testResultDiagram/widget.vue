@@ -462,7 +462,6 @@ export default {
   },
   watch: {
     '$store.state.map.halfP_editableTabsValue': function (n, o) {
-      console.log('底部变化')
       if (n !== 'testPipelineDefect' && n !== 'testPipeEvaluation') {
         this.clearAll()
       }

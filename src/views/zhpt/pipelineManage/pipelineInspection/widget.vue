@@ -14,31 +14,29 @@
           >
           </el-input>
           <div class="title">检测日期：</div>
-          <!-- <el-date-picker v-model="searchParams.jcDate" type="date" placeholder="选择日期" class="date-css">
-          </el-date-picker> -->
           <div class="sampleTime">
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
                 <el-date-picker
-                  v-model="searchParams.jcDate.startDate"
+                  v-model="searchParams.startDate"
                   type="date"
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions0"
-                  @change="changeDate"
+                  :picker-options="sOpition"
+                  @change="sDateChange"
                 ></el-date-picker>
               </el-col>
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
-                  v-model="searchParams.jcDate.finishDate"
+                  v-model="searchParams.finishDate"
                   type="date"
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions1"
-                  @change="changeDate"
+                  :picker-options="eOpition"
+                  @change="eDateChange"
                 ></el-date-picker>
               </el-col>
             </el-row>
@@ -427,16 +425,31 @@ export default {
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+      // 日期选择器规则
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchParams.finishDate) {
+            return time > new Date(this.searchParams.finishDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchParams.startDate) {
+            return time < new Date(this.searchParams.startDate).getTime() - 8.64e7 || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
       // 搜索需要的参数
       searchParams: {
         jcStatus: [],
         keyword: '',
-        jcDate: {
-          startDate: '',
-          finishDate: ''
-        },
+        startDate: '',
+        finishDate: '',
         defectLevelA: '',
         defectLevelB: ''
       },
@@ -484,9 +497,6 @@ export default {
     },
     '$store.state.gis.activeSideItem': function (n, o) {
       if (n === '检测成果专题图') this.clearAll()
-    },
-    'searchParams.jcDate.startDate': function (n) {
-      this.searchParams.jcDate.finishDate = n
     }
   },
   computed: {
@@ -528,6 +538,21 @@ export default {
     }
   },
   methods: {
+    sDateChange(t) {
+      console.log('起始时间变化')
+      if (!this.searchParams.finishDate) {
+        this.$nextTick(() => {
+          this.searchParams.finishDate = this.searchParams.startDate
+        })
+      }
+    },
+    eDateChange(t) {
+      if (!this.searchParams.startDate) {
+        this.$nextTick(() => {
+          this.searchParams.startDate = this.searchParams.finishDate
+        })
+      }
+    },
     lastImg() {
       console.log('上一张照片', this.getCurrentForm.pipeDefects)
 
@@ -606,31 +631,6 @@ export default {
     fileLinkToStreamDownload(id) {
       let res = downloadFile(id)
       return baseAddress + res.url
-    },
-    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
-      if (!this.searchParams.jcDate.startDate) {
-        this.searchParams.jcDate.startDate = this.searchParams.jcDate.finishDate
-      }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchParams.jcDate.startDate).getTime()
-      let date2 = new Date(this.searchParams.jcDate.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
-      }
     },
     init() {
       this.getDate()
@@ -807,7 +807,7 @@ export default {
       }
     },
 
-    async openPromptBox(row) {
+    openPromptBox(row) {
       console.log('打开弹窗')
       if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
       // 点击行勾选数据
@@ -829,25 +829,26 @@ export default {
       let fea = this.vectorLayer.getSource().getFeatures().find(fea => fea.get('expNo') === row.expNo)
       let center = mapUtil.getCenter(fea)
       if (center instanceof Array) {
-        let resEV = await histroyPipeData({ expNo: row.expNo })
-        this.lightLayer.getSource().clear()
-        this.currentIndex2 = 0
-        this.currentForm2 = resEV.result
-        this.currentInfoCard2 = true
-        this.popup = new Overlay({
-          element: document.getElementById('popupCardIns'),
-          autoPan: true,
-          positioning: 'bottom-center',
-          stopEvent: true,
-          offset: [18, -25],
-          autoPanAnimation: { duration: 250 }
-        })
-        this.map.addOverlay(this.popup)
-        this.popup.setPosition(center)
+        histroyPipeData({ expNo: row.expNo }).then(resEV => {
+          this.lightLayer.getSource().clear()
+          this.currentIndex2 = 0
+          this.currentForm2 = resEV.result
+          this.currentInfoCard2 = true
+          this.popup = new Overlay({
+            element: document.getElementById('popupCardIns'),
+            autoPan: true,
+            positioning: 'bottom-center',
+            stopEvent: true,
+            offset: [18, -25],
+            autoPanAnimation: { duration: 250 }
+          })
+          this.map.addOverlay(this.popup)
+          this.popup.setPosition(center)
 
-        this.lightLayer.getSource().addFeature(new Feature({ geometry: fea.getGeometry().clone() }))
-        let view = this.map.getView()
-        this.map.getView().animate({ zoom: 19 }, { center }, { duration: 0.5 })
+          this.lightLayer.getSource().addFeature(new Feature({ geometry: fea.getGeometry().clone() }))
+          let view = this.map.getView()
+          this.map.getView().animate({ zoom: 19 }, { center }, { duration: 0.5 })
+        })
       } else this.$message.error('该管线无位置信息!')
     },
     // 上一页
@@ -893,37 +894,33 @@ export default {
       console.log(this.activeIndex)
     },
     // 详情
-    async openDetails(row) {
-      console.log('详情触发')
-
+    openDetails(row) {
       this.currentForm = row // 保存当前列信息
       this.isPromptBox = { ...row }
-      let res = await histroyPipeData({ expNo: row.expNo })
-      this.detailsTitle = {
-        expNo: row.expNo,
-        pipeType: row.pipeType
-      }
-      this.cardTable = res.result
-
-      this.urlArr = this.tableForm.pipeDefects.map((v) => {
-        return baseAddress + '/psjc/file' + v.picPath
+      histroyPipeData({ expNo: row.expNo }).then(res => {
+        this.detailsTitle = {
+          expNo: row.expNo,
+          pipeType: row.pipeType
+        }
+        this.cardTable = res.result
+        this.urlArr = this.tableForm.pipeDefects.map((v) => {
+          return baseAddress + '/psjc/file' + v.picPath
+        })
+        this.dialogFormVisible = true
       })
-      this.dialogFormVisible = true
     },
     // 重置
-    async resetBtn() {
+    resetBtn() {
       this.pagination = { current: 1, size: 30 }
       this.searchParams = {
         keyword: '',
-        jcDate: {
-          startDate: '',
-          finishDate: ''
-        },
+        startDate: '',
+        finishDate: '',
         funcClass: '',
         structClass: ''
       }
       this.changeDate()
-      await this.getDate()
+      this.getDate()
     },
     // 搜索
     searchApi() {
@@ -934,30 +931,28 @@ export default {
       this.multipleSelection = val
     },
     // 分页触发的事件
-    async handleSizeChange(val) {
+    handleSizeChange(val) {
       this.pagination.size = val
-      await this.getDate()
-      console.log(`每页 ${val} 条`)
+      this.getDate()
     },
-    async handleCurrentChange(val) {
+    handleCurrentChange(val) {
       this.pagination.current = val
-      await this.getDate()
-      console.log(`当前页: ${val}`)
+      this.getDate()
     },
     // 查询数据
-    async getDate() {
+    getDate() {
       let data = { ...this.pagination }
       data.wordInfoState = 1
 
-        data.jcStartDate = this.searchParams.jcDate.startDate
-        data.jcEndDate = this.searchParams.jcDate.finishDate
+        data.jcStartDate = this.searchParams.startDate
+        data.jcEndDate = this.searchParams.finishDate
         data.queryParams = this.searchParams.keyword
         data.state = this.searchParams.checkList
         data.funcClass = this.searchParams.funcClass
         data.structClass = this.searchParams.structClass
 
       console.log('最后传进去的参数', data)
-      await queryPageHistory(data).then((res) => {
+      queryPageHistory(data).then((res) => {
         // console.log('接口返回', res)
         this.tableData = res.result.records
         this.paginationTotal = res.result.total

@@ -343,7 +343,8 @@ export default {
       ], // 详情表格参数
       activeIndex: '1', // 详情导航索引
       checkDialogFormVisible: false, // 详情弹框显影
-      DetailsForm: {} // 详情表单
+      DetailsForm: {}, // 详情表单
+      num: 20  // 剖面图的控制密度越大，划分的粒度越小
     }
   },
   created () {
@@ -401,60 +402,59 @@ export default {
         this.DetailsForm = res.result
 
         // 处理剖面图所用数据
-        let num = 10 // 粒度
-        let length = this.DetailsForm.pipeLength
-        let startDepth = this.DetailsForm.startDepth
-        let endDepth = this.DetailsForm.endDepth
-        let height = (this.DetailsForm.endDepth - this.DetailsForm.startDepth).toFixed(2)
-        let zn = endDepth > startDepth ? 1 : -1 // 正向 逆向
-        let dir = this.DetailsForm.detectDir.includes("顺流") // 检测方向
-        // X轴
-        let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, ...new Array(num - 1).fill(""), { value: '终点' + this.DetailsForm.endPoint }]
-        // 管线位置
-        let pipeArr = nullArr.map((item, index) => {
-          let relHeight = index / num * height
-          return { value: startDepth + zn * relHeight }
-        })
-        // 缺陷位置
-        let defectsArr = this.DetailsForm.pipeDefects.filter(d => d.defectCode !== 'ZC').map(defect => {
-          let startLength = dir ? defect.distanceStartPoint : length - defect.distanceStartPoint
-          let x = Math.round((startLength / length) * 10)
-          let y = startDepth + (Math.abs(height) * (defect.distanceStartPoint / length)).toFixed(2) * zn
-          return [x, y, defect.defectCode, defect.defectName, defect.distanceStartPoint]
-        })
-        // 环纵向
-        let defectsLine = this.DetailsForm.pipeDefects.filter(d => d.defectCode !== 'ZC').map(defect => {
-          let pipeNote = defect.pipeNote
-          let position = defect.distanceStartPoint
-          if (pipeNote.includes('纵向长度')) {
-            let data = [...pipeArr], empty = new Array(11).fill('')
-            let defectLength = pipeNote.match(/.*纵向长度(.*)m/)[1]
-            let spliceIndex, line, startIndex, startLength, spliceLength
-            // 逆向
-            if (!dir) {
-              startLength = length - position 
-              startIndex = Math.round((startLength / length) * 10)
-              spliceLength = Math.round(Number(defectLength) / length * 10) + 1
-              line = data.splice((11 - spliceLength), spliceLength)
-              let data1 = [...empty, ...line, ...empty].splice(startIndex + 1, 11)
-              return data1
+        let num = this.num
+        let { pipeLength, startDepth, endDepth } = this.DetailsForm
+        if (pipeLength && startDepth && endDepth) {
+          let height = (startDepth - endDepth).toFixed(3)
+          let dir = this.DetailsForm.detectDir.includes("顺流") // 检测方向
+          // X轴
+          let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, ...new Array(num - 1).fill(""), { value: '终点' + this.DetailsForm.endPoint }]
+          // 管线位置
+          let pipeArr = nullArr.map((item, index) => {
+            let relHeight = index / num * height
+            return { value: startDepth + relHeight }
+          })
+          // 缺陷位置
+          let defectsArr = this.DetailsForm.pipeDefects.filter(d => d.defectCode !== 'ZC').map(defect => {
+            let startLength = dir ? defect.distanceStartPoint : (pipeLength - defect.distanceStartPoint)
+            let x = Math.round((startLength / pipeLength) * num)
+            let y = startDepth + Number((height * (defect.distanceStartPoint / pipeLength)).toFixed(2))
+            return [x, y, defect.defectCode, defect.defectName, defect.distanceStartPoint]
+          })
+          // 环纵向
+          let defectsLine = this.DetailsForm.pipeDefects.filter(d => d.defectCode !== 'ZC').map(defect => {
+            let pipeNote = defect.pipeNote
+            let position = defect.distanceStartPoint
+            if (pipeNote.includes('纵向长度')) {
+              let data = [...pipeArr], empty = new Array(n + 1).fill('')
+              let defectLength = pipeNote.match(/.*纵向长度(.*)m/)[1]
+              if (isNaN(Number(defectLength))) return null
+              let spliceIndex, line, startIndex, startLength, spliceLength
+              // 逆向
+              if (!dir) {
+                startLength = pipeLength - position 
+                startIndex = Math.round((startLength / pipeLength) * num)
+                spliceLength = Math.round(Number(defectLength) / pipeLength * num) + 1
+                line = data.splice((num + 1 - spliceLength), spliceLength)
+                return [...empty, ...line, ...empty].splice(startIndex + 1, num + 1)
+              } else {
+                startLength = position
+                startIndex = Math.round((startLength / pipeLength) * num)
+                spliceLength = Math.round(Number(defectLength) / pipeLength * num) + 1
+                line = data.splice(startIndex, spliceLength)
+                return [...empty, ...line, ...empty].splice(num + 1 - startIndex, num + 1)
+              }
             } else {
-              startLength = position
-              startIndex = Math.round((startLength / length) * 10)
-              spliceLength = Math.round(Number(defectLength) / length * 10) + 1
-              line = data.splice(startIndex, spliceLength)
-              return [...empty, ...line, ...empty].splice(11 - startIndex, 11)
+              return null
             }
-          } else {
-            return null
-          }
-        }).filter(item => item)
+          }).filter(item => item)
 
-        this.nullArr = nullArr
-        this.seriesXArr = pipeArr
-        this.echartsArr = defectsArr
-        this.echartsLine = defectsLine
-
+          this.nullArr = nullArr
+          this.seriesXArr = pipeArr
+          this.echartsArr = defectsArr
+          this.echartsLine = defectsLine
+        } else this.$message.error('缺失数据，无法绘制剖面图')
+         
         // 缺陷信息分类
         console.log('缺陷信息分类')
         this.funcDefectArr = []
@@ -594,7 +594,7 @@ export default {
               },
               data: [
                 { xAxis: 0, name: this.DetailsForm.startDepth + '' },
-                { xAxis: 10, name: this.DetailsForm.endDepth + '' }
+                { xAxis: this.num, name: this.DetailsForm.endDepth + '' }
               ]
             }
           },

@@ -318,6 +318,10 @@ export default class BaseMap extends Vue {
     tfDialog: { Show: null, Hide: null, setSize: null }
   }
 
+  get isMapLoading () {
+    return this.$store.state.map.isMapLoading
+  }
+
   get Panels() {
     return this.$store.state.map.panels
   }

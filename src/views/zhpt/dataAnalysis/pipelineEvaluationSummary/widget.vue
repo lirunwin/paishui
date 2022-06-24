@@ -176,7 +176,7 @@ export default {
         disabledDate: (time) => {
           time = time.getTime()
           if (this.searchValue.startDate) {
-            return time < new Date(this.searchValue.startDate).getTime() || time > new Date().getTime()
+            return time < new Date(this.searchValue.startDate).getTime() - 8.64e7 || time > new Date().getTime()
           }
           return time > new Date().getTime()
         }
