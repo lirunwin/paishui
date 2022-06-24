@@ -9,6 +9,7 @@ export const esriConfig = {
 
 export const iserverConfig = {
   // 'baseUrl': 'http://117.174.10.73:8090/iserver/'
+
   baseUrl: 'http://221.182.8.141:8090/iserver/'
 }
 
