@@ -1,6 +1,6 @@
 <template>
   <div class="widget-bigScreen" >
-    <!--背景地图模块-->
+    <!--地图模块-->
     <BaseMap  v-on:fontSize="fontSize" />
     <MapLegend :hideBoth="hideBoth" />
     <LayerControl :hideBoth="hideBoth" />
