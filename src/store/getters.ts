@@ -1,14 +1,15 @@
 const getters = {
-  sidebar: state => state.app.sidebar,
-  device: state => state.app.device,
-  token: state => state.user.token,
-  appconfig:state=>state.gis.appconfig,
-  avatar: state => state.user.avatar,
-  name: state => state.user.username,
-  visitedViews: state => state.tagsView.visitedViews,
-  cachedViews: state => state.tagsView.cachedViews,
-  addRoutes: state => state.routeSetting.addRoutes,
-  dashboard: state => {
+  sidebar: (state) => state.app.sidebar,
+  device: (state) => state.app.device,
+  token: (state) => state.user.token,
+  appconfig: (state) => state.gis.appconfig,
+  avatar: (state) => state.user.avatar,
+  name: (state) => state.user.username,
+  deptId: (state) => state.user.departmentId,
+  visitedViews: (state) => state.tagsView.visitedViews,
+  cachedViews: (state) => state.tagsView.cachedViews,
+  addRoutes: (state) => state.routeSetting.addRoutes,
+  dashboard: (state) => {
     let result = []
     function extractDashboardAuth(arr) {
       for (const item of arr) {

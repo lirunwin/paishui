@@ -198,7 +198,11 @@ export const deleteEvent = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.events.base}/${id}`, method: 'delete' })
 
 export const updateEvent = (data: Partial<IEvent>) =>
-  axios.request<IResult<IEvent>>({ url: uris.events.base, method: 'put', data })
+  axios.request<IResult<IEvent>>({
+    url: uris.events.base,
+    method: 'put',
+    data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
+  })
 
 export const getEvent = (id: string) =>
   axios.request<IResult<IEvent>>({ url: `${uris.events.base}/${id}`, method: 'get' })
