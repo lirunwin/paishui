@@ -112,9 +112,9 @@
             <div style="text-align: center">{{ `(${scope.row.defectCode})${scope.row.defectName}` }}</div>
           </template>
         </el-table-column>
-        <el-table-column header-align="center" label="管道内部状况描述" align="center" show-overflow-tooltip>
+        <el-table-column header-align="center" width="200" label="管道内部状况描述" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="text-align: center">{{ scope.row.structEstimate }}}</div>
+            <div style="text-align: center">{{ scope.row.pipeNote }}</div>
           </template>
         </el-table-column>
         <el-table-column fixed="right" width="120" header-align="center" label="操作" align="center">
@@ -161,8 +161,7 @@
                   box-sizing: border-box;
                 "
               >
-                <span style="font-weight: bold"
-                  >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
+                <span style="font-weight: bold" >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
                 </span>
                 <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails">详情</a>
               </div>
@@ -349,10 +348,10 @@ export default {
       tableContent: [
         { width: '200', sortable: false, label: '管段编号', name: 'expNo' },
         { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
-        { width: '90', sortable: true, label: '管径(mm)', name: 'diameter' },
+        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
         { width: '100', sortable: false, label: '材质', name: 'material' },
         { width: '100', sortable: false, label: '检测方向', name: 'detectDir' },
-        { width: '100', sortable: true, label: '距离(m)', name: 'checkLength' },
+        { width: '100', sortable: true, label: '距离(m)', name: 'distanceStartPoint' },
         { width: '80', sortable: true, label: '分值', name: 'defectNum' },
         { width: '100', sortable: true, label: '等级', name: 'defectLevel' },
         { width: '100', sortable: false, label: '工程名称', name: 'prjName' },

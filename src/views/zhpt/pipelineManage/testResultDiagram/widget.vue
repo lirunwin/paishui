@@ -462,7 +462,8 @@ export default {
   },
   watch: {
     '$store.state.map.halfP_editableTabsValue': function (n, o) {
-      if (n !== 'testPipelineDefect' && n !== 'testPipeEvaluation') {
+      console.log('底部变化')
+      if (n !== 'testPipelineDefect' && n !== 'testPipelineEvaluation') {
         this.clearAll()
       }
     }
@@ -566,18 +567,22 @@ export default {
     },
     openBox(layerName, level) {
       if (!this.hasLoad) return
-      let type = ['pipeDefectLayer', 'pipeFuncLayer', 'pipeStrucLayer'].indexOf(layerName)
+      let typeIndex = ['pipeDefectLayer', 'pipeFuncLayer', 'pipeStrucLayer'].indexOf(layerName)
       let filter = [
-        { key: 'defectLevel', value: ['一', '二', '三', '四', '/'] },
-        { key: 'funcClass', value: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', '/'] },
-        { key: 'structClass', value: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', '/'] }
-      ][type]
+        { key: 'defectLevel', value: ['一', '二', '三', '四', null] },
+        { key: 'funcClass', value: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', null] },
+        { key: 'structClass', value: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', null] }
+      ][typeIndex]
       console.log('图例信息', filter)
       let features = this[layerName].getSource().getFeatures()
-      let filterFeas = features.filter(
-        (fea) => fea.get(filter.key) && fea.get(filter.key).includes(filter.value[level])
-      )
-      let lv = filter.value[level] === '/' ? '未定' : filter.value[level]
+      let filterFeas = features.filter(fea => {
+        if (filter.value[level]) {
+          return fea.get(filter.key) && fea.get(filter.key).includes(filter.value[level])
+        } else {
+          return !fea.get(filter.key)
+        }
+      })
+      let lv = filter.value[level] ? `${filter.value[level]}级` : '正常'
       this.openDefect(filter.key, lv, layerName, filterFeas)
     },
     addLayers(layers) {
@@ -669,8 +674,7 @@ export default {
      * @param featureArr 数据
      * */
     getFeatures(featureArr) {
-      let style = null,
-        features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
       let funcNum = [0, 0, 0, 0, 0]
       let strucNum = [0, 0, 0, 0, 0]
       let defectNum = [0, 0, 0, 0, 0]
@@ -689,8 +693,7 @@ export default {
             { level: 'Ⅰ', color: 'green', index: 0 },
             { level: 'Ⅱ', color: 'blue', index: 1 },
             { level: 'Ⅲ', color: 'pink', index: 2 },
-            { level: 'Ⅳ', color: 'red', index: 3 },
-            { level: '/', color: '#070358', index: 4 }
+            { level: 'Ⅳ', color: 'red', index: 3 }
           ]
           let findFuncColor = colors.find(
             (colorObj) => feaObj['funcClass'] && feaObj['funcClass'].includes(colorObj.level)
@@ -710,7 +713,7 @@ export default {
             features.funcDefectFeatures.push(fFea)
           
             let sFea = feature.clone()
-            let sindex = findFuncColor ? findFuncColor.index : 4
+            let sindex = findStrucColor ? findStrucColor.index : 4
             strucNum[sindex] += 1
             let sColor = findStrucColor ? findStrucColor.color : "#070358"
             sFea.setStyle(comSymbol.getLineStyle(5, sColor))
@@ -856,10 +859,12 @@ export default {
         defectLevel: '管道缺陷'
       }
       let com = type === 'defectLevel' ? 'testPipelineDefect' : 'testPipelineEvaluation'
+
+      this.$store.dispatch('map/handelClose', { box: 'HalfPanel', pathId: com })
+      
       let info = {
-        icon: 'iconfont',
         id: com,
-        label: `${doc[type]} (${level}级)`,
+        label: `${doc[type]} (${level})`,
         meta: {
           title: doc[type] + level
         },
@@ -872,7 +877,9 @@ export default {
         param: { type, level, data, layerName, rootPage: this }
       }
       // 这是map里的跳转方法
-      this.$store.dispatch('map/changeMethod', info)
+      this.$nextTick(() => {
+        this.$store.dispatch('map/changeMethod', info)
+      })
     },
     // 打开弹窗
     async openPromptBox (id, layerName) {

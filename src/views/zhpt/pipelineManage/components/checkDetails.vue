@@ -404,8 +404,8 @@ export default {
         // 处理剖面图所用数据
         let num = this.num
         let { pipeLength, startDepth, endDepth } = this.DetailsForm
-        if (pipeLength && startDepth && endDepth) {
-          let height = (startDepth - endDepth).toFixed(3)
+        if (pipeLength && startDepth !== "" && endDepth !== "" && !isNaN(startDepth) && !isNaN(endDepth)) {
+          let height = (endDepth - startDepth).toFixed(3)
           let dir = this.DetailsForm.detectDir.includes("顺流") // 检测方向
           // X轴
           let nullArr = [{ value: '起点' + this.DetailsForm.startPoint }, ...new Array(num - 1).fill(""), { value: '终点' + this.DetailsForm.endPoint }]
@@ -418,7 +418,8 @@ export default {
           let defectsArr = this.DetailsForm.pipeDefects.filter(d => d.defectCode !== 'ZC').map(defect => {
             let startLength = dir ? defect.distanceStartPoint : (pipeLength - defect.distanceStartPoint)
             let x = Math.round((startLength / pipeLength) * num)
-            let y = startDepth + Number((height * (defect.distanceStartPoint / pipeLength)).toFixed(2))
+            let sl = dir ? defect.distanceStartPoint : pipeLength - defect.distanceStartPoint
+            let y = startDepth + Number((height * ( sl / pipeLength)).toFixed(2))
             return [x, y, defect.defectCode, defect.defectName, defect.distanceStartPoint]
           })
           // 环纵向
@@ -426,21 +427,23 @@ export default {
             let pipeNote = defect.pipeNote
             let position = defect.distanceStartPoint
             if (pipeNote.includes('纵向长度')) {
-              let data = [...pipeArr], empty = new Array(n + 1).fill('')
+              let data = [...pipeArr], empty = new Array(num + 1).fill('')
               let defectLength = pipeNote.match(/.*纵向长度(.*)m/)[1]
               if (isNaN(Number(defectLength))) return null
               let spliceIndex, line, startIndex, startLength, spliceLength
               // 逆向
               if (!dir) {
                 startLength = pipeLength - position 
-                startIndex = Math.round((startLength / pipeLength) * num)
                 spliceLength = Math.round(Number(defectLength) / pipeLength * num) + 1
+                startIndex = Math.round((startLength / pipeLength) * num) + 1 - spliceLength
                 line = data.splice((num + 1 - spliceLength), spliceLength)
-                return [...empty, ...line, ...empty].splice(startIndex + 1, num + 1)
+                let res = [...empty, ...line, ...empty].splice(num + 1 - startIndex, num + 1) // num - ()
+                console.log('echart 线', res)
+                return res
               } else {
                 startLength = position
-                startIndex = Math.round((startLength / pipeLength) * num)
                 spliceLength = Math.round(Number(defectLength) / pipeLength * num) + 1
+                startIndex = Math.round((startLength / pipeLength) * num)
                 line = data.splice(startIndex, spliceLength)
                 return [...empty, ...line, ...empty].splice(num + 1 - startIndex, num + 1)
               }
@@ -530,8 +533,21 @@ export default {
     // 绘制剖面图
     renderEcharts() {
       console.log('渲染echarts')
-      // let chartDom = document.getElementById('profile_echatrs')
-      // let myChart = echarts.init(chartDom)
+      
+      let abHeight = Math.max(this.seriesXArr[0].value, this.seriesXArr[this.seriesXArr.length - 1].value) // 绝对高度
+      let l = this.echartsArr.length, h = abHeight ? abHeight / 4 : 0.3 // 调整位置到 1/4 处
+      for (let i = 0; i < l - 1; i++) {
+        let defect = this.echartsArr[i]
+        let n = 0 // 重合次数
+        for (let j = i + 1; j < l; j++) {
+          let compareDefect = this.echartsArr[j]
+          if (defect[0] === compareDefect[0] && defect[1] === compareDefect[1]) { // 缺陷点有重合
+            compareDefect[1] += (++n) * h
+          }
+        }
+      }
+
+
       let myChart = echarts.getInstanceByDom(this.$refs.profile_echatrs)
       if (myChart == null) {
         myChart = echarts.init(this.$refs.profile_echatrs)
@@ -583,12 +599,12 @@ export default {
             symbolSize: 7,
             color: '#CFCCCC',
             markLine: {
+              silent: true,
               symbol: ['none', 'none'],
               label: {
                 show: true,
                 padding: [0, 0, -60, 0],
                 formatter: function (a) {
-                  console.log('标题参数', a)
                   return ` 埋深 ${a['name']}m `
                 }
               },
@@ -600,6 +616,7 @@ export default {
           },
           // 缺陷纵向
           ...defectLine,
+          // 缺陷
           {
             data: this.echartsArr,
             type: 'scatter',
@@ -611,10 +628,8 @@ export default {
                 label: {
                   position: 'top',
                   offset: [0, -10],
-                  // formatter: '（CJ）{b}[0]，{c}m   ',
                   formatter: function (a) {
                     let [x, y, code, name, length] = a.data
-                    console.log('标题参数', a)
                     return `（${code}）${name},${length}m ` 
                   },
                   backgroundColor: '#fff',

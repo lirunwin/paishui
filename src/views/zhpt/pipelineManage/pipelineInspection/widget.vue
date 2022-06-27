@@ -417,10 +417,10 @@ export default {
         // { width: '100',sortable: false,label: '道路名称', name: 'checkAddress' },
         { width: '100', sortable: false, label: '所属片区', name: 'checkAddress' },
         { width: '100', sortable: true, label: '检测次数', name: 'jcNum' },
-        { width: '100', sortable: true, label: '最近检测日期', name: 'newJcDate' },
+        { width: '150', sortable: true, label: '最近检测日期', name: 'newJcDate' },
         { width: '180', sortable: true, label: '最新结构性缺陷等级', name: 'newStructClass' },
-        { width: '180', sortable: false, label: '最新结构性缺陷评价', name: 'newStructEstimate' },
         { width: '180', sortable: true, label: '最新功能性缺陷等级', name: 'newFuncClass' },
+        { width: '180', sortable: false, label: '最新结构性缺陷评价', name: 'newStructEstimate' },
         { width: '', sortable: false, label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
@@ -539,7 +539,6 @@ export default {
   },
   methods: {
     sDateChange(t) {
-      console.log('起始时间变化')
       if (!this.searchParams.finishDate) {
         this.$nextTick(() => {
           this.searchParams.finishDate = this.searchParams.startDate
