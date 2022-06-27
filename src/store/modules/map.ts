@@ -28,7 +28,7 @@ const getDefaultState = (): dStore.map.state => {
     halfP_editableTabsValue: '',
     floatP_editableTabsValue: '',
     P_editableTabsValue: '',
-    isMapLoading: true
+    isMapLoading: false
   }
 }
 

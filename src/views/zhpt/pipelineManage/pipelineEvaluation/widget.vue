@@ -14,40 +14,29 @@
           >
           </el-input>
           <div class="title">检测时间：</div>
-          <!-- <el-date-picker v-model="searchValue.testTime" type="date" placeholder="入库时间" class="date-css">
-          </el-date-picker> -->
-          <!-- <el-date-picker
-            v-model="searchValue.testTime"
-            type="daterange"
-            value-format="yyyy-MM-dd"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-          >
-          </el-date-picker> -->
           <div class="sampleTime">
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
                 <el-date-picker
-                  v-model="searchValue.testTime.startDate"
+                  v-model="searchValue.startDate"
                   type="date"
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions0"
-                  @change="changeDate"
+                  :picker-options="sOpition"
+                  @change="sDateChange"
                 ></el-date-picker>
               </el-col>
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
-                  v-model="searchValue.testTime.finishDate"
+                  v-model="searchValue.finishDate"
                   type="date"
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions1"
-                  @change="changeDate"
+                  :picker-options="eOpition"
+                  @change="eDateChange"
                 ></el-date-picker>
               </el-col>
             </el-row>
@@ -390,13 +379,27 @@ export default {
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.finishDate) {
+            return time > new Date(this.searchValue.finishDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.startDate) {
+            return time < new Date(this.searchValue.startDate).getTime() - 8.64e7 || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
       searchValue: {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        }, // 检测日期
+        startDate: '',
+        finishDate: '',
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
         structClass: '' // 结构型缺陷等级
@@ -441,9 +444,6 @@ export default {
     },
     '$store.state.gis.activeSideItem': function (n, o) {
       if (n === '检测成果专题图') this.clearAll()
-    },
-    'searchValue.testTime.startDate': function (n) {
-      this.searchValue.testTime.finishDate = n
     }
   },
   mounted() {
@@ -489,6 +489,21 @@ export default {
     }
   },
   methods: {
+    sDateChange(t) {
+      console.log('起始时间变化')
+      if (!this.searchValue.finishDate) {
+        this.$nextTick(() => {
+          this.searchValue.finishDate = this.searchValue.startDate
+        })
+      }
+    },
+    eDateChange(t) {
+      if (!this.searchValue.startDate) {
+        this.$nextTick(() => {
+          this.searchValue.startDate = this.searchValue.finishDate
+        })
+      }
+    },
     rect () {
       this.removeEvent()
       this.drawer = new iDraw(this.map, 'rect', {
@@ -579,31 +594,6 @@ export default {
     fileLinkToStreamDownload(id) {
       let res = downloadFile(id)
       return baseAddress + res.url
-    },
-    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
-       if (!this.searchValue.testTime.startDate) {
-        this.searchValue.testTime.startDate = this.searchValue.testTime.finishDate
-      }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
-      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
-      }
     },
     // 关闭缩略提示框的方法
     closePromptBox() {
@@ -879,7 +869,7 @@ export default {
       this.handleRowClick(row)
       if(!(this.vectorLayer && this.lightLayer)) return
       if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
-      histroyPipeData({ expNo: row.expNo }).then(res => {
+      histroyPipeData({ expNo: row.expNo, wordInfoState: 1 }).then(res => {
         if (res.code === 1) {
           // 定位
           let position = this.setPositionByPipeId(row.id)
@@ -913,10 +903,8 @@ export default {
     resetBtn() {
       this.pagination = { current: 1, size: 30 }
       this.searchValue = {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        },
+        startDate: '',
+        finishDate: '',
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
         structClass: '' // 结构型缺陷等级
@@ -927,17 +915,15 @@ export default {
     },
     // 搜索
     searchApi() {
-      console.log('搜索')
-      this.pagination.current = 1
       this.getDate()
       this.searchMap({
         funcClass: this.searchValue.funcClass,
         structClass: this.searchValue.structClass,
         queryText: this.searchValue.queryParams,
-        endDate: this.searchValue.testTime.finishDate,
-        startDate: this.searchValue.testTime.startDate,
+        endDate: this.searchValue.finishDate,
+        startDate: this.searchValue.startDate,
       })
-      console.log(this.searchValue.testTime)
+      console.log(this.searchValue)
     },
     
     // 搜索地图
@@ -984,39 +970,29 @@ export default {
     },
     // 查询数据
     getDate() {
-      let data = this.pagination
-      data.wordInfoState = 1
-        data.jcStartDate = this.searchValue.testTime.startDate
-        data.jcEndDate = this.searchValue.testTime.finishDate
-        data.queryParams = this.searchValue.queryParams
-        data.funcClass = this.searchValue.funcClass
-        data.structClass = this.searchValue.structClass
+      console.log('重置数据')
+      let data = {
+        wordInfoState: 1,
+        jcStartDate: this.searchValue.startDate,
+        jcEndDate: this.searchValue.finishDate,
+        queryParams: this.searchValue.queryParams,
+        funcClass: this.searchValue.funcClass,
+        structClass: this.searchValue.structClass,
+        ...this.pagination
+      }
       queryPageAssessment(data).then((res) => {
         this.tableData = res.result.records
         this.paginationTotal = res.result.total
       })
     },
     // 分页触发的事件(主表格)
-    async handleSizeChange(val) {
+    handleSizeChange(val) {
       this.pagination.size = val
-      await this.getDate()
-      console.log(`每页 ${val} 条`)
+      this.getDate()
     },
-    async handleCurrentChange(val) {
+    handleCurrentChange(val) {
       this.pagination.current = val
-      await this.getDate()
-      console.log(`当前页: ${val}`)
-    },
-    // 分页触发的事件(附件列表)
-    async handleSizeChangeEnclosure(val) {
-      this.pagination.size = val
-      await this.getDate()
-      console.log(`每页 ${val} 条`)
-    },
-    async handleCurrentChangeEnclosure(val) {
-      this.pagination.current = val
-      await this.getDate()
-      console.log(`当前页: ${val}`)
+      this.getDate()
     }
   }
 }
