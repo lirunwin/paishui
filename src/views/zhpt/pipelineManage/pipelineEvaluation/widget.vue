@@ -430,11 +430,12 @@ export default {
       videoTitle: '视频',
       drawer: null,
       drawFea: null,
+      themLayerName: 'pipeAndDefectLayer',
+      themLayer: null
     }
   },
   watch: {
     '$store.state.map.halfP_editableTabsValue': function (n, o) {
-      console.log('底部栏变化')
       if (n !== 'pipelineEvaluation') {
         this.clearAll()
         this.hasData = false
@@ -443,7 +444,11 @@ export default {
       }
     },
     '$store.state.gis.activeSideItem': function (n, o) {
-      if (n === '检测成果专题图') this.clearAll()
+      if (n === '检测成果专题图') {
+        this.clearAll()
+        let layer = this.getThemLayer()
+        layer.setVisible(false)
+      }
     }
   },
   mounted() {
@@ -453,6 +458,12 @@ export default {
     this.init()
   },
   destroyed() {
+    if (this.$store.state.gis.activeHeaderItem !== 'psjc') {
+      let layer = this.getThemLayer()
+      layer && this.map.removeLayer(layer) 
+    }
+    this.popup && this.map.removeOverlay(this.popup)
+    this.popup = null
     this.clearAll()
   },
   computed: {
@@ -625,21 +636,37 @@ export default {
 
     init() {
       this.getDate()
-      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
         style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)')
       })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+      // 
       this.map.addLayer(this.vectorLayer)
+      let layer = this.getThemLayer()
+      if (layer) {
+        layer.setVisible(false)
+        this.setThemLayer()
+        this.hasLoad = true
+      } else {
+        this.setMainMap()
+      }
       this.map.addLayer(this.lightLayer)
       this.addEvent()
-      this.getPipeDefectData()
+    },
+    setThemLayer () {
+      let layer = this.getThemLayer()
+      let features = layer.getSource().getFeatures().filter(fea => fea.getGeometry() instanceof LineString).map(fea => fea.clone())
+      this.vectorLayer.getSource().addFeatures(features)
+    },
+    getThemLayer () {
+      return this.map.getLayers().getArray().find(layer => layer.get('layername') === this.themLayerName)
     },
     addEvent () {
       this.clickEvent = this.map.on('click', (evt) => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
-          let filterFea = feas.filter(fea => fea.get('id'))
+          let filterFea = feas.filter(fea => fea.get('expNo') && fea.getGeometry() instanceof LineString)
           if (filterFea.length === 0) return
           this.openPromptBox(filterFea[0].values_)
         } else {
@@ -659,8 +686,137 @@ export default {
       this.popup && this.popup.setPosition(null)
       this.currentInfoCard = false
       this.drawer && this.drawer.end()
-      this.vectorLayer = this.lightLayer = this.clickEvent = this.popup = null
+      this.lightLayer = this.clickEvent = this.vectorLayer = null
     },
+    /**
+     * 添加、更新地图管道缺陷
+     * */
+    setMainMap () {
+      let map = this.data.mapView
+      if (this.vectorLayer && this.lightLayer) {
+          this.$store.dispatch('map/mapLaoding', true)
+          getDefectData().then(res => {
+            this.hasLoad = true
+            this.$store.dispatch('map/mapLaoding', false)
+            if (res.code === 1 && res.result) {
+                let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getReportFeatures(res.result, true)
+                this.lightLayer.getSource().clear()
+                if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
+                  let center = mapUtil.getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+                  this.themLayer = new VectorLayer({ source: new VectorSource() })
+                  this.themLayer.setVisible(false)
+                  this.themLayer.set('layername', this.themLayerName)
+                  this.map.addLayer(this.themLayer)
+                  this.themLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+                  map.getView().setZoom(15)
+                  map.getView().setCenter(center)
+                  // 
+                  this.setThemLayer()
+                } else {
+                  this.vectorLayer.getSource().clear()
+                }
+            } else this.$message.error('管线缺陷数据请求失败')
+          })
+      }
+    },
+    /**
+     * 构造管道缺陷地图要素
+     * @param reportInfos 报告数据
+     * */
+    getReportFeatures (defectInfos, hasStyle) {
+      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      if (defectInfos.length === 0) { return features }
+      defectInfos.forEach(defect => {
+        let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = defect
+        if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
+          let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
+          let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+          startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
+          endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
+          let lineCoors = [startPoint, endPoint]
+          let feature = new Feature({ geometry: new LineString(lineCoors) })
+          // 健康等级颜色
+            let colors = [
+              { level: 'Ⅰ', color: 'green' },
+              { level: 'Ⅱ', color: 'blue' },
+              { level: 'Ⅲ', color: 'pink' },
+              { level: 'Ⅳ', color: 'red' }
+            ]
+            let findFuncColor = colors.find(colorObj => defect['funcClass'] && defect['funcClass'].includes(colorObj.level))
+            let findStrucColor = colors.find(colorObj => defect['structClass'] && defect['structClass'].includes(colorObj.level))
+              // 功能性缺陷
+            if (!isExit(defect.expNo, 'funcDefectFeatures')) {
+              let fFea = feature.clone()
+              let fColor = findFuncColor ? findFuncColor.color : "#070358"
+              hasStyle && fFea.setStyle(comSymbol.getLineStyle(5, fColor))
+              for (let i in defect) {
+                i !== 'geometry' && fFea.set(i, defect[i])
+              }
+              features.funcDefectFeatures.push(fFea)
+            }
+              // 结构性缺陷
+            if (!isExit(defect.expNo, 'strucDefectFeatures')) {
+              let sFea = feature.clone()
+              let sColor = findStrucColor ? findStrucColor.color : "#070358"
+              hasStyle && sFea.setStyle(comSymbol.getLineStyle(5, sColor))
+              for (let i in defect) {
+                i !== 'geometry' && sFea.set(i, defect[i])
+              }
+              features.strucDefectFeatures.push(sFea)
+            }
+            // 缺陷点
+            if (defect.geometry) {
+              let coors = JSON.parse(defect.geometry)
+              let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
+              let feature = new Feature({ geometry: new Point(point) })
+              let imgs = [
+                { level: ['一级', '1'], img: defectImg1, index: 0 },
+                { level: ['二级', '2'], img: defectImg2, index: 1 },
+                { level: ['三级', '3'], img: defectImg3, index: 2 },
+                { level: ['四级', '4'], img: defectImg4, index: 3 },
+                // { level: '/', img: defectImg0, index: 4 }
+              ]
+              let findimg = null
+              if (defect.defectLevel) {
+                findimg = imgs.find((colorObj) => colorObj.level.includes(defect['defectLevel']))
+              }
+              // 缺少 defectLevel 字段
+              if (findimg) {
+                let rotation = getIconRat(lineCoors)
+                hasStyle && feature.setStyle( new Style({ image: new Icon({ size: [48, 48], anchor: [0.5, 0], src: findimg.img, scale: 0.4, rotation }) }) )
+                for (let i in defect) {
+                  i !== 'geometry' && feature.set(i, defect[i])
+                }
+                features.pipeDefectFeatures.push(feature)
+              }
+            }
+
+        }
+      })
+      return features
+      function isExit(pipeId, feasType) {
+        return features[feasType].some(fea => fea.get('expNo') === pipeId)
+      }
+      function getIconRat([startPoint, endPoint]) {
+        let rotation = 0
+        // 因为要垂直管线显示，所以图片旋转 90°
+        let imgRt = Math.PI / 2
+
+        // 计算旋转弧度
+        if (endPoint[0] === startPoint[0]) {
+          // 竖直
+          rotation = endPoint[1] > startPoint[1] ? -imgRt : Math.PI - imgRt
+        } else if (endPoint[1] === startPoint[1]) {
+          // 水平
+          rotation = endPoint[1] > startPoint[1] ? Math.PI / 2 - imgRt : (Math.PI * 3) / 2 - imgRt
+        } else {
+          // 其他角度
+          rotation = Math.atan((endPoint[0] - startPoint[0]) / (endPoint[1] - startPoint[1])) - imgRt
+        }
+        return rotation
+      }
+    },
+
     // 获取缺陷数据
     getPipeDefectData() {
       getDefectData({ state: 1 }).then((res) => {
@@ -822,7 +978,7 @@ export default {
     },
     setPositionByPipeId(id) {
       let features = this.vectorLayer.getSource().getFeatures()
-      let filterFea = features.find((fea) => fea.get('id') === id)
+      let filterFea = features.find((fea) => fea.get('expNo') === id && fea.getGeometry() instanceof LineString)
       if (filterFea) {
         this.lightLayer.getSource().clear()
         let feature = new Feature({
@@ -831,7 +987,7 @@ export default {
         })
         this.lightLayer.getSource().addFeature(feature)
         let center = mapUtil.getCenter(feature)
-        this.map.getView().animate({ zoom: 19 }, { center }, { duration: 0.5 })
+        new mapUtil(this.map).setZoomAndCenter(18, center)
         return center
       }
     },
@@ -864,7 +1020,7 @@ export default {
       }
     },
     // 打开缩略提示框
-    openPromptBox(row, column, cell, event) {
+    openPromptBox(row) {
       console.log('打开弹框')
       this.handleRowClick(row)
       if(!(this.vectorLayer && this.lightLayer)) return
@@ -872,7 +1028,7 @@ export default {
       histroyPipeData({ expNo: row.expNo, wordInfoState: 1 }).then(res => {
         if (res.code === 1) {
           // 定位
-          let position = this.setPositionByPipeId(row.id)
+          let position = this.setPositionByPipeId(row.expNo)
           if (position) {
             this.currentForm = res.result
             this.currentIndex = 0
@@ -915,6 +1071,7 @@ export default {
     },
     // 搜索
     searchApi() {
+      console.log('查询地图')
       this.getDate()
       this.searchMap({
         funcClass: this.searchValue.funcClass,
@@ -943,14 +1100,24 @@ export default {
         view.setZoom(17)
       }
       function filter (fea) {
-        if (!fea.get('expNo').toLowerCase().includes(filterObj.queryText.toLowerCase()) 
-        && !fea.get('material').toLowerCase().includes(filterObj.queryText.toLowerCase())) return false
+        let expNo = fea.get('expNo'), 
+            material = fea.get('material'), 
+            funcClass = fea.get('funcClass'), 
+            structClass = fea.get('structClass'),
+            date = fea.get('sampleTime');
+        if (filterObj.queryText) {
+          if (!expNo.toLowerCase().includes(filterObj.queryText.toLowerCase()) && !material.includes(filterObj.queryText)) {
+            return false
+          }
+        }
+        if (filterObj.funcClass) {
+          if (!funcClass || !funcClass.includes(filterObj.funcClass)) return false
+        }
 
-        if (!fea.get('funcClass') || !fea.get('funcClass').includes(filterObj.funcClass)) return false
+        if (filterObj.structClass) {
+          if (!structClass || !structClass.includes(filterObj.structClass)) return false
+        }
 
-        if (!fea.get('funcClass') || !fea.get('structClass').includes(filterObj.structClass)) return false
-
-        let date = fea.get('sampleTime')
         let startDate = filterObj.startDate
         let endDate = filterObj.endDate
         if (startDate || endDate) {

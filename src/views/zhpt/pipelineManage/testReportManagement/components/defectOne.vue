@@ -1,5 +1,5 @@
 <template>
-  <div class="project-box">
+  <div class="project-box" v-loading='loading'>
     <!-- 主要工程量表 -->
     <el-table
       :data="tableData"
@@ -40,7 +40,12 @@ export default {
         { label: '结构性缺陷', name: 'sPipeNote' },
         { label: '功能性缺陷', name: 'fPipeNote' },
       ],
-      tableData: []
+      tableData: [],
+      typeArr: {
+        s: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'],
+        f: ['CJ', 'CQ', 'FZ', 'JG', 'SG', 'ZW']
+      },
+      loading: false
     }
   },
   mounted() {
@@ -53,21 +58,27 @@ export default {
   },
   methods: {
     init () {
+      if (!this.paramId) return
+      this.loading = true
       queryPipeState(this.paramId).then(resPrj => {
         console.log('管道缺陷表单', resPrj)
+        this.loading = false
         if (resPrj.code === 1 && resPrj.result) {
-          this.tableData = resPrj.result.pipeStates.map(item => {
+          this.tableData = resPrj.result.map(item => {
             let sPipeNote = ''
             let fPipeNote = ''
-            item.pipeDefects.forEach(defect => {
-              if (defect.defectCode === 'ZC') {
-                sPipeNote = ''
-                fPipeNote = ''
+            if (item.defectCode === 'ZC') {
+              sPipeNote = ''
+              fPipeNote = ''
+            } else {
+              if (item.defectType) {
+                if (item.defectType === '功能性缺陷') { fPipeNote = item.pipeNote }
+                else if (item.defectType === '结构性缺陷') { sPipeNote = item.pipeNote }
               } else {
-                if (defect.defectType === '功能性缺陷') { fPipeNote = defect.pipeNote }
-                else if (defect.defectType === '结构性缺陷') { sPipeNote = defect.pipeNote }
+                if (this.typeArr.s.includes(item.defectCode)) { sPipeNote = item.pipeNote }
+                else if (this.typeArr.f.includes(item.defectCode)) { fPipeNote = item.pipeNote }
               }
-            })
+            }
             return { ...item, fPipeNote, sPipeNote}
           })
         }

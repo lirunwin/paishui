@@ -2,7 +2,7 @@
   <div
     id="viewDiv"
     ref="back_box"
-    v-loading="loading"
+    v-loading="loading || isMapLoading"
     :element-loading-text="loadText"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.8)"

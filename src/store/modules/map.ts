@@ -223,6 +223,9 @@ const actions = {
   // 删除全部panel
   delAllFloat({ commit }) {
     commit('DEL_ALLFLOAT')
+  },
+  mapLaoding({ commit }, isloading) {
+    commit('LOADING', isloading)
   }
 }
 

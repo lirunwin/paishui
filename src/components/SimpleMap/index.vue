@@ -1,5 +1,5 @@
 <template>
-  <div ref="mainMap" class="map-container" :style="mapSize">
+  <div ref="mainMap" class="map-container" :style="mapSize" v-loading='maploading'>
     <transition name="el-zoom-in-top">
       <div v-show="showMapLengend" class="map-legend">
         <div class="map-legend-title">
@@ -70,16 +70,20 @@ export default {
     return {
       map: null,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43', // 当前坐标系
+      currentDataProjName: 'proj44', // 当前坐标系
       vectorLayer: null,
       moveEvent: null,
       showMapLengend: false,
       showLegendBox: true,
       legendData: [],
       drawer: null,
+      maploading: false
     }
   },
   methods: {
+    changeLoading (status) {
+      this.maploading = status
+    },
     initMap() {
       let { initCenter, initZoom } = appconfig
       let layersSource = appconfig.gisResource['iserver_resource'].layerService.layers
