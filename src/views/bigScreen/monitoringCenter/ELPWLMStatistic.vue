@@ -203,7 +203,7 @@ export default {
       .icon {
         height: 0.166667rem /* 32/192 */;
         width: 0.34375rem /* 66/192 */;
-        background: url('./images/监测统计.png') no-repeat center center;
+        background: url('~@/views/bigScreen/images/模块图标/监测统计.png') no-repeat center center;
         background-size: 100% 100%;
       }
       span {
@@ -231,7 +231,7 @@ export default {
           margin-top: 0.041667rem /* 8/192 */;
           width: 0.130208rem /* 25/192 */;
           height: 0.078125rem /* 15/192 */;
-          background: url('./images/三角下.png') no-repeat center center;
+          background: url('~@/views/bigScreen/images/三角下.png') no-repeat center center;
           background-size: 100% 100%;
           transform: rotate(180deg);
         }
@@ -269,7 +269,7 @@ export default {
           height: 0.072917rem /* 14/192 */;
           width: 0.052083rem /* 10/192 */;
           margin-right: 0.046875rem /* 9/192 */;
-          background: url('./images/三角.png') no-repeat center center;
+          background: url('~@/views/bigScreen/images/三角.png') no-repeat center center;
           background-size: 100% 100%;
         }
         .site-name {

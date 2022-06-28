@@ -5,7 +5,7 @@
         <el-col :span="14">
           <BaseTitle>基本信息</BaseTitle>
           <el-row>
-            <el-col :span="12">
+            <el-col :span="24">
               <el-form-item label="事件类别" required prop="event.category">
                 <el-radio-group v-model="formData.event.category" size="small">
                   <el-radio v-for="(value, key) of DICTONARY.event.category" :key="key" :label="key">
@@ -14,13 +14,13 @@
                 </el-radio-group>
               </el-form-item>
             </el-col>
-            <el-col :span="12">
+            <!-- <el-col :span="12">
               <el-form-item label="事件类型" required prop="event.type">
                 <el-select v-model="formData.event.type" size="small" clearable placeholder="请选择事件类型">
                   <el-option v-for="(value, key) of DICTONARY.event.type" :key="key" :value="key" :label="value" />
                 </el-select>
               </el-form-item>
-            </el-col>
+            </el-col> -->
             <el-col :span="12">
               <el-form-item label="事件名称" prop="event.name">
                 <el-input
@@ -98,7 +98,7 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="经纬度" prop="coordinate">
-                <el-input v-model="formData.coordinate" size="small" placeholder="请选择在地图上选择" clearable>
+                <el-input v-model="formData.coordinate" size="small" placeholder="请选择在地图上选择">
                   <template v-slot:suffix>
                     <el-button icon="iconfont iconzhongdian11" type="text" style="padding: 7px 5px" />
                   </template>
@@ -133,7 +133,7 @@
               <el-form-item label="附件">
                 <el-row>
                   <el-upload
-                    :on-remove="handleRemovePic"
+                    :on-remove="onRemovePic"
                     multiple
                     :auto-upload="false"
                     :file-list="formData.fileList"
@@ -148,6 +148,15 @@
                     <div slot="tip" style="font-size: 12px; display: inline-block; margin-left: 1em">
                       ⚠️ 注意：请上传.jpg/.jpeg .png .amr格式的文件，且文件大小不能超10MB，最多上传3个文件
                     </div>
+                    <template v-slot:file="{ file }">
+                      <el-row type="flex" align="center" class="file-list">
+                        <el-col class="name" @click.native="() => onPicturePreview(file)">
+                          <el-button type="text" :icon="`el-icon-${getFileType(file, true)}`" />
+                          {{ file.name }}
+                        </el-col>
+                        <el-button type="text" icon="el-icon-delete" @click="() => onRemovePic(file)" />
+                      </el-row>
+                    </template>
                   </el-upload>
                 </el-row>
               </el-form-item>
@@ -273,6 +282,9 @@
         </el-col>
       </el-row>
     </el-form>
+    <BaseDialog :visible.sync="visible" width="80vw" :footer="false">
+      <img width="100%" :src="picturePreviewUrl" alt="" />
+    </BaseDialog>
   </BaseDialog>
 </template>
 
@@ -286,6 +298,7 @@ import { DICTONARY } from '../../utils'
 import { telAndMobileReg } from '@/utils/constant'
 import { ElUploadInternalFileDetail } from 'element-ui/types/upload'
 import Map from './Map.vue'
+import { getRemoteImg } from '@/api/ftp'
 
 interface IFormData {
   event: Partial<Omit<IEvent, 'findDate'>> & { findDate?: string | Date }
@@ -318,7 +331,8 @@ export default class ReportAndAssignForm extends Vue {
   formData: IFormData = getDefaultData()
   assign: Partial<IAssign> = {}
   enable = { coordinate: true, device: true }
-
+  picturePreviewUrl: string = ''
+  visible: boolean = false
   get allUsers() {
     return this.users
       .map(({ users }) => users)
@@ -347,6 +361,22 @@ export default class ReportAndAssignForm extends Vue {
     'assign.message': [{ max: 255, message: '短信内容不能超过255个字符' }]
   }
 
+  getFileType(file, returnIConName: boolean = false) {
+    const { raw = {}, name } = file || {}
+    let txt = ''
+    const icon = { image: 'picture-outline', audio: 'video-play' }
+    if (raw.type) {
+      if (String(raw.type).startsWith('image')) txt = 'image'
+      if (String(raw.type).startsWith('audio')) txt = 'audio'
+    } else {
+      const imgs = ['png', 'jpg', 'jpeg']
+      const audios = ['.amr']
+      if (imgs.some((item) => name.endsWith(item))) txt = 'image'
+      if (audios.some((item) => name.endsWith(item))) txt = 'audio'
+    }
+    return returnIConName ? icon[txt] || 'document' : txt
+  }
+
   onSubmit() {
     this.$refs.form.validate((valid) => {
       if (valid) {
@@ -358,7 +388,7 @@ export default class ReportAndAssignForm extends Vue {
         } = this.formData
         const [x, y] = !coordinate ? [] : (coordinate || '').split(',')
         const data = {
-          event: { ...event, x, y, fileList: fileList.map(({ raw }) => raw) },
+          event: { ...event, x, y, fileList: fileList.map(({ raw, url }) => raw || url) },
           assign: { ...resetAssign, collaborateHanler: collaborateHanler.join(), type: '1' }
         }
         console.log(JSON.stringify(data, null, 2))
@@ -424,8 +454,8 @@ export default class ReportAndAssignForm extends Vue {
 
     if (
       !allowedTypes.includes(file.raw.type) &&
-      !String(file.raw.type).endsWith('.amr') &&
-      !String(file.raw.type).startsWith('audio')
+      !String(file.raw.type).endsWith('.amr')
+      // && !String(file.raw.type).startsWith('audio')
     ) {
       this.$message.error('上传文件只能是 JPG/JPEG、png、amr 格式!')
       pass = false
@@ -444,8 +474,25 @@ export default class ReportAndAssignForm extends Vue {
     this.formData.fileList = pass ? [...this.formData.fileList, file] : [...this.formData.fileList]
   }
 
-  handleRemovePic(file, fileList) {
-    this.formData.fileList = fileList.filter((item) => item.uid !== file.uid)
+  onRemovePic(file) {
+    this.formData.fileList = this.formData.fileList.filter((item) => item.uid !== file.uid)
+  }
+
+  onPicturePreview(file) {
+    const { type } = file.raw || {}
+    if (this.getFileType(file) === 'image') {
+      if (type) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.picturePreviewUrl = e.target.result.toString()
+          this.visible = true
+        }
+        reader.readAsDataURL(file.raw)
+      } else {
+        this.picturePreviewUrl = getRemoteImg(file.url)
+        this.visible = true
+      }
+    }
   }
 
   @Watch('data', { immediate: true })
@@ -482,4 +529,25 @@ export default class ReportAndAssignForm extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.form {
+  >>> .el-upload-list {
+    .file-list {
+      font-size: 14px;
+      .name {
+        cursor: pointer;
+        &:hover {
+          color: $--color-primary;
+        }
+      }
+      .el-button {
+        color: $--color-info;
+        padding: 5px;
+        &:hover {
+          color: $--color-primary;
+        }
+      }
+    }
+  }
+}
+</style>

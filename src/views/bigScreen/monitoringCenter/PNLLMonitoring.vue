@@ -125,7 +125,7 @@ export default {
       this.initMapEvent()
       let obj = {
         name: '管网液位',
-        src: require('@/views/bigScreen/monitoringCenter/images/液位.png')
+        src: require('@/views/bigScreen/images/设备/设备-管网液位.png')
       }
       Object.assign(row, obj)
       this.vectorLayer = this.mapUtil.located(row, [parseFloat(104.146864578), parseFloat(30.013916023)])
@@ -172,7 +172,7 @@ export default {
       .icon {
         height: 0.166667rem /* 32/192 */;
         width: 0.34375rem /* 66/192 */;
-        background: url('./images/管网液位监测.png') no-repeat center center;
+        background: url('~@/views/bigScreen/images/模块图标/管网液位监测.png') no-repeat center center;
         background-size: 100% 100%;
       }
       span {

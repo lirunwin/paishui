@@ -181,7 +181,7 @@ export default {
                                 anchor: [0.5, 0.7],
                                 scale:0.7,
                                 //图标的url
-                                src: require('@/views/bigScreen/baseMap/images/工程车辆.png')
+                                src: require('@/views/bigScreen/images/其他/其他-工程车辆.png')
                             })
                         });
                 case '巡检人员':return new Style({
@@ -189,7 +189,7 @@ export default {
                                 anchor: [0.5, 0.7],
                                 scale:0.7,
                                 //图标的url
-                                src: require('@/views/bigScreen/baseMap/images/巡查人员.png')
+                                src: require('@/views/bigScreen/images/其他/其他-巡查人员.png')
                             })
                         });
                 case '视频':return new Style({
@@ -197,7 +197,7 @@ export default {
                                 anchor: [0.5, 0.7],
                                 scale:0.7,
                                 //图标的url
-                                src: require('@/views/bigScreen/baseMap/images/视频图.png')
+                                src: require('@/views/bigScreen/images/设备/设备-视频监控.png')
                             })
                         });
             }

@@ -32,15 +32,15 @@ export default {
     return {
       legendBoardShow: false,
       legendList: [
-        { img: require('@/views/bigScreen/baseMap/images/液位仪.png'), name: '管网液位' },
-        { img: require('@/views/bigScreen/baseMap/images/视频监控.png'), name: '易涝点视频' },
-        { img: require('@/views/bigScreen/baseMap/images/巡查.png'), name: '巡检人员' },
-        { img: require('@/views/bigScreen/baseMap/images/井盖.png'), name: '智慧井盖' },
-        { img: require('@/views/bigScreen/baseMap/images/液位计.png'), name: '易涝点水位' },
-        { img: require('@/views/bigScreen/baseMap/images/工程车.png'), name: '工程车辆' },
-        { img: require('@/views/bigScreen/baseMap/images/事件.png'), name: '事件位置' },
-        { img: require('@/views/bigScreen/baseMap/images/汛情.png'), name: '汛情位置' },
-        { img: require('@/views/bigScreen/baseMap/images/隐患.png'), name: '隐患位置' }
+        { img: require('@/views/bigScreen/images/图例/液位仪.png'), name: '管网液位' },
+        { img: require('@/views/bigScreen/images/图例/视频监控.png'), name: '易涝点视频' },
+        { img: require('@/views/bigScreen/images/图例/巡查.png'), name: '巡检人员' },
+        { img: require('@/views/bigScreen/images/图例/井盖.png'), name: '智慧井盖' },
+        { img: require('@/views/bigScreen/images/图例/液位计.png'), name: '易涝点水位' },
+        { img: require('@/views/bigScreen/images/图例/工程车.png'), name: '工程车辆' },
+        { img: require('@/views/bigScreen/images/图例/事件.png'), name: '事件位置' },
+        { img: require('@/views/bigScreen/images/图例/汛情.png'), name: '汛情位置' },
+        { img: require('@/views/bigScreen/images/图例/隐患.png'), name: '隐患位置' }
       ]
     }
   },
@@ -95,7 +95,7 @@ export default {
       .img {
         width: 0.083333rem /* 16/192 */;
         height: 0.0625rem /* 12/192 */;
-        background: url('./images/图例.png') no-repeat center center;
+        background: url('~@/views/bigScreen/images/图例.png') no-repeat center center;
         background-size: 100% 100%;
       }
     }

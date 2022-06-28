@@ -1,32 +1,32 @@
 {
     "column":[
         {
-            "prop":"sortName",
+            "prop":"name",
             "label":"视频点位名称",
             "sortable":true
         },
         {
-            "prop":"sort",
+            "prop":"no",
             "label":"视频点位编号",
             "sortable":true
         },
         {
-            "prop":"codeid",
+            "prop":"model",
             "label":"设备型号",
             "sortable":true
         },
         {
-            "prop":"xxxx",
+            "prop":"company",
             "label":"设备厂家",
             "sortable":true
         },
         {
-            "prop":"tel",
-            "label":"所属权属状态",
+            "prop":"installDept",
+            "label":"安装单位",
             "sortable":true
         },
         {
-            "prop":"manager",
+            "prop":"chargeUserName",
             "label":"负责人",
             "sortable":true
         },

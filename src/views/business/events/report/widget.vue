@@ -37,7 +37,6 @@ import {
   IAssign,
   IPagination,
   IDepartment,
-  updateAssign,
   updateEvent
 } from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
@@ -83,7 +82,13 @@ export default class EventReport extends Vue {
     this.loading.report = true
     try {
       const { result } = await (id ? updateEvent(event) : addEvent(event))
-      this.$message[result.id ? 'success' : 'error'](`${id ? '修改' : ''}上报${result ? '成功!' : '失败!'}`)
+      let msgType
+      if (id) {
+        msgType = result ? 'success' : 'error'
+      } else {
+        msgType = result.id ? 'success' : 'error'
+      }
+      this.$message[msgType](`${id ? '修改' : ''}上报${result ? '成功!' : '失败!'}`)
       id = result.id
     } catch (error) {
       console.log(error)
