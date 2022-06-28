@@ -4,7 +4,7 @@
             <el-row type="flex" :gutter="10">
                 <el-col :span="3">
                     <el-input
-                        placeholder="支持搜索排水户名称、地址"
+                        placeholder="支持搜索视频点位名称"
                         suffix-icon="el-icon-search"
                         size="mini"
                         v-model="keyValue"
@@ -13,10 +13,10 @@
                 </el-col>
                 <el-col :span="21">
                     <div class="btnGroup">
-                        <el-button type="primary" size="mini" >查询</el-button>
+                        <el-button type="primary" size="mini" @click="getPage()">查询</el-button>
                         <el-button type="success" size="mini" @click="addData()">新增</el-button>
-                        <el-button type="warning" size="mini" @click="infoDetail()">修改</el-button>
-                        <el-button type="danger" size="mini" >删除</el-button>
+                        <el-button type="warning" size="mini" @click="modifyOperation()">修改</el-button>
+                        <el-button type="danger" size="mini" @click="deleteOPeration()">删除</el-button>
                     </div>
                 </el-col>
             </el-row>
@@ -41,10 +41,11 @@
             />
         </div>
         <editDialog
-            ref="dHI"
+            ref="vmd"
             :visible="dialogVisible"
             :showName="dialogName"
             @cancelOperation="cancelOperation"
+            @submitOperation="submitOperation"
         />
     </div>
 </template>
@@ -53,6 +54,7 @@
 import config from './config.json'
 import tableItem from "@/components/Table/index.vue"
 import editDialog from './editDialog.vue'
+import axios from '@/utils/request'
 export default {
     name:"videoManagement",//易涝点视频管理
         components:{
@@ -61,6 +63,9 @@ export default {
     },
     data(){
         return{
+            searchUrl:'/monitor/yldvideo/page',//查询
+            editUrl:'/monitor/yldvideo',//新增、修改
+            delUrl:"/monitor/yldvideo/deleteByIds",//删除
             keyValue:"",//关键字
             householdType: '',//排水户类型
             householdTypeOptions: [],//排水户类型下拉菜单
@@ -75,7 +80,7 @@ export default {
             //表格数据
             list:[],
             //表格列
-            column:[],
+            column:config.column,
             //分页信息
             total:0,//总数
             pagination:{
@@ -89,9 +94,75 @@ export default {
         }
     },
     mounted(){
-        this.column=config.column
+        this.getPage()
     },
     methods:{
+        //获取数据
+        getPage(){
+            let params={
+                name:this.keyValue,
+                current:this.pagination.current,
+                size:this.pagination.size,
+            };
+            axios.request({ url: this.searchUrl, method: 'get', params }).then(res=>{
+                let result=res.result.records
+                this.list=result.map((item)=>{
+                    return{
+                        ...item
+                    }
+                })
+                this.total=res.result.total
+            }).catch(err=>{
+                console.log(err)
+            })
+        },
+        //修改
+        modifyVideo( data){
+            axios.request({ url: this.editUrl, method: 'PUT', data }).then(res=>{
+                const result=res;
+                if(result.code==1) {
+                    this.$message.success("修改成功")
+                    this.dialogVisible=false
+                    this.getPage()
+                }else{
+                    this.$message.error("修改失败")
+                }
+            }).catch(err=>{
+                this.$message.error("修改失败")
+                console.log(err)
+            })
+        },
+        //新增
+        addVideo( data){
+            axios.request({ url: this.editUrl, method: 'POST', data }).then(res=>{
+                const result=res;
+                if(result.code==1) {
+                    this.$message.success("添加成功")
+                    this.dialogVisible=false
+                    this.getPage()
+                }else{
+                    this.$message.error("添加失败")
+                }
+            }).catch(err=>{
+                this.$message.error("添加失败")
+                console.log(err)
+            })
+        },
+        //删除
+        deleteVideo(params){
+            axios.request({ url: this.delUrl, method: 'DELETE', params }).then(res=>{
+                const result=res;
+                if(result.code==1) {
+                    this.$message.success("删除成功")
+                    this.getPage()
+                }else{
+                    this.$message.error("删除失败")
+                }
+            }).catch(err=>{
+                this.$message.error("删除失败")
+                console.log(err)
+            })
+        },
          // 页码改变
         handleCurrentChange(currentPage) {
             this.pagination.current = currentPage
@@ -102,6 +173,7 @@ export default {
             this.pagination.size = pagesize
             this.getPage()
         },
+        // 数据选择改变
         handleSelectionChange(value){
             this.selectedData=value
         },
@@ -109,17 +181,60 @@ export default {
         addData(){
             this.dialogVisible=true;
             this.dialogName="新增"
+            this.$nextTick(()=>{
+                this.$refs.vmd.reset()
+            })
         },
-        //编辑查看详情
+        //查看详情
         infoDetail(row,field){
-            console.log("详情",row)
             this.dialogVisible=true;
-            this.dialogName="编辑"
-            // this.$refs.dHI.setData(row)
+            this.dialogName="详情"
+            this.$refs.vmd.setData(row)
+        },
+        //编辑视频点
+        modifyOperation(){
+            if(this.selectedData.length!=1){
+                this.$message("请选择一行数据进行修改！")
+                return
+            }
+            this.dialogVisible=true;
+            this.dialogName="修改"
+            this.$refs.vmd.setData(this.selectedData[0])
+        },
+        //删除视频点
+        deleteOPeration(){
+            if(this.selectedData.length==0){
+                this.$message("请选择数据进行删除！")
+                return
+            }
+            let ids=[]
+            this.selectedData.forEach(item=>{
+                ids.push(item.id)
+            })
+            this.deleteMessage(ids.join())
+        },
+        //删除前确认
+        deleteMessage(ids){
+            this.$confirm('确认删除?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+            }).then(() => {
+                this.deleteVideo({ids:ids})
+            }).catch(() => {});
         },
         //弹窗组件回调操作
         cancelOperation(){
             this.dialogVisible=false
+        },
+        //弹窗提交回调
+        submitOperation(value){
+            console.log(value)
+            if(this.dialogName=="修改"){
+                this.modifyVideo(value)
+            }else{
+                this.addVideo(value)
+            }
         },
     }
 }
