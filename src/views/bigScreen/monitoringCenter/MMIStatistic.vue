@@ -106,19 +106,19 @@ export default {
           width: 0.385417rem /* 74/192 */;
         }
         .img0 {
-          background: url('~@/views/bigScreen/monitoringCenter/images/管网液位.png') no-repeat center center;
+          background: url('~@/views/bigScreen/images/模块图标/管网液位.png') no-repeat center center;
           background-size: 100% 100%;
         }
         .img1 {
-          background: url('~@/views/bigScreen/monitoringCenter/images/水位.png') no-repeat center center;
+          background: url('~@/views/bigScreen/images/模块图标/水位.png') no-repeat center center;
           background-size: 100% 100%;
         }
         .img2 {
-          background: url('~@/views/bigScreen/monitoringCenter/images/视频.png') no-repeat center center;
+          background: url('~@/views/bigScreen/images/模块图标/视频.png') no-repeat center center;
           background-size: 100% 100%;
         }
         .img3 {
-          background: url('~@/views/bigScreen/monitoringCenter/images/井盖.png') no-repeat center center;
+          background: url('~@/views/bigScreen/images/模块图标/井盖.png') no-repeat center center;
           background-size: 100% 100%;
         }
       }

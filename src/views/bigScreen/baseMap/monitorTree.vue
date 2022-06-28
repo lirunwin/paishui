@@ -65,8 +65,8 @@ export default {
             deviceTypeGroupUrl:'/monitor/device/deviceTypeGroup',
             showContent:false,
             buttonImg:null,
-            upImg:require('./images/三角上.png'),
-            downImg:require('./images/三角下.png'),
+            upImg:require('@/views/bigScreen/images/三角上.png'),
+            downImg:require('@/views/bigScreen/images/三角下.png'),
             statusList:[
                 // {code:"onlineNum",type:'在线',num:20},
                 {code:"offlineNum",type:'离线',num:20},
@@ -78,10 +78,10 @@ export default {
             filterText: '',
             treeData: [],
             defaultProps: {children: 'children',label: 'name'},
-            onlineIcon:require('@/views/bigScreen/baseMap/images/在线.png'),
-            offlineIcon:require('@/views/bigScreen/baseMap/images/离线.png'),
-            normalIcon:require('@/views/bigScreen/baseMap/images/正常.png'),
-            warnIcon:require('@/views/bigScreen/baseMap/images/报警.png'),
+            onlineIcon:require('@/views/bigScreen/images/其他/在线.png'),
+            offlineIcon:require('@/views/bigScreen/images/其他/离线.png'),
+            normalIcon:require('@/views/bigScreen/images/其他/正常.png'),
+            warnIcon:require('@/views/bigScreen/images/其他/报警.png'),
             swjcyLayer:null,
             zhjgLayer:null,
             ywjcyLayer:null,
@@ -213,7 +213,7 @@ export default {
                         anchor: [0.5, 0.7],
                         scale:0.7,
                         //图标的url
-                        src: require('@/views/bigScreen/baseMap/images/汛情上报.png')
+                        src: require('@/views/bigScreen/images/设备/设备-易涝点水位.png')
                     })
                 })
             })
@@ -224,7 +224,7 @@ export default {
                         anchor: [0.5, 0.7],
                         scale:0.7,
                         //图标的url
-                        src: require('@/views/bigScreen/baseMap/images/井盖.png')
+                        src: require('@/views/bigScreen/images/设备/设备-智慧井盖.png')
                     })
                 })
             })
@@ -235,7 +235,7 @@ export default {
                         anchor: [0.5, 0.7],
                         scale:0.5,
                         //图标的url
-                        src: require('@/views/bigScreen/baseMap/images/液位计图.png')
+                        src: require('@/views/bigScreen/images/设备/设备-管网液位.png')
                     })
                 })
             })

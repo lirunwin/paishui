@@ -34,7 +34,7 @@
 <script>
 import specificTable from './components/statisticTable.vue'
 import trackPlayer from './components/trackPlayer.vue'
-import Config from './config.json'
+import config from './config.json'
 export default {
     name:"WFStatistic",//工作人员统计
     components:{
@@ -70,51 +70,8 @@ export default {
                     num:2,
                 },
             ],
-            tableData:[
-                {
-                    "expNo":"工程部",
-                    "outfalltype":"xxx",
-                    "outfallshape":"6",
-                    "sewagesystemId":"12",
-                    "status":"未上班",
-                },
-                {
-                    "expNo":"工程部",
-                    "outfalltype":"xxx",
-                    "outfallshape":"6",
-                    "sewagesystemId":"12",
-                    "status":"上班",
-                },
-                {
-                    "expNo":"工程部",
-                    "outfalltype":"xxx",
-                    "outfallshape":"6",
-                    "sewagesystemId":"12",
-                    "status":"未上班",
-                },
-                {
-                    "expNo":"工程部",
-                    "outfalltype":"xxx",
-                    "outfallshape":"6",
-                    "sewagesystemId":"12",
-                    "status":"上班",
-                },
-                {
-                    "expNo":"工程部",
-                    "outfalltype":"xxx",
-                    "outfallshape":"6",
-                    "sewagesystemId":"12",
-                    "status":"下班",
-                },
-                {
-                    "expNo":"工程部",
-                    "outfalltype":"xxx",
-                    "outfallshape":"6",
-                    "sewagesystemId":"12",
-                    "status":"下班",
-                },
-            ],
-            column:[],
+            tableData:[],
+            column:config.WFColumn,
             showTrackPlayer:false,
         }
     },
@@ -130,19 +87,23 @@ export default {
         },
     },
     computed:{
-        config(){
-            return Config
-        }
+
     },
     mounted(){
-        this.column=this.config.WFColumn
         this.getPageData()
     },
     methods:{
         getPageData(){
             const {getRequestResult} = this.$listeners
-            getRequestResult({blockCode:'troubleCount'}).then(res=>{
-                // console.log('troubleCount',res)
+            getRequestResult({blockCode:'userWorkStatistic'}).then(res=>{
+                console.log('userWorkStatistic',res)
+                this.tableData=res.map(item=>{
+                    Object.keys(item).forEach((val) => (item[val] = item[val] || '/'))
+                    return{
+                        ...item,
+                        status:item.status=='3'?'未上班':(item.status=='2'?'下班':'上班')
+                    }
+                })
             })
         },
         showTrack(data){

@@ -86,7 +86,7 @@ export default {
     located(position) {
       let obj = {
         name: '视频点位',
-        src: require('@/views/bigScreen/monitoringCenter/images/视频点.png')
+        src: require('@/views/bigScreen/images/设备/设备-视频监控.png')
       }
       this.vectorLayer = this.mapUtil.located(
         obj,
@@ -133,7 +133,7 @@ export default {
       .icon {
         height: 0.166667rem /* 32/192 */;
         width: 0.34375rem /* 66/192 */;
-        background: url('./images/视频监测.png') no-repeat center center;
+        background: url('~@/views/bigScreen/images/模块图标/视频监测.png') no-repeat center center;
         background-size: 100% 100%;
       }
       span {
@@ -168,7 +168,7 @@ export default {
           height: 0.072917rem /* 14/192 */;
           width: 0.052083rem /* 10/192 */;
           margin-right: 0.046875rem /* 9/192 */;
-          background: url('./images/三角.png') no-repeat center center;
+          background: url('~@/views/bigScreen/images/三角.png') no-repeat center center;
           background-size: 100% 100%;
         }
         .site-name {
@@ -177,7 +177,7 @@ export default {
           font-weight: 500;
         }
         .siteIcon {
-          background: url('./images/定位.png') no-repeat center center;
+          background: url('~@/views/bigScreen/images/定位.png') no-repeat center center;
           background-size: 100% 100%;
           width: 13px;
           height: 16px;

@@ -6,7 +6,7 @@
         leave-active-class="animate__slideOutUp">
         <div class="widget-bigScreenHeader">
             <div class='header'>
-                <div class='title' @click="close()">
+                <div class='title' @click="closeModuleAll()">
                     <span class="caption">{{title}}</span>
                     <span class="border-trail"></span>
                 </div>
@@ -99,7 +99,6 @@ export default {
         },
         //进入系统
         enterSys(){
-            console.log(this.routerData)
             if(!this.routerData.some((item) => item.label === '首页')&&!this.routerData.some((item) => item.label === '地图')){
                 this.logout()
             }else{
@@ -148,7 +147,7 @@ export default {
                 this.specificTime=getnow();
             },100)
         },
-        close(){
+        closeModuleAll(){
             this.$parent.showMonitoringCenter=false
             this.$parent.showOverviewData=false
             this.currentActive=''
@@ -166,7 +165,6 @@ export default {
     width: 100%;
     position: absolute;
     z-index: 2;
-    // background: linear-gradient(#021a2a, rgba(2, 26, 42, 0));
     background: linear-gradient(#021a2a, rgba(2,26,42,0.3));
     font-family: Source Han Sans CN;
     //public size
@@ -202,29 +200,6 @@ export default {
                 text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
             }
         }
-        // .border-trail {
-        //     position: absolute;
-        //     display: block;
-        // }
-        // .border-trail {
-        //     filter: hue-rotate(0deg);
-        //     bottom: 0;
-        //     right: 0;
-        //     width:$size10;
-        //     height:$size3;
-        //     background: linear-gradient(90deg, transparent, rgb(26, 178, 255));
-        //     box-shadow:0 0 10px rgb(26, 178, 255);
-        //     animation: animate1 2.5s linear infinite;
-        // }
-        // @keyframes animate1 {
-        //     0% {
-        //         left: -100%;
-        //     }
-        //     50%,
-        //             100% {
-        //         left: 100%;
-        //     }
-        // }
         .menu{
             width: 60%;
             white-space: nowrap;
@@ -259,9 +234,6 @@ export default {
                 color: #0EA7FF;
                 font-weight: bold;
                 border-bottom: 2px solid;
-                // background: url("./images/light.png") no-repeat;
-                // background-size: 100% 35%;
-                // background-position: bottom;
             }
             .drop{
                 padding: 0;
@@ -311,7 +283,7 @@ export default {
             .entrySys {
                 flex: 0.6;
                 color: #A8D3F1;
-                background: url("./images/entrySys.png") no-repeat;
+                background: url("~@/views/bigScreen/images/entrySys.png") no-repeat;
                 background-size: 100% 100%;
                 height: 50%;
                 display: flex;
@@ -322,7 +294,7 @@ export default {
             .entrySys:hover {
                 cursor: pointer;
                 color: #A8D3F1;
-                background: url("./images/entrySysHover.png") no-repeat;
+                background: url("~@/views/bigScreen/images/entrySysHover.png") no-repeat;
                 background-size: 100% 100%;
             }
         }
@@ -330,7 +302,7 @@ export default {
     .underline{
         width: 9.796875rem /* 1881/192 */;
         height: .010417rem /* 2/192 */;
-        background: url("./images/顶部线.png") no-repeat center center;
+        background: url("~@/views/bigScreen/images/顶部线.png") no-repeat center center;
         background-size: 100% 100%;
         margin: 0 $size20;
     }

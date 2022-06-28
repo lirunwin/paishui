@@ -136,7 +136,7 @@ export default {
             .img{
                 width: .072917rem /* 14/192 */;
                 height: .083333rem /* 16/192 */;
-                background: url('./images/图层.png') no-repeat center center;
+                background: url('~@/views/bigScreen/images/图层.png') no-repeat center center;
                 background-size: 100% 100%;
             }
         }
