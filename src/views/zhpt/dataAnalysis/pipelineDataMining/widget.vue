@@ -15,11 +15,11 @@
         <el-divider></el-divider>
         <div class="top-title flexCss">
           <el-checkbox v-model="linkage">联动</el-checkbox>
-          <el-button type="primary" size="small" @click="getPdf('管道检测数据挖掘')">导出</el-button>
+          <el-button type="primary" size="small" @click="getPdf('管道检测数据挖掘', 'dataming')">导出</el-button>
         </div>
         <el-divider></el-divider>
         <!-- 视图列表 -->
-        <div id="pdfDom" class="echarts-list" v-loading="loading">
+        <div id="dataming" class="echarts-list" v-loading="loading">
           <div class="threeBottom">
             <div class="threeBottom-one">
               <echarts-two v-if="redayY" :paramData="defectTypeObj"></echarts-two>
@@ -64,7 +64,12 @@ export default {
         funcArr: [],
         structArr: []
       }, // 缺陷类型统计图
-      defectLevel: [] // 其它统计图
+      defectLevel: [], // 其它统计图
+      mapData: {},
+      typeArr: {
+        s: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'],
+        f: ['CJ', 'CQ', 'FZ', 'JG', 'SG', 'ZW']
+      },
     }
   },
   mounted() {
@@ -99,17 +104,16 @@ export default {
       // 管道检测情况统计图
 
       // 缺陷类型统计图
-      let funcArr = defectArr.filter(v => v.defectType == '功能性缺陷')
-      let structArr = defectArr.filter(v => v.defectType === '结构性缺陷')
+      let funcArr = defectArr.filter(v => v.defectType == '功能性缺陷' || this.typeArr.f.includes(v.defectCode))
+      let structArr = defectArr.filter(v => v.defectType === '结构性缺陷' || this.typeArr.s.includes(v.defectCode))
       this.defectTypeObj.structArr = structArr
       this.defectTypeObj.funcArr = funcArr
       this.loading = false
       this.redayY = true
-      // console.log('this.defectTypeObj', this.defectTypeObj)
     },
     mapMoveEvent(extent) {
       this.loading = true
-      this.getDataFromExtent({}, extent).then((res) => {
+      this.getDataFromExtent(extent).then((res) => {
         this.loading = false
         // 联动时数据变化
         if (this.linkage) {
@@ -117,16 +121,25 @@ export default {
         }
       })
     },
-    async getDataFromExtent(params, extent) {
-      let data = await this.getPipeData(params)
+    async getDataFromExtent(extent) {
+      let data = await this.getPipeData()
       if (data.code === 1) {
         // 地图范围过滤数据
         return this.$refs.myMap.getDefectDataInMap(data.result, extent)
       } else this.$message.error('请求数据出错')
     },
     // 根据条件获取缺陷数据
-    getPipeData() {
-      return getDefectDataBySE({ wordInfoState: "1" })
+    async getPipeData() {
+      let params = { wordInfoState: "1" }
+      // 缓存
+      let strKey = JSON.stringify(params)
+      if (this.mapData.hasOwnProperty(strKey)) {
+        return Promise.resolve(this.mapData[strKey])
+      } else {
+        let res = await getDefectDataBySE(params)
+        this.mapData[strKey] = res
+        return Promise.resolve(res)
+      }
     }
   },
   computed: {

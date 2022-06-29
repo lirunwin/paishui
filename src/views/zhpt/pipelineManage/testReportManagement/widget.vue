@@ -912,13 +912,13 @@ export default {
         this.init()
       }
     },
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n === '检测成果专题图') {
+    '$store.state.map.panels': function (n, o) {
+      if (n.find(item => item.com === 'testResultDiagram')) {
         this.clearAll()
         let layer = this.getThemLayer()
         layer.setVisible(false)
       }
-    },
+    }
   },
   computed: {
     // 提示框当前信息
@@ -1165,12 +1165,15 @@ export default {
         let res = await queryDefectdetails(id)
         this.DetailsForm = res.result
         this.currentInfoCard = true
+        this.activeName = 'picnum'
+
       } else {
         // 管段评估(查询管段部分) 传管段编号
         let resEV = await histroyPipeData({ expNo: id })
         this.currentIndex = 0
         this.currentForm = resEV.result
         this.currentInfoCard2 = true
+        this.activeNameEV = 'picnum' // 照片视频tab标签
       }
 
       if (position) {
@@ -1679,7 +1682,6 @@ export default {
       // 判断是否已加载地图
       if (this.hasLoadMap) {
         this.setSimpleMap(id)
-        // this.getPipeDefectData(2, id, false)
       }
 
       this.id = id
@@ -1713,13 +1715,13 @@ export default {
           this.defectQuantityStatisticsA.forEach((sumValue) => {
             if (resValue.defectCode == sumValue.type) {
               if (['一级', '1'].includes(resValue.defectLevel)) {
-                sumValue.oneValue = resValue.defectNums
+                sumValue.oneValue += resValue.defectNums
               } else if (['二级', '2'].includes(resValue.defectLevel)) {
-                sumValue.twoValue = resValue.defectNums
+                sumValue.twoValue += resValue.defectNums
               } else if (['三级', '3'].includes(resValue.defectLevel)) {
-                sumValue.threeValue = resValue.defectNums
+                sumValue.threeValue += resValue.defectNums
               } else if (['四级', '4'].includes(resValue.defectLevel)) {
-                sumValue.fourValue = resValue.defectNums
+                sumValue.fourValue += resValue.defectNums
               }
             }
           })
@@ -1727,13 +1729,13 @@ export default {
           this.defectQuantityStatisticsB.forEach((sumValue) => {
             if (resValue.defectCode == sumValue.type) {
               if (['一级', '1'].includes(resValue.defectLevel)) {
-                sumValue.oneValue = resValue.defectNums
+                sumValue.oneValue += resValue.defectNums
               } else if (['二级', '2'].includes(resValue.defectLevel)) {
-                sumValue.twoValue = resValue.defectNums
+                sumValue.twoValue += resValue.defectNums
               } else if (['三级', '3'].includes(resValue.defectLevel)) {
-                sumValue.threeValue = resValue.defectNums
+                sumValue.threeValue += resValue.defectNums
               } else if (['四级', '4'].includes(resValue.defectLevel)) {
-                sumValue.fourValue = resValue.defectNums
+                sumValue.fourValue += resValue.defectNums
               }
             }
           })
@@ -1757,6 +1759,7 @@ export default {
         })
 
         queryPipeState(id).then(resUrl => {
+          console.log('加载完数据后')
           this.remark = resUrl.result.remark
           if (resUrl.result.pdfFilePath) {
             this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
@@ -1766,9 +1769,7 @@ export default {
           this.dialogFormVisible3 = true
           this.$nextTick(() => {
             this.isOpen = true
-
             this.renderEcharts()
-
             loading.close()
           })
         })

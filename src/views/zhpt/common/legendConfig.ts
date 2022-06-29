@@ -3,10 +3,12 @@ export const LegendConfig = {
     pipelineEvaluate: [
         { type: "rect", color: "#f00", label: "立即处理", showCheckBox: false },
         { type: "rect", color: "#ff0", label: "处理计划", showCheckBox: false },
+        { type: "rect", color: '#ff3', label: '制定修复计划', showCheckBox: false },
         { type: "rect", color: "#FFCD43", label: "修复计划", showCheckBox: false },
         { type: "rect", color: "#008000", label: "尽快处理", showCheckBox: false },
         { type: "rect", color: "#00f", label: "尽快修复", showCheckBox: false },
         { type: "rect", color: "#0DBAFF", label: "暂不处理", showCheckBox: false },
+        { type: "rect", color: '#0DBAFF', label: '暂不修复', showCheckBox: false  }
     ],
     // 排水检测
     testReport: [

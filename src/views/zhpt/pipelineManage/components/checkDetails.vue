@@ -391,6 +391,7 @@ export default {
     },
     // 详情
     async openDetails() {
+      this.activeIndex = '1'
       console.log('管道检测开始', this.checkParam)
       if (this.checkParam) {
         let res = await assessmentDetails(this.checkParam)

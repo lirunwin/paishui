@@ -428,11 +428,11 @@ export default {
         this.init()
       }
     },
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n === '检测成果专题图') {
+    '$store.state.map.panels': function (n, o) {
+      if (n.find(item => item.com === 'testResultDiagram')) {
+        this.clearAll()
         let layer = this.getThemLayer()
         layer.setVisible(false)
-        this.clearAll()
       }
     }
   },

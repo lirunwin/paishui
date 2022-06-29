@@ -583,7 +583,6 @@ export default {
         uploadItemDictId: this.updataParamsId.uploadItemDictId
       }
       let fileRes = await queryPageEnclosure(params)
-      console.log('附件分页数据', fileRes)
       this.fileListData = fileRes.result.records
 
       this.initForm = { ...this.form }
@@ -725,20 +724,8 @@ export default {
       }
     },
     // 点击行勾选数据
-    handleRowClick(row, column, event) {
-      let length = this.multipleSelection.length
-      let id = this.multipleSelection.length == 1 ? this.multipleSelection[0].id : null
-      // let
-      this.$refs.multipleTable.clearSelection(row)
-      if (length > 1 || length < 1) {
-        this.$refs.multipleTable.toggleRowSelection(row)
-      } else if (id) {
-        if (row.id == id) {
-          this.$refs.multipleTable.toggleRowSelection(row, false)
-        } else {
-          this.$refs.multipleTable.toggleRowSelection(row)
-        }
-      }
+    handleRowClick(row) {
+      this.$refs.multipleTable.toggleRowSelection(row)
     },
 
     // 获取附件列表

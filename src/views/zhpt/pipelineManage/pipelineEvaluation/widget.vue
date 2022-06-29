@@ -443,8 +443,8 @@ export default {
         this.init()
       }
     },
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n === '检测成果专题图') {
+    '$store.state.map.panels': function (n, o) {
+      if (n.find(item => item.com === 'testResultDiagram')) {
         this.clearAll()
         let layer = this.getThemLayer()
         layer.setVisible(false)
@@ -1030,6 +1030,7 @@ export default {
           // 定位
           let position = this.setPositionByPipeId(row.expNo)
           if (position) {
+            this.activeName = 'picnum'
             this.currentForm = res.result
             this.currentIndex = 0
             this.popup = new Overlay({

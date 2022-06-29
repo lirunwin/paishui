@@ -21,7 +21,7 @@
       >
       </el-table-column>
       <!-- 缺陷位置 -->
-      <el-table-column label="埋深(m)" header-align="center">
+      <el-table-column label="缺陷位置" header-align="center">
         <el-table-column
           :prop="v.name"
           header-align="center"

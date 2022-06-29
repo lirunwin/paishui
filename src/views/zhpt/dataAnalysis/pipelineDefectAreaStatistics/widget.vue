@@ -86,7 +86,7 @@
                 <el-button class="serch-btn" type="primary" @click="drawFeature"> 范围 </el-button>
                 <el-button class="serch-btn" type="primary"  @click="clearDraw"> 清除 </el-button>
                 <el-button class="serch-btn" type="primary" @click="searchData"> 查询 </el-button>
-                <el-button class="serch-btn" type="primary" @click="getPdf('管道区域缺陷统计')"> 导出 </el-button>
+                <el-button class="serch-btn" type="primary" @click="getPdf('管道区域缺陷统计', 'areasta')"> 导出 </el-button>
                 <!-- <el-button class="serch-btn" type="primary" > 导出 </el-button> -->
               </div>
             </div>
@@ -103,7 +103,7 @@
               <el-checkbox v-model="checkDefectLevel">缺陷等级</el-checkbox>
               <el-checkbox v-model="checkDefectName">缺陷名称</el-checkbox>
             </div>
-            <div id="pdfDom" style="padding: 10px">
+            <div id="areasta" style="padding: 10px">
               <h2 style="text-align: center">管道缺陷区域统计图</h2>
               <div id="mainPDAS" style="height: 330px"></div>
               <!-- 表格 -->
@@ -224,7 +224,7 @@ export default {
       echartsData: [],
       // 
       hasDraw: false,
-
+      mapData: {}
     }
   },
 
@@ -297,13 +297,13 @@ export default {
           this.defectQuantityStatisticsA.forEach((sumValue) => {
             // console.log("类型是否相等",typeof resValue.defectCode,sumValue.type);
             if (resValue.defectCode == sumValue.type) {
-              if (resValue.defectLevel == '一级') {
+              if (['一级', '1'].includes(resValue.defectLevel)) {
                 sumValue.oneValue += 1
-              } else if (resValue.defectLevel == '二级') {
+              } else if (['二级', '2'].includes(resValue.defectLevel)) {
                 sumValue.twoValue += 1
-              } else if (resValue.defectLevel == '三级') {
+              } else if (['三级', '3'].includes(resValue.defectLevel)) {
                 sumValue.threeValue += 1
-              } else if (resValue.defectLevel == '四级') {
+              } else if (['四级', '4'].includes(resValue.defectLevel)) {
                 sumValue.fourValue += 1
               }
             }
@@ -311,13 +311,13 @@ export default {
 
           this.defectQuantityStatisticsB.forEach((sumValue) => {
             if (resValue.defectCode == sumValue.type) {
-              if (resValue.defectLevel == '一级') {
+              if (['一级', '1'].includes(resValue.defectLevel)) {
                 sumValue.oneValue += 1
-              } else if (resValue.defectLevel == '二级') {
+              } else if (['二级', '2'].includes(resValue.defectLevel)) {
                 sumValue.twoValue += 1
-              } else if (resValue.defectLevel == '三级') {
+              } else if (['三级', '3'].includes(resValue.defectLevel)) {
                 sumValue.threeValue += 1
-              } else if (resValue.defectLevel == '四级') {
+              } else if (['四级', '4'].includes(resValue.defectLevel)) {
                 sumValue.fourValue += 1
               }
             }
@@ -374,15 +374,21 @@ export default {
         this.getMapData(res)
       })
     },
-    async getDataFromExtent(extent) {
-      let data = await this.getPipeData()
-      if (data.code === 1) {
-        // 地图范围过滤数据
-        return this.$refs.myMap.getDefectDataInMap(data.result, extent)
-      } else this.$message.error('请求数据出错')
+    getDataFromExtent(extent) {
+      this.$refs.myMap.changeLoading(true)
+      return new Promise(resolve => {
+        this.$refs.myMap.changeLoading(false)
+        this.getPipeData().then(data => {
+          if (data.code === 1) {
+            // 地图范围过滤数据
+            resolve(this.$refs.myMap.getDefectDataInMap(data.result, extent, 1))
+          } else this.$message.error('请求数据出错')
+        })
+      })
     },
+
     // 根据条件获取缺陷数据
-    getPipeData() {
+    async getPipeData() {
       let params = {
         startPoint: '',
         endPoint: '',
@@ -392,7 +398,15 @@ export default {
         defectLevel: '',
         ...this.searchValue
       }
-      return getDefectDataBySE(params)
+      // 缓存
+      let strKey = JSON.stringify(params)
+      if (this.mapData.hasOwnProperty(strKey)) {
+        return Promise.resolve(this.mapData[strKey])
+      } else {
+        let res = await getDefectDataBySE(params)
+        this.mapData[strKey] = res
+        return Promise.resolve(res)
+      }
     },
     //初始化数据(饼状图)
     initData() {

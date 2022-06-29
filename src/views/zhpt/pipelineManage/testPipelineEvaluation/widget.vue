@@ -48,9 +48,9 @@
           :key="i"
         >
         </el-table-column>
-        <el-table-column width="120" header-align="center" label="缺陷个数" align="center" show-overflow-tooltip>
+        <el-table-column width="120" header-align="center" label="视频" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="text-align: center">{{ `${scope.row.pipeDefects.length}` }}</div>
+            <div style="text-align: center">{{ `${scope.row.videoPath ? scope.row.videoFileName : ''}` }}</div>
           </template>
         </el-table-column>
       </el-table>
@@ -88,7 +88,6 @@ export default {
       let { rootPage, data } = this.param
       this.rootPage = rootPage
       this.tableData = data.map((fea) => fea.values_)
-      console.log('这里是地图传入的数据', this.tableData)
       this.tableContent.forEach(item => {
         this.json_fields[item.label] = item.name
       })
@@ -114,6 +113,7 @@ export default {
     },
     // 打开缩略提示框
     openPromptBox(row, column, cell, event) {
+      console.log('打开框')
       this.rootPage.openPromptBox(row.expNo, this.param.layerName) 
     },
     // 表格多选事件

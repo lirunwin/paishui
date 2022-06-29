@@ -1,12 +1,5 @@
 function delOne(arr, str) {
-  let index = 0
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i].com === str) {
-      index = i
-    }
-  }
-  arr.splice(index, 1)
-  return arr
+  return arr.filter(item => item.com !== str)
 }
 
 function some(arr, str) {
@@ -98,7 +91,7 @@ const mutations = {
     }
   },
   DEL_BOX: (state: dStore.map.state, data) => {
-    state.halfPanels = delOne(state.halfPanels, data.pathId)
+    state.halfPanels = delOne(state.halfPanels, data.pathId || data)
     if (state.halfPanels.length > 0) {
       state.halfP_editableTabsValue = state.halfPanels[state.halfPanels.length - 1].com
     }

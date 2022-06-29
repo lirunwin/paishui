@@ -68,25 +68,25 @@ export default {
       this.staArr.forEach(item => { item.value = 0 })
 
       this.echartsData.funcArr.forEach((v) => {
-        if (v.defectLevel == '一级') {
+        if (['一级', '1'].includes(v.defectLevel)) {
           this.funArr[0].value += 1
-        } else if (v.defectLevel == '二级') {
+        } else if (['二级', '2'].includes(v.defectLevel)) {
           this.funArr[1].value += 1
-        } else if (v.defectLevel == '三级') {
+        } else if (['三级', '3'].includes(v.defectLevel)) {
           this.funArr[2].value += 1
-        } else if (v.defectLevel == '四级') {
+        } else if (['四级', '4'].includes(v.defectLevel)) {
           this.funArr[3].value += 1
         }
         // console.log("funcArr里面的等级",v);
       })
       this.echartsData.structArr.forEach((v) => {
-        if (v.defectLevel == '一级') {
+        if (['一级', '1'].includes(v.defectLevel)) {
           this.staArr[0].value += 1
-        } else if (v.defectLevel == '二级') {
+        } else if (['二级', '2'].includes(v.defectLevel)) {
           this.staArr[1].value += 1
-        } else if (v.defectLevel == '三级') {
+        } else if (['三级', '3'].includes(v.defectLevel)) {
           this.staArr[2].value += 1
-        } else if (v.defectLevel == '四级') {
+        } else if (['四级', '4'].includes(v.defectLevel)) {
           this.staArr[3].value += 1
         }
       })

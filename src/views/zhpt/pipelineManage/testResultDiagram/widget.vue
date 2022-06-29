@@ -92,7 +92,6 @@
     <!-- 表格当前列信息弹出框 -->
 
     <div id="popupCardDefRes" class="histroyPipeData" v-show="currentInfoCard">
-
       <div class="detailsCrad" v-if="currentInfoCard">
         <el-card class="box-card" style="width: 300px">
           <div class="table-content">
@@ -412,9 +411,11 @@ export default {
   destroyed() {
     if (this.$store.state.gis.activeHeaderItem !== 'psjc') {
       let layer = this.getThemLayer()
-      layer && this.map.removeLayer(layer)
+      layer && this.mapView.removeLayer(layer)
     }
-    this.popup && this.map.removeOverlay(this.popup)
+    this.popup && this.mapView.removeOverlay(this.popup)
+    this.$store.dispatch('map/delHalfPanels', 'testPipelineDefect')
+    this.$store.dispatch('map/delHalfPanels', 'testPipelineEvaluation')
     this.popup = null
     this.clearAll()
   },
@@ -474,6 +475,9 @@ export default {
     }
   },
   methods: {
+    getThemLayer () {
+      return this.mapView.getLayers().getArray().find(layer => layer.get('layername') === this.themLayerName)
+    },
     sDateChange (t) {
       if (!this.form.endDate) {
         console.log('时间变化')
@@ -516,11 +520,7 @@ export default {
       this.currentInfoCard = false
       this.currentInfoCard2 = false
       this.pipeDefectLayer = this.pipeStrucLayer = this.pipeFuncLayer = this.lightLayer = this.clickEvent = null
-      this.$store.dispatch('map/handelClose', {
-        box: 'Panel',
-        pathId: 'testResultDiagram',
-        widgetid: 'Panel'
-      })
+      this.$store.dispatch('map/delPanels', 'testResultDiagram')
     },
     setProjectData() {
       getProject({ current: 1, size: 1e4 }).then((res) => {
@@ -574,20 +574,19 @@ export default {
       if (!this.hasLoad) return
       let typeIndex = ['pipeDefectLayer', 'pipeFuncLayer', 'pipeStrucLayer'].indexOf(layerName)
       let filter = [
-        { key: 'defectLevel', value: ['一', '二', '三', '四', null] },
+        { key: 'defectLevel', value: [['一', '1'], ['二', '2'], ['三', '3'], ['四', '4'], null] },
         { key: 'funcClass', value: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', null] },
         { key: 'structClass', value: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', null] }
       ][typeIndex]
-      console.log('图例信息', filter)
       let features = this[layerName].getSource().getFeatures()
       let filterFeas = features.filter(fea => {
         if (filter.value[level]) {
-          return fea.get(filter.key) && fea.get(filter.key).includes(filter.value[level])
+          return fea.get(filter.key) && filter.value[level].includes(fea.get(filter.key))
         } else {
           return !fea.get(filter.key)
         }
       })
-      let lv = filter.value[level] ? `${filter.value[level]}级` : '正常'
+      let lv = filter.value[level] ? `${filter.value[level][0]}级` : '正常'
       this.openDefect(filter.key, lv, layerName, filterFeas)
     },
     addLayers(layers) {
@@ -1020,6 +1019,7 @@ export default {
           this.currentIndex = 0
           this.currentForm = resEV.result
           this.currentInfoCard2 = true
+          this.activeName = 'picnum'
           popupId = 'popupCardRes'
           showId = 'currentInfoCard2'
         }
@@ -1033,8 +1033,8 @@ export default {
           autoPanAnimation: { duration: 250 }
         })
         this.mapView.addOverlay(this.popup)
-        this.popup.setPosition(position)        
-        this.map.getView().animate({ zoom: 18 }, { center })
+        this.popup.setPosition(position)
+        this.mapView.getView().animate({ zoom: 18 }, { center: position })
         this[showId] = true
       } else {
         position.errorText && this.$message.error(position.errorText)

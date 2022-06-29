@@ -21,22 +21,22 @@ export default {
       allArr: [
         {
           name: '1级',
-          Lname: '一级',
+          Lname: ['一级', '1'],
           value: 0
         },
         {
           name: '2级',
-          Lname: '二级',
+          Lname: ['二级', '2'],
           value: 0
         },
         {
           name: '3级',
-          Lname: '三级',
+          Lname: ['三级', '3'],
           value: 0
         },
         {
           name: '4级',
-          Lname: '四级',
+          Lname: ['四级', '4'],
           value: 0
         }
       ]
@@ -58,14 +58,14 @@ export default {
   methods: {
     // 处理缺陷数据
     setDefectData() {
+      console.log('更新饼图')
       this.echartsData = this.paramData
-      if (this.echartsData.length != 0) {
-        this.allArr.forEach(item => { item.value = 0 }) // 清空
-        this.echartsData.forEach(ev => {
-          let findItem = this.allArr.find(av => av.Lname === ev.defectLevel)
-          if (findItem) { findItem.value += 1 }
-        })
-      }
+      this.allArr.forEach(item => { item.value = 0 }) // 清空
+      this.echartsData.forEach(ev => {
+        let findItem = this.allArr.find(av => av.Lname.includes(ev.defectLevel))
+        if (findItem) { findItem.value += 1 }
+      })
+      
       this.initData()
       // console.log('this.allArr', this.allArr)
     },

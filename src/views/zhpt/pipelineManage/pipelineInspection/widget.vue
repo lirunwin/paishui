@@ -95,7 +95,7 @@
 
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="100">
           <template slot-scope="scope">
-            <el-button type="text" size="small" @click="openDetails(scope.row)">详情</el-button>
+            <el-button type="text" size="small" @click.stop="openDetails(scope.row)">详情</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -503,11 +503,11 @@ export default {
         this.init()
       }
     },
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n === '检测成果专题图') { 
+    '$store.state.map.panels': function (n, o) {
+      if (n.find(item => item.com === 'testResultDiagram')) {
+        this.clearAll()
         let layer = this.getThemLayer()
         layer.setVisible(false)
-        this.clearAll()
       }
     }
   },
@@ -990,6 +990,7 @@ export default {
           this.lightLayer.getSource().clear()
           this.currentIndex2 = 0
           this.currentForm2 = resEV.result
+          this.activeName2 = 'picnum'
           this.currentInfoCard2 = true
           this.popup = new Overlay({
             element: document.getElementById('popupCardIns'),
@@ -1060,6 +1061,7 @@ export default {
           pipeType: row.pipeType
         }
         this.cardTable = res.result
+        this.activeName = 'first'
         this.urlArr = this.tableForm.pipeDefects.map((v) => {
           return baseAddress + '/psjc/file' + v.picPath
         })

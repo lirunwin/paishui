@@ -630,10 +630,10 @@ export default class BaseMap extends Vue {
                   if (repItems.includes(service.name) && resData && resData.length !== 0) {
                     if (service.name === MAP_CONFIG.layerService) {
                       source = resource.layerService.layers
-                      console.log('图层服务配置')
+                      console.log('是否离线', isOnline)
                       resData.forEach((data) => {
                         let findItem = source.find((sourceItem) => {
-                          if (sourceItem.name.includes('底图')) {
+                          if (sourceItem.name.includes('底图') || sourceItem.name.includes('注记')) {
                             return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
                           } else {
                             return data.name === sourceItem.name
