@@ -7,8 +7,8 @@ import echarts from 'echarts'
 export default {
     name:'historyIndexChart',//历史指标图表
     props:{
-        timeData:{},
-        infoData:{},
+        historyData:{},
+        indexName:{},
         fontSize:{
             type:Function,
             default:()=>{
@@ -16,15 +16,23 @@ export default {
             }
         }
     },
+    watch:{
+        historyData:{
+            handler(n,o){
+                this.$nextTick(()=>{this.showChart(n.timeData,n.infoData)})
+            },
+            deep:true
+        }
+    },
     mounted(){
-        this.$nextTick(()=>{this.showChart(this.timeData,this.infoData)})
+        this.$nextTick(()=>{this.showChart(this.historyData.timeData,this.historyData.infoData)})
     },
     methods:{
         showChart(timeData,data){
             let option = {
                 backgroundColor: 'transparent',
                 title: {
-                    text: '监测站1-压力',
+                    text: '监测站1-'+this.indexName,
                     textStyle: {
                         align: 'center',
                         color: '#9CC0DE',
@@ -32,6 +40,9 @@ export default {
                     },
                     top: '3%',
                     left: 'center',
+                },
+                dataZoom: {
+                    type: 'inside'
                 },
                 tooltip: {
                     trigger: 'axis',
@@ -77,7 +88,7 @@ export default {
                     },
                     axisLabel: {
                         color: '#9CC0DE',
-                        interval:0
+                        // interval:0
                     },
                     splitLine: {
                         show: false
@@ -113,7 +124,7 @@ export default {
                     },
                 }],
                 series: [{
-                        name: '压力',
+                        name: this.indexName,
                         type: 'line',
                         smooth: true, //是否平滑
                         showAllSymbol: true,

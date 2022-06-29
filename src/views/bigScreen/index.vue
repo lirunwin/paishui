@@ -125,5 +125,27 @@ export default {
       background:#0F669A;
       box-shadow:inset 0 0 6px rgba(0,0,0,0.5);
   }
+  /deep/ .el-select-dropdown {
+      background: rgb(16, 35, 80);
+      border-color: rgb(16, 35, 80);
+      min-width: .385417rem /* 74/192 */ !important;
+      .popper__arrow,.popper__arrow::after {
+          border-bottom-color: rgba(43,167,255,0.2);
+      }
+      .el-scrollbar__wrap{
+          margin:0 !important;
+          overflow: auto;
+      }
+      .el-select-dropdown__item{
+          color: #fff;
+      }
+      .el-select-dropdown__item.selected {
+          color: #409EFF;
+          font-weight: 700;
+      }
+      .el-select-dropdown__item.hover, .el-select-dropdown__item:hover{
+          background-color: rgba(43,167,255,0.2);
+      }
+  }
 }
 </style>>

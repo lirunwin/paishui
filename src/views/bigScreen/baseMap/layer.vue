@@ -156,7 +156,7 @@ export default {
                 .layerCategory{
                     font-size: .072917rem /* 14/192 */;
                     font-weight: bold;
-                    color: #2BA7FF;
+                    color: #8EB2CE;
                 }
             }
             .el-checkbox-group{
@@ -164,8 +164,9 @@ export default {
                 flex-flow: column;
             }
             .el-checkbox{
-                color: #fff;
+                color: rgba(255, 255, 255,0.7);
                 margin: .052083rem /* 10/192 */ 0;
+                font-weight: bold;
             }
             /deep/ .el-checkbox__inner{
                 background: #0A1525;

@@ -23,7 +23,7 @@
         />
       </div>
       <infoDialog :visible="dialogVisible" :title="title">
-        <historyInfo v-on="$listeners" />
+        <historyInfo v-on="$listeners" :deviceNum="deviceNum"/>
       </infoDialog>
     </div>
   </transition>
@@ -53,7 +53,8 @@ export default {
       title: '',
       vectorLayer: null,
       mapEvent: null,
-      mapUtil: null
+      mapUtil: null,
+      deviceNum:null,//设备编号
     }
   },
   computed: {
@@ -133,6 +134,7 @@ export default {
     rowDblclick(row) {
       this.dialogVisible = true
       this.title = row.deviceName + '-' + '监测数据'
+      this.deviceNum=row.deviceNum
     },
     clearMapObj() {
       if (!this.view) return

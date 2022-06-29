@@ -9,7 +9,7 @@
                 <div class="title">
                     <div class="icon"></div>
                     <span class="site-info">管网巡检与上报统计</span>
-                    <el-select v-model="value" placeholder="请选择" size="mini">
+                    <el-select v-model="value" placeholder="请选择" size="mini" :popper-append-to-body="false">
                         <el-option
                         v-for="item in options"
                         :key="item.value"
@@ -78,8 +78,12 @@ export default {
     },
     data(){
         return{
-            options: [{value: '选项1',label: '今年'}],
-            value: '今年',
+            options: [
+                {value: '全部',label: '全部'},
+                {value: '今年',label: '今年'},
+                {value: '去年',label: '去年'},
+            ],
+            value: '全部',
             staList:[
                 {
                     title:"巡检里程",
@@ -119,7 +123,7 @@ export default {
                     img:require('./images/事件.png'),
                 },
                 {
-                    title:"维修工单总数",
+                    title:"隐患工单总数",
                     value:300,
                     unit:'个',
                     percent:'60',
@@ -156,7 +160,7 @@ export default {
                         value:30,
                     },
                     warning:{
-                        title:'警情',
+                        title:'紧急',
                         value:10,
                     }
                 }

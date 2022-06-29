@@ -5,3 +5,9 @@
   font-style: normal;  
   font-family:Arial,'Times New Roman','Microsoft YaHei',SimHei;   
 }
+@font-face {  
+  src: url('SOURCEHANSANSCN-REGULAR.OTF');
+  font-weight: normal;  
+  font-style: normal;  
+  font-family:Source Han Sans CN;   
+}

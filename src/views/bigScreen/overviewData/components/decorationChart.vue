@@ -75,7 +75,7 @@ export default {
                                 shape: {
                                     cx: api.getWidth() / 2,
                                     cy: api.getHeight() / 2,
-                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.70,
+                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.80,
                                     startAngle: (0 + angle) * Math.PI / 180,
                                     endAngle: (90 + angle) * Math.PI / 180
                                 },
@@ -96,7 +96,7 @@ export default {
                         renderItem: function(params, api) {
                             let x0 = api.getWidth() / 2;
                             let y0 = api.getHeight() / 2;
-                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.70;
+                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.80;
                             let point = getCirlPoint(x0, y0, r, (90 + angle))
                             return {
                                 type: 'circle',
@@ -124,7 +124,7 @@ export default {
                                 shape: {
                                     cx: api.getWidth() / 2,
                                     cy: api.getHeight() / 2,
-                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.70,
+                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.80,
                                     startAngle: (180 + angle) * Math.PI / 180,
                                     endAngle: (270 + angle) * Math.PI / 180
                                 },
@@ -145,7 +145,7 @@ export default {
                         renderItem: function(params, api) {
                             let x0 = api.getWidth() / 2;
                             let y0 = api.getHeight() / 2;
-                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.70;
+                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.80;
                             let point = getCirlPoint(x0, y0, r, (180 + angle))
                             return {
                                 type: 'circle',
@@ -173,7 +173,7 @@ export default {
                                 shape: {
                                     cx: api.getWidth() / 2,
                                     cy: api.getHeight() / 2,
-                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.8,
+                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.9,
                                     startAngle: (270 + -angle) * Math.PI / 180,
                                     endAngle: (40 + -angle) * Math.PI / 180
                                 },
@@ -197,7 +197,7 @@ export default {
                                 shape: {
                                     cx: api.getWidth() / 2,
                                     cy: api.getHeight() / 2,
-                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.8,
+                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.9,
                                     startAngle: (90 + -angle) * Math.PI / 180,
                                     endAngle: (220 + -angle) * Math.PI / 180
                                 },
@@ -218,7 +218,7 @@ export default {
                         renderItem: function(params, api) {
                             let x0 = api.getWidth() / 2;
                             let y0 = api.getHeight() / 2;
-                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.8;
+                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.9;
                             let point = getCirlPoint(x0, y0, r, (90 + -angle))
                             return {
                                 type: 'circle',
@@ -243,7 +243,7 @@ export default {
                         renderItem: function(params, api) {
                             let x0 = api.getWidth() / 2;
                             let y0 = api.getHeight() / 2;
-                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.8;
+                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.9;
                             let point = getCirlPoint(x0, y0, r, (270 + -angle))
                             return {
                                 type: 'circle',
@@ -265,7 +265,7 @@ export default {
                     {
                         name: '',
                         type: 'pie',
-                        radius: ['60%', '48%'],
+                        radius: ['70%', '58%'],
                         silent: true,
                         clockwise: true,
                         startAngle: 90,

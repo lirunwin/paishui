@@ -10,7 +10,7 @@
         <div class="title">
           <div class="icon"></div>
           <span class="site-info">易涝点水位监测统计</span>
-          <el-select v-model="selectValue" placeholder="请选择" size="mini" ref="date-select">
+          <el-select v-model="selectValue" placeholder="请选择" size="mini" ref="date-select" :popper-append-to-body="false">
             <el-option
               v-for="item in options"
               :key="item.value"

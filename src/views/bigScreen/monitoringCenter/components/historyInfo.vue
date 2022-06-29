@@ -3,8 +3,8 @@
         <div class="header">
             <el-row :gutter="20">
                 <el-col :span="6">
-                    <label style="width: 30%">指标性</label>
-                    <el-select v-model="value" placeholder="请选择" size="mini" style="width: 60%">
+                    <label style="width: 30%">指标</label>
+                    <el-select v-model="indexName" placeholder="请选择" size="mini" style="width: 60%">
                         <el-option
                         v-for="item in options"
                         :key="item.value"
@@ -22,7 +22,7 @@
                         type="date"
                         placeholder="开始时间"
                         :picker-options="pickerOptionsStart"
-                        value-format="yyyy-MM-dd"
+                        value-format="yyyy-MM-dd HH:mm:ss"
                     ></el-date-picker>-
                     <el-date-picker
                         size="mini"
@@ -31,11 +31,11 @@
                         type="date"
                         placeholder="结束时间"
                         :picker-options="pickerOptionsEnd"
-                        value-format="yyyy-MM-dd"
+                        value-format="yyyy-MM-dd 23:59:59"
                     ></el-date-picker>
                 </el-col>
                 <el-col :span="7">
-                    <el-button type="primary" size="mini">查询</el-button>
+                    <el-button type="primary" size="mini" @click="getData()">查询</el-button>
                 </el-col>
             </el-row>
         </div>
@@ -49,15 +49,15 @@
                 <div class="details">
                     <div class="infoItem" v-for="(item,index) of itemList" :key="index">
                         <div class="index">{{index+1}}</div>
-                        <div class="time">{{item.time}}</div>
-                        <div class="value">{{item.value}}</div>
+                        <div class="time">{{item.createTime}}</div>
+                        <div class="value">{{item.itstrVal}}</div>
                     </div>
                 </div>
             </div>
             <div class="infoChart">
                 <historyIndexChart 
-                    :timeData="timeData" 
-                    :infoData="infoData" 
+                    :historyData="historyData"
+                    :indexName="indexName"
                     :fontSize="$listeners.fontSize"/>
             </div>
         </div>
@@ -66,21 +66,31 @@
 
 <script>
 import historyIndexChart from './historyIndexChart.vue'
+import {getIndexWarnInfo} from '@/api/bigScreenAPI/bigScreenRequest'
+import moment from 'moment'
 export default {
     name:'historyInfo',//历史监测信息
     components:{
         historyIndexChart
     },
+    props:{
+        deviceNum:{require:true}
+    },
+    watch:{
+        deviceNum:{
+            handler(n,o){
+                this.getIndex()
+                this.getData()
+            },
+            immediate:true
+        }
+    },
     data(){
         return{
-            options: [{
-            value: '选项1',
-            label: '黄金糕'
-            }, {
-            value: '选项2',
-            label: '双皮奶'
-            }],
-            value: '',
+            options: [
+                {value:"液位",label:"液位"}
+            ],
+            indexName: '液位',
             //日期选择模块
             startTime:"",
             endTime:"",
@@ -109,60 +119,42 @@ export default {
             }
             },
             //
-            itemList:[
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:100
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:203
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:304
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:500
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:607
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:230
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:240
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:0
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:0
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:0
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:0
-                },
-                {
-                    time:"2022-6-14 10:30:00",
-                    value:0
-                },
-            ],
-            timeData:['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'],
-            infoData:[502.84, 205.97, 332.79, 281.55, 398.35, 214.02,502.84, 205.97, 332.79, 281.55, 398.35, 214.02,214.02],
+            itemList:[],
+            historyData:{
+                timeData:[],
+                infoData:[],
+            },
         }
     },
+    methods:{
+        getIndex(){
+            getIndexWarnInfo({siteIds:this.deviceNum}).then(res=>{
+                console.log('指标信息',res)
+            })
+        },
+        getData(){
+            this.historyData.timeData=[]
+            this.historyData.infoData=[]
+            const { getRequestResult } = this.$listeners
+            getRequestResult({ 
+                blockCode: 'queryIndexHistory' ,
+                'paras[0].name':'name',
+                'paras[0].val':this.indexName,
+                'paras[1].name':'sn',
+                'paras[1].val':this.deviceNum,
+                'paras[2].name':'start',
+                'paras[2].val':this.startTime||moment(new Date().setHours(new Date().getHours() - 24)).format('YYYY-MM-DD HH:mm:ss'),
+                'paras[3].name':'end',
+                'paras[3].val':this.endTime||moment(Date.now()).format('YYYY-MM-DD HH:mm:ss'),
+                }).then((res) => {
+                this.itemList=res
+                this.itemList.forEach(item => {
+                    this.historyData.timeData.push(item.createTime)
+                    this.historyData.infoData.push(item.itstrVal)
+                });
+            })
+        },
+    }
 }
 </script>
 

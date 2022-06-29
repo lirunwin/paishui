@@ -10,7 +10,7 @@
                 <div class="content" v-show="showContent">
                     <div class="header">
                         <div class="title">设备监测树</div>
-                        <el-input placeholder="设备名称搜索" v-model="filterText" class="input-with-select" size="mini">
+                        <el-input placeholder="设备名称搜索" v-model="filterText" class="input-with-select" size="mini" clearable>
                             <el-button slot="append" icon="el-icon-search"></el-button>
                         </el-input>
                         <div class="close" @click="showContent=!showContent"><i class="el-icon-close"></i></div>
@@ -37,7 +37,7 @@
                                 ref="tree">
                                 <span slot-scope="{ node }">
                                     {{ node.label }}
-                                    <img :src="(`${setNodeImg(node)}`)" style="width: 16px; height: 16px" />
+                                    <img v-if="setNodeImg(node)" :src="(`${setNodeImg(node)}`)" style="width: 16px; height: 16px" />
                                 </span>
                             </el-tree>
                         </div>
@@ -68,10 +68,9 @@ export default {
             upImg:require('@/views/bigScreen/images/三角上.png'),
             downImg:require('@/views/bigScreen/images/三角下.png'),
             statusList:[
-                // {code:"onlineNum",type:'在线',num:20},
-                {code:"offlineNum",type:'离线',num:20},
                 {code:"normalNum",type:'正常',num:20},
                 {code:"warnNum",type:'报警',num:20},
+                {code:"offlineNum",type:'离线',num:20},
             ],
             deviceCheckList:[],
             //
@@ -127,18 +126,18 @@ export default {
     },
     methods:{
         getPageData(){
-            let nums;
+            // let nums;
             const {getRequestResult} = this.$listeners
             getRequestResult({blockCode:'deviceStatuCount'}).then(res=>{
                 Object.keys(res).forEach((item)=>{
                     if(item==='onlineNum'){
-                        nums=res[item];
+                        // nums=res[item];
                         return
                     }else{
                         this.statusList[this.statusList.findIndex(c=>(c.code===item))].num=res[item]
                     }
                 })
-                this.statusList[this.statusList.findIndex(c=>(c.code==='normalNum'))].num=nums
+                // this.statusList[this.statusList.findIndex(c=>(c.code==='normalNum'))].num=nums
             }).then(()=>{
                 axios.request({ url: this.deviceTypeGroupUrl, method: 'get', data:{} }).then(res=>{
                     let result = res.result
@@ -166,11 +165,13 @@ export default {
         setNodeImg(node){
             const {data} = node
             const type = data.deviceStatus
+            const warn = data.deviceType
             let iconSrc;
             if(node.isLeaf == false && node.parent.parent == null){
                 iconSrc=""
             }else{
-                iconSrc=(type==='在线')?this.onlineIcon:(type==='离线'?this.offlineIcon:(type==='正常'?this.onlineIcon:this.warnIcon))
+                iconSrc=(type==='在线')?this.onlineIcon:(type==='离线'?this.offlineIcon:this.onlineIcon)
+                if(warn==='报警') iconSrc=this.warnIcon
             }
             return iconSrc
         },
@@ -189,59 +190,39 @@ export default {
                 let position = [item.coordiateX,item.coordiateY]
                 let feature = new Feature({
                     geometry: new Point(position),
-                    name: 'My point',
+                    name:item.name,
                 });
-                this.getTypeToShow(feature,item.typeName)
+                this.getTypeToShow(feature,item)
             })
         },
-        getTypeToShow(feature,type){
-            switch(type){
-                case '易涝点水位监测仪':this.swjcyLayer.getSource().addFeature(feature)
-                                        break;
-                case '智慧井盖':this.zhjgLayer.getSource().addFeature(feature)
-                                        break;
-                case '液位监测仪':this.ywjcyLayer.getSource().addFeature(feature)
-                                        break;
+        getTypeToShow(feature,item){
+            let src=null
+            switch(item.typeName){
+                case '易涝点水位监测仪':
+                    src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-易涝点水位报警.png')
+                    :require('@/views/bigScreen/images/设备/设备-易涝点水位.png')
+                    this.swjcyLayer.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    this.swjcyLayer.getSource().addFeature(feature)
+                    break;
+                case '智慧井盖':
+                    src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-智慧井盖报警.png'):
+                    require('@/views/bigScreen/images/设备/设备-智慧井盖.png')
+                    this.zhjgLayer.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    this.zhjgLayer.getSource().addFeature(feature)
+                    break;
+                case '液位监测仪':
+                    src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-管网液位报警.png'):
+                    require('@/views/bigScreen/images/设备/设备-管网液位.png')
+                    this.ywjcyLayer.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    this.ywjcyLayer.getSource().addFeature(feature)
+                    break;
             }
         },
         // 初始化图层
         initLayer() {
-            this.swjcyLayer = new VectorLayer({
-                source: new VectorSource(),
-                style: new Style({
-                    image: new Icon({
-                        anchor: [0.5, 0.7],
-                        scale:0.7,
-                        //图标的url
-                        src: require('@/views/bigScreen/images/设备/设备-易涝点水位.png')
-                    })
-                })
-            })
-            this.zhjgLayer = new VectorLayer({
-                source: new VectorSource(),
-                style: new Style({
-                    image: new Icon({
-                        anchor: [0.5, 0.7],
-                        scale:0.7,
-                        //图标的url
-                        src: require('@/views/bigScreen/images/设备/设备-智慧井盖.png')
-                    })
-                })
-            })
-            this.ywjcyLayer = new VectorLayer({
-                source: new VectorSource(),
-                style: new Style({
-                    image: new Icon({
-                        anchor: [0.5, 0.7],
-                        scale:0.5,
-                        //图标的url
-                        src: require('@/views/bigScreen/images/设备/设备-管网液位.png')
-                    })
-                })
-            })
-            this.view.addLayer(this.swjcyLayer)
-            this.view.addLayer(this.zhjgLayer)
-            this.view.addLayer(this.ywjcyLayer)
+            this.view.addLayer(this.swjcyLayer = new VectorLayer({source: new VectorSource()}))
+            this.view.addLayer(this.zhjgLayer = new VectorLayer({source: new VectorSource()}))
+            this.view.addLayer(this.ywjcyLayer = new VectorLayer({source: new VectorSource()}))
         },
         resetLayerSource(){
             this.swjcyLayer.getSource().clear()
@@ -299,7 +280,8 @@ export default {
         }
         .content{
             margin-top: .026042rem /* 5/192 */;
-            width: 1.979167rem /* 380/192 */;
+            // width: 1.979167rem /* 380/192 */;
+            width: 2.1875rem /* 420/192 */;
             height: 1.979167rem /* 380/192 */;
             background: linear-gradient(0deg, rgba(2, 20, 37, 0.56) 0%, #072643 100%);
             .header{
@@ -331,13 +313,14 @@ export default {
                     background-color: rgb(9, 48, 84);
                     border: none;
                     color: #eee;
+                    height: .145833rem /* 28/192 */;
                 }
                 /deep/ .el-input-group__append{
                     background-color: rgb(9, 48, 84);
                     border: none;
                 }
                 /deep/ .el-icon-search:before{
-                    color: rgba(138, 211, 253, 1);
+                    color: rgba(138, 211, 253, 0.3);
                     font-size:.09375rem /* 18/192 */;
                 }
             }
@@ -359,7 +342,7 @@ export default {
                         display: flex;
                         justify-content: center;
                         align-items: center;
-                        font-size: .072917rem /* 14/192 */;
+                        font-size: .083333rem /* 16/192 */;
                         .itemIcon{
                             border-radius: 50%;
                             height: .052083rem /* 10/192 */;
@@ -368,7 +351,7 @@ export default {
                         }
                         .itemText{
                             white-space: nowrap;
-                            flex: 1;
+                            // flex: 1;
                             text-overflow: ellipsis;
                             overflow: hidden;
                         }
@@ -381,6 +364,7 @@ export default {
                     /deep/ .el-tree {
                         background: transparent;
                         color: #8EB2CE;
+                        font-size: .083333rem /* 16/192 */;
                         .el-tree-node__content{
                             background-color: transparent;
                         }

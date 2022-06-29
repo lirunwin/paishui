@@ -21,3 +21,11 @@ export function getResultList(params) {
       params
     })
 }
+//查询站点指标信息
+export function getIndexWarnInfo(params) {
+  return request({
+    url: '/monitor/monitorParameter/getIndexWarnInfo',
+    method: 'get',
+    params
+  })
+}

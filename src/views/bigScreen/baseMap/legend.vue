@@ -122,18 +122,23 @@ export default {
           height: 50%;
           width: 33%;
           display: flex;
-          align-items: center;
+          // align-items: center;
           .iconWrap {
-            height: 0.15625rem /* 30/192 */;
-            width: 0.130208rem /* 25/192 */;
+            height: .130208rem /* 25/192 */;
+            width: .130208rem /* 25/192 */;
             display: flex;
             align-items: center;
             justify-content: center;
+            .legendIcon{
+              display: block;
+              height: 100%;
+              width: 100%;
+            }
           }
           .legendName {
             font-size: 0.072917rem /* 14/192 */;
-            font-weight: 400;
-            color: #fefeff;
+            font-weight: bold;
+            color: #8EB2CE;
             padding: 0.026042rem /* 5/192 */;
             white-space: nowrap;
           }
