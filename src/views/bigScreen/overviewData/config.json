@@ -34,23 +34,15 @@
     "EMDColumn":[
         {
             "prop":"deviceName",
-            "label":"设备名称",
-            "width":90
-        },
-        {
-            "prop":"typeName",
-            "label":"设备类型",
-            "width":90
+            "label":"设备名称"
         },
         {
             "prop":"address",
-            "label":"设备地址",
-            "width":90
+            "label":"设备地址"
         },
         {
             "prop":"deviceStatus",
-            "label":"设备状态",
-            "width":80
+            "label":"设备状态"
         }
     ],
     "MIDStatisticList":[

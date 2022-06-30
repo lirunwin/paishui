@@ -9,7 +9,8 @@
       <div class="head">
         <div class="title">
           <div class="icon"></div>
-          <span class="site-info">易涝点水位监测统计</span>
+          <!-- <span class="site-info">易涝点水位监测统计</span> -->
+          <span class="site-info">管网液位监测</span>
           <el-select v-model="selectValue" placeholder="请选择" size="mini" ref="date-select" :popper-append-to-body="false">
             <el-option
               v-for="item in options"
@@ -36,20 +37,24 @@
         </div>
       </div>
       <div class="content-info">
-        <div class="content-item" v-for="item in siteList" :key="item.deviceName">
-          <div class="title">
-            <div class="icon"></div>
-            <span class="site-name">{{ item.deviceName + '（' + item.address + '）' }}</span>
-          </div>
-          <div class="content">
-            <waterLevelChart
-              v-on="$listeners"
-              :dateRange="dateRange"
-              :deviceSn="item.deviceSn"
-              :warningWl="item.warningWl"
-            />
-          </div>
-        </div>
+        <el-carousel style="height:100%;width:100%" :interval="5000">
+          <el-carousel-item v-for="(pitem,index) in siteList" :key="index" style="height:100%;width:100%">
+              <div class="content-item" v-for="item in pitem" :key="item.deviceName">
+                <div class="title">
+                  <div class="icon"></div>
+                  <span class="site-name">{{ item.deviceName + '（' + item.address + '）' }}</span>
+                </div>
+                <div class="content">
+                  <waterLevelChart
+                    v-on="$listeners"
+                    :dateRange="dateRange"
+                    :deviceSn="item.deviceSn"
+                    :warningWl="item.warningWl"
+                  />
+                </div>
+              </div>
+          </el-carousel-item>
+        </el-carousel>
       </div>
     </div>
   </transition>
@@ -126,7 +131,10 @@ export default {
     },
     customDataValue: {
       handler(n, o) {
-        if (!n) return
+        if (!n) {
+          this.isShowDatePicker=false
+          return
+        }
         n.map((item) => moment(item).format('YYYY-MM-DD HH:mm:ss'))
         this.dateRange = { beginTime: n[0], endTime: n[1] }
       }
@@ -143,10 +151,13 @@ export default {
   methods: {
     getPageData() {
       const { getRequestResult } = this.$listeners
-      let data = { blockCode: 'yldPage', 'paras[0].name': 'typeCode', 'paras[0].val': 'yldywj' }
+      let data = { blockCode: 'yldPage', 'page.size':9999,'paras[0].name': 'typeCode', 'paras[0].val': 'ywj' }
       getRequestResult(data).then((res) => {
         // this.siteList= res.records.filter(item=>item.typeCode=='ywj')
-        this.siteList = res.records
+        for(var i=0;i<res.records.length;i+=3){
+            this.siteList.push(res.records.slice(i,i+3));
+        }
+        console.log(this.siteList)
       })
     },
     //显示自定义事件项
@@ -240,6 +251,7 @@ export default {
         position: absolute;
         left: 1.041667rem /* 200/192 */;
         top: 0.182292rem /* 35/192 */;
+        z-index: 999;
         .el-range-editor--mini.el-input__inner {
           width: 1.041667rem /* 200/192 */;
           height: 0.145833rem /* 28/192 */;
@@ -253,8 +265,12 @@ export default {
   .content-info {
     width: 100%;
     height: calc(100% - 0.166667rem);
-    overflow: auto;
+    overflow: hidden;
     padding: 2px;
+    /deep/ .el-carousel__container {
+      width: 100%;
+      height: 100%;
+    }
     .content-item {
       width: 100%;
       height: 33%;

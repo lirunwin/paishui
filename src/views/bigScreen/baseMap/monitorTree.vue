@@ -201,19 +201,19 @@ export default {
                 case '易涝点水位监测仪':
                     src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-易涝点水位报警.png')
                     :require('@/views/bigScreen/images/设备/设备-易涝点水位.png')
-                    this.swjcyLayer.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    feature.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
                     this.swjcyLayer.getSource().addFeature(feature)
                     break;
                 case '智慧井盖':
                     src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-智慧井盖报警.png'):
                     require('@/views/bigScreen/images/设备/设备-智慧井盖.png')
-                    this.zhjgLayer.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    feature.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
                     this.zhjgLayer.getSource().addFeature(feature)
                     break;
                 case '液位监测仪':
                     src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-管网液位报警.png'):
                     require('@/views/bigScreen/images/设备/设备-管网液位.png')
-                    this.ywjcyLayer.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    feature.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
                     this.ywjcyLayer.getSource().addFeature(feature)
                     break;
             }
@@ -286,7 +286,7 @@ export default {
             background: linear-gradient(0deg, rgba(2, 20, 37, 0.56) 0%, #072643 100%);
             .header{
                 height: .208333rem /* 40/192 */;
-                margin: 0 .052083rem /* 10/192 */;
+                margin:.052083rem /* 10/192 */ .052083rem 0 .052083rem;
                 padding: .026042rem /* 5/192 */;
                 border-bottom: 1px solid rgba(255,255,255,0.1);
                 display: flex;

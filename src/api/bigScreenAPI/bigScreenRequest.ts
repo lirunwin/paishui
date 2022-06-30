@@ -29,3 +29,43 @@ export function getIndexWarnInfo(params) {
     params
   })
 }
+//车辆信息查询
+export function getCarListPage(params) {
+  return request({
+    url: '/gps/car/page',
+    method: 'get',
+    params
+  })
+}
+//汛情上报总数查询 
+export function getFloodseasonwPage(params) {
+  return request({
+    url: '/gps/floodseasonw/page',
+    method: 'get',
+    params
+  })
+}
+//隐患总数查询
+export function getTroublePage(params) {
+  return request({
+    url: '/gps/trouble/page',
+    method: 'get',
+    params
+  })
+}
+//事件总数查询
+export function getEventPage(params) {
+  return request({
+    url: '/gps/eventmange/page',
+    method: 'get',
+    params
+  })
+}
+//巡检人员
+export function getUserGpsPage(params) {
+  return request({
+    url: '/gps/userGps/section',
+    method: 'get',
+    params
+  })
+}

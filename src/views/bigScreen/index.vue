@@ -2,14 +2,14 @@
   <div class="widget-bigScreen" >
     <!--地图模块-->
     <BaseMap  v-on:fontSize="fontSize" />
-    <MapLegend :hideBoth="hideBoth" />
-    <LayerControl :hideBoth="hideBoth" />
+    <MapLegend :hideBoth="hideBoth"  :showMonitoringCenter="showMonitoringCenter"/>
+    <LayerControl :hideBoth="hideBoth" :showMonitoringCenter="showMonitoringCenter"/>
     <MonitorTree v-on="{fontSize,getRequestResult}" :hideBoth="hideBoth"/>
     <!--头部菜单模块-->
     <Header/>
     <!--监测中心模块-->
     <ELPWLMStatistic :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/><!--左侧模块-->
-    <PNLLMonitoring :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/> <!--底部模块-->
+    <!-- <PNLLMonitoring :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/>  --><!--底部模块-->
     <ELPVmonitoring :show="showMonitoringCenter" />                                   <!--右侧模块-->
     <MMIStatistic :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/>   <!--中部模块-->
     <!--数据总览模块-->

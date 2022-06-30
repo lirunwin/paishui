@@ -9,7 +9,7 @@
       <div class="head">
         <div class="title">
           <div class="icon"></div>
-          <span class="site-info">设备监测详情统计</span>
+          <span class="site-info">设备报警统计</span>
         </div>
       </div>
       <div class="content-info">
@@ -41,7 +41,7 @@ export default {
   data() {
     return {
       staList: [
-        { title: '视频', num: 3 },
+        // { title: '视频', num: 3 },
         { title: '水位', num: 0 },
         { title: '液位', num: 0 },
         { title: '井盖', num: 0 }
@@ -58,8 +58,10 @@ export default {
       const { getRequestResult } = this.$listeners
       getRequestResult({ blockCode: 'deviceMonitorDetail' }).then((res) => {
         let result = res.filter((item) => item.typeCode)
+        result.forEach(item=>this.resetStaList(item))
+        let alarmData=result.filter(item=>item.isAlarm)
+        if(alarmData.length!=0) result=alarmData
         this.tableData = result.map((item) => {
-          this.resetStaList(item)
           Object.keys(item).forEach((val) => (item[val] = item[val] || '/'))
           return {
             ...item,
@@ -148,9 +150,11 @@ export default {
       width: 100%;
       height: 0.286458rem /* 55/192 */;
       display: flex;
+      justify-content: space-around;
+      align-items: center;
       .sta-item {
         height: 100%;
-        width: 25%;
+        // width: 25%;
         padding: 0.104167rem /* 20/192 */ 0;
         display: flex;
         justify-content: center;
