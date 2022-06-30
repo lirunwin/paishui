@@ -402,6 +402,7 @@ export default {
       currentForm: [], // 缩略提示框
       currentIndex: 0,
       imgArrIndex: 0, // 缩略框照片索引
+      themLayerName: 'pipeAndDefectLayer'
     }
   },
   mounted() {
@@ -409,15 +410,17 @@ export default {
     console.log('加载检测成果专题图')
   },
   destroyed() {
-    if (this.$store.state.gis.activeHeaderItem !== 'psjc') {
-      let layer = this.getThemLayer()
-      layer && this.mapView.removeLayer(layer)
-    }
     this.popup && this.mapView.removeOverlay(this.popup)
     this.$store.dispatch('map/delHalfPanels', 'testPipelineDefect')
     this.$store.dispatch('map/delHalfPanels', 'testPipelineEvaluation')
     this.popup = null
     this.clearAll()
+    let layer = this.getThemLayer()
+    if (this.$store.state.gis.activeHeaderItem !== 'psjc') {
+      layer && this.mapView.removeLayer(layer)
+    } else {
+      layer && layer.setVisible(true)
+    }
   },
   computed: {
     // 获取照片数组路径
@@ -506,6 +509,8 @@ export default {
         style: comSymbol.getAllStyle(7, 'rgba(255, 0, 0, 0.6)', 9, 'rgba(0, 255, 255, 0.6)')
       })
       this.addLayers([this.pipeFuncLayer, this.pipeStrucLayer, this.pipeDefectLayer, this.lightLayer])
+      let layer = this.getThemLayer()
+      layer && layer.setVisible(false)
 
       // 添加缺陷数据
       this.setProjectData()

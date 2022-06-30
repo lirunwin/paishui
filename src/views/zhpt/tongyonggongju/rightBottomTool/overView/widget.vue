@@ -40,14 +40,15 @@ export default {
       this.map.controls.push(temp);
       this.$nextTick(e=>{
         // 更改鹰眼按钮图标
-        this.$refs.overView.getElementsByTagName("button")[0].classList.add("iconfont","iconyy")
-        // $('.ol-overviewmap button').addClass('iconfont iconyy');
+        // this.$refs.overView.getElementsByTagName("button")[0].classList.add("iconfont")
+        $('.ol-overviewmap button').addClass('button-icon');
       })
     }
   }
 }
 </script>
 <style lang='scss' scoped>
+@import "~@/styles/basemapicon.scss";
 .overView {
   margin-bottom:5px ;
   position: relative;
@@ -86,9 +87,16 @@ export default {
   }
   >>> .ol-overviewmap button {
     left: unset !important;
-    bottom: 4px;
-    right: -36px;
+    bottom: 8px;
+    right: -32px;
     position: absolute;
+  }
+  >>> .button-icon {
+    width: 14px;
+    height: 14px;
+    background-size: cover;
+    position: relative;
+    background-image: url('../../../../../assets/images/overview.png');
   }
 }
 </style>

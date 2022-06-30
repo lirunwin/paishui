@@ -116,7 +116,7 @@
     <transition name="el-fade-in-linear">
       <div class="histroyPipeData" v-show="dialogFormVisible">
         <div class="detailsCrad" v-show="dialogFormVisible">
-          <el-card class="box-card">
+          <el-card class="box-card hide-scroller" style="height:670px;overflow-y:scroll;overflow-x:hidden;">
             <div slot="header" class="clearfix">
               <span style="font-size: 16px">管道检测历史详情（{{ detailsTitle.pipeType + detailsTitle.expNo }}）</span>
               <span style="float: right; padding: 3px 0; cursor: pointer; user-select: none">
@@ -153,7 +153,7 @@
                       <el-link type="primary" @click="openCheck(tableForm.id)">详情</el-link>
                     </div>
                     <!-- 内容 -->
-                    <div style="margin-top: 20px; height: 200px">
+                    <div style="margin-top: 20px; height: 220px">
                       <div class="info-box">
                         <div
                           class="info-text"
@@ -1276,7 +1276,6 @@ export default {
           // padding: 22px;
           // box-sizing: border-box;
           .box1 {
-            overflow-y: scroll;
             // max-height: 545px;
             height: 100%;
             padding: 10px 20px;
@@ -1587,7 +1586,15 @@ export default {
   }
 }
 
-
+.hide-scroller {
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+  // &::-webkit-scrollbar-thumb {
+  //   background: #99a9bf;
+  //   border-radius: 20px;
+  // }
+}
 
 #popupCardIns {
   &::after {

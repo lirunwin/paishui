@@ -348,6 +348,10 @@ export default class BaseMap extends Vue {
       })
     }
   }
+  @Watch('footer_height')
+  footer_heightChange(n, o) {
+    this.view.updateSize()
+  }
   @Watch('HalfPanels')
   HalfPanelsChange(n, o) {
     if (n.length === 0) {

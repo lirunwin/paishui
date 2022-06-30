@@ -1,6 +1,8 @@
 <template>
-  <div class='initExtent iconfont icon-fang' title="默认范围" @click="initExtent" ref='initExtent'>
-  </div>
+  <!-- <div class='initExtent iconfont icon-fang' title="默认范围" @click="initExtent" ref='initExtent'></div> -->
+    <div class='initExtent' title="默认范围" @click="initExtent" ref='initExtent'>
+      <svg-icon icon-class='initextent' className='background-icon'></svg-icon>
+    </div>
 </template>
 
 <script>
@@ -10,13 +12,6 @@ export default {
   name: 'initExtent',
   props: {
     map:null
-  },
-  data() {
-    return {
-    }
-  },
-  mounted() {
-
   },
   methods: {
 
@@ -36,6 +31,8 @@ export default {
 }
 </script>
 <style lang='scss' scoped>
+@import "~@/styles/basemapicon.scss";
+
 .initExtent.icon-fang:before {
     font-size: 20px;
     position: relative;
@@ -56,7 +53,7 @@ export default {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.2);
 
   &:hover {
-      color: #006eb8;
-    }
+    color: #006eb8;
+  }
 }
 </style>

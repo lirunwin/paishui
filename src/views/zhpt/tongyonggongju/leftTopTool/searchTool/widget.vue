@@ -6,7 +6,10 @@
           <el-option :label="item.label" :value="item.value" :key="'searchTool_'+index"></el-option>
         </template>
       </el-select>
-      <el-button class='buttonDiv' style="color:#fff;" slot="append" @click="searchInfo" :icon="isloading ? 'el-icon-loading' : 'el-icon-search'"></el-button>
+      <span v-if='!isloading' class="buttonDiv" slot="append"  @click="searchInfo">
+        <svg-icon icon-class='search' className='search-icon'></svg-icon>
+      </span>
+      <el-button class='buttonDiv' v-else style="color:#fff;" slot="append" icon='el-icon-loading'></el-button>
     </el-input>
     <div id="searchBox" v-if="resData.length !== 0" :v-loading='true' class="res-box i-scrollbar" v-scrollMore='getMore'>
       <div v-for="(item, index) in resData" :key="index" class="more res-box-item" @click="setlocation(item.geometry, item.name)">
@@ -204,6 +207,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/basemapicon.scss";
   @import "~@/styles/mixin.scss";
   .box-address {
     height: 40px;

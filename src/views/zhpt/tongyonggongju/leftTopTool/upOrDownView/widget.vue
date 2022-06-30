@@ -1,8 +1,12 @@
 <template>
   <div class='upOrDownView'>
-    <span class='remark' title='上一视图' @click="upView"><i class="el-icon-back" /></span>
+    <span class="arrow-item" title='上一视图' @click="upView">
+      <svg-icon icon-class='arrowleft' className='arrow-icon'></svg-icon>
+    </span>
     <span class='lineSplit'></span>
-    <span class='remark' title='下一视图' @click="downView"><i class="el-icon-right" /></span>
+    <span class="arrow-item" title='下一视图' @click="downView">
+      <svg-icon icon-class='arrowright' className='arrow-icon'></svg-icon>
+    </span>
   </div>
 </template>
 
@@ -90,6 +94,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/basemapicon.scss";
 .upOrDownView{
   position: relative;
   float: left;
@@ -101,24 +106,22 @@ export default {
   left: 5px;
   box-shadow: 0px 0px 5px rgba(0,0,0,0.1);
   border-radius: 2px;
+  display: flex;
+  justify-content: space-around;
+  justify-items: center;
   .lineSplit{
-    border-left: 1px solid rgba(128,128,128,0.2);
+    background: rgba(128,128,128,0.2);
     height: 30px;
+    width: 2px;
     display: inline-block;
     position: relative;
-    float: left;
     top: 5px;
   }
-  .remark{
-    position: relative;
-    float: left;
-    padding: 0px 3px;
-    top: 2px;
-    &:hover {
-      cursor: pointer;
-      color: rgb(64, 158, 255);
-      transform: scale(1.2);
-    }
+  .arrow-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 }
 </style>

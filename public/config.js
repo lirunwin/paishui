@@ -74,13 +74,13 @@ export const appconfig = {
             visible: false
           },
           {
-            name: '矢量标注',
+            name: '矢量注记',
             type: 'wmtslayer',
             url: 'http://t0.tianditu.gov.cn/cva_c/wmts?tk=',
             visible: true
           },
           {
-            name: '影像标注',
+            name: '影像注记',
             type: 'wmtslayer',
             url: 'http://t0.tianditu.gov.cn/cia_c/wmts?tk=',
             visible: false

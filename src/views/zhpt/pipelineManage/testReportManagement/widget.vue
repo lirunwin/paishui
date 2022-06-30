@@ -912,6 +912,12 @@ export default {
         this.init()
       }
     },
+    '$store.state.gis.activeSideItem': function(n, o) {
+      console.log('侧边变化')
+      if (n === '工程管理') {
+        this.$store.dispatch('map/mapLaoding', false)
+      }
+    },
     '$store.state.map.panels': function (n, o) {
       if (n.find(item => item.com === 'testResultDiagram')) {
         this.clearAll()
