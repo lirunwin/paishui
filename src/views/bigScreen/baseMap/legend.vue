@@ -26,7 +26,8 @@
 export default {
   name: 'MapLegend', //地图图例
   props: {
-    hideBoth:{}
+    hideBoth:{},
+    showMonitoringCenter:{}
   },
   data() {
     return {
@@ -52,6 +53,13 @@ export default {
         }else{
             this.$refs['widget-MapLegend'].style.setProperty('--bottom', '.052083rem')
             this.$refs['widget-MapLegend'].style.setProperty('--left', '.052083rem')
+        }
+    },
+    showMonitoringCenter(n){
+        if(!n){
+            this.$refs['widget-MapLegend'].style.setProperty('--bottom', '1.59375rem')
+        }else{
+            this.$refs['widget-MapLegend'].style.setProperty('--bottom', '.052083rem')
         }
     }
   },

@@ -36,9 +36,9 @@
       >
         <!-- 通过 slot-Scoped 可以获取到 row, column, $index 和 store（table 内部的状态管理）的数据-->
         <template slot-scope="data">
-          <div style="display: flex; align-items: center">
+          <div style="display: flex; align-items: center;justify-content: center;">
             <div
-              style="border-radius: 50%; height: 5px; width: 5px"
+              class="pointSymbol"
               :style="
                 data.row.status === '上班'
                   ? 'background:#06B062'
@@ -59,9 +59,9 @@
         :width="item.width"
       >
         <template slot-scope="data">
-          <div style="display: flex; align-items: center">
+          <div style="display: flex; align-items: center;justify-content: center;">
             <div
-              style="border-radius: 50%; height: 5px; width: 5px"
+              class="pointSymbol"
               :style="
                 data.row.deviceStatus === '正常'
                   ? 'background:#06B062'
@@ -257,17 +257,25 @@ export default {
       padding: 0.026042rem /* 5/192 */ 0;
     }
     td.el-table__cell div {
-      padding: 0.026042rem /* 5/192 */;
+      padding: .015625rem /* 3/192 */;
     }
     &.el-table--scrollable-y .el-table__body-wrapper {
       // height: 240px !important;
       overflow-y: var(--tableScroll);
       // overflow-x:hidden;
     }
+    //去掉白边
+    .el-table__header , .el-table__body,
+    .el-table__footer {
+        width: 100% !important;
+    }
     th.gutter {
       width: 0px !important;
       display: table-cell !important;
       background: transparent;
+    }
+    .el-table__header colgroup col[name='gutter'] {
+        width: 0px !important;
     }
     // 去除自定义表格header和body不对其方式
     &.el-table--border th.gutter:last-of-type {
@@ -285,6 +293,11 @@ export default {
     .el-table__body tr.current-row > td {
       background-color: rgba(105, 167, 234, 0.3) !important;
       color: #fff;
+    }
+    .pointSymbol{
+      border-radius: 50%; 
+      height: .052083rem /* 10/192 */;
+      width: .052083rem /* 10/192 */
     }
   }
 }

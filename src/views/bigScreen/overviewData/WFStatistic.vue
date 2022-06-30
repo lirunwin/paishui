@@ -14,12 +14,12 @@
             <div class="content-info">
                 <div class="sta-info">
                     <div class="sta-item" v-for="(item,index) in staList" :key="item.title">
-                        <div class="title">{{item.title}}</div>
+                        <div class="title">{{item.title}}：</div>
                         <div class="value" :class="'value'+index">{{item.num}}个</div>
                     </div>
                 </div>
                 <div class="table-info">
-                    <specificTable 
+                    <statisticTable 
                     :column="column" 
                     :tableData="tableData" 
                     isScroll
@@ -32,13 +32,13 @@
 </template>
 
 <script>
-import specificTable from './components/statisticTable.vue'
+import statisticTable from './components/statisticTable.vue'
 import trackPlayer from './components/trackPlayer.vue'
 import config from './config.json'
 export default {
     name:"WFStatistic",//工作人员统计
     components:{
-        specificTable,
+        statisticTable,
         trackPlayer
     },
     props:{
@@ -53,22 +53,10 @@ export default {
     data(){
         return{
             staList:[
-                {
-                    title:'总数：',
-                    num:20,
-                },
-                {
-                    title:'上班：',
-                    num:8,
-                },
-                {
-                    title:'下班：',
-                    num:10,
-                },
-                {
-                    title:'未上班：',
-                    num:2,
-                },
+                {title:'总数',num:0,},
+                {title:'上班',num:0,},
+                {title:'下班',num:0,},
+                {title:'未上班',num:0,},
             ],
             tableData:[],
             column:config.WFColumn,
@@ -78,11 +66,7 @@ export default {
     watch:{
         show:{
             handler(n,o){
-                if(n){
-
-                }else{
-                    this.showTrackPlayer=false
-                }
+                if(!n) this.showTrackPlayer=false
             },
         },
     },
@@ -96,7 +80,10 @@ export default {
         getPageData(){
             const {getRequestResult} = this.$listeners
             getRequestResult({blockCode:'userWorkStatistic'}).then(res=>{
-                console.log('userWorkStatistic',res)
+                this.staList.filter(item=>item.title==='总数')[0].num=res.length
+                this.staList.filter(item=>item.title==='上班')[0].num=res.filter(item=>item.status==='1').length
+                this.staList.filter(item=>item.title==='下班')[0].num=res.filter(item=>item.status==='2').length
+                this.staList.filter(item=>item.title==='未上班')[0].num=res.filter(item=>item.status==='3').length
                 this.tableData=res.map(item=>{
                     Object.keys(item).forEach((val) => (item[val] = item[val] || '/'))
                     return{

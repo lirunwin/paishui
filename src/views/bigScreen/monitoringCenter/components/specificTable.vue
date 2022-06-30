@@ -197,9 +197,18 @@ export default {
             height: 200px !important;
             overflow-y: var(--tableScroll);
         }
+        //去掉白边
+        .el-table__header , .el-table__body,
+        .el-table__footer {
+            width: 100% !important;
+        }
         th.gutter {
+            width: 0px !important;
             display: table-cell !important;
             background: transparent;
+        }
+        .el-table__header colgroup col[name='gutter'] {
+            width: 0px !important;
         }
         //实现hover前行样式背景高亮
         &.el-table--enable-row-hover .el-table__body tr:hover>td {
