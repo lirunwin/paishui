@@ -79,7 +79,7 @@ export interface IEvent {
   createTime: string
   createUserid: string | number
   detail: string
-  facility: string
+  facility:string,
   findDate: string
   findPhone: string
   findUser: string

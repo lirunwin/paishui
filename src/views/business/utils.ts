@@ -34,7 +34,7 @@ export const eventCols: Partial<ElTableColumn>[] = [
   { prop: 'type', label: '事件类型', minWidth: '110px', ...alignLeft() },
   { prop: 'name', label: '事件名称', minWidth: '130px', ...alignLeft() },
   { prop: 'address', label: '地址', minWidth: '150px', ...alignLeft() },
-  { prop: 'facility', label: '关联设施', minWidth: '120px', ...alignLeft() },
+  { prop: 'facility.pipeid', label: '关联设施', minWidth: '120px', ...alignLeft() },
   { prop: 'detail', label: '详细描述', minWidth: '150px', ...alignLeft() },
   { prop: 'handingAdvice', label: '处理建议', minWidth: '150px', ...alignLeft() },
   { prop: 'findUserVo.userName', label: '发现人员', minWidth: '100px', ...alignLeft() },

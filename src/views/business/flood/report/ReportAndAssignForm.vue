@@ -112,6 +112,7 @@
         </el-col>
         <el-col :span="10">
           <Map
+            ref='map'
             @coordinate-change="onCoordinateChange"
             :enableCoordinateSelect="enable.coordinate"
             :enableDeviceSelect="enable.device"
@@ -267,7 +268,7 @@ export default class ReportAndAssignForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IEvent
   @Prop({ type: Boolean, default: false }) loading!: boolean
   @Prop({ type: Array, default: () => [] }) users!: IDepartment[]
-  $refs!: { form: ElForm }
+  $refs!: { form: ElForm,map:Map }
   DICTONARY = DICTONARY
 
   formData: IFormData = getDefaultData()
@@ -399,9 +400,15 @@ export default class ReportAndAssignForm extends Vue {
 
   onClosed() {
     this.enable = { coordinate: false, device: false }
-    this.$emit('closed')
+    this.$emit('closed');
+    this.clearMap();
   }
-
+  /**
+   * 关闭弹窗
+   */
+  clearMap() {
+    this.$refs.map.clearMap();
+  }
   @Watch('data', { immediate: true })
   async setDefaultData({ id, x, y, filePathList, police, ...rest }: IFlood) {
     this.formData = getDefaultData()
@@ -416,6 +423,7 @@ export default class ReportAndAssignForm extends Vue {
           uid: +new Date() + index
         }))
       }
+      this.$refs.map.drawPoint(x,y);
       this.onMajorHandlerChange(String(id))
       const {
         result: { records }
