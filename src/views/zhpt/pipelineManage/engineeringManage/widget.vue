@@ -666,7 +666,7 @@ export default {
       })
     },
     uploadChange (a, b, c) {
-      this.fileList.push(a)
+        this.fileList.push(a)
     },
     beforeRemove(file, fileList) {
       return this.$confirm(`确定移除 ${file.name}？`).then(() => {
@@ -678,13 +678,18 @@ export default {
     addTable(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
+          // 判断是否有同名文件
+          if (this.fileList.length !== 0) {
+            let names = this.fileList.map(file => file.name)
+            let uninames = new Set(names)
+            if (names.length !== [...uninames].length) { return this.$message.error('请删除同名文件后，再上传附件') }
+          }
           // 将文件上传到服务器，先触发beforeUpload事件，对上传的文件进行校验，校验通过后才会上传
           // 获取入库人id和名称
           this.form.createUserId = sessionStorage.getItem('userId') * 1
           this.form.createUserName = sessionStorage.getItem('username')
           let api = null
-          if (this.isEdit) { api = changeInfo }
-          else { api = addData }
+          if (this.isEdit) { api = changeInfo } else { api = addData }
           api(this.form).then(res => {
             let tipType = this.isEdit ? '修改' : '添加'
             if (res.code === 1) {

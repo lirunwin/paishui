@@ -234,7 +234,7 @@ export default {
     background:white !important; 
   }
   /deep/ .el-input-group__append{
-    background: rgba(64, 158, 255, 1) !important;
+    background: #2D74E7 !important;
   }
   /deep/ .el-icon-search{
     color: white !important;

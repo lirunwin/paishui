@@ -363,6 +363,9 @@ export default class BaseMap extends Vue {
   @Watch('FullPanels')
   FullPanelsChange() {
     this.show = true
+    this.$nextTick(() => {
+      this.view.updateSize()
+    })
   }
   @Watch('loading')
   loadingChange(value) {

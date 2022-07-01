@@ -143,7 +143,7 @@
               size="small"
               :wu="scope"
               v-if="scope.row.state == '0'"
-              @click.stop="testReportDetails(scope.row.id, true)"
+              @click.stop="testReportDetails(scope.row, true)"
               >发布</el-button
             >
             <el-button
@@ -151,7 +151,7 @@
               size="small"
               :wu="scope"
               style="margin-left: 10px"
-              @click.stop="testReportDetails(scope.row.id)"
+              @click.stop="testReportDetails(scope.row)"
               >详情</el-button
             >
           </template>
@@ -1200,9 +1200,9 @@ export default {
     // 双击打开详情或发布
     openDetails(row, column) {
       if (row.state == '1') {
-        this.testReportDetails(row.id)
+        this.testReportDetails(row)
       } else {
-        this.testReportDetails(row.id, true)
+        this.testReportDetails(row, true)
       }
     },
 
@@ -1675,7 +1675,9 @@ export default {
       }
     },
     // 单行管段详情
-    testReportDetails(id, isRelease) {
+    testReportDetails(row, isRelease) {
+      let id = row.id
+      let path = row.wordFilePath
       console.log('详情')
       // 显示加载
       const loading = this.$loading({
@@ -1694,6 +1696,7 @@ export default {
       isRelease ? (this.isRelease = true) : ''
       this.activeLeft = 'first'
       queryPipecheckDetails(id).then(res => {
+        console.log('详情')
         // 按缺陷名称给数据分类
         // 缺陷数量统计
         this.defectSumObj = { oneSum: 0, twoSum: 0, threeSum: 0, fourSum: 0, total: 0 }, // 合计
@@ -1764,20 +1767,13 @@ export default {
           this.defectSumObj.total += v.value
         })
 
-        queryPipeState(id).then(resUrl => {
-          console.log('加载完数据后')
-          this.remark = resUrl.result.remark
-          if (resUrl.result.pdfFilePath) {
-            this.pdfUrl = baseAddress + '/psjc/file' + resUrl.result.pdfFilePath
-          } else {
-            this.pdfUrl = null
-          }
-          this.dialogFormVisible3 = true
-          this.$nextTick(() => {
-            this.isOpen = true
-            this.renderEcharts()
-            loading.close()
-          })
+        this.pdfUrl = path ? baseAddress + '/psjc/file' + path : ""
+        this.remark = row.remark
+        this.dialogFormVisible3 = true
+        this.$nextTick(() => {
+          this.isOpen = true
+          this.renderEcharts()
+          loading.close()
         })
       })
     },
@@ -1850,18 +1846,19 @@ export default {
       })
     },
     getvideoFile(file, fileList) {
-      let num = 1024.0 // byte
-      this.vdieofileList = fileList
-      this.upDataTable = fileList.map((v) => {
-        let result = v.response ? v.response.result[0].msg : ''
-        let status = v.response ? (v.response.result[0].flag === 'succ' ? "success" : 'error') : v.status
-        return {  
-          name: v.name,
-          size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
-          status,
-          result
-        }
-      })
+        let num = 1024.0 // byte
+        this.vdieofileList = fileList
+        let data = fileList.map((v) => {
+          let result = v.response ? v.response.result[0].msg : ''
+          let status = v.response ? (v.response.result[0].flag === 'succ' ? "success" : 'error') : v.status
+          return {
+            name: v.name,
+            size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
+            status,
+            result
+          }
+        })
+        this.upDataTable = data
     },
     // 重置
     resetDate() {
@@ -1917,7 +1914,7 @@ export default {
       let data = res.result.records
       this.selectArr = data.map((v) => {
         return {
-          name: v.prjName,
+          name: `${v.prjName}(${v.prjNo})`,
           No: v.id
         }
       })
@@ -1992,14 +1989,19 @@ export default {
     },
     beforeUpload(event, file, fileList) {
       let num = 1024.0 //byte
-      this.upDataTable = fileList.map((v) => {
-        return {
-          name: v.name,
-          size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
-          status: v.status,
-          result: ''
-        }
-      })
+      let find = this.upDataTable.find(item => item.name === file.name)
+      if (find) {
+        find.status = file.status
+        find.result = file.response ? file.response.result[0].msg : ''
+      }
+      // this.upDataTable = fileList.map((v) => {
+      //   return {
+      //     name: v.name,
+      //     size: (v.size / Math.pow(num, 2)).toFixed(2) + 'MB',
+      //     status: v.status,
+      //     result: ''
+      //   }
+      // })
     },
     handleExceed(files, fileList) {
       this.$message.warning(`本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)

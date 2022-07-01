@@ -42,13 +42,13 @@
       </div>
       <div class="right-menu">
         <div class="btn_box">
-          <div v-if="showDashboard" @click="home" title="首页"> 
+          <div v-if="showDashboard" @click="home" style="display:flex" title="首页"> 
             <svg-icon icon-class='home' className='sys-icon'></svg-icon>
           </div>
-          <div v-if="showSystemSetting" @click="handleSys('sysSetting')" title="系统管理">
+          <div style="display:flex" v-if="showSystemSetting" @click="handleSys('sysSetting')" title="系统管理">
             <svg-icon icon-class='setting' className='sys-icon'></svg-icon>
           </div>
-          <div @click="notificationDialog = true" title="消息提示" class="bell-info">
+          <div style="display:flex" @click="notificationDialog = true" title="消息提示" class="bell-info">
             <svg-icon icon-class='msg' className='sys-icon'></svg-icon>
             <span v-show="notificationNum !== 0" class="bell-dot">{{
               notificationNum > 100 ? '99+' : notificationNum
@@ -559,7 +559,7 @@ export default class Header extends Vue {
           background: red;
           border-radius: 50%;
           position: absolute;
-          top: 9px;
+          top: -10px;
           right: -13px;
           display: flex;
           align-items: center;

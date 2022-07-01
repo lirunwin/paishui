@@ -87,13 +87,13 @@ export default {
   }
   >>> .ol-overviewmap button {
     left: unset !important;
-    bottom: 8px;
-    right: -32px;
+    bottom: 6px;
+    right: -33px;
     position: absolute;
   }
   >>> .button-icon {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     background-size: cover;
     position: relative;
     background-image: url('../../../../../assets/images/overview.png');

@@ -421,7 +421,7 @@ export default {
         { width: '180', sortable: true, label: '最新结构性缺陷等级', name: 'newStructClass' },
         { width: '180', sortable: true, label: '最新功能性缺陷等级', name: 'newFuncClass' },
         { width: '180', sortable: false, label: '最新结构性缺陷评价', name: 'newStructEstimate' },
-        { width: '', sortable: false, label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
+        { width: '180', sortable: false, label: '最新功能性缺陷评价', name: 'newFuncEstimate' }
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
