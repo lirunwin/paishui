@@ -128,7 +128,13 @@ export default class EventReport extends Vue {
         result: { records, size, total, current }
       } = await eventsPage({ ...this.query, ...this.pagination })
       this.pagination = { current, size, total }
+      records.map(item=>{
+        item.facility=item.facility===''?{pipeid:''}:JSON.parse(item.facility);
+        return item
+      })
       this.events = records || []
+      console.log(records);
+
     } catch (error) {
       console.log(error)
     }
