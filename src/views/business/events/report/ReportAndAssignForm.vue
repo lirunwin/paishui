@@ -23,19 +23,43 @@
             </el-col> -->
             <el-col :span="12">
               <el-form-item label="事件名称" prop="event.name">
-                <el-input v-model="formData.event.name" size="small" placeholder="请输入事件名称" clearable maxlength="30" />
+                <el-input
+                  v-model="formData.event.name"
+                  size="small"
+                  placeholder="请输入事件名称"
+                  clearable
+                  maxlength="30"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="发现日期" prop="event.findDate">
-                <el-date-picker v-model="formData.event.findDate" clearable value-format="yyyy-MM-dd" placeholder="请选择发现日期" style="width: 100%" />
+                <el-date-picker
+                  v-model="formData.event.findDate"
+                  clearable
+                  value-format="yyyy-MM-dd"
+                  placeholder="请选择发现日期"
+                  style="width: 100%"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
               <el-form-item label="发现人员" prop="event.findUser">
-                <el-select v-model="formData.event.findUser" size="small" clearable filterable placeholder="请选择发现人员" @change="onFindUserChange">
+                <el-select
+                  v-model="formData.event.findUser"
+                  size="small"
+                  clearable
+                  filterable
+                  placeholder="请选择发现人员"
+                  @change="onFindUserChange"
+                >
                   <el-option-group v-for="dept in users" :key="dept.id" :label="dept.name">
-                    <el-option v-for="user in dept.users" :key="user.id" :label="user.realName" :value="String(user.id)">
+                    <el-option
+                      v-for="user in dept.users"
+                      :key="user.id"
+                      :label="user.realName"
+                      :value="String(user.id)"
+                    >
                     </el-option>
                   </el-option-group>
                 </el-select>
@@ -43,12 +67,24 @@
             </el-col>
             <el-col :span="12">
               <el-form-item label="联系电话" prop="event.findPhone">
-                <el-input v-model="formData.event.findPhone" size="small" placeholder="请输入联系电话" clearable maxlength="30" />
+                <el-input
+                  v-model="formData.event.findPhone"
+                  size="small"
+                  placeholder="请输入联系电话"
+                  clearable
+                  maxlength="30"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="24">
               <el-form-item label="事件地址" prop="event.address">
-                <el-input v-model="formData.event.address" size="small" placeholder="请输入事件地址" clearable maxlength="100" />
+                <el-input
+                  v-model="formData.event.address"
+                  size="small"
+                  placeholder="请输入事件地址"
+                  clearable
+                  maxlength="100"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="12">
@@ -71,18 +107,41 @@
             </el-col>
             <el-col :span="24">
               <el-form-item label="详细描述" prop="event.detail">
-                <el-input v-model="formData.event.detail" type="textarea" size="small" placeholder="请输入详细描述" clearable maxlength="255" />
+                <el-input
+                  v-model="formData.event.detail"
+                  type="textarea"
+                  size="small"
+                  placeholder="请输入详细描述"
+                  clearable
+                  maxlength="255"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="24">
               <el-form-item label="处理建议" prop="event.handingAdvice">
-                <el-input v-model="formData.event.handingAdvice" type="textarea" size="small" placeholder="请输入处理建议" clearable maxlength="255" />
+                <el-input
+                  v-model="formData.event.handingAdvice"
+                  type="textarea"
+                  size="small"
+                  placeholder="请输入处理建议"
+                  clearable
+                  maxlength="255"
+                />
               </el-form-item>
             </el-col>
             <el-col :span="24">
               <el-form-item label="附件">
                 <el-row>
-                  <el-upload :on-remove="onRemovePic" multiple :auto-upload="false" :file-list="formData.fileList" :on-change="onFileChange" action="whatever" accept=".jpg,.jpeg,.png,.amr" :disabled="formData.fileList.length >= 3">
+                  <el-upload
+                    :on-remove="onRemovePic"
+                    multiple
+                    :auto-upload="false"
+                    :file-list="formData.fileList"
+                    :on-change="onFileChange"
+                    action="whatever"
+                    accept=".jpg,.jpeg,.png,.amr"
+                    :disabled="formData.fileList.length >= 3"
+                  >
                     <el-button size="small" type="primary" :disabled="formData.fileList.length >= 3">
                       点击上传
                     </el-button>
@@ -105,27 +164,70 @@
           </el-row>
         </el-col>
         <el-col :span="10">
-          <Map ref='map' @coordinate-change="onCoordinateChange" @device-change="onDeviceChange" :enableCoordinateSelect="enable.coordinate" :enableDeviceSelect="enable.device" :center="(formData.coordinate || '').split(',')" />
+          <Map
+            ref="map"
+            @coordinate-change="onCoordinateChange"
+            @device-change="onDeviceChange"
+            :enableCoordinateSelect="enable.coordinate"
+            :enableDeviceSelect="enable.device"
+            :center="(formData.coordinate || '').split(',')"
+          />
         </el-col>
       </el-row>
       <BaseTitle>派工信息</BaseTitle>
       <el-row>
         <el-col :span="6">
           <el-form-item label="处理人" prop="assign.majorHandler">
-            <el-select v-model="formData.assign.majorHandler" size="small" clearable filterable placeholder="请选择处理人" @change="onMajorHandlerChange" :disabled="!!assign.id">
-              <el-option v-for="user of usersInMyDepartment" :key="user.id" :value="String(user.id)" :label="user.realName" :disabled="formData.assign.collaborateHanler.includes(String(user.id))" />
+            <el-select
+              v-model="formData.assign.majorHandler"
+              size="small"
+              clearable
+              filterable
+              placeholder="请选择处理人"
+              @change="onMajorHandlerChange"
+              :disabled="!!assign.id"
+            >
+              <el-option
+                v-for="user of usersInMyDepartment"
+                :key="user.id"
+                :value="String(user.id)"
+                :label="user.realName"
+                :disabled="formData.assign.collaborateHanler.includes(String(user.id))"
+              />
             </el-select>
           </el-form-item>
         </el-col>
         <el-col :span="6">
           <el-form-item label="电话" prop="assign.phone">
-            <el-input v-model="formData.phone" size="small" placeholder="请输入联系电话" clearable maxlength="30" :disabled="!!assign.id" />
+            <el-input
+              v-model="formData.phone"
+              size="small"
+              placeholder="请输入联系电话"
+              clearable
+              maxlength="30"
+              :disabled="!!assign.id"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="协同处理人" prop="assign.collaborateHanler">
-            <el-select v-model="formData.assign.collaborateHanler" size="small" placeholder="请选择协同处理人" clearable multiple filterable @change="setPhones" :disabled="!!assign.id">
-              <el-option v-for="user of usersInMyDepartment" :key="user.id" :value="String(user.id)" :label="user.realName" :disabled="String(user.id) === formData.assign.majorHandler">
+            <el-select
+              v-model="formData.assign.collaborateHanler"
+              size="small"
+              placeholder="请选择协同处理人"
+              clearable
+              multiple
+              filterable
+              @change="setPhones"
+              :disabled="!!assign.id"
+            >
+              <el-option
+                v-for="user of usersInMyDepartment"
+                :key="user.id"
+                :value="String(user.id)"
+                :label="user.realName"
+                :disabled="String(user.id) === formData.assign.majorHandler"
+              >
                 <span>{{ user.realName }}</span>
               </el-option>
             </el-select>
@@ -133,20 +235,47 @@
         </el-col>
         <el-col :span="6">
           <el-form-item label="是否发送短信" prop="assign.isPush">
-            <el-switch v-model="formData.assign.isPush" :active-value="1" :inactive-value="0" @change="onSendMsgChange" :disabled="!!assign.id" />
+            <el-switch
+              v-model="formData.assign.isPush"
+              :active-value="1"
+              :inactive-value="0"
+              @change="onSendMsgChange"
+              :disabled="!!assign.id"
+            />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row>
         <el-col :span="12">
           <el-form-item label="短信内容" prop="assign.message">
-            <el-input v-model="formData.assign.message" type="textarea" size="small" placeholder="请输入短信内容" clearable maxlength="255" :disabled="!formData.assign.isPush || !!assign.id" />
+            <el-input
+              v-model="formData.assign.message"
+              type="textarea"
+              size="small"
+              placeholder="请输入短信内容"
+              clearable
+              maxlength="255"
+              :disabled="!formData.assign.isPush || !!assign.id"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="短信接收电话" prop="phones">
-            <el-select v-model="formData.phones" size="small" clearable multiple placeholder="请选择短信接收电话" :disabled="!formData.assign.isPush || !!assign.id">
-              <el-option v-for="user of usersInMyDepartment" :key="user.id" :value="String(user.phone)" :label="String(`${user.realName} ${user.phone}`).trim()" :disabled="!user.phone">
+            <el-select
+              v-model="formData.phones"
+              size="small"
+              clearable
+              multiple
+              placeholder="请选择短信接收电话"
+              :disabled="!formData.assign.isPush || !!assign.id"
+            >
+              <el-option
+                v-for="user of usersInMyDepartment"
+                :key="user.id"
+                :value="String(user.phone)"
+                :label="String(`${user.realName} ${user.phone}`).trim()"
+                :disabled="!user.phone"
+              >
                 <span>{{ user.realName }} {{ user.phone }}</span>
               </el-option>
             </el-select>
@@ -198,7 +327,7 @@ export default class ReportAndAssignForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IEvent
   @Prop({ type: Boolean, default: false }) loading!: boolean
   @Prop({ type: Array, default: () => [] }) users!: IDepartment[]
-  $refs!: { form: ElForm,map:Map }
+  $refs!: { form: ElForm; map: Map }
   DICTONARY = DICTONARY
 
   formData: IFormData = getDefaultData()
@@ -216,7 +345,7 @@ export default class ReportAndAssignForm extends Vue {
 
   get usersInMyDepartment() {
     const { users } = this.users.find((item) => String(item.id) === String(this.$store.state.user.departmentId)) || {}
-    return users
+    return users || []
   }
 
   get listeners() {
@@ -367,7 +496,7 @@ export default class ReportAndAssignForm extends Vue {
    * 关闭弹窗
    */
   closed() {
-    this.$refs.map.clearMap();
+    this.$refs.map.clearMap()
   }
   onRemovePic(file) {
     this.formData.fileList = this.formData.fileList.filter((item) => item.uid !== file.uid)
@@ -393,8 +522,8 @@ export default class ReportAndAssignForm extends Vue {
   @Watch('data', { immediate: true })
   async setDefaultData({ id, x, y, filePathList, findDate, ...rest }: IEvent) {
     debugger
-    this.facility='';
-    this.formData = getDefaultData();
+    this.facility = ''
+    this.formData = getDefaultData()
     if (id) {
       this.formData = {
         ...this.formData,
@@ -406,7 +535,7 @@ export default class ReportAndAssignForm extends Vue {
           uid: +new Date() + index
         }))
       }
-      this.$refs.map.drawPoint(x,y);
+      this.$refs.map.drawPoint(x, y)
       //@ts-ignore
       this.facility = rest.facility.pipeid
       this.onMajorHandlerChange(String(id))

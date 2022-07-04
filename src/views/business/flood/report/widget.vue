@@ -99,6 +99,7 @@ export default class FloodReport extends Vue {
       }
       this.loading.assign = false
     }
+    this.doQuery()
     this.visible = false
   }
 
