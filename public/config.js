@@ -179,7 +179,7 @@ export const appconfig = {
     business_map: {
       groupname: '离线业务地图服务',
       type: 'dynamic',
-      config: [{ name: '业务地图', url: 'http://221.182.8.141:8090/iserver/services/map-tf_rsps-2/rest/maps/pipemap' }]
+      config: [{ name: '业务地图', url: 'http://221.182.8.141:8090/iserver/services/map-tf_rsps/rest/maps/pipemap' }]
     },
     print: {
       groupname: '打印服务',
