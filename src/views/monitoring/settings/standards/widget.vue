@@ -1,44 +1,46 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
-      <div>
-        <el-button type="primary" size="small" :loading="loading.standardSubmitting" @click="onStandardAdd">
-          新增指标标准
-        </el-button>
-        <el-button
-          type="danger"
-          size="small"
-          :disabled="!selected.standard.length"
-          :loading="loading.standardDeleting"
-          @click="onStandardDelete"
-        >
-          删除指标标准
-        </el-button>
-      </div>
-      <div>
-        <el-button
-          type="primary"
-          size="small"
-          :loading="loading.paramSubmitting"
-          :disabled="!current.standard.id"
-          @click="onParamAdd"
-        >
-          新增指标参数
-        </el-button>
-        <el-button
-          type="danger"
-          size="small"
-          :disabled="!selected.param.length"
-          :loading="loading.paramDeleting"
-          @click="onParamDelete"
-        >
-          删除指标参数
-        </el-button>
-      </div>
-    </div>
-    <el-row :gutter="15">
+  <tf-page>
+    <template v-slot:action>
+      <el-row type="flex" justify="space-between" style="margin-bottom: 15px">
+        <div>
+          <el-button type="primary" size="small" :loading="loading.standardSubmitting" @click="onStandardAdd">
+            新增指标标准
+          </el-button>
+          <el-button
+            type="danger"
+            size="small"
+            :disabled="!selected.standard.length"
+            :loading="loading.standardDeleting"
+            @click="onStandardDelete"
+          >
+            删除指标标准
+          </el-button>
+        </div>
+        <div>
+          <el-button
+            type="primary"
+            size="small"
+            :loading="loading.paramSubmitting"
+            :disabled="!current.standard.id"
+            @click="onParamAdd"
+          >
+            新增指标参数
+          </el-button>
+          <el-button
+            type="danger"
+            size="small"
+            :disabled="!selected.param.length"
+            :loading="loading.paramDeleting"
+            @click="onParamDelete"
+          >
+            删除指标参数
+          </el-button>
+        </div>
+      </el-row>
+    </template>
+    <el-row :gutter="15" type="flex" class="fit">
       <el-col :span="10">
-        <BaseTable
+        <tf-table
           :data="standards"
           :columns="settingStandardCols"
           :pagination="pagination.standard"
@@ -52,7 +54,7 @@
         />
       </el-col>
       <el-col :span="14">
-        <BaseTable
+        <tf-table
           :data="params"
           :columns="settingStandardParamCols"
           :pagination="pagination.param"
@@ -61,18 +63,17 @@
           @selection-change="onParamSelectionChange"
           @page-change="onParamQuery"
         >
-          <template v-for="(_, index) of params" v-slot:[`isPush-${index}`]="{ row }">
+          <template v-slot:isPush="{ row }">
             <el-switch
-              :key="`${index}-${row.id}`"
               :active-value="true"
               :inactive-value="false"
               :value="row.isPush"
               size="small"
-              style="user-select:none"
+              style="user-select: none"
               @change="($event) => onParamSubmit({ ...row, isPush: $event })"
             />
           </template>
-        </BaseTable>
+        </tf-table>
       </el-col>
     </el-row>
     <StandardForm
@@ -93,12 +94,11 @@
       :loading="loading.paramSubmitting"
       @submit="onParamSubmit"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingStandardCols, settingStandardParamCols } from '@/views/monitoring/utils'
 import StandardForm from './StandardForm.vue'
 import ParamForm from './ParamForm.vue'
@@ -121,7 +121,7 @@ import {
 } from '@/views/monitoring/api'
 import { getDefaultPagination } from '@/utils/constant'
 
-@Component({ name: 'MonitoringStandards', components: { BaseTable, StandardForm, ParamForm } })
+@Component({ name: 'MonitoringStandards', components: { StandardForm, ParamForm } })
 export default class MonitoringStandards extends Vue {
   settingStandardCols = settingStandardCols
   get settingStandardParamCols() {
@@ -320,13 +320,3 @@ export default class MonitoringStandards extends Vue {
   }
 }
 </script>
-
-<style scoped>
-.actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 22px;
-  margin-bottom: 15px;
-}
-</style>

@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'medium' }" :model="formData" inline>
     <el-form-item label="站点名称" prop="name">
       <el-input v-model="formData.no" placeholder="请输入站点名称" size="small" clearable />
     </el-form-item>

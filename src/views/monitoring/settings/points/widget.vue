@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
+  <tf-page>
+    <template v-slot:action>
       <QueryForm
         :selected="selected"
         :types="types"
@@ -16,8 +16,8 @@
         @enable="onEnable"
         @dismount="onDismount"
       />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       :columns="cols"
       :data="points"
       :pagination="pagination"
@@ -26,9 +26,8 @@
       @selection-change="onSelectionChange"
       @page-change="onPageChange"
     >
-      <template v-for="(_, index) of points" v-slot:[`isConfigured-${index}`]="{ row }">
+      <template v-slot:isConfigured="{ row }">
         <el-switch
-          :key="`isConfigured-${index}-${row.id}`"
           :active-value="1"
           :inactive-value="0"
           :value="Number(row.isConfigured)"
@@ -36,9 +35,8 @@
           style="user-select: none"
         />
       </template>
-      <template v-for="(_, index) of points" v-slot:[`status-${index}`]="{ row }">
+      <template v-slot:status="{ row }">
         <el-switch
-          :key="`status-${index}-${row.id}`"
           :active-value="1"
           :inactive-value="2"
           :value="Number(row.status)"
@@ -47,7 +45,7 @@
           @change="() => onEnableSwitch(row)"
         />
       </template>
-    </BaseTable>
+    </tf-table>
     <PointForm
       :title="`${current.id ? '修改' : '新增'}监测点`"
       :visible.sync="visible.base"
@@ -78,7 +76,7 @@
       :levels="levels"
       @submit="onBind"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
@@ -117,7 +115,7 @@ import {
 
 @Component({
   name: 'MonitoringPoints',
-  components: { BaseTable, QueryForm, PointForm, PointThresholdForm, EnableForm, DismountForm }
+  components: { QueryForm, PointForm, PointThresholdForm, EnableForm, DismountForm }
 })
 export default class MonitoringPoints extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
@@ -360,16 +358,3 @@ export default class MonitoringPoints extends Vue {
   }
 }
 </script>
-
-<style scoped>
-.actions {
-  padding: 22px 15px 0;
-  margin-bottom: 15px;
-  background: #fff;
-}
-
-.table-container {
-  padding: 15px;
-  background-color: #fff;
-}
-</style>

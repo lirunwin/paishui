@@ -56,3 +56,10 @@
 .el-range-separator {
   box-sizing: content-box;
 }
+
+.el-row.fit {
+  height: 100%;
+  > .el-col {
+    height: 100%;
+  }
+}

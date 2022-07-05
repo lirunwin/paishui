@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
+  <tf-page>
+    <template v-slot:action>
       <QueryForm
         :selected="selected"
         :types="types"
@@ -11,8 +11,8 @@
         @del="onDel"
         @export="onExport"
       />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       :columns="settingDeviceArchiveCols"
       :data="archives"
       :pagination="pagination"
@@ -29,12 +29,11 @@
       @submit="onSubmit"
       :loading="loading.add || loading.update"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingDeviceArchiveCols } from '@/views/monitoring/utils'
 import QueryForm, { ILoading, IQuery } from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
@@ -51,7 +50,7 @@ import {
 
 import { getDefaultPagination } from '@/utils/constant'
 
-@Component({ name: 'DeviceDeviceArchives', components: { BaseTable, QueryForm, DeviceForm } })
+@Component({ name: 'DeviceDeviceArchives', components: { QueryForm, DeviceForm } })
 export default class DeviceDeviceArchives extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   settingDeviceArchiveCols = settingDeviceArchiveCols

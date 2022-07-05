@@ -2,7 +2,7 @@ export const gisNames = ['xjxt', 'whxt', 'monitor', 'psjc', 'psxc']
 
 export const pageSizes = [10, 20, 30, 50, 100, 1000]
 
-export const getDefaultPagination = () => ({ current: 1, size: 10 })
+export const getDefaultPagination = () => ({ current: 1, size: 30 })
 
 /** 体系默认levels
  * 正常黑色#333333、优质绿色#06B64C、轻度黄色#E29F3B、中度粉色#F25FFF、严重红色#F65252、无效黑色#333333+透明度60%

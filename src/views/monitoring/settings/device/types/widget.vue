@@ -1,43 +1,45 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
-      <div>
-        <el-button type="primary" size="small" :loading="loading.typeSubmitting" @click="onTypeAdd">
-          新增设备类型
-        </el-button>
-        <el-button
-          type="danger"
-          size="small"
-          :disabled="!selected.type.length"
-          :loading="loading.typeDeleting"
-          @click="onTypeDelete"
-        >
-          删除设备类型
-        </el-button>
-      </div>
-      <div>
-        <el-button
-          type="primary"
-          size="small"
-          :loading="loading.paramSubmitting"
-          :disabled="!current.type.id"
-          @click="onParamAdd"
-          >新增参数</el-button
-        >
-        <el-button
-          type="danger"
-          size="small"
-          :disabled="!selected.param.length"
-          :loading="loading.paramDeleting"
-          @click="onParamDelete"
-        >
-          删除参数
-        </el-button>
-      </div>
-    </div>
-    <el-row :gutter="15">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
+      <el-row type="flex" justify="space-between" style="margin-bottom: 15px">
+        <div>
+          <el-button type="primary" size="small" :loading="loading.typeSubmitting" @click="onTypeAdd">
+            新增设备类型
+          </el-button>
+          <el-button
+            type="danger"
+            size="small"
+            :disabled="!selected.type.length"
+            :loading="loading.typeDeleting"
+            @click="onTypeDelete"
+          >
+            删除设备类型
+          </el-button>
+        </div>
+        <div>
+          <el-button
+            type="primary"
+            size="small"
+            :loading="loading.paramSubmitting"
+            :disabled="!current.type.id"
+            @click="onParamAdd"
+            >新增参数</el-button
+          >
+          <el-button
+            type="danger"
+            size="small"
+            :disabled="!selected.param.length"
+            :loading="loading.paramDeleting"
+            @click="onParamDelete"
+          >
+            删除参数
+          </el-button>
+        </div>
+      </el-row>
+    </template>
+    <el-row :gutter="15" class="fit">
       <el-col :span="12">
-        <BaseTable
+        <tf-table
           :data="types"
           :columns="settingDeviceTypeCols"
           :pagination="pagination.type"
@@ -51,7 +53,7 @@
         />
       </el-col>
       <el-col :span="12">
-        <BaseTable
+        <tf-table
           :data="params"
           :columns="settingDeviceTypeParamCols"
           :pagination="pagination.param"
@@ -60,9 +62,8 @@
           @selection-change="onParamSelectionChange"
           @page-change="onParamQuery"
         >
-          <template v-for="(_, index) of params" v-slot:[`isDisplay-${index}`]="{ row }">
+          <template v-slot:isDisplay="{ row }">
             <el-switch
-              :key="`${index}-${row.id}`"
               :active-value="true"
               :inactive-value="false"
               :value="row.isDisplay"
@@ -71,7 +72,7 @@
               @change="($event) => onParamSubmit({ ...row, isDisplay: $event })"
             />
           </template>
-        </BaseTable>
+        </tf-table>
       </el-col>
     </el-row>
     <TypeForm
@@ -89,12 +90,11 @@
       :loading="loading.paramSubmitting"
       @submit="onParamSubmit"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { settingDeviceTypeCols, settingDeviceTypeParamCols } from '@/views/monitoring/utils'
 import TypeForm from './TypeForm.vue'
 import ParamForm from './ParamForm.vue'
@@ -114,8 +114,9 @@ import {
 
 import { getDefaultPagination } from '@/utils/constant'
 
-@Component({ name: 'DeviceTypes', components: { BaseTable, TypeForm, ParamForm } })
+@Component({ name: 'DeviceTypes', components: { TypeForm, ParamForm } })
 export default class DeviceTypes extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   settingDeviceTypeCols = settingDeviceTypeCols
   settingDeviceTypeParamCols = settingDeviceTypeParamCols
 
@@ -280,13 +281,3 @@ export default class DeviceTypes extends Vue {
   }
 }
 </script>
-
-<style scoped>
-.actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 22px;
-  margin-bottom: 15px;
-}
-</style>

@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" inline>
     <el-form-item label="出厂编号" prop="sn">
       <el-input v-model="formData.sn" placeholder="请输入指标标准名称" size="small" clearable />
     </el-form-item>

@@ -14,6 +14,7 @@ import './directives'
 import App from './App.vue'
 import store from './store'
 import router from './router'
+import '@/components/Base'
 import { comMethod } from '@/utils/comMethod'
 import '@/icons'
 import '@/permission' // 权限控制
@@ -23,7 +24,7 @@ import '@/assets/iconfont/iconfont.js'
 import '@/assets/iconfont/iconfont.css'
 
 import Moment from 'vue-moment'
-import "animate.css"//animate动画组件库
+import 'animate.css' //animate动画组件库
 
 // import htmlToPdf from './utils/htmlToPdf'
 // Vue.use(htmlToPdf)
