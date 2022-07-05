@@ -7,7 +7,10 @@
         <el-radio-button label="2">影像图</el-radio-button>
         <!-- <el-radio-button label="2、3D联动"></el-radio-button> -->
       </el-radio-group>
-      <div class="btn iconfont icondiqiu" slot="reference"></div>
+      <!-- <div class="btn iconfont icondiqiu" slot="reference"></div> -->
+      <div class="btn" slot="reference">
+        <svg-icon icon-class='basemapswitch' className='background-icon' style="top: -4px; left: 0px;"></svg-icon>
+      </div>
     </el-popover>
   </div>
 </template>
@@ -49,6 +52,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/styles/basemapicon.scss";
+
 .viewSwitch {
   margin-bottom:5px ;
   position: relative;

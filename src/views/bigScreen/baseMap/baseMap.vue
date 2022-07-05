@@ -71,24 +71,24 @@ export default {
                 {
                     type:"工程车辆",
                     position:[
-                        101.71269021536666,
-                        26.584189390793085
+                        104.147036206,
+                        30.0132457502
                     ],
                     info:{}
                 },
                 {
                     type:"巡检人员",
                     position:[
-                        101.72248091953819,
-                        26.58450934844575
+                        104.149004517,
+                        30.013366738
                     ],
                     info:{}
                 },
                 {
                     type:"视频",
                     position:[
-                        101.71708430046324,
-                        26.580627195593422
+                        104.146901293,
+                        30.0134616199
                     ],
                     info:{}
                 },
@@ -106,7 +106,7 @@ export default {
     watch:{
         view(){
             this.initMapEvent();
-            this.initVectorLayer();
+            // this.initVectorLayer();
         }
     },
     mounted(){
@@ -181,7 +181,7 @@ export default {
                                 anchor: [0.5, 0.7],
                                 scale:0.7,
                                 //图标的url
-                                src: require('@/views/bigScreen/baseMap/images/工程车辆.png')
+                                src: require('@/views/bigScreen/images/其他/其他-工程车辆.png')
                             })
                         });
                 case '巡检人员':return new Style({
@@ -189,7 +189,7 @@ export default {
                                 anchor: [0.5, 0.7],
                                 scale:0.7,
                                 //图标的url
-                                src: require('@/views/bigScreen/baseMap/images/巡查人员.png')
+                                src: require('@/views/bigScreen/images/其他/其他-巡查人员.png')
                             })
                         });
                 case '视频':return new Style({
@@ -197,7 +197,7 @@ export default {
                                 anchor: [0.5, 0.7],
                                 scale:0.7,
                                 //图标的url
-                                src: require('@/views/bigScreen/baseMap/images/视频.png')
+                                src: require('@/views/bigScreen/images/设备/设备-视频监控.png')
                             })
                         });
             }

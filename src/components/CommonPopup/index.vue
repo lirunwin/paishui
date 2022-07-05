@@ -20,6 +20,11 @@
 <script>
 import Overlay from 'ol/Overlay';
 import DragPan from 'ol/interaction/DragPan'
+import { Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorSource } from "ol/source";
+import Feature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import {Style,Icon,} from 'ol/style';
 export default {
     name:"commonPopup",//公共地图信息弹窗
     props: {
@@ -30,7 +35,8 @@ export default {
         headerStyle: {type: String,default:"border-bottom:1px solid #cccccc"},//头部样式
         isSetCenter:{type: Boolean,default: false},//是否视图定位至中心
         operationGroup:{type:Array,default: () => []},//例如：operationGroup:[{icon:"iconfont icondtbz",color:"royalblue",action:"detail"},],
-        right:{type:Number,default:-190}
+        right:{type:Number,default:-175},
+        showIcon:{type:Boolean,default:true}
     },
     data() {
         return {
@@ -39,6 +45,8 @@ export default {
             title:"",           //弹窗标题
             center:null,        //是否设置定位
             pan:null,
+            vectorLayer:null,
+            feature:null,
         }
     },
     watch:{
@@ -67,6 +75,17 @@ export default {
         this.$refs['commonPopup'].style.setProperty('--right', this.right+'px')
     },
     methods:{
+        initVector(){
+            if(this.vectorLayer){
+                this.vectorLayer.getSource().clear()
+            }
+            //创建矢量层
+            this.vectorLayer = new VectorLayer({
+                source: new VectorSource({wrapX: false,})
+            });
+            //将图层添加到地图中
+            this.mapView.addLayer(this.vectorLayer);
+        },
         getPan() {
             this.mapView.getInteractions().forEach(element => {
                 if (element instanceof DragPan) {
@@ -80,6 +99,7 @@ export default {
         },
         //显示弹窗
         showPopup(){
+            this.initVector()
             if(this.dialogOverlay) {
                 this.mapView.removeOverlay(this.dialogOverlay)
             }
@@ -97,12 +117,38 @@ export default {
             });
             this.mapView.addOverlay(this.dialogOverlay)
             this.dialogOverlay.setPosition(this.popupPosition)
+            if(this.showIcon) this.showPointSymbol(this.popupPosition)
             if(this.isSetCenter) this.setCenter()
         },
         //设置视图定位
         setCenter(){
             this.mapView.getView().setCenter(this.popupPosition)
             this.mapView.getView().setZoom(19)
+        },
+        //设置点要素
+        showPointSymbol(position){
+            this.vectorLayer.getSource().clear()
+            //创建Feature，并添加进矢量容器中
+            this.feature = new Feature({
+                geometry: new Point(position),
+                name: 'commonPopUpPoint',
+            });
+            //创建标记的样式
+            this.feature.setStyle(this.setFeatureStyle());
+            this.vectorLayer.getSource().addFeature(this.feature);
+        },
+        /**
+         * @description 为要素设置样式
+         */
+        setFeatureStyle() {
+            return new Style({
+                image: new Icon({
+                    anchor: [0.5, 0.7],
+                    scale:0.15,
+                    //图标的url
+                    src: require('@/assets/images/point.png')
+                })
+            });
         },
         //重新加载弹窗
         reload(){
@@ -119,6 +165,8 @@ export default {
                 this.dialogOverlay.setPosition(undefined);
                 this.mapView.removeOverlay(this.dialogOverlay)
                 this.dialogOverlay=null
+                this.vectorLayer.getSource().clear()
+                this.vectorLayer=null
             }
             this.$emit('close')
             return false;

@@ -1,7 +1,8 @@
 <template>
   <div class="regionZoomOut ol-unselectable ol-control">
-    <button class="iconfont iconfdsj" title="放大" @click="mapZoom(false)"></button>
+    <!-- <button class="iconfont iconfdsj" title="放大" @click="mapZoom(false)"></button> -->
     <!-- <button class="iconfont iconsxsj" title="缩小" @click="mapZoom(true)"></button> -->
+      <svg-icon icon-class='zoomout' className='background-icon' @click="mapZoom(false)"></svg-icon>
   </div>
 </template>
 
@@ -67,6 +68,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/styles/basemapicon.scss";
 .regionZoomOut {
   margin-bottom:5px ;
   position: relative;

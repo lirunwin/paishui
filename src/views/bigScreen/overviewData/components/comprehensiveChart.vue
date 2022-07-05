@@ -29,7 +29,7 @@ export default {
                 },
                 xAxis: [{
                     type: 'category',
-                    data: ['供水管网', '电力供电', '电力路灯', '交通信号', '燃气管网', '通讯管线','监控信号','排水管网'],
+                    data: ['雨水管网','污水管网', '燃气管网','电力供电', '电力路灯', '交通信号', '通讯管线','给水管网'],
                     axisLine: {
                         lineStyle: {
                             color: 'rgba(255,255,255,0.12)'
@@ -39,7 +39,7 @@ export default {
                         margin: 10,
                         color: '#e2e9ff',
                         textStyle: {
-                            fontSize: 14
+                            fontSize: this.$listeners.fontSize(14)
                         },
                     },
                 }],
@@ -62,6 +62,7 @@ export default {
                     show:false
                     },
                     splitLine: {
+                        show:false,
                         lineStyle: {
                             color: 'rgba(255,255,255,0.12)'
                         }
@@ -69,7 +70,7 @@ export default {
                 }],
                 series: [{
                     type: 'bar',
-                    data: [6000, 2100, 3700, 1992, 4508, 3700,2100,6700],
+                    data: [268.2, 120.4, 116, 170, 168, 38.4,251,130],
                     barWidth: '16px',
                     itemStyle: {
                         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{

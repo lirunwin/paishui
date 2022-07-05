@@ -51,7 +51,7 @@
             <el-table-column prop="number" align="center" label="数量(个)"></el-table-column>
             <el-table-column align="center" label="操作">
               <template slot-scope="scope">
-                <el-button type="text" @click="showQueryResultData(scope.row.data)">查看</el-button>
+                <el-button type="text" @click="showQueryResultData(scope.row)">查看</el-button>
                 <download-excel class="export-btn" :data="scope.row.data" :fields="scope.row.fields" type="xls" :name="scope.row.layer"
                                 style="display: inline;">
                   <el-button type="text" @click="beforeExport(scope.row.data)">导出</el-button>
@@ -193,7 +193,7 @@ export default {
             let featuresJson = res.result.features
             let features = new GeoJSON().readFeatures(featuresJson)
             this.vectorLayer.getSource().addFeatures(features)
-            tableData.push({ name: res.layerName, data: features.map(fea => fea.values_) })
+            tableData.push({ tableName: res.tableName, name: res.layerName, data: features.map(fea => fea.values_) })
           }
         })
         this.addTableData(tableData)
@@ -201,27 +201,28 @@ export default {
     },
 
     addTableData (data) {
-      let keys = Object.keys(fieldDoc)
-      keys.length = 15
-      let fields = {}
-      keys.forEach(key => {
-        fields[fieldDoc[key]] = key
+      let fieldsPromise = data.map(item => mapUtil.getFields(item.tableName))
+      Promise.all(fieldsPromise).then(fieldsArr => {
+        this.resultData = data.map((item, index) => {
+          let fields = {}
+          fieldsArr[index].forEach(item => {
+            fields[item.name] = item.field
+          })
+          return {
+            tableName: item.tableName,
+            layer: item.name,
+            number: item.data.length,
+            data: item.data,
+            fields
+          }
+        })
       })
-      this.resultData = data.map(item => {
-        return { 
-          layer: item.name, 
-          number: item.data.length,
-          data: item.data,
-          fields
-        }
-      })
+
     },
 
     checkBufferDistance() {
       if (!this.bufferDistance) { this.bufferDistance = 50 }
     },
-
-
     /**
      * 选择图层
      */
@@ -251,71 +252,6 @@ export default {
       // this.vectorLayer.getSource().addFeature(resultFeature)
       return resultFeature
     },
-    /**
-     * 开始查询
-     */
-    doQuery() {
-      this.queryStatus = true // 开始执行
-      // 利用truf生成的缓冲区
-      let buffer = this.getBufferFeature()
-      this.vectorLayer.getSource().clear()
-      this.vectorLayer.getSource().addFeature(this.drawFeature)
-      this.vectorLayer.getSource().addFeature(buffer)
-      // 
-      let param = new SuperMap.GetFeaturesByGeometryParameters({
-        toIndex: -1,
-        maxFeatures: 10000000,
-        geometry: buffer.getGeometry(),
-        datasetNames: [mapConfig.iServerUrl.pipelineDataServer.dataSource + ':' + this.selectLayer.value],
-        spatialQueryMode: "INTERSECT" // 相交空间查询模式
-      })
-      const url = mapConfig.iServerUrl.pipelineDataServer.url
-      new FeatureService(url).getFeaturesByGeometry(param, serviceResult => {
-        console.log("缓冲查询结果", serviceResult)
-        this.delQueryResult(serviceResult)
-      })
-    },
-    /**
-     * 处理返回的结果
-     */
-    delQueryResult(serviceResult) {
-      if (serviceResult.type == "processFailed") {
-        this.$message.error('获取结果失败！')
-        this.queryStatus = false
-        return
-      }
-      //获取返回的features数据
-      let features = serviceResult.result.features.features
-      if (features.length >= 0) {
-        this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(serviceResult.result.features))
-        this.resFeatures = features.map(item => {
-          item.properties['geometry'] = item.geometry; return item.properties
-        })
-        // 导出的字段信息
-        let fields = {}
-        if (this.selectLayer.type == 'line')
-          this.$store.state.common.PipeLineFields.forEach(item => {
-            fields[item.pipelineVal] = item.pipelineKey
-          });
-        else {
-          this.$store.state.common.PipePointFields.forEach(item => {
-            fields[item.pipelineVal] = item.pipelineKey
-          });
-        }
-        // 查询的结果
-        this.resultData = [{
-          layer: this.selectLayer.label,
-          number: serviceResult.result.featureCount,
-          data: this.resFeatures,
-          fields: fields
-        }]
-        // console.log(this.jsonFields,this.tableData, this.resultData)
-
-      } else {
-        this.$message.info('未查询到结果！');
-      }
-      this.queryStatus = false // 查询完成状态
-    },
     beforeExport(data) {
       if (data.length == 0) this.$message.warning('无数据导出！')
     },
@@ -329,19 +265,21 @@ export default {
     /**
      *  展示查询结果
      */
-    showQueryResultData(data) {
-      if (data.length === 0) return 
-      let colsData = []
-      for (let key in fieldDoc) {
-        colsData.push({ prop: key, label: fieldDoc[key]})
-      }
-      colsData.length = 15
-      this.$store.dispatch('map/changeMethod', {
-        pathId: 'queryResultMore',
-        widgetid: 'HalfPanel',
-        label: '详细信息',
-        param: { data, colsData, rootPage: this }
+    showQueryResultData(row) {
+      mapUtil.getFields(row.tableName).then(res => {
+        let colsData = res.map(item => {
+          return { prop: item.field, label: item.name }
+        })
+        let data = row.data
+        this.$store.dispatch('map/changeMethod', {
+          pathId: 'queryResultMore',
+          widgetid: 'HalfPanel',
+          label: '详细信息',
+          param: { data, colsData, rootPage: this }
+        })
       })
+
+
       
     },
     gotoGeometry (geometry) {

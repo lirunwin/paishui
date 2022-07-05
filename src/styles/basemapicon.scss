@@ -1,0 +1,47 @@
+$backImgColor: #555555;
+$lightColor: #2d74e7;
+$size: 16px;
+
+.background-icon {
+    fill: $backImgColor;
+    width: $size !important;
+    height: $size !important;
+    position: relative;
+    top: 9px;
+    left: 8px;
+    &:hover {
+      fill: $lightColor;
+    }
+}
+.arrow-icon {
+    position: relative;
+    height: 20px !important;
+    width: 20px !important;
+    opacity: 1;
+    &:hover {
+      opacity: .3;
+    }
+}
+.tool-icon {
+  fill: $backImgColor;
+  width: $size !important;
+  height: $size !important;
+  position: relative;
+  &:hover {
+    fill: $lightColor;
+  }
+}
+.search-icon {
+  fill: white !important;
+}
+.sys-icon {
+  fill: white !important;;
+  width: 20px !important;
+  height: 20px !important;
+  position: relative;
+}
+@mixin hoverStyle {
+    &:hover {
+        fill: $lightColor;
+    }
+}

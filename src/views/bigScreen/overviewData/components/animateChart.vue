@@ -29,14 +29,14 @@ export default {
             let angle = 0; //角度，用来做简单的动画效果的
             this.timerId=null;
             let option = {
-                // backgroundColor: 'transparent',
+                backgroundColor: 'transparent',
                 graphic: {//图形中间图片
                     elements: [{
                         type: "image",
                         style: {
                             image: img,
-                            width: this.fontSize(48),
-                            height: this.fontSize(48),
+                            width: this.fontSize(45),
+                            height: this.fontSize(45),
                         },
                         left: "center",
                         top: "center",

@@ -2,7 +2,7 @@
   <div
     id="viewDiv"
     ref="back_box"
-    v-loading="loading"
+    v-loading="loading || isMapLoading"
     :element-loading-text="loadText"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.8)"
@@ -109,7 +109,7 @@
           <leftTopTool
             :toolList="leftTopTool.children"
             :map="view"
-            v-if="showTool && leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
+            v-if="leftTopTool && leftTopTool.children && leftTopTool.children.length > 0"
           ></leftTopTool>
           <div v-show="labelShow" id="mapLabel">
             <span id="mapView_title">地图图例</span>
@@ -268,7 +268,6 @@ import GeoJSON from 'ol/format/GeoJSON'
 export default class BaseMap extends Vue {
   LOADING!: (payload: boolean) => void
   currTitle = ''
-  showTool = true
   showMapLengend = false
   /** 开启点击事件弹窗 */
   openPopupSwitch = true
@@ -319,6 +318,10 @@ export default class BaseMap extends Vue {
     tfDialog: { Show: null, Hide: null, setSize: null }
   }
 
+  get isMapLoading () {
+    return this.$store.state.map.isMapLoading
+  }
+
   get Panels() {
     return this.$store.state.map.panels
   }
@@ -345,6 +348,10 @@ export default class BaseMap extends Vue {
       })
     }
   }
+  @Watch('footer_height')
+  footer_heightChange(n, o) {
+    this.view.updateSize()
+  }
   @Watch('HalfPanels')
   HalfPanelsChange(n, o) {
     if (n.length === 0) {
@@ -356,6 +363,9 @@ export default class BaseMap extends Vue {
   @Watch('FullPanels')
   FullPanelsChange() {
     this.show = true
+    this.$nextTick(() => {
+      this.view.updateSize()
+    })
   }
   @Watch('loading')
   loadingChange(value) {
@@ -385,14 +395,12 @@ export default class BaseMap extends Vue {
   @Watch('activeHeaderItem', { immediate: true })
   activeHeaderItemChange(n, o) {
     this.currTitle = n
-    this.showTool = n === 'map'
   }
   created() {
     console.log('=====', this.Comps)
   }
   mounted() {
-    // this.initBodySize() // 初始化弹出框位置
-    // this.registerEPSG4490(); // 注册 4490 坐标系
+    console.log('地图重新加载')
     this.initConfig() // 加载配置 ==> 加载地图
   }
   // 页面初始化
@@ -454,7 +462,8 @@ export default class BaseMap extends Vue {
     })
     // 点击查询管段详情
     this.view.on('click', (evt) => {
-      if (this.activeHeaderItem !== 'map' || !this.openPopupSwitch) return
+      let filter = this.$store.state.routeSetting.routes[0].name === "leftBottomTool"
+      if (!filter || !this.openPopupSwitch) return
       this.spaceQuery(evt.coordinate)
     })
     this.vectorLayer = new VectorLayer({
@@ -466,20 +475,21 @@ export default class BaseMap extends Vue {
     // this.view.getView().setCenter([101.724022, 26.580702])
   }
 
-  async spaceQuery(position) {
-    const bufferDis = 1e-3
-    let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
+  spaceQuery(position) {
+    console.log('查询')
+    let queryFeature = turf.buffer(turf.point(position), 2, { units: 'meters' }) as any
+    queryFeature = new GeoJSON().readFeature(queryFeature)
     let dataServerConfig = appconfig.gisResource.iserver_resource.dataService
-    new iQuery().spaceQuery(queryFeature).then(queryData => {
+    new iQuery().spaceQuery(queryFeature).then((queryData) => {
       let showData = []
       for (let data of queryData as any) {
-        let features = data.result.features.features
+        let features = data ? data.result.features.features : []
         if (features.length !== 0) {
           showData.push(data)
         }
       }
       if (showData.length !== 0) {
-        let openData = showData.find(data => data.result.features.features[0].geometry.type === 'Point')
+        let openData = showData.find((data) => data.result.features.features[0].geometry.type === 'Point')
         // 点优于线显示
         let featureData = openData ? openData : showData[0]
         let layerName = featureData.tableName
@@ -487,12 +497,12 @@ export default class BaseMap extends Vue {
         let layer = mapUtil.getAllSubLayerNames('pipemap', 'smlayergroup')
         let feature = featureData.result.features.features[0]
         let findLayer
-        layer.sublayers.forEach(p => {
+        layer.sublayers.forEach((p) => {
           let layername = p.title
-          let sublayer = p.sublayers.find(sub => sub.name.split("@")[0] === layerName)
+          let sublayer = p.sublayers.find((sub) => sub.name.split('@')[0] === layerName)
           if (sublayer) {
             feature.layerName = layername
-            feature.tableName = sublayer.name.split("@")[0]
+            feature.tableName = sublayer.name.split('@')[0]
           }
         })
 
@@ -516,13 +526,13 @@ export default class BaseMap extends Vue {
   }
 
   // 设置是否开启弹窗
-  setPopupSwitch (isopen) {
+  setPopupSwitch(isopen) {
     this.openPopupSwitch = isopen
   }
   // 加载图层
   addLayers(layersSource) {
-    new TF_Layer().createLayers(layersSource).then(layers => {
-      layers.forEach(layer => {
+    new TF_Layer().createLayers(layersSource).then((layers) => {
+      layers.forEach((layer) => {
         layer && this.view.addLayer(layer)
       })
     })
@@ -613,24 +623,24 @@ export default class BaseMap extends Vue {
               })
               .finally(() => {
                 // 服务配置名称
-                const MAP_CONFIG = { 
-                  mapService: '地图配置服务', 
-                  layerService: '图层服务', 
+                const MAP_CONFIG = {
+                  mapService: '地图配置服务',
+                  layerService: '图层服务',
                   dataService: '数据服务',
-                  analysisService: '分析服务'
+                  analysisService: '网络分析服务'
                 }
-                // 替换服务
-                const repItems = [MAP_CONFIG.mapService, MAP_CONFIG.layerService, MAP_CONFIG.dataService]
+                // 需要替换的服务
+                const repItems = [MAP_CONFIG.mapService, MAP_CONFIG.layerService, MAP_CONFIG.dataService, MAP_CONFIG.analysisService]
                 res.forEach((service) => {
                   let resData = service.child,
                     source = null
                   if (repItems.includes(service.name) && resData && resData.length !== 0) {
                     if (service.name === MAP_CONFIG.layerService) {
                       source = resource.layerService.layers
-                      console.log('图层服务配置')
+                      console.log('是否离线', isOnline)
                       resData.forEach((data) => {
-                        let findItem = source.find(sourceItem => {
-                          if (sourceItem.name.includes('底图')) {
+                        let findItem = source.find((sourceItem) => {
+                          if (sourceItem.name.includes('底图') || sourceItem.name.includes('注记')) {
                             return data.name === (isOnline ? sourceItem.name : '离线' + sourceItem.name)
                           } else {
                             return data.name === sourceItem.name
@@ -649,7 +659,7 @@ export default class BaseMap extends Vue {
                           source.initZoom = item.cval
                         }
                       })
-                    } else if (service.name === '网络分析服务') {
+                    } else if (service.name === MAP_CONFIG.analysisService) {
                       source = resource.netAnalysisService
                       source.url = resData[0].cval
                     } else if (service.name === MAP_CONFIG.dataService) {
@@ -674,10 +684,7 @@ export default class BaseMap extends Vue {
     //这四个类型分别对应地图工具栏的左上角,左下角,右上角,右下角
     //这四个工具栏不在左边的功能列表中展示（改设置在src\layout\components\Sidebar\index.vue中）
     if (this.$store.state && this.$store.state.routeSetting && this.$store.state.routeSetting.routes) {
-      if (this.currTitle === 'psjc') {
-        this.currTitle = 'map'
-      }
-      const allModel = this.$store.state.routeSetting.dynamicRoutes[this.currTitle] //获取所有功能
+      const allModel = this.$store.state.routeSetting.dynamicRoutes['map'] //获取所有功能
       if (!allModel) return
       /**工具栏识别的字符集合*/
       const toolBoxList = ['leftTopTool', 'leftBottomTool', 'rightBottomTool', 'rightTopTool']

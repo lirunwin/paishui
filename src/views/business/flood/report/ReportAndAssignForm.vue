@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading" width="1280px">
+  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" @closed="onClosed" :loading="loading" width="1280px">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '7.5em', size: 'small' }" :model="formData" :rules="rules">
       <el-row :gutter="20" type="flex">
         <el-col :span="14">
@@ -14,18 +14,44 @@
               </el-form-item>
             </el-col>
 
-            <el-col :span="24">
-              <el-form-item label="汛期位置" prop="flood.address">
+            <el-col :span="12">
+              <el-form-item label="隧道名称" prop="flood.address">
                 <el-input
-                  v-model="formData.flood.address"
+                  v-model="formData.flood.facility"
                   size="small"
-                  placeholder="请输入汛期位置"
+                  placeholder="请输入隧道名称"
                   clearable
                   maxlength="100"
                 />
               </el-form-item>
             </el-col>
             <el-col :span="12">
+              <el-form-item label="经纬度" prop="coordinate">
+                <el-input v-model="formData.coordinate" size="small" placeholder="请选择在地图上选择">
+                  <template v-slot:suffix>
+                    <el-button
+                      icon="iconfont iconzhongdian11"
+                      type="text"
+                      style="padding: 7px 5px"
+                      :class="{ disabled: !enable.coordinate, 'coodinate-btn': true }"
+                      @click="enable.coordinate = !enable.coordinate"
+                    />
+                  </template>
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item label="汛情地址" prop="flood.address">
+                <el-input
+                  v-model="formData.flood.address"
+                  size="small"
+                  placeholder="请输入汛期地址"
+                  clearable
+                  maxlength="128"
+                />
+              </el-form-item>
+            </el-col>
+            <!-- <el-col :span="12">
               <el-form-item label="关联设施" prop="flood.facility">
                 <el-input v-model="formData.flood.facility" size="small" placeholder="请选择关联设施" clearable>
                   <template v-slot:suffix>
@@ -33,23 +59,15 @@
                   </template>
                 </el-input>
               </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="经纬度" prop="coordinate">
-                <el-input v-model="formData.coordinate" size="small" placeholder="请选择在地图上选择" clearable>
-                  <template v-slot:suffix>
-                    <el-button icon="iconfont iconzhongdian11" type="text" style="padding: 7px 5px" />
-                  </template>
-                </el-input>
-              </el-form-item>
-            </el-col>
+            </el-col> -->
+
             <el-col :span="24">
-              <el-form-item label="详细描述" prop="flood.detail">
+              <el-form-item label="汛情描述" prop="flood.detail">
                 <el-input
                   v-model="formData.flood.detail"
                   type="textarea"
                   size="small"
-                  placeholder="请输入详细描述"
+                  placeholder="请输入汛情描述"
                   clearable
                   maxlength="255"
                 />
@@ -94,8 +112,8 @@
         </el-col>
         <el-col :span="10">
           <Map
+            ref="map"
             @coordinate-change="onCoordinateChange"
-            @device-change="onDeviceChange"
             :enableCoordinateSelect="enable.coordinate"
             :enableDeviceSelect="enable.device"
             :center="(formData.coordinate || '').split(',')"
@@ -250,12 +268,12 @@ export default class ReportAndAssignForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IEvent
   @Prop({ type: Boolean, default: false }) loading!: boolean
   @Prop({ type: Array, default: () => [] }) users!: IDepartment[]
-  $refs!: { form: ElForm }
+  $refs!: { form: ElForm; map: Map }
   DICTONARY = DICTONARY
 
   formData: IFormData = getDefaultData()
   assign: Partial<IAssign> = {}
-  enable = { coordinate: true, device: true }
+  enable = { coordinate: false, device: false }
 
   get allUsers() {
     return this.users
@@ -265,12 +283,12 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   get usersInMyDepartment() {
-    const { users } = this.users.find((item) => String(item.id) === this.$store.state.user.departmentId) || {}
-    return users
+    const { users } = this.users.find((item) => String(item.id) === String(this.$store.state.user.departmentId)) || {}
+    return users || []
   }
 
   get listeners() {
-    const { submit, ...rest } = this.$listeners
+    const { submit, closed, ...rest } = this.$listeners
     return rest
   }
 
@@ -303,17 +321,18 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   onCoordinateChange(coordiate: number[]) {
-    this.formData.coordinate = coordiate.join()
+    const [x, y] = coordiate
+    this.formData.coordinate = `${Math.floor(x * 10000000) / 10000000},${Math.floor(y * 10000000) / 10000000}`
   }
 
-  onDeviceChange(geo) {
-    const {
-      geometry,
-      id,
-      properties: { ADDRESS, LNO, TYPE }
-    } = geo
-    this.formData.flood.facility = id
-  }
+  // onDeviceChange(geo) {
+  //   const {
+  //     geometry,
+  //     id,
+  //     properties: { ADDRESS, LNO, TYPE }
+  //   } = geo
+  //   this.formData.flood.facility = id
+  // }
 
   onMajorHandlerChange(id: string) {
     const { phone } = this.usersInMyDepartment.find((item) => String(item.id) === id) || {}
@@ -321,7 +340,7 @@ export default class ReportAndAssignForm extends Vue {
     this.setPhones()
   }
 
-  onCollaborateHanlerChange(ids: string[]) {
+  onCollaborateHanlerChange() {
     this.setPhones()
   }
 
@@ -379,13 +398,24 @@ export default class ReportAndAssignForm extends Vue {
     this.formData.fileList = fileList.filter((item) => item.uid !== file.uid)
   }
 
+  onClosed() {
+    this.enable = { coordinate: false, device: false }
+    this.$emit('closed')
+    this.clearMap()
+  }
+  /**
+   * 关闭弹窗
+   */
+  clearMap() {
+    this.$refs.map.clearMap()
+  }
   @Watch('data', { immediate: true })
-  async setDefaultData({ id, x, y, filePathList, findDate, ...rest }: IEvent) {
+  async setDefaultData({ id, x, y, filePathList, police, ...rest }: IFlood) {
     this.formData = getDefaultData()
     if (id) {
       this.formData = {
         ...this.formData,
-        flood: { id, x, y, ...rest },
+        flood: { id, x, y, police: Number(police), ...rest },
         coordinate: `${x},${y}`,
         fileList: (filePathList || []).map((path, index) => ({
           name: path,
@@ -393,15 +423,20 @@ export default class ReportAndAssignForm extends Vue {
           uid: +new Date() + index
         }))
       }
+      this.$refs.map.drawPoint(x, y)
       this.onMajorHandlerChange(String(id))
       const {
         result: { records }
       } = await assignPage({ current: 1, size: 1, sourceId: id })
       this.assign = records[0] || {}
-      const { collaborateHanler, majorHandler, isPush, ...assign } = this.assign
+      const { collaborateHanler, isPush, ...assign } = this.assign
       this.formData = {
         ...this.formData,
-        assign
+        assign: {
+          ...assign,
+          collaborateHanler: collaborateHanler ? collaborateHanler.split(',') : [],
+          isPush: Number(isPush)
+        }
       }
       this.setPhones()
     }
@@ -409,4 +444,12 @@ export default class ReportAndAssignForm extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.form {
+  .coodinate-btn {
+    &.disabled {
+      color: $--color-warning;
+    }
+  }
+}
+</style>

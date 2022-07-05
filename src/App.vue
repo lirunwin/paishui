@@ -50,14 +50,14 @@ export default {
 #nprogress .bar {
   background: #409eff !important; //自定义颜色
 }
-.el-select-dropdown {
-  max-width: 243px;
-}
-.el-select-dropdown__item {
-  display: inline-block;
-}
-.el-select-dropdown__item span {
-  min-width: 205px;
-  display: inline-block;
-}
+// .el-select-dropdown {
+//   max-width: 243px;
+// }
+// .el-select-dropdown__item {
+//   display: inline-block;
+// }
+// .el-select-dropdown__item span {
+//   min-width: 205px;
+//   display: inline-block;
+// }
 </style>

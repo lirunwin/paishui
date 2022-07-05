@@ -145,10 +145,16 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   @Watch('data', { immediate: true })
-  async setDefaultData({ id, department, ...rest }: IVehicle) {
+  async setDefaultData({ id, department, chargePerson, ...rest }: IVehicle) {
     this.formData = getDefaultData()
     if (id) {
-      this.formData = { ...this.formData, id, department: String(department), ...rest }
+      this.formData = {
+        ...this.formData,
+        id,
+        chargePerson: String(chargePerson),
+        department: String(department),
+        ...rest
+      }
     }
   }
 }

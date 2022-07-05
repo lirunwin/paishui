@@ -1,5 +1,5 @@
 <template>
-  <div class="project-box">
+  <div class="project-box" v-loading='loading'>
     <!-- 主要工程量表 -->
     <el-table
       :data="tableData"
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { queryDefectFormDetails } from '@/api/pipelineManage'
+import { queryPipeState } from '@/api/pipelineManage'
 
 export default {
   props: ['paramId'],
@@ -37,20 +37,53 @@ export default {
         { label: '管段材质', name: 'material' },
         { label: '管段长度(m)', name: 'pipeLength' },
         { label: '检测长度(m)', name: 'checkLength' },
-        { label: '结构性缺陷', name: 'structEstimate' },
-        { label: '功能性缺陷', name: 'funcEstimate' }
+        { label: '结构性缺陷', name: 'sPipeNote' },
+        { label: '功能性缺陷', name: 'fPipeNote' },
       ],
-      tableData: []
+      tableData: [],
+      typeArr: {
+        s: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'],
+        f: ['CJ', 'CQ', 'FZ', 'JG', 'SG', 'ZW']
+      },
+      loading: false
     }
   },
-  async mounted() {
-    //
-    let resPrj = await queryDefectFormDetails(this.paramId)
-    this.tableData = resPrj.result
-    console.log('管道缺陷表单', resPrj)
-    console.log('上面传来的id', this.paramId)
+  mounted() {
+    this.init()
+  },
+  watch: {
+    paramId () {
+      this.init()
+    }
   },
   methods: {
+    init () {
+      if (!this.paramId) return
+      this.loading = true
+      queryPipeState(this.paramId).then(resPrj => {
+        console.log('管道缺陷表单', resPrj)
+        this.loading = false
+        if (resPrj.code === 1 && resPrj.result) {
+          this.tableData = resPrj.result.map(item => {
+            let sPipeNote = ''
+            let fPipeNote = ''
+            if (item.defectCode === 'ZC') {
+              sPipeNote = ''
+              fPipeNote = ''
+            } else {
+              if (item.defectType) {
+                if (item.defectType === '功能性缺陷') { fPipeNote = item.pipeNote }
+                else if (item.defectType === '结构性缺陷') { sPipeNote = item.pipeNote }
+              } else {
+                if (this.typeArr.s.includes(item.defectCode)) { sPipeNote = item.pipeNote }
+                else if (this.typeArr.f.includes(item.defectCode)) { fPipeNote = item.pipeNote }
+              }
+            }
+            return { ...item, fPipeNote, sPipeNote}
+          })
+        }
+      })
+    },
     getSummaries(param) {
       const { columns, data } = param
       const sums = []

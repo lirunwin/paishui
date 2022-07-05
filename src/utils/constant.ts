@@ -51,8 +51,10 @@ export const getDistance = ([lat1, lng1]: number[], [lat2, lng2]: number[]): num
   return s
 }
 
-export const monitorAutoRefreshInterval = 3000
+export const monitorAutoRefreshInterval = 1000 * 60
 
-export const pointState = { '0': '正常', '1': '离线', '2': '报警' }
+export const pointState = { '0': '离线', '1': '正常', '2': '报警' }
 
-export const monitorStatusColor = { '0': '#333333', '1': 'rgba(51,51,51,0.6)', '2': '#F65252' }
+export const monitorStatusColor = { '0': 'rgba(51,51,51,0.6)', '1': '#333333', '2': '#F65252' }
+
+export const disabledMenus = ['']

@@ -49,7 +49,7 @@
               </div>
               <div class='clickTool' style="float:right;">
                 <el-tooltip effect="dark" content="隐患详情" placement="top-start">
-                  <el-button size="mini" style="padding:4px;" @click="showWay(item,showContent.plan)">
+                  <el-button size="mini" style="padding:4px;" @click="showWay(item)">
                     <span class='icon iconfont iconjihua'></span>
                   </el-button>
                 </el-tooltip>
@@ -79,6 +79,9 @@
       </template>
     </div>
   </div>
+  <el-dialog v-dialogDrag :visible.sync="dialogDetail" title="隐患详情" width="60%" top="10vh">
+    <troubleDetail :troubleAry="troubleAry" />
+  </el-dialog>
 </div>
 </template>
 
@@ -90,8 +93,10 @@ import peoplePlan from './otherVue/peoplePlan'
 import {IP} from '@/utils/request'
 import {getAllUserInfo} from '@/api/base'
 import { problemReasonQuery } from '@/api/xjConfigManageApi'
+import troubleDetail from '@/views/zhpt/hiddendangermanage/components/troubleDetails.vue'
+import {unByKey} from 'ol/Observable';
 export default {
-  components:{emptyShow,peoplePlan},
+  components:{emptyShow,peoplePlan,troubleDetail},
   props:{
     departInfo:{
       departmentList:[],
@@ -121,7 +126,9 @@ export default {
         finishedClass:'finished',
         unfinishedClass:"unfinished"
       },
-      
+      troubleEvent:null,
+      dialogDetail:false,
+      troubleAry:{},
       //开始时间控制选择
       startOptions:{
         disabledDate: (time) => {
@@ -137,6 +144,7 @@ export default {
     this.currentDepart=this.departInfo.currentDepart;
     this.getTroubleType();
     this.getUserList();
+    this.initTroubleEvent();
   },
   methods:{
     /**获取人员*/
@@ -177,23 +185,23 @@ export default {
         current:1,
         size:1000,
       }
-      // this.loading=true;
-      // getTrouble(params).then(res=>{
-      //   res.result.records.forEach(item=>{
-      //     this.initPeopleInfo(item)
-      //   })
-      //   this.troubleList=res.result.records
-      //   this.mapShowPeople(this.troubleList);
-      //   this.loading=false;
-      // }).catch(e=>{
-      //   this.loading=false;
-      // })
-      const troubleList={"code":1,"message":null,"result":{"records":[{"id":13,"pipeName":"测试隐患上报2","location":"管线","padId":null,"typeId":3,"typeName":"施工范围内有给水管线","lgtd":104.377537,"lttd":30.850514,"address":"测试隐患上报2","notes":"测试隐患上报2","createTime":"2022-06-15 13:56:04","createUser":208,"createUserName":null,"isbuild":"是","buildId":9,"suggest":"测试隐患上报2","uploadType":"","uploadFileids":null,"isrespect":"否","state":"无需处理","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:56:04","submitUser":208,"submitUserName":"管网-王海","auditResult":"已通过","auditTime":"2022-06-15 13:56:46","auditUser":208,"auditUserName":"管网-王海","auditNotes":"123","regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":2,"toubleRangeName":"严重"},{"id":12,"pipeName":"测试管线上报","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.497862,"lttd":30.876064,"address":"测试管线上报","notes":"测试管线上报","createTime":"2022-06-15 13:55:25","createUser":208,"createUserName":null,"isbuild":"是","buildId":35,"suggest":"测试管线上报","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:55:25","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":201,"auditUserName":"冯茂","auditNotes":null,"regionId":"A","regionName":"A片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"},{"id":11,"pipeName":"测试隐患","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.433392,"lttd":30.836141,"address":"测试地址","notes":"测试地址2","createTime":"2022-06-14 15:26:02","createUser":208,"createUserName":null,"isbuild":"是","buildId":10,"suggest":"测试地址三","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-14 15:26:02","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":208,"auditUserName":"管网-王海","auditNotes":null,"regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"}],"total":3,"size":10,"current":1,"orders":[],"optimizeCountSql":true,"hitCount":false,"searchCount":true,"pages":1}}
-      troubleList.result.records.forEach(item=>{
-        this.initPeopleInfo(item)
+      this.loading=true;
+      getTrouble(params).then(res=>{
+        res.result.records.forEach(item=>{
+          this.initPeopleInfo(item)
+        })
+        this.troubleList=res.result.records
+        this.mapShowPeople(this.troubleList);
+        this.loading=false;
+      }).catch(e=>{
+        this.loading=false;
       })
-      this.troubleList=troubleList.result.records;
-      this.mapShowPeople(this.troubleList);
+      // const troubleList={"code":1,"message":null,"result":{"records":[{"id":13,"pipeName":"测试隐患上报2","location":"管线","padId":null,"typeId":3,"typeName":"施工范围内有给水管线","lgtd":104.377537,"lttd":30.850514,"address":"测试隐患上报2","notes":"测试隐患上报2","createTime":"2022-06-15 13:56:04","createUser":208,"createUserName":null,"isbuild":"是","buildId":9,"suggest":"测试隐患上报2","uploadType":"","uploadFileids":null,"isrespect":"否","state":"无需处理","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:56:04","submitUser":208,"submitUserName":"管网-王海","auditResult":"已通过","auditTime":"2022-06-15 13:56:46","auditUser":208,"auditUserName":"管网-王海","auditNotes":"123","regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":2,"toubleRangeName":"严重"},{"id":12,"pipeName":"测试管线上报","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.497862,"lttd":30.876064,"address":"测试管线上报","notes":"测试管线上报","createTime":"2022-06-15 13:55:25","createUser":208,"createUserName":null,"isbuild":"是","buildId":35,"suggest":"测试管线上报","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-15 13:55:25","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":201,"auditUserName":"冯茂","auditNotes":null,"regionId":"A","regionName":"A片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"},{"id":11,"pipeName":"测试隐患","location":"管线","padId":null,"typeId":1,"typeName":"井室占压","lgtd":104.433392,"lttd":30.836141,"address":"测试地址","notes":"测试地址2","createTime":"2022-06-14 15:26:02","createUser":208,"createUserName":null,"isbuild":"是","buildId":10,"suggest":"测试地址三","uploadType":"","uploadFileids":null,"isrespect":"","state":"","isread":"未查看","isSubmit":"已上报","submitTime":"2022-06-14 15:26:02","submitUser":208,"submitUserName":"管网-王海","auditResult":"未审批","auditTime":null,"auditUser":208,"auditUserName":"管网-王海","auditNotes":null,"regionId":"E","regionName":"E片区","filePathList":null,"toubleRangeId":1,"toubleRangeName":"一般"}],"total":3,"size":10,"current":1,"orders":[],"optimizeCountSql":true,"hitCount":false,"searchCount":true,"pages":1}}
+      // troubleList.result.records.forEach(item=>{
+      //   this.initPeopleInfo(item)
+      // })
+      // this.troubleList=troubleList.result.records;
+      // this.mapShowPeople(this.troubleList);
     },
 
     /**初始化轨迹、设备、计划内容*/
@@ -220,7 +228,8 @@ export default {
             x:item.lgtd,
             y:item.lttd,
             name:tempAddress,
-            state:this.stateList.unfinished.includes(item.auditResult)?'nosign':'sign'
+            state:this.stateList.unfinished.includes(item.auditResult)?'nosign':'sign',
+            troubleId:item.id
           })
         }
       })
@@ -238,24 +247,31 @@ export default {
       }
     },
 
-    /**调用隐患详情页面*/
-    showWay(peopleInfo,action){
-      // //是否已打开的了人员信息
-      // if(this.currentShowPeople){
-      //   //本次打开人员与上次打开人员是一个且本次操作与上次操作是一样的,初始化内容并返回
-      //   if(this.currentShowPeople==peopleInfo&&this.currentShowPeople.pageShowContent==action){
-      //     this.initPeopleInfo(this.currentShowPeople);
-      //     tool.closePlay(this.$store)
-      //     return
-      //   }
-      //   this.initPeopleInfo(this.currentShowPeople);
-      //   this.currentShowPeople=peopleInfo;
-      // }else{
-      //   this.currentShowPeople=peopleInfo;
-      // }
-      // this.currentShowPeople.pageShow=true;
-      // this.currentShowPeople.pageShowContent=action;
+    initTroubleEvent(){
+      this.troubleEvent=this.mapView.on('click',evt=>{
+        this.layerList.troubleLayer.layer.getFeatures(evt.pixel).then(res=>{
+          if(res&&res.length>0&&res[0].values_&&res[0].values_.troubleId){
+            this.$nextTick(ev=>{
+              this.showWay({id:res[0].values_.troubleId});
+            })
+          }
+        })
+      })
     },
+
+    /**调用隐患详情页面*/
+    showWay(peopleInfo){
+      this.troubleAry = {
+        troubleId: peopleInfo.id,
+        optionType: '1' //1=>详情，2=审核操作
+      }
+      this.$nextTick(e=>{
+        this.dialogDetail=true;
+      })
+    },
+  },
+  destroyed(){
+    unByKey(this.troubleEvent);
   }
 }
 </script>

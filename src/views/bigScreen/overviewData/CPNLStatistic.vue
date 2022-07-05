@@ -13,7 +13,7 @@
                 </div>
             </div>
             <div class="content-info">
-                <comprehensiveChart />
+                <comprehensiveChart v-on="$listeners"/>
             </div>
         </div>
     </transition>
@@ -28,16 +28,10 @@ export default {
     },
     props:{
         show:{},
-        fontSize:{
-            type:Function,
-            default:()=>{
-                return Function
-            }
-        }
     },
     data(){
         return{
-            pipeLength:20000
+            pipeLength:1262
         }
     },
     methods:{
@@ -82,7 +76,7 @@ export default {
                 font-weight: bold;
                 font-size: .083333rem /* 16/192 */;
                 color: #ffffff;
-                text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
+                // text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
                 padding: .041667rem /* 8/192 */;
             }
             .pipe-length{

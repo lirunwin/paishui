@@ -6,7 +6,7 @@
         leave-active-class="animate__slideOutUp">
         <div class="widget-bigScreenHeader">
             <div class='header'>
-                <div class='title'>
+                <div class='title' @click="closeModuleAll()">
                     <span class="caption">{{title}}</span>
                     <span class="border-trail"></span>
                 </div>
@@ -22,10 +22,10 @@
                 </div>
                 <div class="otherItem">
                     <div class="specificTime" >{{specificTime}}</div>
-                    <div class="entrySys" @click="enterSys()"><span>{{operationName}}</span></div>
+                    <div class="entrySys" @click="enterSys()">{{operationName}}</div>
                 </div>
             </div>  
-            <div class="underline"></div>
+            <!-- <div class="underline"></div> -->
         </div>
     </transition>
 </template>
@@ -74,12 +74,21 @@ export default {
             getUserMenu(userId)
             .then((res) => {
                 let arr = res.result.filter((item)=>item.type ==='bigScreen')
+                let sort=0
                 arr[0].childrens.forEach(item => {
                     if(item.statusFlag==='1'){
-                        this.menuList.unshift({
-                            name:item.name,
-                            label:item.label
-                        })
+                        if(item.sort>sort){
+                            this.menuList.unshift({
+                                name:item.name,
+                                label:item.label
+                            })
+                        }else{
+                            this.menuList.push({
+                                name:item.name,
+                                label:item.label
+                            })   
+                        }
+                        sort=item.sort
                     }
                 });
                 this.currentActive=this.menuList[0].label
@@ -90,7 +99,6 @@ export default {
         },
         //进入系统
         enterSys(){
-            console.log(this.routerData)
             if(!this.routerData.some((item) => item.label === '首页')&&!this.routerData.some((item) => item.label === '地图')){
                 this.logout()
             }else{
@@ -138,6 +146,11 @@ export default {
             setInterval(()=>{
                 this.specificTime=getnow();
             },100)
+        },
+        closeModuleAll(){
+            this.$parent.showMonitoringCenter=false
+            this.$parent.showOverviewData=false
+            this.currentActive=''
         }
     }
 }
@@ -152,7 +165,7 @@ export default {
     width: 100%;
     position: absolute;
     z-index: 2;
-    background: linear-gradient(#021a2a, rgba(2, 26, 42, 0));
+    background: linear-gradient(#021a2a, rgba(2,26,42,0.3));
     font-family: Source Han Sans CN;
     //public size
     $size30:.15625rem /* 30/192 */;
@@ -187,29 +200,6 @@ export default {
                 text-shadow: 0 0 10px rgba(65, 105, 225,0.3),0 0 20px rgba(65, 105, 225,0.3),0 0 30px rgba(65, 105, 225,0.3),0 0 40px rgba(65, 105, 225,0.3);
             }
         }
-        // .border-trail {
-        //     position: absolute;
-        //     display: block;
-        // }
-        // .border-trail {
-        //     filter: hue-rotate(0deg);
-        //     bottom: 0;
-        //     right: 0;
-        //     width:$size10;
-        //     height:$size3;
-        //     background: linear-gradient(90deg, transparent, rgb(26, 178, 255));
-        //     box-shadow:0 0 10px rgb(26, 178, 255);
-        //     animation: animate1 2.5s linear infinite;
-        // }
-        // @keyframes animate1 {
-        //     0% {
-        //         left: -100%;
-        //     }
-        //     50%,
-        //             100% {
-        //         left: 100%;
-        //     }
-        // }
         .menu{
             width: 60%;
             white-space: nowrap;
@@ -244,9 +234,6 @@ export default {
                 color: #0EA7FF;
                 font-weight: bold;
                 border-bottom: 2px solid;
-                // background: url("./images/light.png") no-repeat;
-                // background-size: 100% 35%;
-                // background-position: bottom;
             }
             .drop{
                 padding: 0;
@@ -281,10 +268,11 @@ export default {
         .otherItem{
             width: 20%;
             height: 100%;
-            font-size: $size20;
+            font-size: $size14;
             font-weight: 400;
             display: flex;
             align-items: center;
+            margin-left: .21875rem /* 42/192 */;
             .specificTime{
                 flex: 2;
                 top: 25%;
@@ -293,18 +281,20 @@ export default {
                 color: #A8D3F1;
             }
             .entrySys {
-                flex: 0.7;
-                color: #eee;
-                background: url("./images/entrySys.png") no-repeat;
+                flex: 0.6;
+                color: #A8D3F1;
+                background: url("~@/views/bigScreen/images/entrySys.png") no-repeat;
                 background-size: 100% 100%;
                 height: 50%;
                 display: flex;
                 align-items: center;
+                justify-content: center;
+                white-space: nowrap;
             }
             .entrySys:hover {
                 cursor: pointer;
-                color: #eee;
-                background: url("./images/entrySysHover.png") no-repeat;
+                color: #A8D3F1;
+                background: url("~@/views/bigScreen/images/entrySysHover.png") no-repeat;
                 background-size: 100% 100%;
             }
         }
@@ -312,7 +302,7 @@ export default {
     .underline{
         width: 9.796875rem /* 1881/192 */;
         height: .010417rem /* 2/192 */;
-        background: url("./images/顶部线.png") no-repeat center center;
+        background: url("~@/views/bigScreen/images/顶部线.png") no-repeat center center;
         background-size: 100% 100%;
         margin: 0 $size20;
     }

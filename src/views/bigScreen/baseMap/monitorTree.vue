@@ -7,16 +7,40 @@
         <div class="widget-monitorTree" ref="widget-monitorTree">
             <div class="wrap">
                 <div class="icon" title="监测树" @click="showContent=!showContent">监测树<img :src="buttonImg" /></div>
-                <div class="content" v-if="showContent">
+                <div class="content" v-show="showContent">
                     <div class="header">
                         <div class="title">设备监测树</div>
-                        <el-input placeholder="设备名称搜索" v-model="input" class="input-with-select" size="mini">
+                        <el-input placeholder="设备名称搜索" v-model="filterText" class="input-with-select" size="mini" clearable>
                             <el-button slot="append" icon="el-icon-search"></el-button>
                         </el-input>
                         <div class="close" @click="showContent=!showContent"><i class="el-icon-close"></i></div>
                     </div>
                     <div class="statistic">
-
+                        <div class="deviceStatus">
+                            <div class="statusItem" v-for="item of statusList" :key="item.type">
+                                <div class="itemIcon" :style="setStatusIconColor(item.type)"></div>
+                                <div class="itemText" :title="item.num+'个'">{{item.type}}：{{item.num}}个</div>
+                            </div>
+                        </div>
+                        <div class="deviceTypeGroup">
+                            <el-tree
+                                class="filter-tree"
+                                show-checkbox
+                                :data="treeData"
+                                :props="defaultProps"
+                                default-expand-all
+                                node-key="id"
+                                :default-checked-keys="[0,1]"
+                                :filter-node-method="filterNode"
+                                @check="getCheckList()"
+                                @node-click="handleTreeNodeClick"
+                                ref="tree">
+                                <span slot-scope="{ node }">
+                                    {{ node.label }}
+                                    <img v-if="setNodeImg(node)" :src="(`${setNodeImg(node)}`)" style="width: 16px; height: 16px" />
+                                </span>
+                            </el-tree>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -25,36 +49,186 @@
 </template>
 
 <script>
+import axios from '@/utils/request'
+import { Vector as VectorLayer } from "ol/layer";
+import { Vector as VectorSource } from "ol/source";
+import Feature from 'ol/Feature';
+import { Point } from 'ol/geom';
+import {Style,Icon,} from 'ol/style';
 export default {
     name:"monitorTree",//监测树
     props:{
-        show:{},
+        hideBoth:{}
     },
     data(){
         return{
+            deviceTypeGroupUrl:'/monitor/device/deviceTypeGroup',
             showContent:false,
             buttonImg:null,
-            upImg:require('./images/三角上.png'),
-            downImg:require('./images/三角下.png'),
+            upImg:require('@/views/bigScreen/images/三角上.png'),
+            downImg:require('@/views/bigScreen/images/三角下.png'),
+            statusList:[
+                {code:"normalNum",type:'正常',num:20},
+                {code:"warnNum",type:'报警',num:20},
+                {code:"offlineNum",type:'离线',num:20},
+            ],
+            deviceCheckList:[],
             //
-            input:"",
+            filterText: '',
+            treeData: [],
+            defaultProps: {children: 'children',label: 'name'},
+            onlineIcon:require('@/views/bigScreen/images/其他/在线.png'),
+            offlineIcon:require('@/views/bigScreen/images/其他/离线.png'),
+            normalIcon:require('@/views/bigScreen/images/其他/正常.png'),
+            warnIcon:require('@/views/bigScreen/images/其他/报警.png'),
+            swjcyLayer:null,
+            zhjgLayer:null,
+            ywjcyLayer:null,
         }
     },
     mounted(){
-
+        this.getPageData()
+    },
+    computed:{
+        view(){
+            return this.$store.state.bigScreen.view
+        }
     },
     watch:{
-        show:{
+        hideBoth(n){
+            if(!n){
+                this.$refs['widget-monitorTree'].style.setProperty('--right', '2.34375rem')
+            }else{
+                this.$refs['widget-monitorTree'].style.setProperty('--right', '.052083rem')
+            }
+        },
+        view:{
+            handler(){
+                this.initLayer()
+                this.showMapPoint()
+            }
         },
         showContent:{
             handler(n,o){
                 this.buttonImg=n?this.upImg:this.downImg
             },
             immediate:true
+        },
+        filterText(val) {
+            this.$refs.tree.filter(val);
+        },
+        deviceCheckList:{
+            handler(n,o){
+                this.showMapPoint()
+            },
+            deep:true,
         }
     },
     methods:{
-
+        getPageData(){
+            // let nums;
+            const {getRequestResult} = this.$listeners
+            getRequestResult({blockCode:'deviceStatuCount'}).then(res=>{
+                Object.keys(res).forEach((item)=>{
+                    if(item==='onlineNum'){
+                        // nums=res[item];
+                        return
+                    }else{
+                        this.statusList[this.statusList.findIndex(c=>(c.code===item))].num=res[item]
+                    }
+                })
+                // this.statusList[this.statusList.findIndex(c=>(c.code==='normalNum'))].num=nums
+            }).then(()=>{
+                axios.request({ url: this.deviceTypeGroupUrl, method: 'get', data:{} }).then(res=>{
+                    let result = res.result
+                    Object.keys(result).forEach((item,index)=>{
+                        if(item==='device-type') delete result[item]
+                        else{
+                            this.treeData.push({id:index,name:item,children:result[item]})
+                        }
+                    })
+                    this.deviceCheckList = this.treeData
+                    .filter((i,index)=>index<=1)
+                    .map(item=>{return item.children}).flat()
+                    // .reduce(function(a, b) {return a.concat(b);}, []);
+                })
+            })
+        },
+        setStatusIconColor(type){
+            let color=(type==='在线')?'#2BA7FF':(type==='离线'?'grey':(type==='正常'?"#2BA7FF":'red'))
+            return 'background-color:'+color
+        },
+        filterNode(value, data) {
+            if (!value) return true;
+            return data.name.indexOf(value) !== -1;
+        },
+        setNodeImg(node){
+            const {data} = node
+            const type = data.deviceStatus
+            const warn = data.deviceType
+            let iconSrc;
+            if(node.isLeaf == false && node.parent.parent == null){
+                iconSrc=""
+            }else{
+                iconSrc=(type==='在线')?this.onlineIcon:(type==='离线'?this.offlineIcon:this.onlineIcon)
+                if(warn==='报警') iconSrc=this.warnIcon
+            }
+            return iconSrc
+        },
+        handleTreeNodeClick(data){
+            if(!data.coordiateX||!data.coordiateY) return
+            let position =[data.coordiateX,data.coordiateY]
+            this.view.getView().setCenter(position)
+        },
+        getCheckList(){
+            this.resetLayerSource()
+            this.deviceCheckList = this.$refs.tree.getCheckedNodes().filter(item=>!item.children)
+        },
+        showMapPoint(){
+            if(!this.view) return
+            this.deviceCheckList.forEach(item=>{
+                let position = [item.coordiateX,item.coordiateY]
+                let feature = new Feature({
+                    geometry: new Point(position),
+                    name:item.name,
+                });
+                this.getTypeToShow(feature,item)
+            })
+        },
+        getTypeToShow(feature,item){
+            let src=null
+            switch(item.typeName){
+                case '易涝点水位监测仪':
+                    src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-易涝点水位报警.png')
+                    :require('@/views/bigScreen/images/设备/设备-易涝点水位.png')
+                    feature.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    this.swjcyLayer.getSource().addFeature(feature)
+                    break;
+                case '智慧井盖':
+                    src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-智慧井盖报警.png'):
+                    require('@/views/bigScreen/images/设备/设备-智慧井盖.png')
+                    feature.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    this.zhjgLayer.getSource().addFeature(feature)
+                    break;
+                case '液位监测仪':
+                    src=item.deviceType=='报警'?require('@/views/bigScreen/images/设备/设备-管网液位报警.png'):
+                    require('@/views/bigScreen/images/设备/设备-管网液位.png')
+                    feature.setStyle(new Style({image: new Icon({anchor: [0.5, 0.7],scale:0.7,src})}))
+                    this.ywjcyLayer.getSource().addFeature(feature)
+                    break;
+            }
+        },
+        // 初始化图层
+        initLayer() {
+            this.view.addLayer(this.swjcyLayer = new VectorLayer({source: new VectorSource()}))
+            this.view.addLayer(this.zhjgLayer = new VectorLayer({source: new VectorSource()}))
+            this.view.addLayer(this.ywjcyLayer = new VectorLayer({source: new VectorSource()}))
+        },
+        resetLayerSource(){
+            this.swjcyLayer.getSource().clear()
+            this.zhjgLayer.getSource().clear()
+            this.ywjcyLayer.getSource().clear()
+        }
     }
 }
 </script>
@@ -70,7 +244,7 @@ export default {
     z-index: 2;
     //position
     top:.505208rem /* 97/192 */;
-    margin-right: 2.34375rem /* 450/192 */;
+    margin-right: var(--right);//2.34375rem /* 450/192 */;
     position: absolute;
     right: 0;
     //size
@@ -106,14 +280,15 @@ export default {
         }
         .content{
             margin-top: .026042rem /* 5/192 */;
-            width: 1.979167rem /* 380/192 */;
+            // width: 1.979167rem /* 380/192 */;
+            width: 2.1875rem /* 420/192 */;
             height: 1.979167rem /* 380/192 */;
             background: linear-gradient(0deg, rgba(2, 20, 37, 0.56) 0%, #072643 100%);
             .header{
                 height: .208333rem /* 40/192 */;
-                margin: 0 .052083rem /* 10/192 */;
+                margin:.052083rem /* 10/192 */ .052083rem 0 .052083rem;
                 padding: .026042rem /* 5/192 */;
-                border-bottom: 1px solid rgba(255,255,255,0.7);
+                border-bottom: 1px solid rgba(255,255,255,0.1);
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -138,14 +313,100 @@ export default {
                     background-color: rgb(9, 48, 84);
                     border: none;
                     color: #eee;
+                    height: .145833rem /* 28/192 */;
                 }
                 /deep/ .el-input-group__append{
                     background-color: rgb(9, 48, 84);
                     border: none;
                 }
                 /deep/ .el-icon-search:before{
-                    color: rgba(138, 211, 253, 1);
+                    color: rgba(138, 211, 253, 0.3);
                     font-size:.09375rem /* 18/192 */;
+                }
+            }
+            .statistic{
+                display: flex;
+                flex-flow: column;
+                width: 100%;
+                height: calc(100% - .208333rem /* 40/192 */);
+                .deviceStatus{
+                    width: 100%;
+                    height: .104167rem /* 20/192 */;
+                    display: flex;
+                    justify-content: center;
+                    margin: .052083rem /* 10/192 */ 0;
+                    color: #8EB2CE;
+                    .statusItem{
+                        height: 100%;
+                        width: 30%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-size: .083333rem /* 16/192 */;
+                        .itemIcon{
+                            border-radius: 50%;
+                            height: .052083rem /* 10/192 */;
+                            width: .052083rem /* 10/192 */;
+                            margin-right: .026042rem /* 5/192 */;
+                        }
+                        .itemText{
+                            white-space: nowrap;
+                            // flex: 1;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                        }
+                    }
+                }
+                .deviceTypeGroup{
+                    width: 100%;
+                    height: calc(100% - .104167rem /* 20/192 */);
+                    overflow: auto;
+                    /deep/ .el-tree {
+                        background: transparent;
+                        color: #8EB2CE;
+                        font-size: .083333rem /* 16/192 */;
+                        .el-tree-node__content{
+                            background-color: transparent;
+                        }
+                        .el-tree-node__content:hover {
+                            background-color: rgb(62, 70, 112);
+                        }
+                        div[role="group"] > .el-tree-node{
+                            width: 50%;
+                            float: left;
+                        }
+                        .el-tree-node.is-current > .el-tree-node__content {
+                            background: rgba(22, 119, 255, 0.1);
+                            border-right: 3px solid #1677ff;
+                            color: #4b95fe;
+                            /deep/ .el-tree-node__expand-icon {
+                                color: rgb(0, 112, 255);
+                            }
+                            /deep/ .is-leaf {
+                                color: rgba(0, 0, 0, 0);
+                            }
+                        }
+                    }
+                    .el-checkbox{
+                        color: #fff;
+                        margin: .052083rem /* 10/192 */ 0;
+                    }
+                    /deep/ .el-checkbox__inner{
+                        background: #0A1525;
+                        border-color: rgba(3, 109, 190, 1)
+                    }
+                    /deep/ .el-checkbox__inner::after{
+                        border: 2px solid rgba(17, 156, 255, 1);
+                        border-left: 0;
+                        border-top: 0;
+                    }
+                    /deep/ .el-checkbox__input.is-checked .el-checkbox__inner{
+                        background: #0A1525;
+                        border-color: rgba(3, 109, 190, 1)
+                    }
+                    /deep/ .el-checkbox__input.is-checked+.el-checkbox__label{
+                        color: #fff;
+                    }
                 }
             }
         }

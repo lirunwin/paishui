@@ -14,40 +14,29 @@
           >
           </el-input>
           <div class="title">检测时间：</div>
-          <!-- <el-date-picker v-model="searchValue.testTime" type="date" placeholder="入库时间" class="date-css">
-          </el-date-picker> -->
-          <!-- <el-date-picker
-            v-model="searchValue.testTime"
-            type="daterange"
-            value-format="yyyy-MM-dd"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-          >
-          </el-date-picker> -->
           <div class="sampleTime">
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
                 <el-date-picker
-                  v-model="searchValue.testTime.startDate"
+                  v-model="searchValue.startDate"
                   type="date"
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions0"
-                  @change="changeDate"
+                  :picker-options="sOpition"
+                  @change="sDateChange"
                 ></el-date-picker>
               </el-col>
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
-                  v-model="searchValue.testTime.finishDate"
+                  v-model="searchValue.finishDate"
                   type="date"
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions1"
-                  @change="changeDate"
+                  :picker-options="eOpition"
+                  @change="eDateChange"
                 ></el-date-picker>
               </el-col>
             </el-row>
@@ -61,6 +50,7 @@
             <el-option v-for="(item, i) in gradeArr" :key="i" :label="item" :value="item"></el-option>
           </el-select>
           <el-button size="small" style="margin-left: 26px" type="primary" @click="searchApi"> 搜索 </el-button>
+          <!-- <el-button size="small" type="primary" @click="rect">框选</el-button> -->
           <el-button size="small" type="primary" @click="resetBtn"> 重置 </el-button>
         </div>
         <div class="right-btn">
@@ -131,7 +121,7 @@
         >
         </el-table-column>
 
-        <el-table-column
+        <!-- <el-table-column
           prop="structClass"
           header-align="center"
           label="结构性缺陷等级"
@@ -152,7 +142,7 @@
           :sortable="true"
           :sort-method="sortFunc"
         >
-        </el-table-column>
+        </el-table-column> -->
 
         <el-table-column fixed="right" header-align="center" label="操作" align="center" width="150">
           <template slot-scope="scope">
@@ -310,6 +300,7 @@ import axios from 'axios'
 // 引入管道检测组件
 import checkDialog from '../components/checkDetails.vue'
 import { mapUtil } from '../../common/mapUtil/common'
+import iDraw from '../../common/mapUtil/draw'
 
 export default {
   props: ['data'],
@@ -371,26 +362,44 @@ export default {
       // -------->
       // 表格参数
       tableContent: [
-        { width: '100', sortable: false, label: '工程名称', name: 'prjName' },
-        { width: '100', sortable: false, label: '管段编号', name: 'expNo' },
+        { width: '200', sortable: false, label: '管段编号', name: 'expNo' },
+
+        { width: '100', sortable: false, label: '检测地点', name: 'checkAddress' },
         { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
         { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
-        { width: '100', sortable: false, label: '材质', name: 'material' },
-        { width: '', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
+        { width: '150', sortable: false, label: '材质', name: 'material' },
         { width: '100', sortable: true, label: '缺陷数量', name: 'defectnum' },
         { width: '100', sortable: true, label: '检测照片', name: 'picnum' },
-        { width: '100', sortable: false, label: '检测地点', name: 'checkAddress' },
-        { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' }
+        { width: '150', sortable: true, label: '结构性缺陷等级', name: 'structClass' },
+        { width: '150', sortable: true, label: '功能性缺陷等级', name: 'funcClass' },
+        { width: '200', sortable: false, label: '结构性缺陷评价', name: 'structEstimate' },
+        { width: '200', sortable: false, label: '功能性缺陷评价', name: 'funcEstimate' },
+        { width: '100', sortable: true, label: '检测日期', name: 'sampleTime' },
+        { width: '200', sortable: false, label: '工程名称', name: 'prjName' },
       ],
       gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.finishDate) {
+            return time > new Date(this.searchValue.finishDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.startDate) {
+            return time < new Date(this.searchValue.startDate).getTime() - 8.64e7 || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
       searchValue: {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        }, // 检测日期
+        startDate: '',
+        finishDate: '',
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
         structClass: '' // 结构型缺陷等级
@@ -412,29 +421,34 @@ export default {
       lightLayer: null,
       clickEvent: null,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43', // 当前坐标系
+      currentDataProjName: 'proj44', // 当前坐标系
       popup: null,
       hasLoad: false,
       // 
       showVideo: false,
       videoUrl: '',
-      videoTitle: '视频'
+      videoTitle: '视频',
+      drawer: null,
+      drawFea: null,
+      themLayerName: 'pipeAndDefectLayer',
+      themLayer: null
     }
   },
-  created() {
-    let res = this.getDate()
-  },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '管道评估结果管理') {
+    '$store.state.map.halfP_editableTabsValue': function (n, o) {
+      if (n !== 'pipelineEvaluation') {
         this.clearAll()
         this.hasData = false
       } else {
         this.init()
       }
     },
-    'searchValue.testTime.startDate': function (n) {
-      this.searchValue.testTime.finishDate = n
+    '$store.state.map.panels': function (n, o) {
+      if (n.find(item => item.com === 'testResultDiagram')) {
+        this.clearAll()
+        let layer = this.getThemLayer()
+        layer.setVisible(false)
+      }
     }
   },
   mounted() {
@@ -444,6 +458,12 @@ export default {
     this.init()
   },
   destroyed() {
+    if (this.$store.state.gis.activeHeaderItem !== 'psjc') {
+      let layer = this.getThemLayer()
+      layer && this.map.removeLayer(layer) 
+    }
+    this.popup && this.map.removeOverlay(this.popup)
+    this.popup = null
     this.clearAll()
   },
   computed: {
@@ -480,6 +500,34 @@ export default {
     }
   },
   methods: {
+    sDateChange(t) {
+      console.log('起始时间变化')
+      if (!this.searchValue.finishDate) {
+        this.$nextTick(() => {
+          this.searchValue.finishDate = this.searchValue.startDate
+        })
+      }
+    },
+    eDateChange(t) {
+      if (!this.searchValue.startDate) {
+        this.$nextTick(() => {
+          this.searchValue.startDate = this.searchValue.finishDate
+        })
+      }
+    },
+    rect () {
+      this.removeEvent()
+      this.drawer = new iDraw(this.map, 'rect', {
+        showCloser: false,
+        endDrawCallBack: fea => {
+          this.addEvent()
+          this.drawer.remove()
+          this.drawFea = fea
+          console.log('绘制的图形', fea)
+        }
+      })
+      this.drawer.start()
+    },
     //导出表格
     startDownload() {
       let self = this
@@ -558,31 +606,6 @@ export default {
       let res = downloadFile(id)
       return baseAddress + res.url
     },
-    // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
-       if (!this.searchValue.testTime.startDate) {
-        this.searchValue.testTime.startDate = this.searchValue.testTime.finishDate
-      }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
-      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
-      }
-    },
     // 关闭缩略提示框的方法
     closePromptBox() {
       this.currentInfoCard = false
@@ -612,30 +635,188 @@ export default {
     },
 
     init() {
-      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+      this.getDate()
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
         style: comSymbol.getAllStyle(6, 'rgba(0, 255, 255, 0.6)', 9, 'rgba(0, 255, 255, 0.6)')
       })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource() })
+      // 
       this.map.addLayer(this.vectorLayer)
+      let layer = this.getThemLayer()
+      if (layer) {
+        layer.setVisible(false)
+        this.setThemLayer()
+        this.hasLoad = true
+      } else {
+        this.setMainMap()
+      }
       this.map.addLayer(this.lightLayer)
+      this.addEvent()
+    },
+    setThemLayer () {
+      let layer = this.getThemLayer()
+      let features = layer.getSource().getFeatures().filter(fea => fea.getGeometry() instanceof LineString).map(fea => fea.clone())
+      this.vectorLayer.getSource().addFeatures(features)
+    },
+    getThemLayer () {
+      return this.map.getLayers().getArray().find(layer => layer.get('layername') === this.themLayerName)
+    },
+    addEvent () {
       this.clickEvent = this.map.on('click', (evt) => {
         let feas = this.map.getFeaturesAtPixel(evt.pixel)
         if (feas.length !== 0) {
-          this.openPromptBox(feas[0].values_)
+          let filterFea = feas.filter(fea => fea.get('expNo') && fea.getGeometry() instanceof LineString)
+          if (filterFea.length === 0) return
+          this.openPromptBox(filterFea[0].values_)
         } else {
           this.currentInfoCard = false
+          this.popup && this.popup.setPosition(null)
           this.lightLayer.getSource().clear()
         }
       })
-      this.getPipeDefectData()
+    },
+    removeEvent() {
+      this.clickEvent && unByKey(this.clickEvent)
     },
     clearAll() {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
-      this.clickEvent && unByKey(this.clickEvent)
+      this.removeEvent()
+      this.popup && this.popup.setPosition(null)
       this.currentInfoCard = false
+      this.drawer && this.drawer.end()
+      this.lightLayer = this.clickEvent = this.vectorLayer = null
     },
+    /**
+     * 添加、更新地图管道缺陷
+     * */
+    setMainMap () {
+      let map = this.data.mapView
+      if (this.vectorLayer && this.lightLayer) {
+          this.$store.dispatch('map/mapLaoding', true)
+          getDefectData().then(res => {
+            this.hasLoad = true
+            this.$store.dispatch('map/mapLaoding', false)
+            if (res.code === 1 && res.result) {
+                let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getReportFeatures(res.result, true)
+                this.lightLayer.getSource().clear()
+                if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
+                  let center = mapUtil.getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+                  this.themLayer = new VectorLayer({ source: new VectorSource() })
+                  this.themLayer.setVisible(false)
+                  this.themLayer.set('layername', this.themLayerName)
+                  this.map.addLayer(this.themLayer)
+                  this.themLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+                  map.getView().setZoom(15)
+                  map.getView().setCenter(center)
+                  // 
+                  this.setThemLayer()
+                } else {
+                  this.vectorLayer.getSource().clear()
+                }
+            } else this.$message.error('管线缺陷数据请求失败')
+          })
+      }
+    },
+    /**
+     * 构造管道缺陷地图要素
+     * @param reportInfos 报告数据
+     * */
+    getReportFeatures (defectInfos, hasStyle) {
+      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      if (defectInfos.length === 0) { return features }
+      defectInfos.forEach(defect => {
+        let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = defect
+        if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
+          let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
+          let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+          startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
+          endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
+          let lineCoors = [startPoint, endPoint]
+          let feature = new Feature({ geometry: new LineString(lineCoors) })
+          // 健康等级颜色
+            let colors = [
+              { level: 'Ⅰ', color: 'green' },
+              { level: 'Ⅱ', color: 'blue' },
+              { level: 'Ⅲ', color: 'pink' },
+              { level: 'Ⅳ', color: 'red' }
+            ]
+            let findFuncColor = colors.find(colorObj => defect['funcClass'] && defect['funcClass'].includes(colorObj.level))
+            let findStrucColor = colors.find(colorObj => defect['structClass'] && defect['structClass'].includes(colorObj.level))
+              // 功能性缺陷
+            if (!isExit(defect.expNo, 'funcDefectFeatures')) {
+              let fFea = feature.clone()
+              let fColor = findFuncColor ? findFuncColor.color : "#070358"
+              hasStyle && fFea.setStyle(comSymbol.getLineStyle(5, fColor))
+              for (let i in defect) {
+                i !== 'geometry' && fFea.set(i, defect[i])
+              }
+              features.funcDefectFeatures.push(fFea)
+            }
+              // 结构性缺陷
+            if (!isExit(defect.expNo, 'strucDefectFeatures')) {
+              let sFea = feature.clone()
+              let sColor = findStrucColor ? findStrucColor.color : "#070358"
+              hasStyle && sFea.setStyle(comSymbol.getLineStyle(5, sColor))
+              for (let i in defect) {
+                i !== 'geometry' && sFea.set(i, defect[i])
+              }
+              features.strucDefectFeatures.push(sFea)
+            }
+            // 缺陷点
+            if (defect.geometry) {
+              let coors = JSON.parse(defect.geometry)
+              let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
+              let feature = new Feature({ geometry: new Point(point) })
+              let imgs = [
+                { level: ['一级', '1'], img: defectImg1, index: 0 },
+                { level: ['二级', '2'], img: defectImg2, index: 1 },
+                { level: ['三级', '3'], img: defectImg3, index: 2 },
+                { level: ['四级', '4'], img: defectImg4, index: 3 },
+                // { level: '/', img: defectImg0, index: 4 }
+              ]
+              let findimg = null
+              if (defect.defectLevel) {
+                findimg = imgs.find((colorObj) => colorObj.level.includes(defect['defectLevel']))
+              }
+              // 缺少 defectLevel 字段
+              if (findimg) {
+                let rotation = getIconRat(lineCoors)
+                hasStyle && feature.setStyle( new Style({ image: new Icon({ size: [48, 48], anchor: [0.5, 0], src: findimg.img, scale: 0.4, rotation }) }) )
+                for (let i in defect) {
+                  i !== 'geometry' && feature.set(i, defect[i])
+                }
+                features.pipeDefectFeatures.push(feature)
+              }
+            }
+
+        }
+      })
+      return features
+      function isExit(pipeId, feasType) {
+        return features[feasType].some(fea => fea.get('expNo') === pipeId)
+      }
+      function getIconRat([startPoint, endPoint]) {
+        let rotation = 0
+        // 因为要垂直管线显示，所以图片旋转 90°
+        let imgRt = Math.PI / 2
+
+        // 计算旋转弧度
+        if (endPoint[0] === startPoint[0]) {
+          // 竖直
+          rotation = endPoint[1] > startPoint[1] ? -imgRt : Math.PI - imgRt
+        } else if (endPoint[1] === startPoint[1]) {
+          // 水平
+          rotation = endPoint[1] > startPoint[1] ? Math.PI / 2 - imgRt : (Math.PI * 3) / 2 - imgRt
+        } else {
+          // 其他角度
+          rotation = Math.atan((endPoint[0] - startPoint[0]) / (endPoint[1] - startPoint[1])) - imgRt
+        }
+        return rotation
+      }
+    },
+
     // 获取缺陷数据
     getPipeDefectData() {
       getDefectData({ state: 1 }).then((res) => {
@@ -644,6 +825,7 @@ export default {
             let reportInfo = res.result[0] ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
+            if (!(this.vectorLayer && this.lightLayer)) return
             this.lightLayer.getSource().clear()
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
               let center = new mapUtil().getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
@@ -662,8 +844,7 @@ export default {
      * @param featureArr 数组
      * */
     getFeatures(featureArr) {
-      let style = null,
-        features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
       featureArr.forEach((feaObj) => {
         let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = feaObj
         if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
@@ -690,23 +871,21 @@ export default {
           )
 
           // 功能性缺陷
-          if (findFuncColor) {
             let fFea = feature.clone()
-            fFea.setStyle(comSymbol.getLineStyle(5, findFuncColor.color))
+            let fColor = findFuncColor ? findFuncColor.color : '#070358'
+            fFea.setStyle(comSymbol.getLineStyle(5, fColor))
             for (let i in feaObj) {
               i !== 'geometry' && fFea.set(i, feaObj[i])
             }
             features.funcDefectFeatures.push(fFea)
-          }
           // 结构性缺陷
-          if (findStrucColor) {
             let sFea = feature.clone()
-            sFea.setStyle(comSymbol.getLineStyle(5, findStrucColor.color))
+            let sColor = findStrucColor ? findStrucColor.color : '#070358'
+            sFea.setStyle(comSymbol.getLineStyle(5, sColor))
             for (let i in feaObj) {
               i !== 'geometry' && sFea.set(i, feaObj[i])
             }
             features.strucDefectFeatures.push(sFea)
-          }
           // 管道缺陷等级数据
           feaObj.pipeDefects.forEach((feaObj, index) => {
             if (feaObj.geometry) {
@@ -799,17 +978,16 @@ export default {
     },
     setPositionByPipeId(id) {
       let features = this.vectorLayer.getSource().getFeatures()
-      let filterFea = features.find((fea) => fea.get('id') === id)
+      let filterFea = features.find((fea) => fea.get('expNo') === id && fea.getGeometry() instanceof LineString)
       if (filterFea) {
+        this.lightLayer.getSource().clear()
         let feature = new Feature({
           geometry: filterFea.getGeometry().clone(),
           style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')
         })
-        this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(feature)
-        let center = new mapUtil().getCenterFromFeatures(feature)
-        this.map.getView().setCenter(center)
-        this.map.getView().setZoom(19)
+        let center = mapUtil.getCenter(feature)
+        new mapUtil(this.map).setZoomAndCenter(18, center)
         return center
       }
     },
@@ -842,29 +1020,34 @@ export default {
       }
     },
     // 打开缩略提示框
-    async openPromptBox(row, column, cell, event) {
+    openPromptBox(row) {
+      console.log('打开弹框')
       this.handleRowClick(row)
+      if(!(this.vectorLayer && this.lightLayer)) return
       if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
-      let position = this.setPositionByPipeId(row.id)
-      console.log('打开缩略提示框', row)
-      let res = await histroyPipeData({ expNo: row.expNo })
-      this.currentIndex = 0
-      this.currentForm = res.result
-      // 定位
-      if (position) {
-        this.popup = new Overlay({
-          element: document.getElementById('popupCardEva'),
-          //当前窗口可见
-          autoPan: true,
-          positioning: 'bottom-center',
-          stopEvent: true,
-          offset: [18, -25],
-          autoPanAnimation: { duration: 250 }
-        })
-        this.map.addOverlay(this.popup)
-        this.popup.setPosition(position)
-        this.currentInfoCard = true
-      } else this.$message.warning('该管段无位置信息')
+      histroyPipeData({ expNo: row.expNo, wordInfoState: 1 }).then(res => {
+        if (res.code === 1) {
+          // 定位
+          let position = this.setPositionByPipeId(row.expNo)
+          if (position) {
+            this.activeName = 'picnum'
+            this.currentForm = res.result
+            this.currentIndex = 0
+            this.popup = new Overlay({
+              element: document.getElementById('popupCardEva'),
+              //当前窗口可见
+              autoPan: true,
+              positioning: 'bottom-center',
+              stopEvent: true,
+              offset: [18, -25],
+              autoPanAnimation: { duration: 250 }
+            })
+            this.map.addOverlay(this.popup)
+            this.popup.setPosition(position)
+            this.currentInfoCard = true
+          } else this.$message.warning('该管段无位置信息')
+        } else this.$message.error('查询详细数据出错!')
+      })
     },
 
     // 详情
@@ -874,32 +1057,31 @@ export default {
       this.dialogFormVisible = true
     },
     // 重置
-    async resetBtn() {
+    resetBtn() {
       this.pagination = { current: 1, size: 30 }
       this.searchValue = {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        },
+        startDate: '',
+        finishDate: '',
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
         structClass: '' // 结构型缺陷等级
       }
       this.changeDate()
-      await this.getDate()
+      this.getDate()
+      this.drawer && this.drawer.end()
     },
     // 搜索
     searchApi() {
-      this.pagination.current = 1
+      console.log('查询地图')
       this.getDate()
       this.searchMap({
         funcClass: this.searchValue.funcClass,
         structClass: this.searchValue.structClass,
         queryText: this.searchValue.queryParams,
-        endDate: this.searchValue.testTime.finishDate,
-        startDate: this.searchValue.testTime.startDate,
+        endDate: this.searchValue.finishDate,
+        startDate: this.searchValue.startDate,
       })
-      console.log(this.searchValue.testTime)
+      console.log(this.searchValue)
     },
     
     // 搜索地图
@@ -913,17 +1095,30 @@ export default {
       source.addFeatures(features)
 
       let center = mapUtil.getCenter(features[0])
-      let view = this.map.getView()
-      view.setCenter(center)
-      view.setZoom(17)
+      if (center.length !== 0) {
+        let view = this.map.getView()
+        view.setCenter(center)
+        view.setZoom(17)
+      }
       function filter (fea) {
-        if (!fea.get('expNo').includes(filterObj.queryText) && !fea.get('material').includes(filterObj.queryText)) return false
+        let expNo = fea.get('expNo'), 
+            material = fea.get('material'), 
+            funcClass = fea.get('funcClass'), 
+            structClass = fea.get('structClass'),
+            date = fea.get('sampleTime');
+        if (filterObj.queryText) {
+          if (!expNo.toLowerCase().includes(filterObj.queryText.toLowerCase()) && !material.includes(filterObj.queryText)) {
+            return false
+          }
+        }
+        if (filterObj.funcClass) {
+          if (!funcClass || !funcClass.includes(filterObj.funcClass)) return false
+        }
 
-        if (!fea.get('funcClass').includes(filterObj.funcClass)) return false
+        if (filterObj.structClass) {
+          if (!structClass || !structClass.includes(filterObj.structClass)) return false
+        }
 
-        if (!fea.get('structClass').includes(filterObj.structClass)) return false
-
-        let date = fea.get('sampleTime')
         let startDate = filterObj.startDate
         let endDate = filterObj.endDate
         if (startDate || endDate) {
@@ -942,42 +1137,30 @@ export default {
       this.multipleSelection = val
     },
     // 查询数据
-    async getDate() {
-      let data = this.pagination
-      data.wordInfoState = 1
-        data.jcStartDate = this.searchValue.testTime.startDate
-        data.jcEndDate = this.searchValue.testTime.finishDate
-        data.queryParams = this.searchValue.queryParams
-        data.funcClass = this.searchValue.funcClass
-        data.structClass = this.searchValue.structClass
-      await queryPageAssessment(data).then((res) => {
-        // console.log('接口返回', res)
+    getDate() {
+      console.log('重置数据')
+      let data = {
+        wordInfoState: 1,
+        jcStartDate: this.searchValue.startDate,
+        jcEndDate: this.searchValue.finishDate,
+        queryParams: this.searchValue.queryParams,
+        funcClass: this.searchValue.funcClass,
+        structClass: this.searchValue.structClass,
+        ...this.pagination
+      }
+      queryPageAssessment(data).then((res) => {
         this.tableData = res.result.records
         this.paginationTotal = res.result.total
-        // this.$message.success("上传成功");
       })
     },
     // 分页触发的事件(主表格)
-    async handleSizeChange(val) {
+    handleSizeChange(val) {
       this.pagination.size = val
-      await this.getDate()
-      console.log(`每页 ${val} 条`)
+      this.getDate()
     },
-    async handleCurrentChange(val) {
+    handleCurrentChange(val) {
       this.pagination.current = val
-      await this.getDate()
-      console.log(`当前页: ${val}`)
-    },
-    // 分页触发的事件(附件列表)
-    async handleSizeChangeEnclosure(val) {
-      this.pagination.size = val
-      await this.getDate()
-      console.log(`每页 ${val} 条`)
-    },
-    async handleCurrentChangeEnclosure(val) {
-      this.pagination.current = val
-      await this.getDate()
-      console.log(`当前页: ${val}`)
+      this.getDate()
     }
   }
 }

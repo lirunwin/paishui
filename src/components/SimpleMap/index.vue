@@ -1,5 +1,5 @@
 <template>
-  <div ref="mainMap" class="map-container" :style="mapSize">
+  <div ref="mainMap" class="map-container" :style="mapSize" v-loading='maploading'>
     <transition name="el-zoom-in-top">
       <div v-show="showMapLengend" class="map-legend">
         <div class="map-legend-title">
@@ -70,16 +70,30 @@ export default {
     return {
       map: null,
       projUtil: null, // 坐标系工具
-      currentDataProjName: 'proj43', // 当前坐标系
+      currentDataProjName: 'proj44', // 当前坐标系
       vectorLayer: null,
       moveEvent: null,
       showMapLengend: false,
       showLegendBox: true,
       legendData: [],
       drawer: null,
+      maploading: false,
+      colors: [
+        { color: '#f00', label: '立即处理' },
+        { color: '#ff0', label: '处理计划' },
+        { color: '#ff3', label: '制定修复计划' },
+        { color: '#FFCD43', label: '修复计划' },
+        { color: '#008000', label: '尽快处理' },
+        { color: '#00f', label: '尽快修复' },
+        { color: '#0DBAFF', label: '暂不处理' },
+        { color: '#0DBAFF', label: '暂不修复' }
+      ]
     }
   },
   methods: {
+    changeLoading (status) {
+      this.maploading = status
+    },
     initMap() {
       let { initCenter, initZoom } = appconfig
       let layersSource = appconfig.gisResource['iserver_resource'].layerService.layers
@@ -111,7 +125,7 @@ export default {
         this.$emit('afterMapLoad')
       })
 
-      let moveEvent = this.map.on('moveend', (args) => {
+      this.moveEvent = this.map.on('moveend', (args) => {
         let [xmin, ymin, xmax, ymax] = new mapUtil(this.map).getCurrentViewExtent()
         let coors = [
           [
@@ -143,16 +157,16 @@ export default {
         if (type === 1) {
           let feature = new Feature({ geometry: new Point(coors) })
           let imgs = [
-            { level: '一级', img: defectImg1, index: 0 },
-            { level: '二级', img: defectImg2, index: 1 },
-            { level: '三级', img: defectImg3, index: 2 },
-            { level: '四级', img: defectImg4, index: 3 },
+            { level: ['一级', '1'], img: defectImg1, index: 0 },
+            { level: ['二级', '2'], img: defectImg2, index: 1 },
+            { level: ['三级', '3'], img: defectImg3, index: 2 },
+            { level: ['四级', '4'], img: defectImg4, index: 3 },
             // { level: '/', img: defectImg0, index: 4 }
           ]
           let findimg = null
 
           if (item.defectLevel) {
-            findimg = imgs.find((colorObj) => item['defectLevel'].includes(colorObj.level))
+            findimg = imgs.find((colorObj) => colorObj.level.includes(item['defectLevel']))
           }
           // 缺少 defectLevel 字段
           if (findimg) {
@@ -233,21 +247,15 @@ export default {
       let resData = new Map()
       data = filter(data, 2)
       // 地图加入整改图层
-      let colors = [
-        { color: '#f00', label: '立即处理' },
-        { color: '#ff0', label: '处理计划' },
-        { color: '#FFCD43', label: '修复计划' },
-        { color: '#008000', label: '尽快处理' },
-        { color: '#00f', label: '尽快修复' },
-        { color: '#0DBAFF', label: '暂不处理' }
-      ]
+      let colors = this.colors
       let features = []
       data.forEach((pipeData) => {
         let geometry = new LineString(pipeData.geometry.geometry.coordinates)
         if (pipeData.pipeDefects.length !== 0) {
-          let checkSuggest = pipeData.pipeDefects[0].checkSuggest
-          let colorObj = colors.find((item) => item.label === checkSuggest)
-          if (colorObj) {
+          let defects = pipeData.pipeDefects.filter(defect => defect.checkSuggest)
+          let colorObjs = colors.filter(item => defects.some(defect => item.label.includes(defect.checkSuggest)))
+          if (colorObjs.length !== 0) {
+            let colorObj = colorObjs[0]
             let feature = new Feature({ geometry })
             feature.setStyle(comSymbol.getLineStyle(5, colorObj.color))
             features.push(feature)
@@ -314,7 +322,7 @@ export default {
       }
     },
     //
-    getDefectDataInMap(data, extent) {
+    getDefectDataInMap(data, extent, type = '') {
       let that = this
       // 无范围 默认全图
       if (!extent) {
@@ -338,7 +346,16 @@ export default {
       let pipeData = filter(pFeas, 2)
       // 添加要素
       this.vectorLayer.getSource().clear()
-      this.vectorLayer.getSource().addFeatures([...this.getFeatures(pipeData, 2), ...this.getFeatures(defectData, 1)])
+
+      let feas = []
+      if (type === 1) {
+        feas = [...this.getFeatures(defectData, 1)]
+      } else if (type ===  2) {
+        feas = [...this.getFeatures(pipeData, 2)]
+      } else {
+        feas = [...this.getFeatures(defectData, 1), ...this.getFeatures(pipeData, 2)]
+      }
+      this.vectorLayer.getSource().addFeatures(feas)
 
       return { pipeData, defectData }
 

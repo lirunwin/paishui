@@ -21,7 +21,7 @@
       <el-table-column prop="diameter" label="管径(mm)" align="center" header-align="center"> </el-table-column>
       <el-table-column prop="totleLength" label="管段长度(m)" align="center" header-align="center"> </el-table-column>
       <el-table-column prop="totleJcLength" label="检测长度(m)" align="center" header-align="center"> </el-table-column>
-      <el-table-column fixed="right" header-align="center" label="备注" align="center">
+      <el-table-column header-align="center" label="备注" align="center">
         <template slot-scope="scope">
           <div>分 {{ scope.row.totleNum }} 段</div>
         </template>

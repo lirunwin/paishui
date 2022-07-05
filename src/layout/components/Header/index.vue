@@ -42,7 +42,14 @@
       </div>
       <div class="right-menu">
         <div class="btn_box">
-          <i class="el-icon-bell bell-info" title="消息提示" @click="notificationDialog = true">
+          <div v-if="showDashboard" @click="home" style="display:flex" title="首页"> 
+            <svg-icon icon-class='home' className='sys-icon'></svg-icon>
+          </div>
+          <div style="display:flex" v-if="showSystemSetting" @click="handleSys('sysSetting')" title="系统管理">
+            <svg-icon icon-class='setting' className='sys-icon'></svg-icon>
+          </div>
+          <div style="display:flex" @click="notificationDialog = true" title="消息提示" class="bell-info">
+            <svg-icon icon-class='msg' className='sys-icon'></svg-icon>
             <span v-show="notificationNum !== 0" class="bell-dot">{{
               notificationNum > 100 ? '99+' : notificationNum
             }}</span>
@@ -54,9 +61,20 @@
               <source src="/i/song.ogg" type="audio/ogg" />
               <source src="/i/song.mp3" type="audio/mpeg" />
             </audio> -->
-          </i>
-          <i v-if="showDashboard" class="el-icon-s-home" title="首页" @click="home" />
-          <i v-if="showSystemSetting" class="el-icon-setting" title="系统管理" @click="handleSys('sysSetting')" />
+          </div>
+          
+          <!-- <i class="el-icon-bell bell-info"  >
+            <span v-show="notificationNum !== 0" class="bell-dot">{{
+              notificationNum > 100 ? '99+' : notificationNum
+            }}</span>
+            <el-dialog v-if="notificationDialog" :visible.sync="notificationDialog" title="消息" append-to-body>
+              <notification @close-notification="handleCloseNotification" @reget-noti="handleMarked" />
+            </el-dialog>
+            <video ref="videoMsg" src="../../../assets/images/home/msg.mp3" style="display: none" />
+
+          </i> -->
+          <!-- <i  class="el-icon-s-home"  />
+          <i  class="el-icon-setting"   /> -->
           <!-- <span class="home" title="首页" @click="home" />
           <i class="el-icon-s-tools" title="系统管理" @click="handleSys('sysSeting')" />
           <i class="el-icon-chat-dot-round" title="消息提示" /> -->
@@ -161,7 +179,7 @@ import { changePassword } from '@/api/base'
 import InputItem from '@/components/FormItem/Input/index.vue'
 import { verification } from '@/utils/index'
 import { geteSessionStorage } from '@/utils/auth'
-import headPortrait from '@/assets/login/headPortrait.gif'
+import headPortrait from '@/assets/login/default.png'
 // import ThemePicker from '@/components/ThemePicker'
 import logo from '@/assets/images/logo1.png'
 import AccountApply from './AccountApply.vue'
@@ -396,7 +414,7 @@ export default class Header extends Vue {
     this.$store.state.gis.activeHeaderItem = this.defaultActiveIndex
 
     //大屏跳转
-    if(event.name=='bigScreen') this.$router.push('/bigScreen')
+    if (event.name == 'bigScreen') this.$router.push('/bigScreen')
   }
   // scrollPrev() {
   //   this.$refs.navScroll.$el.scrollLeft = 0;
@@ -437,6 +455,7 @@ export default class Header extends Vue {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/styles/basemapicon.scss";
 /deep/.el-menu--horizontal > .el-menu-item,
 .el-menu--horizontal > .el-submenu {
   float: none !important;
@@ -490,9 +509,11 @@ export default class Header extends Vue {
           justify-content: center;
           align-items: center;
           margin-right: 6px;
+          background: #fff;
+          border-radius: 50%;
           .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
           }
         }
 
@@ -523,9 +544,7 @@ export default class Header extends Vue {
       float: left;
       display: flex;
       align-items: center;
-      > i {
-        color: #fff;
-        font-size: 20px;
+      > div {
         cursor: pointer;
         &:nth-of-type(2) {
           padding: 0 15px;
@@ -534,14 +553,14 @@ export default class Header extends Vue {
       .bell-info {
         position: relative;
         .bell-dot {
-          width: 26px;
-          height: 26px;
+          width: 24px;
+          height: 24px;
           color: #ffffff;
           background: red;
           border-radius: 50%;
           position: absolute;
-          top: -14px;
-          right: -14px;
+          top: -10px;
+          right: -13px;
           display: flex;
           align-items: center;
           justify-content: center;

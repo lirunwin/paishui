@@ -39,11 +39,13 @@ export default {
       this.echartsData = this.paramData
       this.echatrsArr = []
       let dataArr = new Map(), arr = []
-      this.echartsData.map(v => v.checkSuggest).forEach(item => {
-        if (dataArr.has(item)) {
-          dataArr.set(item, dataArr.get(item) + 1)
-        } else {
-          dataArr.set(item, 1)
+      this.echartsData.map(v => v.checkSuggest).forEach(suggest => {
+        if (suggest) {
+          if (dataArr.has(suggest)) {
+            dataArr.set(suggest, dataArr.get(suggest) + 1)
+          } else {
+            dataArr.set(suggest, 1)
+          }
         }
       })
       dataArr.forEach((value, name) => {

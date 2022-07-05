@@ -62,7 +62,7 @@
             <div class="operation-box">
               <div class="serch-engineering">
                 <el-button size="small" class="serch-btn" type="primary" @click="search"> 查询 </el-button>
-                <el-button size="small" class="serch-btn" type="primary" @click="getPdf('管道评估统计')"> 导出 </el-button>
+                <el-button size="small" class="serch-btn" type="primary" @click="getPdf('管道评估统计', 'evaSta')"> 导出 </el-button>
                 <el-button size="small" class="serch-btn" type="primary" @click="drawFeature">范围</el-button>
                 <el-button size="small" class="serch-btn" type="primary" @click="clearDraw">清除</el-button>
               </div>
@@ -79,7 +79,7 @@
               <el-checkbox v-model="pipNum">管道数量</el-checkbox>
               <el-checkbox v-model="pipLen">管道长度</el-checkbox>
             </div>
-            <div id="pdfDom">
+            <div id="evaSta">
               <h2 style="text-align: center">管道评估统计图</h2>
               <div id="mainPESS" style="height: 250px"></div>
               <!-- 表格 -->
@@ -188,7 +188,7 @@ export default {
         disabledDate: (time) => {
           time = time.getTime()
           if (this.searchValue.jcStartDate) {
-            return time < new Date(this.searchValue.jcStartDate).getTime() || time > new Date().getTime()
+            return time < new Date(this.searchValue.jcStartDate).getTime() - 8.64e7 || time > new Date().getTime()
           }
           return time > new Date().getTime()
         }
@@ -200,7 +200,9 @@ export default {
         jcEndDate: '',
         checkSuggest: ''
       },
-      hasDraw: false
+      hasDraw: false,
+      // 储存数据
+      mapData: {}
     }
   },
   mounted() {
@@ -309,20 +311,26 @@ export default {
     },
     // 查询
     search() {
-      this.getDataFromExtent().then((res) => {
+      this.getDataFromExtent().then((res) => {      
         console.log('这是查询的数据', res)
         this.getMapData(res)
       })
     },
-    async getDataFromExtent(extent) {
-      let data = await this.getPipeData()
-      if (data.code === 1) {
-        // 地图范围过滤数据
-        return this.$refs.myMap.getDataInMap(data.result, extent)
-      } else this.$message.error('请求数据出错')
-    },
+    getDataFromExtent(extent) {
+      return new Promise(resolve => {
+      this.loading = true
+        this.getPipeData().then(data => {
+          this.loading = false
+          if (data.code === 1) {
+            // 地图范围过滤数据
+            resolve(this.$refs.myMap.getDataInMap(data.result, extent))
+          } else this.$message.error('请求数据出错')
+        })
+      })
+
+    }, 
     // 根据条件获取缺陷数据
-    getPipeData() {
+    async getPipeData() {
       let params = {
         jcStartDate: '',
         jcEndDate: '',
@@ -330,7 +338,15 @@ export default {
         wordInfoState: 1,
         ...this.searchValue
       }
-      return getDefectDataBySE(params)
+      // 缓存
+      let strKey = JSON.stringify(params)
+      if (this.mapData.hasOwnProperty(strKey)) {
+        return Promise.resolve(this.mapData[strKey])
+      } else {
+        let res = await getDefectDataBySE(params)
+        this.mapData[strKey] = res
+        return Promise.resolve(res)
+      }
     },
 
     //初始化数据(饼状图)

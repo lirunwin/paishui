@@ -7,12 +7,12 @@ const uris = {
   users: '/base/user/getUserByDepts',
   events: {
     base: `${base}/eventmange`,
-    page: `${base}/eventmange/page`,
-    assign: {
-      base: `${base}/dispatch`,
-      page: `${base}/dispatch/page`,
-      delBatch: `${base}/dispatch/deleteByIds`
-    }
+    page: `${base}/eventmange/page`
+  },
+  assign: {
+    base: `${base}/dispatch`,
+    page: `${base}/dispatch/page`,
+    delBatch: `${base}/dispatch/deleteByIds`
   },
   flood: {
     base: `${base}/floodseasonw`,
@@ -79,7 +79,7 @@ export interface IEvent {
   createTime: string
   createUserid: string | number
   detail: string
-  facility: string
+  facility:string,
   findDate: string
   findPhone: string
   findUser: string
@@ -127,6 +127,9 @@ export interface IFlood {
   uploadFileids: string
   x: string | number
   y: string | number
+
+  filePathList: string[]
+  createUserDetail: IEasyUserInfo
 }
 
 export interface IVehicle {
@@ -151,10 +154,12 @@ export interface IVehicle {
 export interface IVehicleArchive {
   beginDate: string
   carNo: string
+  carId: string
   chargePersonName: string
   departmentName: string
   endDate: string
   eventMangeList: IEvent[]
+  id: string | number
   length: string
   type: string
   userId: string
@@ -193,7 +198,11 @@ export const deleteEvent = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.events.base}/${id}`, method: 'delete' })
 
 export const updateEvent = (data: Partial<IEvent>) =>
-  axios.request<IRes<boolean>>({ url: uris.events.base, method: 'put', data })
+  axios.request<IResult<IEvent>>({
+    url: uris.events.base,
+    method: 'put',
+    data: serialize(data, { dotsForObjectNotation: true, noFilesWithArrayNotation: true })
+  })
 
 export const getEvent = (id: string) =>
   axios.request<IResult<IEvent>>({ url: `${uris.events.base}/${id}`, method: 'get' })
@@ -222,7 +231,7 @@ export const deleteFlood = (id: string) =>
   axios.request<IRes<boolean>>({ url: `${uris.flood.base}/${id}`, method: 'delete' })
 
 export const updateFlood = (data: Partial<IFlood>) =>
-  axios.request<IRes<boolean>>({ url: uris.flood.base, method: 'put', data })
+  axios.request<IResult<IFlood>>({ url: uris.flood.base, method: 'put', data })
 
 export const getFlood = (id: string) =>
   axios.request<IResult<IFlood>>({ url: `${uris.flood.base}/${id}`, method: 'get' })
@@ -273,26 +282,26 @@ export const vehicleArchivePage = (params: Partial<IVehicleArchiveQuery & IQuery
   })
 
 export const addAssign = (data: Partial<Omit<IAssign, 'id'>>) =>
-  axios.request<IRes<boolean>>({ url: uris.events.assign.base, method: 'post', data })
+  axios.request<IRes<boolean>>({ url: uris.assign.base, method: 'post', data })
 
 export const deleteAssign = (id: string) =>
-  axios.request<IRes<boolean>>({ url: `${uris.events.assign.base}/${id}`, method: 'delete' })
+  axios.request<IRes<boolean>>({ url: `${uris.assign.base}/${id}`, method: 'delete' })
 
 export const updateAssign = (data: Partial<IAssign>) =>
-  axios.request<IRes<boolean>>({ url: uris.events.assign.base, method: 'put', data })
+  axios.request<IRes<boolean>>({ url: uris.assign.base, method: 'put', data })
 
 export const getAssign = (id: string) =>
-  axios.request<IResult<IAssign>>({ url: `${uris.events.assign.base}/${id}`, method: 'get' })
+  axios.request<IResult<IAssign>>({ url: `${uris.assign.base}/${id}`, method: 'get' })
 
 export const assignPage = (params: Partial<IAssign & IQueryCommon>) =>
   axios.request<IRes<(IAssign & { createUserDetail: IEasyUserInfo; collaborateHandlers: IEasyUserInfo[] })[]>>({
-    url: uris.flood.page,
+    url: uris.assign.page,
     method: 'get',
     params
   })
 
 export const deleteAssignBatch = (ids: string) =>
-  axios.request<IRes<boolean>>({ url: uris.events.assign.delBatch, method: 'delete', params: { ids } })
+  axios.request<IRes<boolean>>({ url: uris.assign.delBatch, method: 'delete', params: { ids } })
 
 export const getUsers = (depts?: string) =>
   axios.request<IResult<IDepartment[]>>({

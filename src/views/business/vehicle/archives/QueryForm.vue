@@ -76,7 +76,15 @@ export default class QueryForm extends Vue {
     queryLike: '',
     department: '',
     chargePerson: '',
-    date: [moment().add(-7, 'day').startOf('day').toDate(), moment().startOf('day').toDate()]
+    date: [
+      moment()
+        .add(-7, 'day')
+        .startOf('day')
+        .toDate(),
+      moment()
+        .startOf('day')
+        .toDate()
+    ]
   }
 
   onDepartmentChange() {
@@ -86,11 +94,19 @@ export default class QueryForm extends Vue {
   onQuery() {
     const { date, ...rest } = this.formData
     const [beginTime, endTime] = date || []
-    const format = 'YYYY-MM-DD'
+    const format = 'YYYY-MM-DD HH:mm:ss'
     this.$emit('query', {
       ...rest,
-      beginTime: beginTime ? this.$moment(beginTime).format(format) : '',
-      endTime: endTime ? this.$moment(endTime).format(format) : ''
+      beginTime: beginTime
+        ? this.$moment(beginTime)
+            .startOf('day')
+            .format(format)
+        : '',
+      endTime: endTime
+        ? this.$moment(endTime)
+            .startOf('day')
+            .format(format)
+        : ''
     })
   }
 

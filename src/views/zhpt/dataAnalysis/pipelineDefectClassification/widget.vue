@@ -74,17 +74,16 @@
             type="primary"
             @click="searchApi"
           >查询</el-button>
-          <el-button class="serch-btn" type="primary" @click="getPdf('管道缺陷分类统计')">导出</el-button>
+          <el-button class="serch-btn" type="primary" @click="getPdf('管道缺陷分类统计', 'defectDomId')">导出</el-button>
         </div>
         <div class="right-btn"></div>
       </div>
-      <div id="pdfDom" class="content" v-show="!isNull">
+      <div id="defectDomId" class="content" v-show="!isNull">
         <div id="mainA" style="height: 500px"></div>
         <div style="border: 1px solid #ccc">
           <div class="detailsTitle">管道缺陷分类统计表</div>
           <table
             width="100%"
-            height="160"
             border="1"
             class="left-table"
             cellspacing="0"
@@ -98,11 +97,11 @@
                 <th>缺陷数量</th>
               </tr>
             </thead>
-            <tr class="highlight" style="height: 20px">
+            <!-- <tr class="highlight" style="height: 20px">
               <td>{{ zc.name }}</td>
               <td>{{ zc.title }}</td>
               <td>{{ zc.value }}</td>
-            </tr>
+            </tr> -->
             <tr
               class="highlight"
               :style="defectQuantityStatisticsA.length == 1 ? 'height: 20px;' : ''"
@@ -176,7 +175,7 @@ export default {
         disabledDate: (time) => {
           time = time.getTime()
           if (this.searchValue.jcStartDate) {
-            return time <= new Date(this.searchValue.jcStartDate).getTime() || time > new Date().getTime()
+            return time <= new Date(this.searchValue.jcStartDate).getTime() - 8.64e7 || time > new Date().getTime()
           }
           return time >= new Date().getTime()
         }
@@ -191,7 +190,6 @@ export default {
         defectName: ''
       },
       defectSum: 0, // 合计
-      zc: { value: 0, name: '正常', title: '(ZC)正常', type: 'ZC' },
       defectQuantityStatisticsA: [], // 管道缺陷数量统计表
       defectQuantityStatisticsB: [],
       echartsTitle: [],
@@ -199,8 +197,12 @@ export default {
       contentEchatrs: [],
       //
       defectTypes: [],
-      types: ['结构性缺陷', '功能性缺陷', '正常'],
+      types: ['结构性缺陷', '功能性缺陷'],
       defectTypesData: [],
+      typeArr: {
+        s: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'],
+        f: ['CJ', 'CQ', 'FZ', 'JG', 'SG', 'ZW']
+      },
     }
   },
   created() {
@@ -224,8 +226,22 @@ export default {
   },
   methods: {
     setTypes (data) {
-      this.defectTypesData = data.map(v => {
-        return { value: v.defectNum, name: v.defectName, type: v.defectType }
+      console.log('设置类型')
+      let map = new Map()
+      map.set('结构性缺陷', [])
+      map.set('功能性缺陷', [])
+      data.forEach(v => {
+        let type = v.defectType
+        if (!type) {
+          if (this.typeArr.s.includes(v.defectCode)) { type = '结构性缺陷' }
+          if (this.typeArr.f.includes(v.defectCode)) { type = '功能性缺陷' }
+        }
+        if (!map.get(type).includes(v.defectName)) {
+          map.get(type).push(v.defectName)
+        }
+      })
+      map.forEach((value, key) => {
+        value.forEach(name => this.defectTypesData.push({ type: key, name }))
       })
       this.defectTypes = [...this.defectTypesData]
     },
@@ -233,60 +249,52 @@ export default {
       this.defectQuantityStatisticsA = []
       this.defectQuantityStatisticsB = []
       this.defectSum = 0
-      this.zc.value = 0
+      this.echartsData = []
 
       // 设置
-      this.contentEchatrs = data.map((v) => {
-        return { name: v.defectType, value: v.defectNum }
-      })
-
-      this.contentEchatrs = this.contentEchatrs.reduce((obj, item) => {
-        let find = obj.find((i) => i.name === item.name)
-        let _d = { ...item, frequency: 1 }
-        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
-        return obj
-      }, [])
-
-      this.contentEchatrs.forEach((v) => {
-        if (v.name == null) {
-          v.name = '正常'
+      let content = [{ name: '结构性缺陷', value: 0 }, { name: '功能性缺陷', value: 0 }]
+      data.forEach(defect => {
+        let type = defect.defectType
+        if (type) {
+          let typeObj = content.find(item => item.name === type)
+          typeObj.value += defect.defectNum
+        } else {
+          if (this.typeArr.s.includes(defect.defectCode)) { content[0].value += defect.defectNum }
+          if (this.typeArr.f.includes(defect.defectCode)) { content[1].value += defect.defectNum }
         }
       })
-
-      this.echartsTitle = data.map((v) => {
-        return v.defectName
+      this.contentEchatrs = content
+      this.echartsTitle = data.filter(v => v).map(v => v.defectName)
+      let echartsData = new Map()
+      data.forEach(item => {
+          if (!echartsData.has(item.defectName)) {
+            echartsData.set(item.defectName, item.defectNum)
+          } else {
+            echartsData.set(item.defectName, echartsData.get(item.defectName) + item.defectNum)
+          }
+      })
+      echartsData.forEach((value, key) => {
+        this.echartsData.push({ name: key, value })
       })
 
-      this.echartsData = data.map((v) => {
-        this.defectSum += v.defectNum
-        return {
-          value: v.defectNum,
-          name: v.defectName
-        }
-      })
-
+      this.defectSum = data.map(item => item.defectNum).reduce((prev, next) => prev + next, 0)
       data.forEach((pv) => {
-        if (pv.defectType == '结构性缺陷' && pv.defectType != null) {
+        if (pv.defectType == '结构性缺陷' || this.typeArr.s.includes(pv.defectCode)) {
           this.defectQuantityStatisticsA.push({
-            // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
             name: pv.defectName,
             type: pv.defectCode,
             value: pv.defectNum,
-            title: `（${pv.defectCode}）${pv.defectName}`
+            title: `（${pv.defectCode}）${pv.defectName}` 
           })
         }
 
-        if (pv.defectType == '功能性缺陷' && pv.defectType != null) {
+        if (pv.defectType == '功能性缺陷' || this.typeArr.f.includes(pv.defectCode)) {
           this.defectQuantityStatisticsB.push({
-            // { value: 0, name: '障碍物', title: '(ZW)障碍物', type: 'ZW' }
             name: pv.defectName,
             type: pv.defectCode,
             value: pv.defectNum,
             title: `（${pv.defectCode}）${pv.defectName}`
           })
-        }
-        if (pv.defectCode == 'ZC') {
-          this.zc.value = pv.defectNum
         }
       })
 
@@ -438,6 +446,7 @@ export default {
     width: 96%;
     height: 100%;
     margin: auto;
+    overflow-y: scroll;
     .top-tool {
       display: flex;
       justify-content: space-between;
@@ -493,10 +502,10 @@ export default {
       }
     }
     .content {
-      height: 92%;
+      min-height: 100px;
       width: 100%;
       border: 1px solid #afe7f8;
-      overflow-y: scroll;
+      overflow: scroll;
       padding: 10px;
       box-sizing: border-box;
       .detailsTitle {

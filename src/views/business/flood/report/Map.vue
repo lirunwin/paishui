@@ -10,6 +10,12 @@ import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
 import * as turf from '@turf/turf'
 import { getDistance } from '@/utils/constant'
+import Feature from 'ol/Feature'
+import VectorSource from 'ol/source/Vector'
+import { Vector as VectorLayer } from 'ol/layer'
+import { Point, MultiPoint } from 'ol/geom'
+import { Icon, Style } from 'ol/style'
+import locationIcon from '@/assets/images/map/location.png'
 type Coordinate = number[]
 
 @Component({})
@@ -24,7 +30,7 @@ export default class MapView extends Vue {
   view: Map = null
 
   timer = null
-
+  vectorLayer: VectorLayer<VectorSource<any>> = null
   async initMap() {
     const { initCenter, initZoom } = appconfig
 
@@ -40,10 +46,15 @@ export default class MapView extends Vue {
       })
     })
     this.view = map
-    this.addLayers(layerResource)
+    this.addLayers(layerResource).then(() => {
+      this.vectorLayer = new VectorLayer({
+        source: new VectorSource()
+      })
+      this.view.addLayer(this.vectorLayer)
+    })
 
     // 点击查询管段详情
-    this.view.on('click', (e) => {
+    this.view.on('singleclick', (e) => {
       console.log(e)
 
       if (this.enableDeviceSelect) {
@@ -53,10 +64,32 @@ export default class MapView extends Vue {
       }
       if (this.enableCoordinateSelect) {
         this.coordinateChange(e.coordinate)
+        this.drawPoint(e.coordinate[0], e.coordinate[1])
       }
     })
   }
+//巡检点添加页面点绘制事件
+  drawPoint(lon, lat) {
+    if (!this.vectorLayer) {
+      this.$message.error('点图层创建失败')
+      return
+    } else {
+      this.vectorLayer.getSource().clear()
+    }
 
+    const style = new Style({
+      image: new Icon({
+        src: locationIcon,
+        scale: 0.5,
+        color: '#2D74E7'
+      })
+    })
+    const feature = new Feature({
+      geometry: new Point([lon, lat])
+    })
+    feature.setStyle(style)
+    this.vectorLayer.getSource().addFeature(feature)
+  }
   async spaceQuery(position) {
     const bufferDis = 3e-3
     let queryFeature = turf.buffer(turf.point(position), bufferDis, { units: 'kilometers' })
@@ -75,10 +108,18 @@ export default class MapView extends Vue {
   }
 
   addLayers(layersSource) {
-    new TF_Layer().createLayers(layersSource).then((layers: any[]) => {
-      layers.forEach((layer) => {
-        layer && this.view.addLayer(layer)
-      })
+    return new Promise((resolve, reject) => {
+      new TF_Layer()
+        .createLayers(layersSource)
+        .then((layers: any[]) => {
+          layers.forEach((layer) => {
+            layer && this.view.addLayer(layer)
+          })
+          resolve(null)
+        })
+        .catch(() => {
+          reject()
+        })
     })
   }
 
@@ -108,6 +149,11 @@ export default class MapView extends Vue {
 
   mounted() {
     this.initMap()
+  }
+  clearMap() {
+   if(this.vectorLayer){
+     this.vectorLayer.getSource().clear();
+   } 
   }
 }
 </script>

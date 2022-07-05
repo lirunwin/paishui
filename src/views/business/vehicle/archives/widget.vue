@@ -9,15 +9,30 @@
       :data="vehicleArchives"
       @page-change="onPageChange"
       :pagination="pagination"
+      :tree-props="{ children: 'eventMangeList', hasChildren: 'hasChildren' }"
     >
+      >
       <template v-for="(_, index) of vehicleArchives" v-slot:[`name1-${index}`]="{ row }">
-        <el-button type="text">{{ row.id }}</el-button>
+        <el-button type="text" :key="index">{{ row.id }}</el-button>
       </template>
       <template v-for="(_, index) of vehicleArchives" v-slot:[`name2-${index}`]="{ row }">
-        <el-button type="text" @click="() => onShow(row)">{{ row.id }}</el-button>
+        <el-button type="text" :key="index" @click="() => onShow(row)">{{ row.id }}</el-button>
       </template>
     </BaseTable>
-    <MainMap :view="view" :isActive="isActive" :selected="selected" :data="current" />
+    <!-- <CommonPopup
+      v-for="key of popupIds"
+      :key="key"
+      :ref="`popup-${key}`"
+      :popupPosition="popups[key].coordinate"
+      :mapView="popups[key].map"
+      :isSetCenter="popups[key].center"
+      @close="() => onPopupClose(key)"
+    >
+      <InfoCard
+        :data="popups[key].data"
+        :colors="levelColors"
+      />
+    </CommonPopup> -->
   </div>
 </template>
 
@@ -27,18 +42,19 @@ import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { vehicleArchiveCols } from '../../utils'
 import { vehicleArchivePage, getUsers, IPagination, IDepartment, IVehicleArchive } from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
+import CommonPopup from '@/components/CommonPopup/index.vue'
 import QueryForm from './QueryForm.vue'
 
-@Component({ name: 'VehicleArchives', components: { BaseTable, QueryForm } })
+@Component({ name: 'VehicleArchives', components: { BaseTable, QueryForm, CommonPopup } })
 export default class VehicleArchives extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
-  columns = vehicleArchiveCols
+  columns = vehicleArchiveCols.filter((col) => col.type !== 'selection')
   vehicleArchives: IVehicleArchive[] = []
   pagination: IPagination = getDefaultPagination()
   loading: Partial<Record<'query', boolean>> = { query: false }
   query: Partial<IVehicleArchive & { statusMuti: string }> = {}
   departments: IDepartment[] = []
-  selected: IVehicleArchive[] = []
+  opened: IVehicleArchive[] = []
   current: Partial<IVehicleArchive> = {}
   view = null
 
@@ -47,12 +63,9 @@ export default class VehicleArchives extends Vue {
     this.departments = result
   }
 
-  onSelectionChange(selections) {
-    this.selected = [...selections]
-  }
-
   onShow(row: IVehicleArchive) {
     this.current = { ...row }
+    this.opened = [...this.opened.filter((item) => item.id !== row.id), { ...row }]
   }
 
   onPageChange(pagination) {
@@ -72,7 +85,16 @@ export default class VehicleArchives extends Vue {
         result: { records, size, total, current }
       } = await vehicleArchivePage({ ...this.query, ...this.pagination })
       this.pagination = { current, size, total }
-      this.vehicleArchives = records || []
+      this.vehicleArchives = (records || []).map((vehicle) => {
+        const { eventMangeList, id, ...reset } = vehicle
+        return {
+          id,
+          ...reset,
+          eventMangeList: (eventMangeList || []).map(({ id: eventId, ...resetEvent }) => {
+            return { ...resetEvent, ...reset, id: `${id}-${eventId}`, hasChildren: false }
+          })
+        }
+      })
     } catch (error) {
       console.log(error)
     }
@@ -98,4 +120,8 @@ export default class VehicleArchives extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.table {
+  flex: 1 1 auto;
+}
+</style>

@@ -4,7 +4,7 @@
     <tf-legend class="legend_dept" label="选择图层" isopen="true" title="选择查询要素图层">
       <el-select v-model="layerName" placeholder="请选择">
             <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
-               <el-option v-for="item in group.layers" :key="item.value" :label="item.label" :value="item.value"></el-option>
+               <el-option v-for="item in group.layers" :key="item.label" :label="item.label" :value="item.value"></el-option>
             </el-option-group>
       </el-select>
     </tf-legend>
@@ -229,7 +229,7 @@ export default {
         return { label: layer.title, value: layer.name, layers }
       })
 
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style:  comSymbol.getAllStyle(5, "#f00", 6, 'rgb(64, 158, 255)') })
+      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
       this.data.mapView.addLayer(this.vectorLayer)
     },
     clearAll () {

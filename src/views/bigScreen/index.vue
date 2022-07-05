@@ -1,29 +1,30 @@
 <template>
   <div class="widget-bigScreen" >
-    <!--背景地图模块-->
+    <!--地图模块-->
     <BaseMap  v-on:fontSize="fontSize" />
-    <MapLegend :show="showMonitoringCenter"/>
-    <LayerControl :show="showMonitoringCenter"/>
-    <MonitorTree />
+    <MapLegend :hideBoth="hideBoth"  :showMonitoringCenter="showMonitoringCenter"/>
+    <LayerControl :hideBoth="hideBoth" :showMonitoringCenter="showMonitoringCenter"/>
+    <MonitorTree v-on="{fontSize,getRequestResult}" :hideBoth="hideBoth"/>
     <!--头部菜单模块-->
     <Header/>
     <!--监测中心模块-->
-    <ELPWLMStatistic :show="showMonitoringCenter" :fontSize="fontSize"/><!--左侧模块-->
-    <PNLLMonitoring :show="showMonitoringCenter" v-on:fontSize="fontSize"/> <!--底部模块-->
-    <ELPVmonitoring :show="showMonitoringCenter" />                     <!--右侧模块-->
-    <MMIStatistic :show="showMonitoringCenter" />                       <!--中部模块-->
+    <ELPWLMStatistic :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/><!--左侧模块-->
+    <!-- <PNLLMonitoring :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/>  --><!--底部模块-->
+    <ELPVmonitoring :show="showMonitoringCenter" />                                   <!--右侧模块-->
+    <MMIStatistic :show="showMonitoringCenter" v-on="{fontSize,getRequestResult}"/>   <!--中部模块-->
     <!--数据总览模块-->
-    <PNIARStatistic :show="showOverviewData" :fontSize="fontSize"/>
-    <WFStatistic :show="showOverviewData" />
-    <DPNLStatistic :show="showOverviewData" :fontSize="fontSize"/>
-    <EMDStatistic :show="showOverviewData" />
+    <PNIARStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
+    <WFStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
+    <DPNLStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
+    <EMDStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}" />
     <WPSVMStatistic :show="showOverviewData" />
-    <MIDStatistic :show="showOverviewData" />
-    <CPNLStatistic :show="showOverviewData" :fontSize="fontSize"/>
+    <MIDStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}"/>
+    <CPNLStatistic :show="showOverviewData" v-on="{fontSize,getRequestResult}"/>
   </div>
 </template>
 
 <script>
+import {getBlockPage,getResultList} from '@/api/bigScreenAPI/bigScreenRequest'
 import Flexible from './flexible'
 import Header from './header/header.vue';
 //地图模块
@@ -55,15 +56,32 @@ export default {
     return{
       showMonitoringCenter:false,//监测中心
       showOverviewData:false,//数据总览
-      flexibleObject:null
+      flexibleObject:null,
+    }
+  },
+  computed:{
+    hideBoth(){
+      if(!this.showMonitoringCenter&&!this.showOverviewData){
+        return true
+      }else{
+        return false
+      }
     }
   },
   mounted(){
     this.flexibleObject=new Flexible()
+    getBlockPage({size:999}).then(res=>{
+        console.log('code列表',res)
+    })
   },
   methods:{
-    change(){
-
+    async getRequestResult(params) {
+      let returnData = await new Promise((resolve,reject) => {
+        getResultList(params).then(res => {
+          if(res.code==1) resolve(res.result)
+        }).catch(err=>{})
+      })
+      return returnData
     },
     //图表字体自适配函数
     fontSize(res) {
@@ -81,7 +99,6 @@ export default {
   destroyed(){
     this.flexibleObject.removeflexible()
     this.flexibleObject=null
-    console.log('大屏实例销毁')
   }
 }
 </script>
@@ -107,6 +124,28 @@ export default {
       border-radius:10px;
       background:#0F669A;
       box-shadow:inset 0 0 6px rgba(0,0,0,0.5);
+  }
+  /deep/ .el-select-dropdown {
+      background: rgb(16, 35, 80);
+      border-color: rgb(16, 35, 80);
+      min-width: .385417rem /* 74/192 */ !important;
+      .popper__arrow,.popper__arrow::after {
+          border-bottom-color: rgba(43,167,255,0.2);
+      }
+      .el-scrollbar__wrap{
+          margin:0 !important;
+          overflow: auto;
+      }
+      .el-select-dropdown__item{
+          color: #fff;
+      }
+      .el-select-dropdown__item.selected {
+          color: #409EFF;
+          font-weight: 700;
+      }
+      .el-select-dropdown__item.hover, .el-select-dropdown__item:hover{
+          background-color: rgba(43,167,255,0.2);
+      }
   }
 }
 </style>>

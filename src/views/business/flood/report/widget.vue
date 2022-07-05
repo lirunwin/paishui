@@ -37,7 +37,8 @@ import {
   IAssign,
   IPagination,
   IDepartment,
-  updateAssign
+  updateAssign,
+  updateFlood
 } from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
 import QueryForm from './QueryForm.vue'
@@ -79,27 +80,26 @@ export default class FloodReport extends Vue {
 
   async onSubmit({ flood, assign }: { flood: IFlood; assign: IAssign }) {
     let { id } = flood
-    if (!id) {
-      this.loading.report = true
-      try {
-        const { result } = await addFlood(flood)
-        this.$message[result.id ? 'success' : 'error'](`上报${result ? '成功!' : '失败!'}`)
-        id = result.id
-      } catch (error) {
-        console.log(error)
-      }
-      this.loading.report = false
+    this.loading.report = true
+    try {
+      const { result } = await (!id ? addFlood(flood) : updateFlood(flood))
+      this.$message[result.id ? 'success' : 'error'](`${id ? '修改' : ''}上报${result ? '成功!' : '失败!'}`)
+      id = result.id
+    } catch (error) {
+      console.log(error)
     }
-    if (id && assign.majorHandler) {
+    this.loading.report = false
+    if (id && assign.majorHandler && !assign.id) {
       this.loading.assign = true
       try {
-        const { result } = await (assign.id ? updateAssign(assign) : addAssign({ ...assign, sourceId: id }))
-        this.$message[result ? 'success' : 'error'](`${assign.id ? '修改' : ''}派工${result ? '成功!' : '失败!'}`)
+        const { result } = await addAssign({ ...assign, sourceId: id })
+        this.$message[result ? 'success' : 'error'](`派工${result ? '成功!' : '失败!'}`)
       } catch (error) {
         console.log(error)
       }
       this.loading.assign = false
     }
+    this.doQuery()
     this.visible = false
   }
 

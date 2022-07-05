@@ -37,7 +37,7 @@ import {
   IAssign,
   IPagination,
   IDepartment,
-  updateAssign
+  updateEvent
 } from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
 import QueryForm from './QueryForm.vue'
@@ -79,27 +79,32 @@ export default class EventReport extends Vue {
 
   async onSubmit({ event, assign }: { event: IEvent; assign: IAssign }) {
     let { id } = event
-    if (!id) {
-      this.loading.report = true
-      try {
-        const { result } = await addEvent(event)
-        this.$message[result.id ? 'success' : 'error'](`上报${result ? '成功!' : '失败!'}`)
-        id = result.id
-      } catch (error) {
-        console.log(error)
+    this.loading.report = true
+    try {
+      const { result } = await (id ? updateEvent(event) : addEvent(event))
+      let msgType
+      if (id) {
+        msgType = result ? 'success' : 'error'
+      } else {
+        msgType = result.id ? 'success' : 'error'
       }
-      this.loading.report = false
+      this.$message[msgType](`${id ? '修改' : ''}上报${result ? '成功!' : '失败!'}`)
+      id = result.id
+    } catch (error) {
+      console.log(error)
     }
-    if (id && assign.majorHandler) {
+    this.loading.report = false
+    if (id && assign.majorHandler && !assign.id) {
       this.loading.assign = true
       try {
-        const { result } = await (assign.id ? updateAssign(assign) : addAssign({ ...assign, sourceId: id }))
-        this.$message[result ? 'success' : 'error'](`${assign.id ? '修改' : ''}派工${result ? '成功!' : '失败!'}`)
+        const { result } = await addAssign({ ...assign, sourceId: id })
+        this.$message[result ? 'success' : 'error'](`派工${result ? '成功!' : '失败!'}`)
       } catch (error) {
         console.log(error)
       }
       this.loading.assign = false
     }
+    this.doQuery()
     this.visible = false
   }
 
@@ -124,7 +129,12 @@ export default class EventReport extends Vue {
         result: { records, size, total, current }
       } = await eventsPage({ ...this.query, ...this.pagination })
       this.pagination = { current, size, total }
+      records.map((item) => {
+        item.facility = item.facility === '' ? { pipeid: '' } : JSON.parse(item.facility)
+        return item
+      })
       this.events = records || []
+      console.log(records)
     } catch (error) {
       console.log(error)
     }

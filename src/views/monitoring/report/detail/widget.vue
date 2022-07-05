@@ -6,10 +6,14 @@
           <div class="form">
             <base-title>查看设置</base-title>
             <QueryForm
+              ref="form"
               @query="onQuery"
               :defaultQuery="defaultQuery"
               :deviceTypes="deviceTypes"
               @change:point="onPointChange"
+              :loading="loading"
+              :enablePointSelect.sync="enablePointSelect"
+              :selected="selected"
             />
           </div>
           <div class="map-container">
@@ -24,11 +28,14 @@
                 </div>
               </el-row>
             </base-title>
-            <Map
-              class="map"
-              :points="points"
-              :display="{ all: display.includes('all'), selected: display.includes('selected') }"
-            />
+            <div class="map">
+              <Map
+                :enable="enablePointSelect"
+                :points="points"
+                :display="{ all: display.includes('all'), selected: display.includes('selected') }"
+                @change="onPointSelect"
+              />
+            </div>
           </div>
         </div>
       </el-col>
@@ -84,24 +91,27 @@ import {
   IPoint,
   IPointConnectDevice,
   IReportDetail,
-  IReportDetailQuery
+  IReportDetailQuery,
+  IReportDetailThreshold,
+  getDictKeys,
+  IDictionary
 } from '../../api'
-import { defaultValuesForMonitorStandardLevel } from '@/utils/constant'
+import { monitorStandardLevelKey } from '@/utils/constant'
 import Map from './Map.vue'
-
+import { groupBy, keyBy } from 'lodash'
 interface IDetail {
   info?: {
     id: string
     name: string
   }
   data?: {
-    [x: string]: (IReportDetail & { siteId: string })[]
+    [x: string]: (IReportDetail & { siteId?: string })[]
   }
 }
 
 type IQuery = Partial<Record<'siteId' | 'indexCode' | 'status' | 'startTime' | 'endTime', string>>
 interface IDefaultQuery {
-  siteId?: string
+  siteId?: string[]
   indexCode?: string
   startTime?: Date
   endTime?: Date
@@ -109,26 +119,37 @@ interface IDefaultQuery {
   deviceType?: string | number
 }
 
-const getDefaultMapData = ({ title, names }: { title: string; names?: string[] }) => {
+const getDefaultMapData = ({ title }: { title: string; names?: string[] }, pointName?: string, paramName?: string) => {
   return {
     title: { text: title },
     tooltip: { trigger: 'axis' },
     calculable: true,
-    yAxis: [{ type: 'value' }],
     xAxis: [{ type: 'category', boundaryGap: false }],
+    yAxis: [{ type: 'value', min: ({ min }) => min }],
     dataZoom: [{ type: 'inside', start: 0, end: 100 }, { start: 0, end: 100 }],
-    // legend: { data: names },
+    legend: { show: true },
     toolbox: {
       show: true,
       feature: {
-        mark: { show: true },
-        dataView: { show: true, readOnly: false },
-        magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
+        // mark: { show: true },
+        // dataView: { show: true, readOnly: false },
+        // magicType: { show: true, type: ['line', 'bar', 'stack', 'tiled'] },
         restore: { show: true },
         saveAsImage: { show: true }
       }
     }
   }
+}
+
+const dateKey = 'scadaTime'
+const valueKey = 'itstrVal'
+
+interface ISelectedPoint extends IPointConnectDevice {
+  selected?: boolean
+}
+
+interface IKeyedDictonary {
+  [x: string]: IDictionary
 }
 
 @Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle, Map } })
@@ -137,37 +158,92 @@ export default class ReportDetail extends Vue {
   @Prop({ type: Boolean }) isActive!: boolean
   display: ('all' | 'selected')[] = ['all', 'selected']
   merge: ('point' | 'param')[] = ['point']
-
+  besides: number[][] = []
   query: IQuery = {}
-  points: IPoint[] = []
+  points: ISelectedPoint[] = []
   loading = false
   detail: IDetail[] = []
+  enablePointSelect: boolean = false
+  $refs!: { form: QueryForm }
 
   deviceTypes: IDeviceTypeParam[] = []
 
+  selected: string[] = []
+
+  thresholds: {
+    [x: string]: {
+      [x: string]: (IReportDetailThreshold & { unit?: string })[]
+    }
+  } = {}
+  levelsAndColors: { levels: IKeyedDictonary; colors: IKeyedDictonary } = { levels: {}, colors: {} }
+
   get markLine() {
-    return defaultValuesForMonitorStandardLevel.map(({ notes: name, color, codeValue }) => {
-      return {
-        yAxis: '1000',
-        lineStyle: { color },
-        label: {
-          color: '#fff',
-          formatter: '严重>1000',
-          fontSize: 12,
-          backgroundColor: color,
-          padding: 5,
-          distance: 1,
-          position: 'insideEndTop',
-          borderRadius: 2
-        }
+    return Object.keys(this.thresholds).reduce((thresholds, pointName) => {
+      thresholds[pointName] = Object.keys(this.thresholds[pointName]).reduce((acc, paramName) => {
+        acc[paramName] = this.thresholds[pointName][paramName].map((item) => {
+          console.log(item)
+          const { levelName, level, isSpecial, specialVal, lower, lowerTolerance, upper, upperTolerance, unit } = item
+          const { notes: color } = this.levelsAndColors.colors[String(level)] || {}
+          const value = lower
+          return {
+            yAxis: String(isSpecial ? specialVal : value),
+            lineStyle: { color },
+            label: {
+              color: '#fff',
+              formatter: `${levelName}>${lower} ${unit}`,
+              fontSize: 12,
+              backgroundColor: color,
+              padding: 5,
+              distance: 1,
+              position: 'insideEndTop',
+              borderRadius: 2
+            }
+          }
+        })
+        return acc
+      }, {})
+      return thresholds
+    }, {})
+    // return defaultValuesForMonitorStandardLevel.map(({ notes: name, color, codeValue }) => {
+    //   return {
+    //     yAxis: '1000',
+    //     lineStyle: { color },
+    //     label: {
+    //       color: '#fff',
+    //       formatter: '严重>1000',
+    //       fontSize: 12,
+    //       backgroundColor: color,
+    //       padding: 5,
+    //       distance: 1,
+    //       position: 'insideEndTop',
+    //       borderRadius: 2
+    //     }
+    //   }
+    // })
+  }
+
+  filter(data: (IReportDetail & { siteId?: string })[]): (IReportDetail & { siteId?: string })[] {
+    let temp = [...data].filter((item) => !!item)
+    this.besides.forEach((item) => {
+      let [from, to] = item
+      from = from ? Number(from) : -Infinity
+      to = to ? Number(to) : Infinity
+      if (!(!to && !from)) {
+        temp = temp.filter((item) => {
+          const value = Number(item[valueKey])
+          // console.log(
+          //   [Number(item[valueKey]), Number(item[valueKey])],
+          //   [from, to],
+          //   [Number(item[valueKey]) > Number(from), Number(item[valueKey]) <= Number(to)]
+          // )
+          return !(value > from && value <= to)
+        })
       }
     })
+    return temp
   }
 
   get lines() {
-    const x = 'scadaTime'
-    const y = 'itstrVal'
-
     const mapData = this.detail
 
     /** 按监测点融合展示, 按指标融合展示: 多监测点, 多指标 */
@@ -180,11 +256,14 @@ export default class ReportDetail extends Vue {
               return Object.keys(data).map((key) => {
                 return {
                   id: `${name}-${key}`,
-                  dimensions: [x, y],
-                  source: data[key].map(({ [y]: val, ...rest }) => ({
-                    ...rest,
-                    [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-                  }))
+                  dimensions: [dateKey, valueKey],
+                  source: this.filter(
+                    data[key].map((item) => {
+                      if (!item) return item
+                      const { [valueKey]: val, ...rest } = item
+                      return { ...rest, [valueKey]: val }
+                    })
+                  )
                 }
               })
             })
@@ -216,16 +295,16 @@ export default class ReportDetail extends Vue {
         const second = Object.keys(data).reduce((acc, key) => {
           const dataset = {
             name: `${name}-${key}`,
-            source: data[key].map(({ [y]: val, ...rest }) => ({
-              ...rest,
-              [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-            })),
-            dimensions: [x, y]
+            source: this.filter(
+              data[key].map((item) => {
+                if (!item) return item
+                const { [valueKey]: val, ...rest } = item
+                return { ...rest, [valueKey]: val }
+              })
+            ),
+            dimensions: [dateKey, valueKey]
           }
-          return {
-            ...acc,
-            [key]: !acc[key] ? [dataset] : [...acc[key], dataset]
-          }
+          return { ...acc, [key]: !acc[key] ? [dataset] : [...acc[key], dataset] }
         }, {})
         const temp = { ...acc }
         Object.keys(second).forEach((key) => {
@@ -236,7 +315,7 @@ export default class ReportDetail extends Vue {
       return Object.keys(grouped).map((key) => {
         return {
           ...getDefaultMapData({ title: key }),
-          dataset: grouped[key],
+          dataset: this.filter(grouped[key]),
           series: grouped[key].map(({ name }, index) => {
             return {
               name,
@@ -254,11 +333,14 @@ export default class ReportDetail extends Vue {
         return {
           ...getDefaultMapData({ title: name }),
           dataset: Object.keys(data).map((key) => ({
-            source: data[key].map(({ [y]: val, ...rest }) => ({
-              ...rest,
-              [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-            })),
-            dimensions: [x, y]
+            source: this.filter(
+              data[key].map((item) => {
+                if (!item) return item
+                const { [valueKey]: val, ...rest } = item
+                return { ...rest, [valueKey]: val }
+              })
+            ),
+            dimensions: [dateKey, valueKey]
           })),
           series: Object.keys(data).map((key, index) => {
             return {
@@ -273,23 +355,40 @@ export default class ReportDetail extends Vue {
       })
     }
     // 1监测点 1指标
+
     return mapData
-      .map(({ info: { name }, data }) => {
-        return Object.keys(data).map((key) => {
+      .map(({ info: { name: pointName }, data }) => {
+        return Object.keys(data).map((paramName) => {
           return {
-            ...getDefaultMapData({ title: `${name}-${key}` }),
+            ...getDefaultMapData({ title: `${pointName}-${paramName}` }, pointName, paramName),
             dataset: {
-              source: data[key].map(({ [y]: val, ...rest }) => ({
-                ...rest,
-                [y]: Math.floor((Number(val) * Math.random() + Math.random()) * 100) / 100
-              })),
-              dimensions: [x, y]
+              source: this.filter(
+                data[paramName].map((item) => {
+                  if (!item) return item
+                  const { [valueKey]: val, ...rest } = item
+                  return { ...rest, [valueKey]: val }
+                })
+              ),
+              dimensions: [dateKey, valueKey]
             },
-            series: { name: key, type: 'line', symbol: 'none', smooth: true }
+            series: {
+              name: paramName,
+              type: 'line',
+              symbol: 'none',
+              smooth: true,
+              markLine: this.markLine[pointName][paramName]
+            }
           }
         })
       })
       .flat()
+  }
+
+  onPointSelect(point: ISelectedPoint) {
+    const { selected, id } = point || {}
+    const { addPoint, removePoint } = this.$refs.form
+    this.points = [...this.points.filter((item) => String(item.id) !== String(id)), { ...point, selected: !selected }]
+    selected ? removePoint(String(id)) : addPoint(String(id))
   }
 
   async doQuery() {
@@ -331,21 +430,40 @@ export default class ReportDetail extends Vue {
   }
 
   async fetchReportDetailThreshold(ids: string) {
-    const {
-      result: { records }
-    } = await fetchReportDetailThreshold(ids)
-    console.log(records)
+    const { result } = await fetchReportDetailThreshold(ids)
+    if (result) {
+      this.thresholds = Object.keys(result).reduce((acc, key) => {
+        const [id, pointName] = key.split('-')
+        acc[pointName] = groupBy(result[key], 'paraName')
+        return acc
+      }, {})
+    }
   }
 
-  onPointChange({ selected = [], points = [] }: { selected: string[]; points: IPointConnectDevice[] }) {
-    this.points = points.map((item) => {
-      return { ...item, selected: selected.includes(String(item.id)) }
-    })
-    this.fetchReportDetailThreshold(selected.join())
+  pointChangeTime: number = null
+
+  onPointChange({ selected = [], points = [] }: { selected: string[]; points: ISelectedPoint[] }) {
+    if (this.pointChangeTime) clearTimeout(this.pointChangeTime)
+    this.pointChangeTime = window.setTimeout(() => {
+      this.points = points.map((item) => ({ ...item, selected: selected.includes(String(item.id)) }))
+      selected.length && this.fetchReportDetailThreshold(selected.join())
+    }, 600)
+  }
+
+  async getLevelsAndLevelColors() {
+    const [levels, colors] = await Promise.all([
+      getDictKeys(),
+      getDictKeys(`${monitorStandardLevelKey.codeKey}_colors`)
+    ])
+    this.levelsAndColors = {
+      levels: keyBy(levels as IDictionary[], 'codeValue'),
+      colors: keyBy(colors as IDictionary[], 'codeValue')
+    }
   }
 
   preparing() {
     this.getAllDeviceTypes()
+    this.getLevelsAndLevelColors()
   }
 
   mounted() {
@@ -360,13 +478,16 @@ export default class ReportDetail extends Vue {
   }
 
   onQuery(query) {
-    this.query = { ...query }
+    const { besides, ...rest } = query
+    this.query = rest
+    this.besides = [...besides]
     this.doQuery()
   }
 
   defaultQuery: IDefaultQuery = {}
+
   @Watch('param', { immediate: true })
-  async onQueryPropsChange(param: IDefaultQuery) {
+  async onQueryPropsChange(param: Omit<IDefaultQuery, 'siteId'> & { siteId?: string }) {
     const { siteId, indexCode } = param
     if (siteId) {
       const { result } = (await getPoint(siteId)) || {}
@@ -381,17 +502,12 @@ export default class ReportDetail extends Vue {
 
       this.defaultQuery = {
         deviceType,
-        siteId,
+        siteId: String(siteId || '').split(','),
         startTime: startTime.toDate(),
         endTime: endTime.toDate(),
         indexCode
       }
     }
-  }
-
-  @Watch('lines', { immediate: true })
-  log(lines) {
-    console.log(this.detail, lines)
   }
 }
 </script>
@@ -419,8 +535,9 @@ export default class ReportDetail extends Vue {
     .map-container {
       margin-top: 20px;
       white-space: nowrap;
-      flex: 1 1 auto;
+      flex: 1 0 360px;
       display: flex;
+      height: 360px;
       flex-direction: column;
       > .map {
         flex: 1 1 auto;

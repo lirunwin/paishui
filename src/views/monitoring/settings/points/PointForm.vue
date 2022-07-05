@@ -168,13 +168,15 @@
               </div>
             </template>
             <template v-else>
-              <Map
-                @coordinate-change="onCoordinateChange"
-                @device-change="onDeviceChange"
-                :enableCoordinateSelect="enable.coordinate"
-                :enableDeviceSelect="enable.device"
-                :center="mapCenter"
-              />
+              <div style="height:100%" @mouseenter="cancelResetPointSelect" @mouseleave="resetPointSelect">
+                <Map
+                  @coordinate-change="onCoordinateChange"
+                  @device-change="onDeviceChange"
+                  :enableCoordinateSelect="enable.coordinate"
+                  :enableDeviceSelect="enable.device"
+                  :center="mapCenter"
+                />
+              </div>
             </template>
           </el-col>
         </el-row>
@@ -236,6 +238,8 @@ interface IFormData extends IPointConnectDevice {
   fileList?: Partial<ElUploadInternalFileDetail>[]
 }
 
+const getDefaultEnableValue = () => ({ coordinate: false, device: false })
+
 @Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable, Map } })
 export default class PointForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IFormData
@@ -259,7 +263,16 @@ export default class PointForm extends Vue {
 
   mapCenter: number[] = []
 
-  enable = { coordinate: false, device: false }
+  enable = getDefaultEnableValue()
+  timer: number = null
+  cancelResetPointSelect() {
+    this.timer && clearTimeout(this.timer)
+  }
+  resetPointSelect() {
+    this.timer = window.setTimeout(() => {
+      this.enable = getDefaultEnableValue()
+    }, 500)
+  }
 
   get formItems(): FormItem[] {
     return [

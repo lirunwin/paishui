@@ -9,8 +9,13 @@ export default {
     props:{
         value:{}
     },
-    mounted(){
-        this.showChart(this.value)
+    watch:{
+        value:{
+            handler(val){
+                this.$nextTick(()=>{this.showChart(val)})
+            },
+            immediate:true
+        }
     },
     methods:{
         showChart(value){

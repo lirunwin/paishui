@@ -14,40 +14,29 @@
           >
           </el-input>
           <div class="title">检测日期：</div>
-          <!-- <el-date-picker v-model="searchValue.testTime" type="date" placeholder="入库时间" class="date-css">
-          </el-date-picker> -->
-          <!-- <el-date-picker
-            v-model="searchValue.testTime"
-            type="daterange"
-            value-format="yyyy-MM-dd"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-          >
-          </el-date-picker> -->
           <div class="sampleTime">
             <el-row style="display: flex; justify-content: center; align-items: center">
               <el-col :span="11">
                 <el-date-picker
-                  v-model="searchValue.testTime.startDate"
+                  v-model="searchValue.startDate"
                   type="date"
                   placeholder="选择开始日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions0"
-                  @change="changeDate"
+                  :picker-options="sOpition"
+                  @change="sDateChange"
                 ></el-date-picker>
               </el-col>
               <el-col :span="1" style="text-align: center; margin: 0 5px">至</el-col>
               <el-col :span="12">
                 <el-date-picker
-                  v-model="searchValue.testTime.finishDate"
+                  v-model="searchValue.finishDate"
                   type="date"
                   placeholder="选择结束日期"
                   value-format="yyyy-MM-dd"
                   size="small"
-                  :picker-options="pickerOptions1"
-                  @change="changeDate"
+                  :picker-options="eOpition"
+                  @change="eDateChange"
                 ></el-date-picker>
               </el-col>
             </el-row>
@@ -123,9 +112,9 @@
             <div style="text-align: center">{{ `(${scope.row.defectCode})${scope.row.defectName}` }}</div>
           </template>
         </el-table-column>
-        <el-table-column header-align="center" label="管道内部状况描述" align="center" show-overflow-tooltip>
+        <el-table-column header-align="center" width="200" label="管道内部状况描述" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
-            <div style="text-align: center">{{ scope.row.structEstimate }}}</div>
+            <div style="text-align: center">{{ scope.row.pipeNote }}</div>
           </template>
         </el-table-column>
         <el-table-column fixed="right" width="120" header-align="center" label="操作" align="center">
@@ -172,8 +161,7 @@
                   box-sizing: border-box;
                 "
               >
-                <span style="font-weight: bold"
-                  >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
+                <span style="font-weight: bold" >功能性缺陷:({{ DetailsForm.defectCode }}){{ DetailsForm.defectName }}
                 </span>
                 <a style="font-size: 12px; color: #2d74e7; text-decoration: underline" @click="openDetails">详情</a>
               </div>
@@ -360,10 +348,10 @@ export default {
       tableContent: [
         { width: '200', sortable: false, label: '管段编号', name: 'expNo' },
         { width: '100', sortable: false, label: '管段类型', name: 'pipeType' },
-        { width: '90', sortable: true, label: '管径(mm)', name: 'diameter' },
+        { width: '120', sortable: true, label: '管径(mm)', name: 'diameter' },
         { width: '100', sortable: false, label: '材质', name: 'material' },
         { width: '100', sortable: false, label: '检测方向', name: 'detectDir' },
-        { width: '100', sortable: true, label: '距离(m)', name: 'checkLength' },
+        { width: '100', sortable: true, label: '距离(m)', name: 'distanceStartPoint' },
         { width: '80', sortable: true, label: '分值', name: 'defectNum' },
         { width: '100', sortable: true, label: '等级', name: 'defectLevel' },
         { width: '100', sortable: false, label: '工程名称', name: 'prjName' },
@@ -375,13 +363,27 @@ export default {
       // gradeArr: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'], // 缺陷等级
       defectLevel: ['一级', '二级', '三级', '四级'], 
       // 日期选择器规则
-      pickerOptions0: '',
-      pickerOptions1: '',
+      sOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.finishDate) {
+            return time > new Date(this.searchValue.finishDate).getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
+      eOpition: {
+        disabledDate: (time) => {
+          time = time.getTime()
+          if (this.searchValue.startDate) {
+            return time < new Date(this.searchValue.startDate).getTime() - 8.64e7 || time > new Date().getTime()
+          }
+          return time > new Date().getTime()
+        }
+      },
       searchValue: {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        }, // 检测日期
+        startDate: '',
+        finishDate: '',
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
         structClass: '', // 结构型缺陷等级
@@ -401,34 +403,40 @@ export default {
 
       // 地图参数
       map: null,
-      rootPage: null,
       vectorLayer: null,
       lightLayer: null,
       clickEvent: null,
       projUtil: null,
-      currentDataProjName: 'proj43',
+      currentDataProjName: 'proj44',
+      // 
       hadLoad: false,
       popup: null,
       // 
       showVideo: false,
       videoUrl: '',
-      videoTitle: '视频'
+      videoTitle: '视频',
+      hasLoad: false,
+      themLayerName: 'pipeAndDefectLayer',
+      themLayer: null
     }
   },
   watch: {
-    '$store.state.gis.activeSideItem': function (n, o) {
-      if (n !== '管道缺陷管理') {
+    '$store.state.map.halfP_editableTabsValue': function (n, o) {
+      if (n !== 'pipelineDefect') {
         this.clearAll()
       } else {
         this.init()
       }
     },
-    'searchValue.testTime.startDate': function (n) {
-      this.searchValue.testTime.finishDate = n
+    '$store.state.map.panels': function (n, o) {
+      if (n.find(item => item.com === 'testResultDiagram')) {
+        this.clearAll()
+        let layer = this.getThemLayer()
+        layer.setVisible(false)
+      }
     }
   },
   created() {
-    let res = this.getDate()
   },
   computed: {
     // 获取文件url
@@ -445,29 +453,36 @@ export default {
     // ----->
   },
   mounted() {
-    if (this.param && this.param.rootPage) {
-      let { type, level, rootPage } = this.param
-      this.rootPage = rootPage
-      // type: funcClass表示管段, level表示缺陷
-      // level: 级别
-      console.log('这里是地图传入的参数', this.param)
-    } else {
       this.projUtil = new projUtil()
       this.projUtil.resgis(this.currentDataProjName)
       this.map = this.data.mapView
       this.init()
-    }
   },
   destroyed() {
-    if (this.rootPage) {
-      this.rootPage.clearLightFeas()
-    } else {
-      this.clearAll()
+    if (this.$store.state.gis.activeHeaderItem !== 'psjc') {
+      let layer = this.getThemLayer()
+      layer && this.map.removeLayer(layer) 
     }
+    this.popup && this.map.removeOverlay(this.popup)
+    this.popup = null
+    this.clearAll()
   },
   methods: {
+    sDateChange(t) {
+      if (!this.searchValue.finishDate) {
+        this.$nextTick(() => {
+          this.searchValue.finishDate = this.searchValue.startDate
+        })
+      }
+    },
+    eDateChange(t) {
+      if (!this.searchValue.startDate) {
+        this.$nextTick(() => {
+          this.searchValue.startDate = this.searchValue.finishDate
+        })
+      }
+    },
     toVideo (row) {
-      console.log('暂无视频')
       let { videopath, videoFileName } = row
       if (!videopath) return this.$message.warning('暂无视频')
       let address = baseAddress + '/psjc/file' + videopath
@@ -498,53 +513,30 @@ export default {
       this.dialogFormVisible = bool
     },
     // 重置
-    async resetBtn() {
+    resetBtn() {
       this.pagination = { current: 1, size: 30 }
       this.searchValue = {
-        testTime: {
-          startDate: '',
-          finishDate: ''
-        },
+        startDate: '',
+        finishDate: '',
         queryParams: '',
         funcClass: '', // 功能型缺陷等级
         structClass: '', // 结构型缺陷等级
         defectLevel: ''
       }
-      this.changeDate()
-      await this.getDate()
+      this.getDate()
     },
     // 日期选择器设置，使开始时间小于结束时间，并且所选时间早于当前时间
-    changeDate() {
-      if (!this.searchValue.testTime.startDate) {
-        this.searchValue.testTime.startDate = this.searchValue.testTime.finishDate
-      }
-      //因为date1和date2格式为 年-月-日， 所以这里先把date1和date2转换为时间戳再进行比较
-      let date1 = new Date(this.searchValue.testTime.startDate).getTime()
-      let date2 = new Date(this.searchValue.testTime.finishDate).getTime()
-      this.pickerOptions0 = {
-        disabledDate: (time) => {
-          if (date2 != '') {
-            // return time.getTime() > Date.now() || time.getTime() > date2
-            return time.getTime() > date2
-          } else {
-            return time.getTime() > Date.now()
-          }
-        }
-      }
-      this.pickerOptions1 = {
-        disabledDate: (time) => {
-          // return time.getTime() < date1 || time.getTime() > Date.now()
-          return time.getTime() < date1 - 8.64e7
-        }
-      }
-    },
+
     clearAll() {
       this.vectorLayer && this.map.removeLayer(this.vectorLayer)
       this.lightLayer && this.map.removeLayer(this.lightLayer)
       this.clickEvent && unByKey(this.clickEvent)
       this.currentInfoCard = false
+      this.popup && this.popup.setPosition(null)
+      this.vectorLayer = this.lightLayer = this.clickEvent
     },
     init() {
+      this.getDate()
       this.vectorLayer = new VectorLayer({ source: new VectorSource() })
       this.lightLayer = new VectorLayer({
         source: new VectorSource(),
@@ -552,7 +544,17 @@ export default {
       })
       this.map.addLayer(this.vectorLayer)
       this.map.addLayer(this.lightLayer)
-      this.getPipeDefectData()
+
+      //
+      let layer = this.getThemLayer()
+      if (layer) {
+        layer.setVisible(false)
+        this.setThemLayer()
+        this.hasLoad = true
+      } else {
+        this.setMainMap()
+      }
+
       this.clickEvent = this.map.on('click', (evt) => {
         let features = this.map.getFeaturesAtPixel(evt.pixel)
         if (features.length !== 0) {
@@ -560,18 +562,157 @@ export default {
           this.openPromptBox({ id })
         } else {
           this.currentInfoCard = false
+          this.popup && this.popup.setPosition(null)
           this.lightLayer.getSource().clear()
         }
       })
     },
+    setThemLayer () {
+      let layer = this.getThemLayer()
+      let features = layer.getSource().getFeatures().filter(fea => fea.getGeometry() instanceof Point).map(fea => fea.clone())
+      this.vectorLayer.getSource().addFeatures(features)
+    },
+    getThemLayer () {
+      return this.map.getLayers().getArray().find(layer => layer.get('layername') === this.themLayerName)
+    },
+    /**
+     * 添加、更新地图管道缺陷
+     * */
+    setMainMap () {
+      let map = this.data.mapView
+      if (this.vectorLayer && this.lightLayer) {
+          this.$store.dispatch('map/mapLaoding', true)
+          getDefectData().then(res => {
+            this.hasLoad = true
+            this.$store.dispatch('map/mapLaoding', false)
+            if (res.code === 1 && res.result) {
+                let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getReportFeatures(res.result, true)
+                this.lightLayer.getSource().clear()
+                if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
+                  let center = mapUtil.getCenterFromFeatures([...strucDefectFeatures, ...funcDefectFeatures])
+                  this.themLayer = new VectorLayer({ source: new VectorSource() })
+                  this.themLayer.setVisible(false)
+                  this.themLayer.set('layername', this.themLayerName)
+                  this.map.addLayer(this.themLayer)
+                  this.themLayer.getSource().addFeatures([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures])
+                  map.getView().setZoom(15)
+                  map.getView().setCenter(center)
+                  // 
+                  this.setThemLayer()
+                } else {
+                  this.vectorLayer.getSource().clear()
+                }
+            } else this.$message.error('管线缺陷数据请求失败')
+          })
+      }
+    },
+    /**
+     * 构造管道缺陷地图要素
+     * @param reportInfos 报告数据
+     * */
+    getReportFeatures (defectInfos, hasStyle) {
+      let style = null, features = { pipeDefectFeatures: [], funcDefectFeatures: [], strucDefectFeatures: [] }
+      if (defectInfos.length === 0) { return features }
+      defectInfos.forEach(defect => {
+        let { startPointXLocation, startPointYLocation, endPointXLocation, endPointYLocation } = defect
+        if (startPointXLocation && startPointYLocation && endPointXLocation && endPointYLocation) {
+          let startPoint = [Number(startPointXLocation), Number(startPointYLocation)]
+          let endPoint = [Number(endPointXLocation), Number(endPointYLocation)]
+          startPoint = this.projUtil.transform(startPoint, this.currentDataProjName, 'proj84')
+          endPoint = this.projUtil.transform(endPoint, this.currentDataProjName, 'proj84')
+          let lineCoors = [startPoint, endPoint]
+          let feature = new Feature({ geometry: new LineString(lineCoors) })
+          // 健康等级颜色
+            let colors = [
+              { level: 'Ⅰ', color: 'green' },
+              { level: 'Ⅱ', color: 'blue' },
+              { level: 'Ⅲ', color: 'pink' },
+              { level: 'Ⅳ', color: 'red' }
+            ]
+            let findFuncColor = colors.find(colorObj => defect['funcClass'] && defect['funcClass'].includes(colorObj.level))
+            let findStrucColor = colors.find(colorObj => defect['structClass'] && defect['structClass'].includes(colorObj.level))
+              // 功能性缺陷
+            if (!isExit(defect.expNo, 'funcDefectFeatures')) {
+              let fFea = feature.clone()
+              let fColor = findFuncColor ? findFuncColor.color : "#070358"
+              hasStyle && fFea.setStyle(comSymbol.getLineStyle(5, fColor))
+              for (let i in defect) {
+                i !== 'geometry' && fFea.set(i, defect[i])
+              }
+              features.funcDefectFeatures.push(fFea)
+            }
+              // 结构性缺陷
+            if (!isExit(defect.expNo, 'strucDefectFeatures')) {
+              let sFea = feature.clone()
+              let sColor = findStrucColor ? findStrucColor.color : "#070358"
+              hasStyle && sFea.setStyle(comSymbol.getLineStyle(5, sColor))
+              for (let i in defect) {
+                i !== 'geometry' && sFea.set(i, defect[i])
+              }
+              features.strucDefectFeatures.push(sFea)
+            }
+            // 缺陷点
+            if (defect.geometry) {
+              let coors = JSON.parse(defect.geometry)
+              let point = this.projUtil.transform([coors.x, coors.y], this.currentDataProjName, 'proj84')
+              let feature = new Feature({ geometry: new Point(point) })
+              let imgs = [
+                { level: ['一级', '1'], img: defectImg1, index: 0 },
+                { level: ['二级', '2'], img: defectImg2, index: 1 },
+                { level: ['三级', '3'], img: defectImg3, index: 2 },
+                { level: ['四级', '4'], img: defectImg4, index: 3 },
+                // { level: '/', img: defectImg0, index: 4 }
+              ]
+              let findimg = null
+              if (defect.defectLevel) {
+                findimg = imgs.find((colorObj) => colorObj.level.includes(defect['defectLevel']))
+              }
+              // 缺少 defectLevel 字段
+              if (findimg) {
+                let rotation = getIconRat(lineCoors)
+                hasStyle && feature.setStyle( new Style({ image: new Icon({ size: [48, 48], anchor: [0.5, 0], src: findimg.img, scale: 0.4, rotation }) }) )
+                for (let i in defect) {
+                  i !== 'geometry' && feature.set(i, defect[i])
+                }
+                features.pipeDefectFeatures.push(feature)
+              }
+            }
+
+        }
+      })
+      return features
+      function isExit(pipeId, feasType) {
+        return features[feasType].some(fea => fea.get('expNo') === pipeId)
+      }
+      function getIconRat([startPoint, endPoint]) {
+        let rotation = 0
+        // 因为要垂直管线显示，所以图片旋转 90°
+        let imgRt = Math.PI / 2
+
+        // 计算旋转弧度
+        if (endPoint[0] === startPoint[0]) {
+          // 竖直
+          rotation = endPoint[1] > startPoint[1] ? -imgRt : Math.PI - imgRt
+        } else if (endPoint[1] === startPoint[1]) {
+          // 水平
+          rotation = endPoint[1] > startPoint[1] ? Math.PI / 2 - imgRt : (Math.PI * 3) / 2 - imgRt
+        } else {
+          // 其他角度
+          rotation = Math.atan((endPoint[0] - startPoint[0]) / (endPoint[1] - startPoint[1])) - imgRt
+        }
+        return rotation
+      }
+    },
     // 获取缺陷数据
     getPipeDefectData() {
       getDefectData({ state: 1 }).then((res) => {
+        this.hasLoad = true
         if (res.code === 1) {
           if (res.result && res.result.length !== 0) {
             let reportInfo = res.result[0] ? res.result : [res.result]
             let pipeData = reportInfo.map((item) => item.pipeStates).flat()
             let { strucDefectFeatures, funcDefectFeatures, pipeDefectFeatures } = this.getFeatures(pipeData)
+            if (!(this.vectorLayer && this.lightLayer)) return
             this.vectorLayer.getSource().clear()
             this.lightLayer.getSource().clear()
             if ([...strucDefectFeatures, ...funcDefectFeatures, ...pipeDefectFeatures].length !== 0) {
@@ -695,19 +836,17 @@ export default {
       }
     },
     setPositionByPipeId(id) {
-      console.log('定位')
       let features = this.vectorLayer.getSource().getFeatures()
       let filterFea = features.find((fea) => fea.get('id') === id)
       if (filterFea) {
+        this.lightLayer.getSource().clear()
         let feature = new Feature({
           geometry: filterFea.getGeometry().clone(),
           style: comSymbol.getAllStyle(5, '#DCDC8B', 5, '#DCDC8B')
         })
-        this.lightLayer.getSource().clear()
         this.lightLayer.getSource().addFeature(feature)
         let center = new mapUtil().getCenterFromFeatures(feature)
-        this.map.getView().setCenter(center)
-        this.map.getView().setZoom(21)
+        this.map.getView().animate({ zoom: 20 }, { center }, { duration: 0.5 })
         return center
       }
     },
@@ -740,34 +879,29 @@ export default {
       }
     },
     // 打开缩略提示框
-    async openPromptBox(row, column, cell, event) {
+    openPromptBox(row, column, cell, event) {
+      if (!this.hasLoad) return this.$message.warning('地图数据未加载完')
       this.handleRowClick(row)
-      if (!this.hadLoad) return this.$message.warning('地图数据未加载完')
+      if (!(this.vectorLayer && this.lightLayer)) return
       let position = this.setPositionByPipeId(row.id)
-      console.log('打开缩略提示框', row)
-      this.currentId = row.id
-      let res = await queryDefectdetails(row.id)
-      this.DetailsForm = res.result
-      // this.isPromptBox = { ...row }
-      // let res = await assessmentDefect(row.id)
-      // this.currentForm = res.result
-      this.currentInfoCard = true
-
       //
       if (position) {
-        this.popup = new Overlay({
-          element: document.getElementById('popupCardDefect'),
-          //当前窗口可见
-          autoPan: true,
-          positioning: 'bottom-center',
-          stopEvent: true,
-          offset: [18, -25],
-          autoPanAnimation: { duration: 250 }
+        this.currentId = row.id
+        queryDefectdetails(row.id).then(res => {
+          this.DetailsForm = res.result
+          this.currentInfoCard = true
+          this.popup = new Overlay({
+            element: document.getElementById('popupCardDefect'),
+            autoPan: true,
+            positioning: 'bottom-center',
+            stopEvent: true,
+            offset: [18, -25],
+            autoPanAnimation: { duration: 250 }
+          })
+          this.map.addOverlay(this.popup)
+          this.popup.setPosition(position)
         })
-        this.map.addOverlay(this.popup)
-        this.popup.setPosition(position)
-
-      }
+      } else this.$message.error('该点无位置信息')
 
       // console.log('打开缩略提示框2', this.currentForm, this.isPromptBox)
     },
@@ -783,23 +917,10 @@ export default {
       this.id = this.DetailsForm.stateId
       this.dialogFormVisible = true
     },
-    async resetBtn() {
-      this.pagination = { current: 1, size: 30 }
-      this.searchValue = {
-        testTime: '',
-        queryParams: '',
-        funcClass: '', // 功能型缺陷等级
-        structClass: '' // 结构型缺陷等级
-      }
-      await this.getDate()
-    },
     // 搜索
     searchApi() {
-      this.pagination.current = 1
       this.getDate()
-      // console.log(this.searchValue.testTime)
     },
-
     // 表格多选事件
     handleSelectionChange(val) {
       console.log('缺陷')
@@ -808,45 +929,32 @@ export default {
       })
     },
     // 查询数据
-    async getDate() {
-      let data = this.pagination
-      data.wordInfoState = 1
-
-        data.jcStartDate = this.searchValue.testTime.startDate
-        data.jcEndDate = this.searchValue.testTime.finishDate
-        data.queryParams = this.searchValue.queryParams
-        data.funcClass = this.searchValue.funcClass
-        data.structClass = this.searchValue.structClass
-        data.defectLevel = this.searchValue.defectLevel
-
-      await queryPageDefectInfo(data).then((res) => {
+    getDate() {
+      console.log('更新数据')
+      let data = {
+        ...this.pagination,
+        wordInfoState: 1,
+        jcStartDate: this.searchValue.startDate,
+        jcEndDate: this.searchValue.finishDate,
+        queryParams: this.searchValue.queryParams,
+        funcClass: this.searchValue.funcClass,
+        structClass: this.searchValue.structClass,
+        defectLevel: this.searchValue.defectLevel
+      }
+      queryPageDefectInfo(data).then((res) => {
         let { records, total } = res.result
         this.tableData = records
         this.paginationTotal = total
-        // this.$message.success("上传成功");
       })
     },
     // 分页触发的事件(主表格)
-    async handleSizeChange(val) {
+    handleSizeChange(val) {
       this.pagination.size = val
-      await this.getDate()
-      console.log(`每页 ${val} 条`)
+      this.getDate()
     },
-    async handleCurrentChange(val) {
+    handleCurrentChange(val) {
       this.pagination.current = val
-      await this.getDate()
-      console.log(`当前页: ${val}`)
-    },
-    // 分页触发的事件(附件列表)
-    async handleSizeChangeEnclosure(val) {
-      this.pagination.size = val
-      await this.getDate()
-      console.log(`每页 ${val} 条`)
-    },
-    async handleCurrentChangeEnclosure(val) {
-      this.pagination.current = val
-      await this.getDate()
-      console.log(`当前页: ${val}`)
+      this.getDate()
     }
   }
 }

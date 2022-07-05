@@ -5,7 +5,7 @@
         <div class='grouptitle' @mouseover="showList(item)" :class="!item.childList.length ? 'pointer': ''" @click="openFunction2(item)">
           <div class='imgDiv'>
             <!-- 目前没有图片后续，可以读取图片地址，通过地址进行动态加载，地址写入下面的src中 -->
-            <i :class="item.icon"></i>
+            <svg-icon :icon-class='iconList[item.path]' className='tool-icon'></svg-icon>
             <!-- <img style='width:100%;width:100%' src=''> -->
           </div>
           <span  class='spanDiv'>{{item.label}}</span>
@@ -50,9 +50,18 @@ export default {
       currentList:null,
       /**没有在浮动框、全框、半框里面的组件*/
       componentList:[],
+      // 图标配置
+      iconList: {
+        'layerTree': 'layertree',
+        'attrSearch': 'attr',
+        'toolBox': 'toolbox',
+        'measureTool': 'measure',
+        'mapLegend': 'legend',
+      }
     }
   },
   mounted() {
+    console.log('初始化工具栏')
     this.getGroupList();
   },
   methods: {
@@ -186,6 +195,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/basemapicon.scss";
 .pointer {
   cursor: pointer;
 }

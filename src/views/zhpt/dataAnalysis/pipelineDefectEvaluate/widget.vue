@@ -61,11 +61,11 @@
             <el-option v-for="item in echartsData" :key="item.name" :label="item.name" :value="item.name"> </el-option>
           </el-select>
           <el-button class="serch-btn" style="margin-left: 26px" type="primary" @click="searchApi"> 查询 </el-button>
-          <el-button class="serch-btn" type="primary" @click="getPdf('管道缺陷评价统计')"> 导出 </el-button>
+          <el-button class="serch-btn" type="primary" @click="getPdf('管道缺陷评价统计', 'defecteva')"> 导出 </el-button>
         </div>
         <div class="right-btn"></div>
       </div>
-      <div id="pdfDom" class="content">
+      <div id="defecteva" class="content">
         <div id="mainE" style="height: 500px"></div>
         <div style="border: 1px solid #ccc">
           <div class="detailsTitle">管道缺陷评价统计表</div>
@@ -105,7 +105,7 @@ export default {
         disabledDate: (time) => {
           time = time.getTime()
           if (this.searchValue.jcStartDate) {
-            return time < new Date(this.searchValue.jcStartDate).getTime() || time > new Date().getTime()
+            return time < new Date(this.searchValue.jcStartDate).getTime() - 8.64e7 || time > new Date().getTime()
           }
           return time > new Date().getTime()
         }
@@ -176,7 +176,11 @@ export default {
         }
       ],
       echartsTitle: [],
-      echartsData: []
+      echartsData: [],
+      typeArr: {
+        s: ['AJ', 'BX', 'CK', 'CR', 'FS', 'PL', 'QF', 'SL', 'TJ', 'TL'],
+        f: ['CJ', 'CQ', 'FZ', 'JG', 'SG', 'ZW']
+      },
     }
   },
   async created() {
@@ -196,59 +200,42 @@ export default {
   },
   watch: {
     pageData: function (newValue, old) {
+      let data = newValue
       this.allArr = [
-        {
-          name: '1级',
-          Lname: '一级',
-          value: 0
-        },
-        {
-          name: '2级',
-          Lname: '二级',
-          value: 0
-        },
-        {
-          name: '3级',
-          Lname: '三级',
-          value: 0
-        },
-        {
-          name: '4级',
-          Lname: '四级',
-          value: 0
-        }
+        { name: '1级', Lname: ['一级', '1'], value: 0 },
+        { name: '2级', Lname: ['二级', '2'], value: 0 },
+        { name: '3级', Lname: ['三级', '3'], value: 0 },
+        { name: '4级', Lname: ['四级', '4'], value: 0 }
       ]
 
-      this.contentEchatrs = newValue.map((v) => {
-        return {
-          name: v.defectType,
-          value: v.defectNum
+      // 内
+      let content = [{ name: '结构性缺陷', value: 0 }, { name: '功能性缺陷', value: 0 }]
+      data.forEach(defect => {
+        let type = defect.defectType
+        if (type) {
+          let typeObj = content.find(item => item.name === type)
+          typeObj.value += defect.defectNum
+        } else {
+          if (this.typeArr.s.includes(defect.defectCode)) { content[0].value += defect.defectNum }
+          if (this.typeArr.f.includes(defect.defectCode)) { content[1].value += defect.defectNum }
         }
       })
+      this.contentEchatrs = content
 
-      this.contentEchatrs = this.contentEchatrs.reduce((obj, item) => {
-        let find = obj.find((i) => i.name === item.name)
-        let _d = {
-          ...item,
-          frequency: 1
-        }
-        find ? ((find.value += item.value), find.frequency++) : obj.push(_d)
-        return obj
-      }, [])
-
-      this.contentEchatrs.forEach((v) => {
-        if (v.name == null) {
-          v.name = '正常'
-        }
-      })
-
-      newValue.forEach((v) => {
-        this.allArr.forEach((av) => {
-          if (v.defectLevel == av.Lname) {
-            av.value += v.defectNum
+      // 中
+      let echartsData = new Map()
+      data.forEach(item => {
+          if (!echartsData.has(item.defectLevel)) {
+            echartsData.set(item.defectLevel, item.defectNum)
+          } else {
+            echartsData.set(item.defectLevel, echartsData.get(item.defectLevel) + item.defectNum)
           }
-        })
       })
+      echartsData.forEach((value, key) => {
+        let find = this.allArr.find(i => i.Lname.includes(key))
+        if (find) { find.value = value }
+      })
+      // 外
 
       let echartsDataArr = newValue.map((v) => {
         return {
@@ -328,35 +315,36 @@ export default {
       this.pageData = res.result
       if (this.pageData) {
         this.pageData.forEach((resValue) => {
+
           this.defectQuantityStatisticsA.forEach((sumValue) => {
-            // console.log("类型是否相等",typeof resValue.defectCode,sumValue.type);
             if (resValue.defectCode == sumValue.type) {
-              if (resValue.defectLevel == '一级') {
-                sumValue.oneValue = resValue.defectNum * 1
-              } else if (resValue.defectLevel == '二级') {
-                sumValue.twoValue = resValue.defectNum * 1
-              } else if (resValue.defectLevel == '三级') {
-                sumValue.threeValue = resValue.defectNum * 1
-              } else if (resValue.defectLevel == '四级') {
-                sumValue.fourValue = resValue.defectNum * 1
+              if (['一级', '1'].includes(resValue.defectLevel)) {
+                sumValue.oneValue += resValue.defectNum
+              } else if (['二级', '2'].includes(resValue.defectLevel)) {
+                sumValue.twoValue += resValue.defectNum
+              } else if (['三级', '3'].includes(resValue.defectLevel)) {
+                sumValue.threeValue += resValue.defectNum
+              } else if (['四级', '4'].includes(resValue.defectLevel)) {
+                sumValue.fourValue += resValue.defectNum
               }
             }
           })
 
           this.defectQuantityStatisticsB.forEach((sumValue) => {
             if (resValue.defectCode == sumValue.type) {
-              if (resValue.defectLevel == '一级') {
-                sumValue.oneValue = resValue.defectNum
-              } else if (resValue.defectLevel == '二级') {
-                sumValue.twoValue = resValue.defectNum
-              } else if (resValue.defectLevel == '三级') {
-                sumValue.threeValue = resValue.defectNum
-              } else if (resValue.defectLevel == '四级') {
-                sumValue.fourValue = resValue.defectNum
+              if (['一级', '1'].includes(resValue.defectLevel)) {
+                sumValue.oneValue += resValue.defectNum
+              } else if (['二级', '2'].includes(resValue.defectLevel)) {
+                sumValue.twoValue += resValue.defectNum
+              } else if (['三级', '3'].includes(resValue.defectLevel)) {
+                sumValue.threeValue += resValue.defectNum
+              } else if (['四级', '4'].includes(resValue.defectLevel)) {
+                sumValue.fourValue += resValue.defectNum
               }
             }
           })
         })
+
 
         this.defectQuantityStatisticsA.forEach((v) => {
           v.value = v.oneValue + v.twoValue + v.threeValue + v.fourValue
@@ -466,6 +454,7 @@ export default {
     width: 96%;
     height: 100%;
     margin: auto;
+    overflow-y: scroll;
     .top-tool {
       display: flex;
       justify-content: space-between;
@@ -521,10 +510,9 @@ export default {
       }
     }
     .content {
-      height: 92%;
+      min-height: 100px;
       width: 100%;
       border: 1px solid #afe7f8;
-      overflow-y: scroll;
       padding: 10px;
       box-sizing: border-box;
       .detailsTitle {

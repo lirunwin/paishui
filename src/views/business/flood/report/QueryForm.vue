@@ -5,17 +5,12 @@
     </el-form-item>
 
     <el-form-item label="是否为警情:">
-      <el-checkbox-group v-model="formData.police" size="small">
+      <el-checkbox-group v-model="formData.police" size="small" :max="1">
         <el-checkbox :label="1">是</el-checkbox>
         <el-checkbox :label="0">否</el-checkbox>
       </el-checkbox-group>
     </el-form-item>
 
-    <el-form-item label="状态:">
-      <el-checkbox-group v-model="formData.status" size="small">
-        <el-checkbox v-for="(value, key) of DICTONARY.event.status" :key="key" :label="key">{{ value }}</el-checkbox>
-      </el-checkbox-group>
-    </el-form-item>
     <el-form-item class="btns">
       <el-button
         type="primary"

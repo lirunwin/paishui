@@ -1,22 +1,22 @@
 {
     "WFColumn":[
         {
-            "prop":"expNo",
+            "prop":"departmentName",
             "label":"部门",
             "width":70
         },
         {
-            "prop":"outfalltype",
+            "prop":"realName",
             "label":"人员",
             "width":60
         },
         {
-            "prop":"outfallshape",
+            "prop":"inspectionTask",
             "label":"巡检任务",
             "width":60
         },
         {
-            "prop":"sewagesystemId",
+            "prop":"workOrder",
             "label":"工单",
             "width":50
         },
@@ -33,24 +33,48 @@
     ],
     "EMDColumn":[
         {
-            "prop":"expNo",
-            "label":"设备名称",
-            "width":90
+            "prop":"deviceName",
+            "label":"设备名称"
         },
         {
-            "prop":"outfalltype",
-            "label":"设备类型",
-            "width":90
-        },
-        {
-            "prop":"outfallshape",
-            "label":"设备地址",
-            "width":90
+            "prop":"address",
+            "label":"设备地址"
         },
         {
             "prop":"deviceStatus",
-            "label":"设备状态",
-            "width":80
+            "label":"设备状态"
+        }
+    ],
+    "MIDStatisticList":[
+        {
+            "code":"znjg",
+            "title":"智慧井盖",
+            "num":0,
+            "unit":"套"
+        },
+        {
+            "code":"ywj",
+            "title":"管网液位监测",
+            "num":0,
+            "unit":"台"
+        },
+        {
+            "code":"yldywj",
+            "title":"易涝点水位监测",
+            "num":0,
+            "unit":"个"
+        },
+        {
+            "code":"xcry",
+            "title":"巡查人员",
+            "num":0,
+            "unit":"个"
+        },
+        {
+            "code":"gccl",
+            "title":"工程车辆",
+            "num":0,
+            "unit":"辆"
         }
     ]
 }

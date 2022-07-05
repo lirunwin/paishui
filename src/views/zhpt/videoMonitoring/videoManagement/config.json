@@ -1,0 +1,42 @@
+{
+    "column":[
+        {
+            "prop":"name",
+            "label":"视频点位名称",
+            "sortable":true
+        },
+        {
+            "prop":"no",
+            "label":"视频点位编号",
+            "sortable":true
+        },
+        {
+            "prop":"model",
+            "label":"设备型号",
+            "sortable":true
+        },
+        {
+            "prop":"company",
+            "label":"设备厂家",
+            "sortable":true
+        },
+        {
+            "prop":"installDept",
+            "label":"安装单位",
+            "sortable":true
+        },
+        {
+            "prop":"chargeUserName",
+            "label":"负责人",
+            "sortable":true
+        },
+        {
+            "label": "操作",
+            "slotScoped": "action",
+            "width":150,
+            "acts": [
+                {"emitWay": "detail", "operation": "详情", "color": "blue" }
+            ]
+        }
+    ]
+}

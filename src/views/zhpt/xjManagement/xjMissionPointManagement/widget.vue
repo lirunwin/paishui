@@ -88,11 +88,11 @@
  */
 import { Vue, Prop, Component, Watch } from 'vue-property-decorator'
 import { Map, View } from 'ol'
-import {unByKey} from 'ol/Observable'
+import { unByKey } from 'ol/Observable'
 import Feature from 'ol/Feature'
 import VectorSource from 'ol/source/Vector'
 import { Vector as VectorLayer } from 'ol/layer'
-import { Point,MultiPoint } from 'ol/geom'
+import { Point, MultiPoint } from 'ol/geom'
 import { Icon, Style } from 'ol/style'
 import tfLegend from '@/views/zhpt/common/Legend.vue'
 import tfTableLegend from '@/views/zhpt/common/TableLegend.vue'
@@ -144,28 +144,28 @@ export default class XjMissionPointManagement extends Vue {
   total = 10
   layerId = 17 //片区图层id
   mapV: Map = null
-  defaultStyle=new Style({
-    image:new Icon({
-      src:locationIcon,
-      scale:0.5,
-      color:'#2D74E7'
+  defaultStyle = new Style({
+    image: new Icon({
+      src: locationIcon,
+      scale: 0.5,
+      color: '#2D74E7'
     })
-  });
+  })
   mounted() {
     // this.getXjType() //绑定新增页面的巡查类型
     this.getData() //获取首页表格数据
     var that = this
     //this.initMapSource()
-    this.addMap();
+    this.addMap()
   }
 
   destroyed() {
-    let mapV = this.data.mapView as Map;
-    let map = this.mapV;
-    
+    let mapV = this.data.mapView as Map
+    let map = this.mapV
+
     if (this.addMapEvent) {
-      unByKey(this.addMapEvent);
-      this.addMapEvent=null;
+      unByKey(this.addMapEvent)
+      this.addMapEvent = null
     }
     if (this.graphicsLayer) {
       map.removeLayer(this.graphicsLayer)
@@ -209,9 +209,9 @@ export default class XjMissionPointManagement extends Vue {
    * 在模块打开的时候预先加载地图
    */
   addMap() {
-    if(!this.$store.getters.appconfig){
+    if (!this.$store.getters.appconfig) {
       this.$message('服务加载失败 启用默认服务配置')
-      return;
+      return
     }
     let { initCenter, initZoom } = this.$store.getters.appconfig
     var div = this.$refs.cctvMap as HTMLElement
@@ -227,18 +227,18 @@ export default class XjMissionPointManagement extends Vue {
       })
     })
     this.mapV = map
-    new TF_Layer().createLayers(layerResource).then(layers => {
-      layers.forEach((layer:any) => {
+    new TF_Layer().createLayers(layerResource).then((layers) => {
+      layers.forEach((layer: any) => {
         layer && map.addLayer(layer)
       })
+      //添加矢量点图层
+      const vectorLayer = new VectorLayer({
+        source: new VectorSource()
+      })
+      this.graphicsLayer = vectorLayer
+      map.addLayer(this.graphicsLayer)
     })
-   
-    //添加矢量点图层
-    const vectorLayer = new VectorLayer({
-      source: new VectorSource()
-    })
-    this.graphicsLayer = vectorLayer
-    map.addLayer(this.graphicsLayer)
+
     this.addMapEvent = map.on('singleclick', (e) => {
       if (this.flag === true) {
         this.pointLon = e.coordinate[0].toFixed(6) //经度
@@ -338,13 +338,13 @@ export default class XjMissionPointManagement extends Vue {
       queryXjPoint(data).then((res) => {
         console.log(res)
         let points = []
-        let map = this.data.mapView as Map;
+        let map = this.data.mapView as Map
         if (this.historyPointLayaer) {
           this.historyPointLayaer.getSource().clear()
         } else {
           this.historyPointLayaer = new VectorLayer({
             source: new VectorSource(),
-            style:this.defaultStyle
+            style: this.defaultStyle
           })
           map.addLayer(this.historyPointLayaer)
         }
@@ -364,10 +364,10 @@ export default class XjMissionPointManagement extends Vue {
         } else {
           return
         }
-        const pointSymbols=new Feature({
-          geometry:new MultiPoint(points)
+        const pointSymbols = new Feature({
+          geometry: new MultiPoint(points)
         })
-        
+
         this.historyPointLayaer.getSource().addFeature(pointSymbols)
       })
     }
@@ -442,7 +442,7 @@ export default class XjMissionPointManagement extends Vue {
     } else {
       this.graphicsLayer.getSource().clear()
     }
-   
+
     const style = new Style({
       image: new Icon({
         src: locationIcon,
@@ -530,8 +530,8 @@ export default class XjMissionPointManagement extends Vue {
       this.mapV.updateSize()
     }
     //添加历史巡检点图层
-    if(this.historyPointLayaer){
-      this.mapV.addLayer(this.historyPointLayaer);
+    if (this.historyPointLayaer) {
+      this.mapV.addLayer(this.historyPointLayaer)
     }
     //this.mapV.extent = this.data.mapView.extent
   }

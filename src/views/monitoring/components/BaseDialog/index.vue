@@ -10,10 +10,10 @@
     ref="dialog"
   >
     <div slot="title">
-      <span>{{ title }}</span>
+      <span class="title">{{ title }}</span>
     </div>
     <slot />
-    <span slot="footer">
+    <span slot="footer" v-if="footer">
       <el-button type="primary" size="small" @click="$emit('submit')" :loading="loading" :disabled="disabled">
         提 交
       </el-button>
@@ -33,6 +33,7 @@ export default class BaseDialog extends Vue {
   @Prop({ type: Boolean }) loading!: boolean
   @Prop({ type: Boolean }) disabled!: boolean
   @Prop({ type: Boolean, default: true }) clear!: boolean
+  @Prop({ type: Boolean, default: true }) footer!: boolean
 
   get listeners() {
     const { open, closed, submit, ...rest } = this.$listeners
@@ -77,8 +78,12 @@ export default class BaseDialog extends Vue {
   align-items: center;
   /deep/ .el-dialog {
     background-color: transparent;
-    max-width: 1280px;
+    max-width: 85vw;
     margin-top: 0 !important;
+    .title {
+      font-size: 14px;
+      font-weight: 500;
+    }
 
     &__header {
       background-color: $bg-color;

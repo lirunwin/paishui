@@ -17,7 +17,7 @@ export class projUtil {
         proj57: "EPSG:3857", // ol
         proj43: "EPSG:4543", // pzh
         proj95: "EPSG:4495",
-        proj44: "EPSG:4544"
+        proj44: "EPSG:4544" // rs
     }
 
     constructor () {

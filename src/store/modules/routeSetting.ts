@@ -1,7 +1,7 @@
 import { packageRouter, ERROR } from '@/router/routes'
 import { getUserMenu } from '@/api/user'
 import userx from './user'
-import { gisNames } from '@/utils/constant'
+import { disabledMenus, gisNames } from '@/utils/constant'
 
 const state = {
   routes: [],
@@ -105,7 +105,7 @@ const actions = {
       getUserMenu(userId)
         .then((res) => {
           if (res.result.length !== 0) {
-            const data = res.result.filter((item) => item.id !== 0 && item.id !== 12 && item.id !== 16)
+            const data = res.result.filter((item) => !disabledMenus.includes(item.type || ''))
             const result = {}
             for (const item of data) {
               const obj = {}
@@ -140,7 +140,7 @@ const actions = {
             if (data.some((item) => item.type === 'bigScreen')) addRouter.unshift(bigScreenRoutes)
             if (data.some((item) => item.type === 'map' || gisNames.includes(item.type))) addRouter.unshift(mapRoute)
             if (data.some((item) => item.type === 'dashboard')) addRouter.unshift(dashboardRoute)
-            else if (!data.some((item) => item.type === 'dashboard')&&data.some((item) => item.type === 'map')) {
+            else if (!data.some((item) => item.type === 'dashboard') && data.some((item) => item.type === 'map')) {
               const redirectParent = state.addRoutes[0]
               noDashboardRedict.redirect =
                 redirectParent.path !== '/map' ? `${redirectParent.path}/${redirectParent.children[0].path}` : '/map'

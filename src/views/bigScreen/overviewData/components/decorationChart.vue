@@ -8,7 +8,7 @@ export default {
     name:'decorationChart',//动态装饰图表
     props:{
         color:{},
-        data:{},
+        chartData:{},
         fontSize:{
             type: Function,
             default: () => {
@@ -16,21 +16,36 @@ export default {
             }
         }
     },
+    watch:{
+        chartData:{
+            handler(n){
+                this.animateChart(this.color,n.value,n.unit)
+            },
+            deep:true,
+        },
+    },
     data(){
         return{
-            timerId:null
+            timerId:null,
+            chart:null,
         }
     },
     mounted(){
-        this.animateChart(this.color,this.data.value,this.data.unit,this.$refs.chart)
+        this.animateChart(this.color,this.chartData.value,this.chartData.unit)
     },
     methods:{
-        animateChart(maincolor,value,unit,ref){
-            let chart = echarts.init(ref);//this.$refs.chart
+        animateChart(maincolor,value,unit){
+            const that = this
+            let ref =this.$refs.chart
+            //清除上一个实例
+            if(this.chart) this.chart.dispose();
+            if (this.timerId) {clearInterval(this.timerId);}
+            //初始化实例
+            this.chart=echarts.init(ref);//this.$refs.chart
             let angle = 0; //角度，用来做简单的动画效果的
             this.timerId=null;
             let option = {
-                backgroundColor: '#000E1A',
+                backgroundColor: 'transparent',
                 title: {
                     text: '{a|' + value + '}\n{c|'+unit+'}',
                     x: 'center',
@@ -38,11 +53,11 @@ export default {
                     textStyle: {
                         rich: {
                             a: {
-                                fontSize: this.fontSize(16),
+                                fontSize: this.fontSize(14),
                                 color: '#ffffff'
                             },
                             c: {
-                                fontSize: this.fontSize(13),
+                                fontSize: this.fontSize(12), 
                                 color: '#ffffff',
                                 // padding: [5,0]
                             }
@@ -60,7 +75,7 @@ export default {
                                 shape: {
                                     cx: api.getWidth() / 2,
                                     cy: api.getHeight() / 2,
-                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.70,
+                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.80,
                                     startAngle: (0 + angle) * Math.PI / 180,
                                     endAngle: (90 + angle) * Math.PI / 180
                                 },
@@ -81,7 +96,7 @@ export default {
                         renderItem: function(params, api) {
                             let x0 = api.getWidth() / 2;
                             let y0 = api.getHeight() / 2;
-                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.70;
+                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.80;
                             let point = getCirlPoint(x0, y0, r, (90 + angle))
                             return {
                                 type: 'circle',
@@ -109,7 +124,7 @@ export default {
                                 shape: {
                                     cx: api.getWidth() / 2,
                                     cy: api.getHeight() / 2,
-                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.70,
+                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.80,
                                     startAngle: (180 + angle) * Math.PI / 180,
                                     endAngle: (270 + angle) * Math.PI / 180
                                 },
@@ -130,7 +145,7 @@ export default {
                         renderItem: function(params, api) {
                             let x0 = api.getWidth() / 2;
                             let y0 = api.getHeight() / 2;
-                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.70;
+                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.80;
                             let point = getCirlPoint(x0, y0, r, (180 + angle))
                             return {
                                 type: 'circle',
@@ -158,7 +173,7 @@ export default {
                                 shape: {
                                     cx: api.getWidth() / 2,
                                     cy: api.getHeight() / 2,
-                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.8,
+                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.9,
                                     startAngle: (270 + -angle) * Math.PI / 180,
                                     endAngle: (40 + -angle) * Math.PI / 180
                                 },
@@ -182,7 +197,7 @@ export default {
                                 shape: {
                                     cx: api.getWidth() / 2,
                                     cy: api.getHeight() / 2,
-                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.8,
+                                    r: Math.min(api.getWidth(), api.getHeight()) / 2 * 0.9,
                                     startAngle: (90 + -angle) * Math.PI / 180,
                                     endAngle: (220 + -angle) * Math.PI / 180
                                 },
@@ -203,7 +218,7 @@ export default {
                         renderItem: function(params, api) {
                             let x0 = api.getWidth() / 2;
                             let y0 = api.getHeight() / 2;
-                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.8;
+                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.9;
                             let point = getCirlPoint(x0, y0, r, (90 + -angle))
                             return {
                                 type: 'circle',
@@ -228,7 +243,7 @@ export default {
                         renderItem: function(params, api) {
                             let x0 = api.getWidth() / 2;
                             let y0 = api.getHeight() / 2;
-                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.8;
+                            let r = Math.min(api.getWidth(), api.getHeight()) / 2 * 0.9;
                             let point = getCirlPoint(x0, y0, r, (270 + -angle))
                             return {
                                 type: 'circle',
@@ -250,7 +265,7 @@ export default {
                     {
                         name: '',
                         type: 'pie',
-                        radius: ['60%', '48%'],
+                        radius: ['70%', '58%'],
                         silent: true,
                         clockwise: true,
                         startAngle: 90,
@@ -286,18 +301,16 @@ export default {
             }
             function draw() {
                 angle = angle + 3
-                chart.resize();
-                chart.setOption(option,{
+                that.chart.resize();
+                that.chart.setOption(option,{
                     notMerge: true,
                 });
                 //图表大小自适应
                 window.addEventListener("resize", ()=>{
-                    chart.resize()
+                    that.chart.resize()
                 })
             }
-            if (this.timerId) {
-                clearInterval(this.timerId);
-            }
+
             this.timerId = setInterval(function() {
                 //用setInterval做动画感觉有问题
                 draw()

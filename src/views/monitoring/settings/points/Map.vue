@@ -17,6 +17,7 @@ import Feature from 'ol/Feature'
 import { Point } from 'ol/geom'
 import { Style, Circle, Fill } from 'ol/style'
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
+import { Select } from 'ol/interaction';
 type Coordinate = number[]
 
 @Component({})
@@ -29,16 +30,13 @@ export default class MapView extends Vue {
   @Prop({ type: Array }) center!: Coordinate
 
   view: Map = null
-
-  timer: number = null
-
-  vectorLayer: VectorLayer<any> = null
+  centerPointLayer: VectorLayer<any> = null
   queryLayer: VectorLayer<any> = null
-  lightLayer: VectorLayer<any> = null
+  centerCoor:Array<any>=null
+  select:Select=null
 
   async initMap() {
     const { initCenter, initZoom } = appconfig
-
     const layerResource = appconfig.gisResource['iserver_resource'].layerService.layers
     const map = new Map({
       target: 'point-view',
@@ -52,28 +50,19 @@ export default class MapView extends Vue {
     })
     this.view = map
     this.addLayers(layerResource)
-
     // 点击查询管段详情
     this.view.on('click', (e) => {
       if (this.enableDeviceSelect) {
-        // const distance = getDistance(this.center, e.coordinate)
-        // console.log(distance)
-        // if (distance * 1000 > 10) this.spaceQuery(e.coordinate)
         if (this.queryLayer.getSource().getFeatures().length > 0) {
-          this.clickHightlight(e)
+          this.clickHightlight()
         } else {
-          this.$message('当前站点10m范围内无相关设施，请重新选择站点')
+          this.$message('当前站点10m范围内无相关设施，请重新选择监测站')
         }
       }
       if (this.enableCoordinateSelect) {
         this.coordinateChange(e.coordinate)
       }
     })
-    // this.vectorLayer = new VectorLayer({
-    //   source: new VectorSource(),
-    //   style: comSymbol.getAllStyle(3, 'f00', 5, '#00ffff', 'rgba(255, 255, 255, 0.6)')
-    // })
-    // this.view.addLayer(this.vectorLayer)
   }
 
   async spaceQuery(position) {
@@ -94,19 +83,25 @@ export default class MapView extends Vue {
     })
   }
 
-  clickHightlight(e) {
-    let gl = this
-    gl.lightLayer.getSource().clear()
-    let pixel = gl.view.getEventPixel(e.originalEvent)
-    gl.view.forEachFeatureAtPixel(pixel, function(feature) {
+  clickHightlight() {
+    //定义选择器
+    this.select = new Select({
+        multi: false, //单选
+        layers: [this.queryLayer],
+        style:mapUtil.getCommonStyle(true)
+    });
+    this.select.on('select',e=>{
+      const feature = e.selected[0]
+      if(!feature) return
       const featureInfo = {
         geometry: feature.getGeometry(),
         id: feature.getId(),
         properties: feature.getProperties()
       }
-      gl.deviceChange(featureInfo)
-      gl.lightLayer.getSource().addFeature(feature)
+      this.deviceChange(featureInfo)
     })
+    //选择器注册
+    this.view.addInteraction(this.select)
   }
 
   addLayers(layersSource) {
@@ -119,24 +114,28 @@ export default class MapView extends Vue {
       })
       .then(() => {
         this.initVectorLayer()
+        this.showDevicePosition()
       })
   }
-  showDevicePosition(position) {
-    this.showPointSymbol(position)
-    this.spaceQuery(position)
+  showDevicePosition() {
+    if(!this.view) return
+    this.view.getView().setCenter(this.centerCoor)
+    this.view.getView().setZoom(19)
+    this.showPointSymbol(this.centerCoor)
+    this.spaceQuery(this.centerCoor)
   }
   @Watch('center', { immediate: true })
   setCenter(coordinate: number[]) {
     this.clearVectorLayer()
     const [lat, lng] = coordinate || []
     if (!lat || !lng) return
+    this.centerCoor=[lat, lng]
+    this.showDevicePosition()
+  }
 
-    this.timer && clearTimeout(this.timer)
-    this.timer = window.setTimeout(() => {
-      this.view.getView().setCenter([lat, lng])
-      this.view.getView().setZoom(19)
-      this.showDevicePosition([lat, lng])
-    }, 500)
+  @Watch('enableDeviceSelect')
+  removeMapEvent(val){
+    if(!val) this.view.removeInteraction(this.select)
   }
 
   @Emit()
@@ -157,7 +156,7 @@ export default class MapView extends Vue {
 
   //初始化矢量图层源
   initVectorLayer() {
-    this.vectorLayer = new VectorLayer({
+    this.centerPointLayer = new VectorLayer({
       source: new VectorSource({ wrapX: false }),
       style: new Style({
         image: new Circle({
@@ -168,11 +167,9 @@ export default class MapView extends Vue {
         })
       })
     })
-    this.view.addLayer(this.vectorLayer)
+    this.view.addLayer(this.centerPointLayer)
     this.queryLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
     this.view.addLayer(this.queryLayer)
-    this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
-    this.view.addLayer(this.lightLayer)
   }
   //显示点符号
   showPointSymbol(position) {
@@ -180,15 +177,14 @@ export default class MapView extends Vue {
       geometry: new Point(position),
       name: 'monitorPoint'
     })
-    this.vectorLayer.getSource().clear()
-    this.vectorLayer.getSource().addFeature(feature)
+    this.centerPointLayer.getSource().clear()
+    this.centerPointLayer.getSource().addFeature(feature)
   }
   //清除地图元素
   clearVectorLayer() {
-    if (!this.vectorLayer || !this.queryLayer || !this.lightLayer) return
-    this.vectorLayer.getSource().clear()
+    if (!this.centerPointLayer || !this.queryLayer) return
+    this.centerPointLayer.getSource().clear()
     this.queryLayer.getSource().clear()
-    this.lightLayer.getSource().clear()
   }
 }
 </script>
