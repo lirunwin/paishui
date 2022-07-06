@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" inline>
     <el-form-item label="关键字:">
       <el-input v-model="formData.queryLike" placeholder="支持车牌号、使用人" size="small" maxlength="50" clearable />
     </el-form-item>
@@ -54,7 +54,7 @@
 
 <script lang="ts">
 import moment from 'moment'
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { IDepartment, IVehicleArchiveQuery } from '../../api'
 import { DICTONARY } from '../../utils'
 
@@ -76,15 +76,7 @@ export default class QueryForm extends Vue {
     queryLike: '',
     department: '',
     chargePerson: '',
-    date: [
-      moment()
-        .add(-7, 'day')
-        .startOf('day')
-        .toDate(),
-      moment()
-        .startOf('day')
-        .toDate()
-    ]
+    date: [moment().add(-7, 'day').startOf('day').toDate(), moment().startOf('day').toDate()]
   }
 
   onDepartmentChange() {
@@ -97,16 +89,8 @@ export default class QueryForm extends Vue {
     const format = 'YYYY-MM-DD HH:mm:ss'
     this.$emit('query', {
       ...rest,
-      beginTime: beginTime
-        ? this.$moment(beginTime)
-            .startOf('day')
-            .format(format)
-        : '',
-      endTime: endTime
-        ? this.$moment(endTime)
-            .startOf('day')
-            .format(format)
-        : ''
+      beginTime: beginTime ? this.$moment(beginTime).startOf('day').format(format) : '',
+      endTime: endTime ? this.$moment(endTime).startOf('day').format(format) : ''
     })
   }
 
@@ -115,10 +99,3 @@ export default class QueryForm extends Vue {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.form {
-  display: flex;
-  flex-wrap: wrap;
-}
-</style>

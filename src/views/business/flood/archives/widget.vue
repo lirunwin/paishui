@@ -1,27 +1,26 @@
 <template>
-  <div class="page-container">
-    <div class="actions small">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm @query="onQuery" :loading="loading" :departments="departments" />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       v-loading="loading.query"
       :columns="columns"
       :data="floods"
       @page-change="onPageChange"
       :pagination="pagination"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { floodCols } from '../../utils'
 import { floodPage, getUsers, IPagination, IDepartment, IFlood } from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
 import QueryForm from './QueryForm.vue'
 
-@Component({ name: 'FloodArchives', components: { BaseTable, QueryForm } })
+@Component({ name: 'FloodArchives', components: { QueryForm } })
 export default class FloodArchives extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   columns = floodCols.filter((col) => col.type !== 'selection')

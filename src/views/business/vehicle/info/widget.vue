@@ -1,9 +1,9 @@
 <template>
-  <div class="page-container">
-    <div class="actions small">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm @query="onQuery" @delete="onDelete" @add="onAdd" :loading="loading" :selected="selected" />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       v-loading="loading.query"
       :columns="columns"
       :data="vehicles"
@@ -20,12 +20,11 @@
       :title="`${current.id ? '修改' : '新增'}`"
       @submit="onSubmit"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { vehicleCols } from '../../utils'
 import {
   addVehicle,
@@ -41,7 +40,7 @@ import { getDefaultPagination } from '@/utils/constant'
 import QueryForm from './QueryForm.vue'
 import VehicleForm from './VehicleForm.vue'
 
-@Component({ name: 'VehicleInfo', components: { BaseTable, QueryForm, VehicleForm } })
+@Component({ name: 'VehicleInfo', components: { QueryForm, VehicleForm } })
 export default class VehicleInfo extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   columns = vehicleCols
@@ -139,13 +138,6 @@ export default class VehicleInfo extends Vue {
 
   mounted() {
     this.preparing()
-  }
-
-  @Watch('isActive')
-  refetchData(active: boolean) {
-    if (active) {
-      this.preparing()
-    }
   }
 }
 </script>

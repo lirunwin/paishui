@@ -1,6 +1,6 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" :rules="rules">
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" :rules="rules">
       <el-tooltip :content="no" placement="top">
         <el-form-item required label="监测点编号" prop="monitorSiteIds">
           <el-input v-model="no" disabled clearable />
@@ -17,7 +17,7 @@
           placeholder="请选择修改时间"
           clearable
           value-format="yyyy-MM-dd HH:mm:ss"
-          style="width:100%"
+          style="width: 100%"
         />
       </el-form-item>
       <el-form-item required label="站点状态" prop="type">
@@ -27,16 +27,15 @@
         <el-input v-model="formData.note" type="textarea" :rows="4" clearable />
       </el-form-item>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
 import { IPointConnectDevice, IPointEnableParams } from '@/views/monitoring/api'
 
-@Component({ name: 'EnableForm', components: { BaseDialog } })
+@Component({ name: 'EnableForm', components: {} })
 export default class EnableForm extends Vue {
   @Prop({ type: Array, default: () => [] }) selected!: IPointConnectDevice[]
   @Prop({ type: Object, default: () => ({}) }) data!: IPointConnectDevice

@@ -1,8 +1,5 @@
 <template>
-  <div id="siteMap" style="height:100%">
-    <!-- <pre>
-      {{ JSON.stringify(points, null, 2) }}
-    </pre> -->
+  <div id="siteMap" style="height: 100%">
     <CommonPopup :popupPosition="popupPosition" :mapView="view" :right="-130" :showIcon="false">
       <div class="infoList">
         <div class="infoItem" v-for="(item, index) of siteInfo" :key="index">
@@ -144,7 +141,7 @@ export default class Map extends Vue {
     this.view.on('pointermove', (e) => {
       let pixel = that.view.getEventPixel(e.originalEvent)
       that.popupPosition = null
-      that.view.forEachFeatureAtPixel(pixel, function(feature) {
+      that.view.forEachFeatureAtPixel(pixel, function (feature) {
         that.siteInfo = []
         const geometry = feature.getProperties().property
         if (!geometry) return
@@ -161,7 +158,7 @@ export default class Map extends Vue {
     // 点击选择监测站点
     this.mapEvent = this.view.on('click', (e) => {
       let pixel = that.view.getEventPixel(e.originalEvent)
-      that.view.forEachFeatureAtPixel(pixel, function(feature) {
+      that.view.forEachFeatureAtPixel(pixel, function (feature) {
         that.modifyPoints(feature.getProperties().property.id)
       })
     })

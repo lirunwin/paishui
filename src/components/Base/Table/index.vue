@@ -1,5 +1,5 @@
 <template>
-  <div class="tf-table" :style="{ paddingBottom: pagination ? 0 : '15px' }">
+  <div :class="{ 'tf-table': true, 'tf-table--no-pagination': !pagination }">
     <el-table ref="table" v-on="$listeners" v-bind="attrs">
       <template slot="empty">
         <img src="@/assets/icon/null.png" alt="暂无数据" />
@@ -87,7 +87,6 @@ export default class Table extends Vue {
 }
 </script>
 
-
 <style lang="scss" scoped>
 .tf-table {
   height: 100%;
@@ -95,9 +94,10 @@ export default class Table extends Vue {
   flex-direction: column;
   position: relative;
   width: 100%;
-  padding: 15px 15px 0;
+  padding: $gutter $gutter 0;
   background-color: #fff;
   z-index: 99;
+  transition: height 500ms ease;
 
   >>> .el-table {
     .el-table__header {
@@ -114,7 +114,7 @@ export default class Table extends Vue {
           height: 34px;
           color: #555;
           background-color: $--color-white;
-          padding: 3px 0;
+          padding: 0;
         }
         &.el-table__row--striped {
           td.el-table__cell {
@@ -165,9 +165,12 @@ export default class Table extends Vue {
     position: relative;
     position: sticky;
     bottom: 0;
-    padding: 15px 0;
+    padding: $gutter 0;
     background-color: #fff;
     z-index: 100;
+  }
+  &--no-pagination {
+    padding-bottom: $gutter;
   }
 }
 </style>

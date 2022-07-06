@@ -1,9 +1,9 @@
 <template>
-  <div class="page-container">
-    <div class="actions small">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm @query="onQuery" @report="onReport" @assign="onAssign" :loading="loading" :selected="selected" />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       v-loading="loading.query"
       :columns="columns"
       :data="floods"
@@ -20,13 +20,11 @@
       title="汛情上报"
       @submit="onSubmit"
     />
-    <MainMap :view="view" :isActive="isActive" />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { floodCols } from '../../utils'
 import {
   addFlood,
@@ -43,9 +41,8 @@ import {
 import { getDefaultPagination } from '@/utils/constant'
 import QueryForm from './QueryForm.vue'
 import ReportAndAssignForm from './ReportAndAssignForm.vue'
-import MainMap from './MainMap.vue'
 
-@Component({ name: 'FloodReport', components: { BaseTable, QueryForm, ReportAndAssignForm, MainMap } })
+@Component({ name: 'FloodReport', components: { QueryForm, ReportAndAssignForm } })
 export default class FloodReport extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   columns = floodCols
@@ -139,13 +136,6 @@ export default class FloodReport extends Vue {
 
   mounted() {
     this.preparing()
-  }
-
-  @Watch('isActive')
-  refetchData(active: boolean) {
-    if (active) {
-      this.preparing()
-    }
   }
 }
 </script>

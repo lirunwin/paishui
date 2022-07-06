@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
+  <tf-page>
+    <template v-slot:active>
       <QueryForm
         :selected="selected"
         @query="onQuery"
@@ -9,8 +9,8 @@
         @review="onReview"
         :loading="loading"
       />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       v-loading="loading.query"
       :columns="mobileDeviceCols"
       :pagination="pagination"
@@ -19,21 +19,11 @@
       @selection-change="onSelectionChange"
       @page-change="onPageChange"
       border
-      :header-cell-style="{
-        background: 'rgb(250, 250, 250)',
-        color: 'rgb(50, 59, 65)',
-        height: '38px'
-      }"
-      :cell-style="{
-        height: '28px'
-      }"
     >
-      <template v-for="(_, index) of devices" v-slot:[`action-${index}`]="{ row }">
-        <el-button type="text" :key="`${index}-${row.id}`" @click.stop="() => onEdit(row)" style="padding:2px 5px">
-          编辑
-        </el-button>
+      <template v-slot:action="{ row }">
+        <el-button type="text" @click.stop="() => onEdit(row)" style="padding: 2px 5px"> 编辑 </el-button>
       </template>
-    </BaseTable>
+    </tf-table>
     <DeviceForm
       :visible.sync="visible"
       :title="`${current.id ? '修改' : '新增'}采集设备`"
@@ -42,12 +32,11 @@
       :disabled="query.status === '0'"
       @submit="onSubmit"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import QueryForm from './QueryForm.vue'
 import DeviceForm from './DeviceForm.vue'
 import {
@@ -61,7 +50,7 @@ import {
 } from './api'
 import { mobileDeviceCols } from './utils'
 
-@Component({ name: 'MobileDevice', components: { BaseTable, QueryForm, DeviceForm } })
+@Component({ name: 'MobileDevice', components: { QueryForm, DeviceForm } })
 export default class MobileDevice extends Vue {
   mobileDeviceCols = mobileDeviceCols
 

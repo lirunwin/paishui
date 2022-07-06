@@ -1,24 +1,23 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
+  <tf-page>
+    <template v-slot:action>
       <QueryForm :selected="selected" @query="onQuery" @export="onExport" />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       :columns="monitorSiteCols"
       :data="points"
       @row-dblclick="onDblClick"
       @selection-change="onSelectionChange"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { monitorSiteCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 
-@Component({ name: 'SitesMonitor', components: { BaseTable, QueryForm } })
+@Component({ name: 'SitesMonitor', components: { QueryForm } })
 export default class SitesMonitor extends Vue {
   monitorSiteCols = monitorSiteCols
 

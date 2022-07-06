@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <tf-page :isActive="isActive">
     <div class="actions">
       <el-row type="flex" justify="space-between" align="middle">
         <div>
@@ -13,24 +13,24 @@
         </div>
       </el-row>
     </div>
-    <BaseTable
+    <tf-table
       :columns="settingIconCols"
       :data="archives"
       @row-dblclick="onDblClick"
       @selection-change="onSelectionChange"
     />
     <IconForm :visible.sync="visible" :title="`${current.id ? '修改' : '新增'}采集设备`" :data="current" />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { settingIconCols } from '@/views/monitoring/utils'
 import IconForm from './IconForm.vue'
 
-@Component({ name: 'MonitoringIcons', components: { BaseTable, IconForm } })
+@Component({ name: 'MonitoringIcons', components: { IconForm } })
 export default class MonitoringIcons extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   settingIconCols = settingIconCols
 
   visible = false

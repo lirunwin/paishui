@@ -1,7 +1,7 @@
 <template>
   <div>
-    <el-form ref="form" :model="query" size="medium" label-width="5em" class="form" style="margin-bottom: 1em">
-      <BaseTitle :bold="false">条件设置</BaseTitle>
+    <el-form ref="form" :model="query" size="small" label-width="auto" class="form" style="margin-bottom: 1em">
+      <tf-title :bold="false">条件设置</tf-title>
       <el-form-item label="目标地址">
         <el-input v-model="query.keyword" disabled />
       </el-form-item>
@@ -26,21 +26,19 @@
         </el-col>
       </el-row>
     </el-form>
-    <BaseTitle :bold="false">推荐方案</BaseTitle>
+    <tf-title :bold="false">推荐方案</tf-title>
     <RouteCard v-for="plan in plans" :key="plan.id" :plan="plan" />
-    <BaseTitle :bold="false">备选方案</BaseTitle>
+    <tf-title :bold="false">备选方案</tf-title>
     <RouteCard v-for="plan in backupPlans" :key="plan.id" :plan="plan" backup />
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingMonitorCols } from '@/views/monitoring/utils'
 import RouteCard from '@/views/monitoring/monitor/components/RouteCard/index.vue'
 
-@Component({ name: 'Monitor', components: { BaseTitle, BaseTable, RouteCard } })
+@Component({ name: 'Monitor', components: { RouteCard } })
 export default class Monitor extends Vue {
   query: {
     keyword?: string

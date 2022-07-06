@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog
+  <tf-dialog
     v-bind="$attrs"
     v-on="listeners"
     @submit="onSubmit"
@@ -8,10 +8,10 @@
     @open="onOpen"
     :disabled="disabled"
   >
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData" :rules="rules">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" :rules="rules">
       <template v-for="form of formItems">
         <template>
-          <BaseTitle :key="`title-${form.name}`">{{ form.name }}</BaseTitle>
+          <tf-title :key="`title-${form.name}`">{{ form.name }}</tf-title>
         </template>
         <template>
           <el-row :key="form.name" :gutter="20">
@@ -40,7 +40,7 @@
                     :options="options"
                     :props="{ expandTrigger: 'hover', label: 'name', value: 'id', checkStrictly: true }"
                     size="small"
-                    style="width:100%"
+                    style="width: 100%"
                     filterable
                     clearable
                     @change="onChange"
@@ -82,16 +82,14 @@
         </template>
       </template>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import { getDepartments, getUsers } from './api'
 
-@Component({ name: 'DeviceForm', components: { BaseDialog, BaseTitle } })
+@Component({ name: 'DeviceForm', components: {} })
 export default class DeviceForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: { id?: string; dataSource?: 'web' | 'app' }
   @Prop({ type: Boolean, default: false }) loading!: boolean

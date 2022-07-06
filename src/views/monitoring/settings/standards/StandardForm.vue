@@ -1,6 +1,6 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData" :rules="rules">
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" :rules="rules">
       <el-form-item required label="设备类型" prop="type">
         <el-select
           v-model="formData.type"
@@ -18,16 +18,15 @@
         <el-input v-model="formData.name" placeholder="请输入指标标准名称" clearable />
       </el-form-item>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
 import { IDeviceType } from '@/views/monitoring/api'
 
-@Component({ name: 'StandardForm', components: { BaseDialog } })
+@Component({ name: 'StandardForm', components: {} })
 export default class StandardForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]
@@ -43,7 +42,10 @@ export default class StandardForm extends Vue {
 
   rules = {
     type: [{ required: true, message: '请选择设备类型' }],
-    name: [{ required: true, message: '指标标准名称不能为空！' }, { max: 50, message: '指标标准名称不超过50个字符' }]
+    name: [
+      { required: true, message: '指标标准名称不能为空！' },
+      { max: 50, message: '指标标准名称不超过50个字符' }
+    ]
   }
 
   onSubmit() {

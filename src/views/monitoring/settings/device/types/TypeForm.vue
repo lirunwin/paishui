@@ -1,6 +1,6 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData">
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData">
       <el-form-item
         v-for="{ name, label, rules, required = false, type = 'text', onChange, ...rest } of formItems"
         :key="name"
@@ -18,23 +18,20 @@
           v-bind="rest"
         />
         <el-input v-else v-model="formData[name]" :placeholder="`请输入${label}`" clearable v-bind="rest">
-          <template slot="suffix" v-if="name === 'collectTime'">
-            分钟
-          </template>
+          <template slot="suffix" v-if="name === 'collectTime'"> 分钟 </template>
         </el-input>
       </el-form-item>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
 
 const getDefaultValue = () => ({ sort: 1, isCollect: 1 })
 
-@Component({ name: 'TypeForm', components: { BaseDialog } })
+@Component({ name: 'TypeForm', components: {} })
 export default class TypeForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Boolean, default: false }) loading!: boolean

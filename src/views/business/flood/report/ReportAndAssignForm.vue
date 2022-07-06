@@ -1,9 +1,9 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" @closed="onClosed" :loading="loading" width="1280px">
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" @closed="onClosed" :loading="loading" width="1280px">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '7.5em', size: 'small' }" :model="formData" :rules="rules">
       <el-row :gutter="20" type="flex">
         <el-col :span="14">
-          <BaseTitle>基本信息</BaseTitle>
+          <tf-title>基本信息</tf-title>
           <el-row>
             <el-col :span="24">
               <el-form-item label="是否为警情" required prop="flood.police">
@@ -120,7 +120,7 @@
           />
         </el-col>
       </el-row>
-      <BaseTitle>派工信息</BaseTitle>
+      <tf-title>派工信息</tf-title>
       <el-row>
         <el-col :span="6">
           <el-form-item label="处理人" prop="assign.majorHandler">
@@ -229,14 +229,12 @@
         </el-col>
       </el-row>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { ElForm } from 'element-ui/types/form'
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import { IEvent, IAssign, IDepartment, assignPage, IFlood } from '../../api'
 import { DICTONARY } from '../../utils'
 import { telAndMobileReg } from '@/utils/constant'
@@ -263,7 +261,7 @@ const getDefaultData = (): IFormData => ({
   coordinate: ''
 })
 
-@Component({ components: { BaseDialog, BaseTitle, Map } })
+@Component({ components: { Map } })
 export default class ReportAndAssignForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IEvent
   @Prop({ type: Boolean, default: false }) loading!: boolean

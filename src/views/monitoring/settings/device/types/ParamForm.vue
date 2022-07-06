@@ -1,6 +1,6 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData">
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData">
       <el-form-item
         v-for="{ name, label, type, required = false, rules, items, ...rest } of formItems"
         :key="name"
@@ -50,19 +50,18 @@
         </el-input>
       </el-form-item>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { ElForm } from 'element-ui/types/form'
 import { IDeviceTypeParam } from '@/views/monitoring/api'
 import { getDefalutNumberProp } from '@/views/monitoring/utils'
 
 const getDefaultData = () => ({ isDisplay: 1, sort: 0, rate: 1 })
 
-@Component({ name: 'ParamForm', components: { BaseDialog } })
+@Component({ name: 'ParamForm', components: {} })
 export default class ParamForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Boolean, default: false }) loading!: boolean

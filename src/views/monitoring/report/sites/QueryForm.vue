@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" inline>
     <el-form-item label="关键字" prop="no">
       <el-input v-model="formData.no" placeholder="请输入关键字" size="small" clearable />
     </el-form-item>
@@ -21,7 +21,7 @@
         start-placeholder="开始日期"
         end-placeholder="结束日期"
         size="small"
-        style="width:230px"
+        style="width: 230px"
         clearable
         value-format="yyyy-MM-dd"
       />

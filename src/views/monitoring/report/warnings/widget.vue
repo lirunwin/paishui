@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm
         :selected="selected"
         @query="onQuery"
@@ -11,8 +11,8 @@
         :levels="levels"
         :paramNames="paramNames"
       />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       :columns="monitorWarningReportCols"
       :data="reports"
       :selected="selected"
@@ -20,12 +20,11 @@
       :pagination="pagination"
       @page-change="onPageChange"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { monitorWarningReportCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 import { getDefaultPagination } from '@/utils/constant'
@@ -45,7 +44,7 @@ type IQuery = Record<
   string
 >
 
-@Component({ name: 'ReportWarnings', components: { BaseTable, QueryForm } })
+@Component({ name: 'ReportWarnings', components: { QueryForm } })
 export default class ReportWarnings extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   monitorWarningReportCols = monitorWarningReportCols
@@ -141,13 +140,6 @@ export default class ReportWarnings extends Vue {
     this.getGroupsAndSections()
     this.getLevels()
     this.getAllParamNames()
-  }
-
-  @Watch('isActive')
-  refetchData(active: boolean) {
-    if (active) {
-      this.preparing()
-    }
   }
 }
 </script>

@@ -49,6 +49,12 @@ export default class Page extends Vue {
     >>> .el-form-item {
       margin-bottom: $gutter;
     }
+
+    >>> .el-form--inline {
+      .el-form-item {
+        margin-right: $gutter;
+      }
+    }
     &.hidden {
       display: none;
     }

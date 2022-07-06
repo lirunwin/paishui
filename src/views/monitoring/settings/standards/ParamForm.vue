@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog
+  <tf-dialog
     width="450px"
     v-bind="$attrs"
     v-on="listeners"
@@ -8,7 +8,7 @@
     @closed="onClosed"
     top="8vh"
   >
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '10em', size: 'medium' }" :model="formData">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData">
       <el-form-item
         v-for="{ name, label, type, required = true, disabled, rules, on = {}, options, ...rest } of formItems"
         :key="name"
@@ -52,12 +52,11 @@
         />
       </el-form-item>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
 import { getDefalutNumberProp, settingDeviceTypeParamCols } from '@/views/monitoring/utils'
 import { ElForm } from 'element-ui/types/form'
 import { IDictionary, IStandardParam, IDeviceTypeParam, deviceTypeParamsPage } from '@/views/monitoring/api'
@@ -81,7 +80,7 @@ const getDefaultFormData = (): IFormData => ({
 
 const getTime = (time: string | Date) => moment(time, format).format(format)
 
-@Component({ name: 'ParamForm', components: { BaseDialog } })
+@Component({ name: 'ParamForm', components: {} })
 export default class ParamForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IStandardParam
   @Prop({ type: Array, default: () => [] }) levels!: IDictionary[]

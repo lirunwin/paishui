@@ -1,9 +1,9 @@
 <template>
-  <div class="page-container">
-    <div class="actions small">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm @query="onQuery" :loading="loading" :departments="departments" />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       v-loading="loading.query"
       :columns="columns"
       :data="vehicleArchives"
@@ -12,13 +12,13 @@
       :tree-props="{ children: 'eventMangeList', hasChildren: 'hasChildren' }"
     >
       >
-      <template v-for="(_, index) of vehicleArchives" v-slot:[`name1-${index}`]="{ row }">
-        <el-button type="text" :key="index">{{ row.id }}</el-button>
+      <template v-slot:name1="{ row }">
+        <el-button type="text">{{ row.id }}</el-button>
       </template>
-      <template v-for="(_, index) of vehicleArchives" v-slot:[`name2-${index}`]="{ row }">
-        <el-button type="text" :key="index" @click="() => onShow(row)">{{ row.id }}</el-button>
+      <template v-slot:name2="{ row }">
+        <el-button type="text" @click="() => onShow(row)">{{ row.id }}</el-button>
       </template>
-    </BaseTable>
+    </tf-table>
     <!-- <CommonPopup
       v-for="key of popupIds"
       :key="key"
@@ -33,19 +33,18 @@
         :colors="levelColors"
       />
     </CommonPopup> -->
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { vehicleArchiveCols } from '../../utils'
 import { vehicleArchivePage, getUsers, IPagination, IDepartment, IVehicleArchive } from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
 import CommonPopup from '@/components/CommonPopup/index.vue'
 import QueryForm from './QueryForm.vue'
 
-@Component({ name: 'VehicleArchives', components: { BaseTable, QueryForm, CommonPopup } })
+@Component({ name: 'VehicleArchives', components: { QueryForm, CommonPopup } })
 export default class VehicleArchives extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   columns = vehicleArchiveCols.filter((col) => col.type !== 'selection')

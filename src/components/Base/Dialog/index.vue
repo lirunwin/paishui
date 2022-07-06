@@ -26,8 +26,8 @@
 import { ElForm } from 'element-ui/types/form'
 import { Vue, Component, Prop, PropSync } from 'vue-property-decorator'
 
-@Component({ name: 'BaseDialog', inheritAttrs: false })
-export default class BaseDialog extends Vue {
+@Component({ name: 'TfDialog', inheritAttrs: false })
+export default class Dialog extends Vue {
   @PropSync('visible', { type: Boolean }) dialogVisible!: boolean
   @Prop({ type: String }) title!: string
   @Prop({ type: Boolean }) loading!: boolean
@@ -69,19 +69,22 @@ export default class BaseDialog extends Vue {
 </script>
 <style lang="scss" scoped>
 .dialog {
-  $radius: 5px;
-  $font-color: #fff;
-  $bg-color: rgba(45, 116, 231, 1);
+  font-size: $--font-size-base;
+  $radius: $--border-radius-base;
+  $font-color: $--color-white;
+  $bg-color: $--color-primary;
+
   border-radius: $radius;
   display: flex;
   justify-content: center;
   align-items: center;
-  /deep/ .el-dialog {
+  >>> .el-dialog {
     background-color: transparent;
     max-width: 85vw;
     margin-top: 0 !important;
     .title {
-      font-size: 14px;
+      font-size: $--font-size-medium;
+      color: $font-color;
       font-weight: 500;
     }
 
@@ -89,9 +92,9 @@ export default class BaseDialog extends Vue {
       background-color: $bg-color;
       color: $font-color;
       border-bottom-color: $bg-color;
-      height: 40px;
+      height: 54px;
       text-indent: 0;
-      padding: 0 1em;
+      padding: 0 $gutter-medium;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -114,6 +117,9 @@ export default class BaseDialog extends Vue {
       background-color: #fff;
       border-bottom-left-radius: $radius;
       border-bottom-right-radius: $radius;
+    }
+    .el-dialog__body {
+      padding: $gutter-medium;
     }
   }
 }

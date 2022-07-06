@@ -1,10 +1,10 @@
 <template>
-  <div class="page-container">
+  <tf-page :isActive="isActive">
     <el-row type="flex" :gutter="10" class="detail">
       <el-col :span="7">
         <div class="query">
           <div class="form">
-            <base-title>查看设置</base-title>
+            <tf-title>查看设置</tf-title>
             <QueryForm
               ref="form"
               @query="onQuery"
@@ -17,17 +17,15 @@
             />
           </div>
           <div class="map-container">
-            <base-title>
-              <el-row type="flex" justify="space-between" align="middle">
-                <span>监测站点地图</span>
-                <div class="map-checkbox">
-                  <el-checkbox-group v-model="display">
-                    <el-checkbox label="all">显示所有监测点</el-checkbox>
-                    <el-checkbox label="selected">显示选中监测点</el-checkbox>
-                  </el-checkbox-group>
-                </div>
-              </el-row>
-            </base-title>
+            <tf-title>
+              <span>监测站点地图</span>
+              <template v-slot:append>
+                <el-checkbox-group v-model="display">
+                  <el-checkbox label="all">显示所有监测点</el-checkbox>
+                  <el-checkbox label="selected">显示选中监测点</el-checkbox>
+                </el-checkbox-group>
+              </template>
+            </tf-title>
             <div class="map">
               <Map
                 :enable="enablePointSelect"
@@ -42,17 +40,15 @@
       <el-col :span="17">
         <div class="chart">
           <div class="title">
-            <base-title>
-              <el-row type="flex" align="middle">
-                <span style="margin-right: 40px">监测曲线</span>
-                <div cla>
-                  <el-checkbox-group v-model="merge">
-                    <el-checkbox label="point">按监测点融合展示</el-checkbox>
-                    <el-checkbox label="param">按指标融合展示</el-checkbox>
-                  </el-checkbox-group>
-                </div>
-              </el-row>
-            </base-title>
+            <tf-title>
+              <span style="margin-right: 40px">监测曲线</span>
+              <template v-slot:append>
+                <el-checkbox-group v-model="merge">
+                  <el-checkbox label="point">按监测点融合展示</el-checkbox>
+                  <el-checkbox label="param">按指标融合展示</el-checkbox>
+                </el-checkbox-group>
+              </template>
+            </tf-title>
           </div>
           <div style="padding: 10px 0">
             <!-- <el-row type="flex" justify="space-between">
@@ -69,26 +65,24 @@
               :options="line"
               :key="index"
               autoresize
-              style="width: 100%; margin-top: 20px;"
+              style="width: 100%; margin-top: 20px"
             />
           </div>
         </div>
       </el-col>
     </el-row>
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 import QueryForm from './QueryForm.vue'
-import BaseTitle from '../../components/BaseTitle/index.vue'
 import {
   deviceTypesPage,
   fetchReportDetail,
   fetchReportDetailThreshold,
   getPoint,
   IDeviceTypeParam,
-  IPoint,
   IPointConnectDevice,
   IReportDetail,
   IReportDetailQuery,
@@ -126,7 +120,10 @@ const getDefaultMapData = ({ title }: { title: string; names?: string[] }, point
     calculable: true,
     xAxis: [{ type: 'category', boundaryGap: false }],
     yAxis: [{ type: 'value', min: ({ min }) => min }],
-    dataZoom: [{ type: 'inside', start: 0, end: 100 }, { start: 0, end: 100 }],
+    dataZoom: [
+      { type: 'inside', start: 0, end: 100 },
+      { start: 0, end: 100 }
+    ],
     legend: { show: true },
     toolbox: {
       show: true,
@@ -152,7 +149,7 @@ interface IKeyedDictonary {
   [x: string]: IDictionary
 }
 
-@Component({ name: 'ReportDetail', components: { QueryForm, BaseTitle, Map } })
+@Component({ name: 'ReportDetail', components: { QueryForm, Map } })
 export default class ReportDetail extends Vue {
   @Prop({ type: Object, default: () => ({}) }) param!: IReportDetailQuery
   @Prop({ type: Boolean }) isActive!: boolean
@@ -470,13 +467,6 @@ export default class ReportDetail extends Vue {
     this.preparing()
   }
 
-  @Watch('isActive')
-  refetchData(active: boolean) {
-    if (active) {
-      this.preparing()
-    }
-  }
-
   onQuery(query) {
     const { besides, ...rest } = query
     this.query = rest
@@ -494,9 +484,7 @@ export default class ReportDetail extends Vue {
       this.fetchReportDetailThreshold(siteId)
       const { type: deviceType } = (result.bindDevice || {}).deviceVo
 
-      const startTime = this.$moment()
-        .add(-7, 'day')
-        .startOf('day')
+      const startTime = this.$moment().add(-7, 'day').startOf('day')
 
       const endTime = this.$moment().startOf('day')
 

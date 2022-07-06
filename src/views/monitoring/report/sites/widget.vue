@@ -1,25 +1,25 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm :selected="selected" @query="onQuery" @export="onExport" />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       :columns="monitorPointReportCols"
       :data="points"
       @row-dblclick="onDblClick"
       @selection-change="onSelectionChange"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { monitorPointReportCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 
-@Component({ name: 'ReportSites', components: { BaseTable, QueryForm } })
+@Component({ name: 'ReportSites', components: { QueryForm } })
 export default class ReportSites extends Vue {
+  @Prop({ type: Boolean, default: false }) isActive!: boolean
   monitorPointReportCols = monitorPointReportCols
 
   visible = false
@@ -52,16 +52,3 @@ export default class ReportSites extends Vue {
   }
 }
 </script>
-
-<style scoped>
-.actions {
-  padding: 22px 15px 0;
-  margin-bottom: 15px;
-  background: #fff;
-}
-
-.table-container {
-  padding: 15px;
-  background-color: #fff;
-}
-</style>

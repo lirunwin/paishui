@@ -1,9 +1,9 @@
 <template>
-  <div class="page-container">
-    <div class="actions small">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm @query="onQuery" @report="onReport" @assign="onAssign" :loading="loading" :selected="selected" />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       v-loading="loading.query"
       :columns="columns"
       :data="events"
@@ -20,13 +20,11 @@
       title="事件上报"
       @submit="onSubmit"
     />
-    <MainMap :view="view" :isActive="isActive" />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { eventCols } from '../../utils'
 import {
   addEvent,
@@ -42,9 +40,8 @@ import {
 import { getDefaultPagination } from '@/utils/constant'
 import QueryForm from './QueryForm.vue'
 import ReportAndAssignForm from './ReportAndAssignForm.vue'
-import MainMap from './MainMap.vue'
 
-@Component({ name: 'EventReport', components: { BaseTable, QueryForm, ReportAndAssignForm, MainMap } })
+@Component({ name: 'EventReport', components: { QueryForm, ReportAndAssignForm } })
 export default class EventReport extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   columns = eventCols
@@ -129,11 +126,21 @@ export default class EventReport extends Vue {
         result: { records, size, total, current }
       } = await eventsPage({ ...this.query, ...this.pagination })
       this.pagination = { current, size, total }
-      records.map((item) => {
-        item.facility = item.facility === '' ? { pipeid: '' } : JSON.parse(item.facility)
-        return item
+      this.events = (records || []).map((item) => {
+        return {
+          ...item,
+          facility:
+            item.facility === ''
+              ? { pipeid: '' }
+              : (() => {
+                  try {
+                    return JSON.parse(item.facility)
+                  } catch (error) {
+                    console.log(error)
+                  }
+                })()
+        }
       })
-      this.events = records || []
       console.log(records)
     } catch (error) {
       console.log(error)
@@ -149,13 +156,6 @@ export default class EventReport extends Vue {
 
   mounted() {
     this.preparing()
-  }
-
-  @Watch('isActive')
-  refetchData(active: boolean) {
-    if (active) {
-      this.preparing()
-    }
   }
 }
 </script>

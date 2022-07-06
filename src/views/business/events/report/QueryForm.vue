@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" inline>
     <el-form-item label="关键字:">
       <el-input
         v-model="formData.queryLike"
@@ -21,7 +21,7 @@
         <el-checkbox v-for="(value, key) of DICTONARY.event.status" :key="key" :label="key">{{ value }}</el-checkbox>
       </el-checkbox-group>
     </el-form-item> -->
-    <el-form-item class="btns">
+    <el-form-item>
       <el-button
         type="primary"
         size="small"
@@ -33,34 +33,32 @@
       >
         查询
       </el-button>
-      <div>
-        <el-button
-          type="primary"
-          size="small"
-          :loading="loading.report"
-          :disabled="loading.report"
-          @click="$emit('report')"
-          icon="el-icon-plus"
-        >
-          上报
-        </el-button>
-        <el-button
-          type="primary"
-          size="small"
-          :loading="loading.assign"
-          :disabled="loading.assign || ids.length !== 1"
-          @click="$emit('assign', ids)"
-          icon="el-icon-plus"
-        >
-          派工
-        </el-button>
-      </div>
+      <el-button
+        type="primary"
+        size="small"
+        :loading="loading.report"
+        :disabled="loading.report"
+        @click="$emit('report')"
+        icon="el-icon-plus"
+      >
+        上报
+      </el-button>
+      <el-button
+        type="primary"
+        size="small"
+        :loading="loading.assign"
+        :disabled="loading.assign || ids.length !== 1"
+        @click="$emit('assign', ids)"
+        icon="el-icon-plus"
+      >
+        派工
+      </el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { IEvent } from '../../api'
 import { DICTONARY } from '../../utils'
 
@@ -96,26 +94,3 @@ export default class QueryForm extends Vue {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.form {
-  display: flex;
-  flex-wrap: wrap;
-  >>> .el-form-item.btns {
-    flex: 1 1 auto;
-    > div {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      &::before,
-      &::after {
-        display: none;
-      }
-    }
-  }
-
-  >>> .el-form-item--small.el-form-item {
-    margin-bottom: 10px;
-  }
-}
-</style>

@@ -1,6 +1,6 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" width="876px" top="7vh">
-    <BaseTitle>设备基本信息</BaseTitle>
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" width="876px" top="7vh">
+    <tf-title>设备基本信息</tf-title>
     <el-row :gutter="20">
       <el-col :span="12">
         <el-form
@@ -55,8 +55,8 @@
       </el-col>
       <el-col :span="12">
         设备照片
-        <span style="margin-left:5px; color:#ccc">(最多上传9张)</span>
-        <div style="margin-top:20px" class="upload">
+        <span style="margin-left: 5px; color: #ccc">(最多上传9张)</span>
+        <div style="margin-top: 20px" class="upload">
           <el-upload
             list-type="picture-card"
             :on-preview="handlePictureCardPreview"
@@ -77,13 +77,11 @@
         </el-dialog>
       </el-col>
     </el-row>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import { IDeviceType, IDevice, deviceTypeParamsPage } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
 import { getRemoteImg } from '@/api/ftp'
@@ -102,7 +100,7 @@ const getDefaultValue = (): IDevice => ({
   note: ''
 })
 
-@Component({ name: 'TypeForm', components: { BaseDialog, BaseTitle } })
+@Component({ name: 'TypeForm', components: {} })
 export default class TypeForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]

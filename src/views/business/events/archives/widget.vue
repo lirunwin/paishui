@@ -1,27 +1,26 @@
 <template>
-  <div class="page-container">
-    <div class="actions small">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm @query="onQuery" :loading="loading" :departments="departments" />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       v-loading="loading.query"
       :columns="columns"
       :data="events"
       @page-change="onPageChange"
       :pagination="pagination"
     />
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { eventCols } from '../../utils'
 import { eventsPage, getUsers, IEvent, IPagination, IDepartment } from '../../api'
 import { getDefaultPagination } from '@/utils/constant'
 import QueryForm from './QueryForm.vue'
 
-@Component({ name: 'EventArchives', components: { BaseTable, QueryForm } })
+@Component({ name: 'EventArchives', components: { QueryForm } })
 export default class EventArchives extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   columns = eventCols.filter((col) => col.type !== 'selection')

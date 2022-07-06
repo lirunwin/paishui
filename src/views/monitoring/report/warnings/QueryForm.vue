@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" inline>
     <el-form-item label="关键字" prop="queryLike">
       <el-input v-model="formData.queryLike" placeholder="请输入关键字" size="small" clearable />
     </el-form-item>
@@ -65,7 +65,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { IDictionary } from '../../api'
 
 @Component({ name: 'QueryForm' })

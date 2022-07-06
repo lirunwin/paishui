@@ -29,7 +29,7 @@
         </el-checkbox-group>
       </el-form-item>
     </el-form>
-    <BaseTitle>
+    <tf-title>
       <el-row type="flex" justify="space-between">
         监测点列表（共{{ pagination.total }}个）
         <el-switch
@@ -40,8 +40,8 @@
           @change="onMonitoringChange"
         />
       </el-row>
-    </BaseTitle>
-    <BaseTable
+    </tf-title>
+    <tf-table
       :columns="settingMonitorCols"
       :data="monitorItems"
       :cell-style="cellStyle"
@@ -50,13 +50,13 @@
       :pagination="{ ...pagination, pagerCount: 5, layout: 'total, sizes, prev, pager, next' }"
       style="padding: 0"
     >
-      <template v-for="(item, index) of monitorItems" v-slot:[`action-${index}`]>
-        <div :key="`index-${item.id}`">
-          <el-button type="text" icon="iconfont icondingwei1" size="small" @click="() => onShowPopup(item)" />
-          <el-button type="text" icon="iconfont icontjfx" size="small" @click="() => goTo(item)" />
+      <template v-slot:action="{ row }">
+        <div>
+          <el-button type="text" icon="iconfont icondingwei1" size="small" @click="() => onShowPopup(row)" />
+          <el-button type="text" icon="iconfont icontjfx" size="small" @click="() => goTo(row)" />
         </div>
       </template>
-    </BaseTable>
+    </tf-table>
     <CommonPopup
       v-for="key of popupIds"
       :key="key"
@@ -78,8 +78,6 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingMonitorCols } from '@/views/monitoring/utils'
 import CommonPopup from '@/components/CommonPopup/index.vue'
 import InfoCard from '@/views/monitoring/monitor/components/InfoCard/index.vue'
@@ -109,7 +107,7 @@ interface IQuery {
   psArea?: string
 }
 
-@Component({ name: 'Monitor', components: { BaseTitle, BaseTable, CommonPopup, InfoCard } })
+@Component({ name: 'Monitor', components: { CommonPopup, InfoCard } })
 export default class Monitor extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   @Prop({ type: Object }) view!: Map

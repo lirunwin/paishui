@@ -1,11 +1,11 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="600px">
-    <BaseTitle>设备基本信息</BaseTitle>
+  <tf-dialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="600px">
+    <tf-title>设备基本信息</tf-title>
     <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData" :rules="rules">
       <el-row :gutter="20">
         <el-col :span="16">
           <el-row type="flex" align="middle">
-            <el-col style="flex:1">
+            <el-col style="flex: 1">
               <el-form-item required label="图标选择" prop="icon">
                 <el-input
                   v-model="formData.icon"
@@ -13,7 +13,7 @@
                   size="small"
                   placeholder="点击 + 开始上传"
                   clearable
-                  style="width:100%"
+                  style="width: 100%"
                 />
               </el-form-item>
             </el-col>
@@ -43,9 +43,7 @@
             <el-input v-model="formData.team" placeholder="请输入图标分组" />
           </el-form-item>
         </el-col>
-        <el-col :span="8">
-          对接upload接口后再说
-        </el-col>
+        <el-col :span="8"> 对接upload接口后再说 </el-col>
         <el-col :span="24">
           <el-form-item label="备注" prop="note">
             <el-input v-model="formData.note" type="textarea" rows="2" placeholder="请输入备注" />
@@ -53,15 +51,13 @@
         </el-col>
       </el-row>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 
-@Component({ name: 'IconForm', components: { BaseDialog, BaseTitle } })
+@Component({ name: 'IconForm', components: {} })
 export default class IconForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   dialogVisible = false

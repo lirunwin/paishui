@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
+  <tf-page>
+    <template v-slot:action>
       <QueryForm
         :selected="selected"
         @query="onQuery"
@@ -9,18 +9,17 @@
         @del="onDel"
         @export="onExport"
       />
-    </div>
-    <BaseTable :columns="cols" :data="archives" @row-dblclick="onDblClick" @selection-change="onSelectionChange" />
-  </div>
+    </template>
+    <tf-table :columns="cols" :data="archives" @row-dblclick="onDblClick" @selection-change="onSelectionChange" />
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { settingSiteCols as cols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 
-@Component({ name: 'MonitoringSites', components: { BaseTable, QueryForm } })
+@Component({ name: 'MonitoringSites', components: { QueryForm } })
 export default class MonitoringSites extends Vue {
   cols = cols
 

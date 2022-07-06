@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'small' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" inline>
     <el-form-item label="关键字:">
       <el-input v-model="formData.queryLike" placeholder="支持车牌号、负责人" size="small" maxlength="50" clearable />
     </el-form-item>
@@ -22,44 +22,42 @@
       >
         查询
       </el-button>
-      <div>
-        <el-button
-          type="primary"
-          size="small"
-          :loading="loading.add"
-          :disabled="loading.add"
-          @click="$emit('add')"
-          icon="el-icon-plus"
-        >
-          新增
-        </el-button>
-        <el-button
-          type="primary"
-          size="small"
-          :loading="loading.update"
-          :disabled="loading.update || ids.length !== 1"
-          @click="$emit('update')"
-          icon="el-icon-edit"
-        >
-          修改
-        </el-button>
-        <el-button
-          type="danger"
-          size="small"
-          :loading="loading.delete"
-          :disabled="loading.delete || ids.length !== 1"
-          @click="$emit('delete', ids)"
-          icon="el-icon-delete"
-        >
-          删除
-        </el-button>
-      </div>
+      <el-button
+        type="primary"
+        size="small"
+        :loading="loading.add"
+        :disabled="loading.add"
+        @click="$emit('add')"
+        icon="el-icon-plus"
+      >
+        新增
+      </el-button>
+      <el-button
+        type="primary"
+        size="small"
+        :loading="loading.update"
+        :disabled="loading.update || ids.length !== 1"
+        @click="$emit('update')"
+        icon="el-icon-edit"
+      >
+        修改
+      </el-button>
+      <el-button
+        type="danger"
+        size="small"
+        :loading="loading.delete"
+        :disabled="loading.delete || ids.length !== 1"
+        @click="$emit('delete', ids)"
+        icon="el-icon-delete"
+      >
+        删除
+      </el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { IEvent } from '../../api'
 import { DICTONARY } from '../../utils'
 
@@ -83,26 +81,3 @@ export default class QueryForm extends Vue {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.form {
-  display: flex;
-  flex-wrap: wrap;
-  >>> .el-form-item.btns {
-    flex: 1 1 auto;
-    > div {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      &::before,
-      &::after {
-        display: none;
-      }
-    }
-  }
-
-  >>> .el-form-item--small.el-form-item {
-    margin-bottom: 10px;
-  }
-}
-</style>

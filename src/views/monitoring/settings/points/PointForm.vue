@@ -1,9 +1,9 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" @closed="onClosed" width="876px" top="7vh">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" :rules="rules">
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" @closed="onClosed" width="876px" top="7vh">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" :rules="rules">
       <template v-for="{ name: sectionName, title, items } of formItems">
         <template>
-          <BaseTitle :key="`${sectionName}-title`">{{ title }}</BaseTitle>
+          <tf-title :key="`${sectionName}-title`">{{ title }}</tf-title>
         </template>
         <el-row v-if="sectionName === 'siteFacility'" :key="`${sectionName}-items`" :gutter="20">
           <el-col :span="12">
@@ -168,7 +168,7 @@
               </div>
             </template>
             <template v-else>
-              <div style="height:100%" @mouseenter="cancelResetPointSelect" @mouseleave="resetPointSelect">
+              <div style="height: 100%" @mouseenter="cancelResetPointSelect" @mouseleave="resetPointSelect">
                 <Map
                   @coordinate-change="onCoordinateChange"
                   @device-change="onDeviceChange"
@@ -185,14 +185,11 @@
         <img width="100%" :src="dialogImageUrl" alt="" />
       </el-dialog>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { IPointConnectDevice, IDeviceType, IDevice, devicesAvailable } from '@/views/monitoring/api'
 import { ElForm } from 'element-ui/types/form'
 import { getDefalutNumberProp } from '@/views/monitoring/utils'
@@ -240,7 +237,7 @@ interface IFormData extends IPointConnectDevice {
 
 const getDefaultEnableValue = () => ({ coordinate: false, device: false })
 
-@Component({ name: 'PointForm', components: { BaseDialog, BaseTitle, BaseTable, Map } })
+@Component({ name: 'PointForm', components: { Map } })
 export default class PointForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IFormData
   @Prop({ type: Array, default: () => [] }) types!: IDeviceType[]

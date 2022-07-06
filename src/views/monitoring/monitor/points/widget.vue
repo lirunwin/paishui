@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container">
-    <div class="actions">
+  <tf-page :isActive="isActive">
+    <template v-slot:action>
       <QueryForm
         :selected="selected"
         @query="onQuery"
@@ -9,8 +9,8 @@
         :sections="sections"
         :levels="levels"
       />
-    </div>
-    <BaseTable
+    </template>
+    <tf-table
       :columns="monitorPointsCols"
       :data="points"
       @row-dblclick="onDblClick"
@@ -20,12 +20,10 @@
       @page-change="onPageChange"
       :pagination="pagination"
     >
-      <template v-for="(item, index) of points" v-slot:[`actions-${index}`]>
-        <div :key="`index-${item.siteId}`">
-          <el-button type="text" icon="icon iconfont icontjfx" size="small" @click="() => goTo(item)" />
-        </div>
+      <template v-slot:actions="{ row }">
+        <el-button type="text" icon="icon iconfont icontjfx" size="small" @click="() => goTo(row)" />
       </template>
-    </BaseTable>
+    </tf-table>
 
     <CommonPopup
       v-for="key of popupIds"
@@ -43,12 +41,11 @@
         @jump="() => goTo(popups[key])"
       />
     </CommonPopup>
-  </div>
+  </tf-page>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseTable from '@/views/monitoring/components/BaseTable/index.vue'
 import { monitorPointsCols } from '@/views/monitoring/utils'
 import QueryForm from './QueryForm.vue'
 import CommonPopup from '@/components/CommonPopup/index.vue'
@@ -68,7 +65,7 @@ import { getDefaultPagination, monitorAutoRefreshInterval, monitorStandardLevelK
 
 type IPopupParam = Record<'id' | 'coordiateX' | 'coordiateY', string | number>
 
-@Component({ name: 'PointsMonitor', components: { BaseTable, QueryForm, CommonPopup, InfoCard } })
+@Component({ name: 'PointsMonitor', components: { QueryForm, CommonPopup, InfoCard } })
 export default class PointsMonitor extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
   monitorPointsCols = monitorPointsCols
@@ -241,13 +238,6 @@ export default class PointsMonitor extends Vue {
     this.preparing()
     this.view = (this.$attrs.data as any).mapView
     this.startInterval()
-  }
-
-  @Watch('isActive')
-  refetchData(active: boolean) {
-    if (active) {
-      this.preparing()
-    }
   }
 }
 </script>

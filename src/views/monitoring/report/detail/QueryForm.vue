@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'medium' }" :model="formData">
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData">
     <el-form-item label="设备类型" prop="indicateNames">
       <el-select
         v-model="formData.deviceType"
@@ -35,7 +35,7 @@
           <el-button
             :type="!enable ? 'primary' : 'warning'"
             size="small"
-            style="margin-left:1em"
+            style="margin-left: 1em"
             @click="enable = !enable"
             >图上选点</el-button
           >
@@ -80,7 +80,7 @@
       </el-radio-group>
     </el-form-item>
     <el-form-item label="统计图剔除" class="besides">
-      <div style="padding-left:10px">
+      <div style="padding-left: 10px">
         <el-row
           type="flex"
           :gutter="20"
@@ -94,7 +94,7 @@
               size="small"
               type="warning"
               :icon="`el-icon-${rowIndex === formData.besides.length - 1 ? 'plus' : 'minus'}`"
-              style="padding:2px"
+              style="padding: 2px"
               @click="() => onAdd(rowIndex)"
             />
           </span>
@@ -120,7 +120,7 @@
       :disabled="(formData.siteId && !formData.siteId.length) || (formData.indexCode && !formData.indexCode.length)"
       icon="el-icon-search"
       @click="onQuery"
-      style="width:100%"
+      style="width: 100%"
     >
       查询
     </el-button>
@@ -148,21 +148,16 @@ interface IFormData {
 
 const format = 'YYYY-MM-DD HH:mm:ss'
 const getDefaultBeside = (): [IBesides, IBesides] => {
-  return [{ from: '', to: '', checked: true }, { from: '', to: '', checked: true }]
+  return [
+    { from: '', to: '', checked: true },
+    { from: '', to: '', checked: true }
+  ]
 }
 
 const getDefaultFormData = (): Partial<IFormData> => {
   return {
     besides: [getDefaultBeside()],
-    date: [
-      moment()
-        .add(-7, 'day')
-        .startOf('day')
-        .toDate(),
-      moment()
-        .startOf('day')
-        .toDate()
-    ],
+    date: [moment().add(-7, 'day').startOf('day').toDate(), moment().startOf('day').toDate()],
     siteId: [],
     indexCode: [],
     status: '0'
@@ -192,12 +187,8 @@ export default class QueryForm extends Vue {
       siteId: siteId.join(),
       indexCode: indexCode.join(),
       status,
-      startTime: moment(startTime)
-        .startOf('day')
-        .format(format),
-      endTime: moment(endTime)
-        .startOf('day')
-        .format(format),
+      startTime: moment(startTime).startOf('day').format(format),
+      endTime: moment(endTime).startOf('day').format(format),
       besides: this.formData.besides
         .flat()
         .filter(({ checked, from, to }) => checked !== false && !(!from && !to))

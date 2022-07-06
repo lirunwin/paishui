@@ -1,6 +1,6 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading" width="678px">
-    <el-form class="form" ref="form" v-bind="{ labelWidth: '6em', size: 'small' }" :model="formData" :rules="rules">
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading" width="678px">
+    <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" :rules="rules">
       <el-row :gutter="10">
         <el-col :span="24">
           <el-form-item label="车牌号" prop="carNo">
@@ -80,14 +80,12 @@
         </el-col>
       </el-row>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { ElForm } from 'element-ui/types/form'
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 import { IVehicle, IDepartment } from '../../api'
 import { DICTONARY } from '../../utils'
 import { telAndMobileReg } from '@/utils/constant'
@@ -96,7 +94,7 @@ type IFormData = Partial<IVehicle>
 
 const getDefaultData = (): IFormData => ({ status: '1', chargePerson: undefined, phone: undefined })
 
-@Component({ components: { BaseDialog, BaseTitle } })
+@Component({ components: {} })
 export default class ReportAndAssignForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IVehicle
   @Prop({ type: Boolean, default: false }) loading!: boolean

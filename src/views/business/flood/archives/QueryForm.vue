@@ -1,5 +1,5 @@
 <template>
-  <el-form class="form" ref="form" v-bind="{ labelWidth: '7em', size: 'small' }" :model="formData" inline>
+  <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" inline>
     <el-form-item label="关键字:">
       <el-input v-model="formData.queryLike" placeholder="汛情位置地址模糊查询" size="small" maxlength="50" clearable />
     </el-form-item>
@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
+import { Vue, Component, Prop } from 'vue-property-decorator'
 import { IDepartment, IFlood } from '../../api'
 import { DICTONARY } from '../../utils'
 
@@ -109,10 +109,3 @@ export default class QueryForm extends Vue {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.form {
-  display: flex;
-  flex-wrap: wrap;
-}
-</style>
