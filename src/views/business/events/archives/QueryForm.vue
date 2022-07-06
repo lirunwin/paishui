@@ -10,7 +10,7 @@
       />
     </el-form-item>
     <el-form-item label="事件类别:">
-      <el-checkbox-group v-model="formData.category" size="small">
+      <el-checkbox-group v-model="formData.category" size="small" :max="1">
         <el-checkbox v-for="(value, key) of DICTONARY.event.category" :key="key" :label="key">{{ value }}</el-checkbox>
       </el-checkbox-group>
     </el-form-item>
@@ -57,8 +57,8 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop, Emit } from 'vue-property-decorator'
-import { IDepartment, IEvent, IVehicle } from '../../api'
+import { Vue, Component, Prop } from 'vue-property-decorator'
+import { IDepartment, IEvent } from '../../api'
 import { DICTONARY } from '../../utils'
 
 @Component({ name: 'QueryForm' })
@@ -76,7 +76,13 @@ export default class QueryForm extends Vue {
     return users
   }
 
-  formData: Partial<Omit<IEvent, 'category'> & { category: string[]; queryLike: string; statusMulti: string[] }> = {
+  formData: Partial<
+    Omit<IEvent, 'category'> & {
+      category: string[]
+      queryLike: string
+      // statusMulti: string[]
+    }
+  > = {
     queryLike: '',
     category: [],
     // statusMulti: ['2', '3', '4', '5'],
@@ -88,8 +94,18 @@ export default class QueryForm extends Vue {
   }
 
   onQuery() {
-    const { queryLike, statusMulti, category, ...rest } = this.formData
-    this.$emit('query', { ...rest, queryLike, category: category.join(), statusMulti: statusMulti.join() })
+    const {
+      queryLike,
+      // statusMulti,
+      category,
+      ...rest
+    } = this.formData
+    this.$emit('query', {
+      ...rest,
+      queryLike,
+      category: category.join()
+      //  statusMulti: statusMulti.join()
+    })
   }
   mounted() {
     this.onQuery()

@@ -25,7 +25,7 @@ module.exports = {
    */
   publicPath: './', // 发布路径
   // publicPath: '/',//本地路径
-  outputDir: 'dist',
+  outputDir: 'psjc',
   assetsDir: 'static',
   // lintOnSave: process.env.NODE_ENV === 'development',
   lintOnSave: false,
