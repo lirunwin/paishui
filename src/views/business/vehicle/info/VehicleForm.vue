@@ -117,8 +117,8 @@ export default class ReportAndAssignForm extends Vue {
 
   rules = {
     carNo: [{ required: true, message: '请输入车牌号' }],
-    department: [{ required: true, message: '请选择管理部门' }],
-    chargePerson: [{ required: true, message: '请选择负责人' }],
+    // department: [{ required: true, message: '请选择管理部门' }],
+    // chargePerson: [{ required: true, message: '请选择负责人' }],
     phone: [{ pattern: telAndMobileReg(), message: '请输入正确的联系方式' }]
   }
 

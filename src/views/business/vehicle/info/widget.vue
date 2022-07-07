@@ -1,7 +1,14 @@
 <template>
   <tf-page :isActive="isActive">
     <template v-slot:action>
-      <QueryForm @query="onQuery" @delete="onDelete" @add="onAdd" :loading="loading" :selected="selected" />
+      <QueryForm
+        @query="onQuery"
+        @delete="onDelete"
+        @add="onAdd"
+        @update="onUpdate"
+        :loading="loading"
+        :selected="selected"
+      />
     </template>
     <tf-table
       v-loading="loading.query"
@@ -67,6 +74,11 @@ export default class VehicleInfo extends Vue {
     this.visible = true
   }
 
+  onUpdate(row: IVehicle) {
+    this.current = { ...row }
+    this.visible = true
+  }
+
   onAdd() {
     this.current = {}
     this.visible = true
@@ -81,7 +93,7 @@ export default class VehicleInfo extends Vue {
       console.log(error)
     }
     this.loading[vehicle.id ? 'update' : 'add'] = false
-
+    this.doQuery()
     this.visible = false
   }
 

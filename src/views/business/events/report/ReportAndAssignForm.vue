@@ -1,9 +1,12 @@
 <template>
   <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading" width="1280px" @closed="onClosed">
     <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" :rules="rules">
-      <el-row :gutter="20" type="flex">
-        <el-col :span="14">
-          <tf-title>基本信息</tf-title>
+      <tf-title v-if="!tabVisible.report">
+        <a @click="tabVisible = { ...tabVisible, report: true }">基本信息</a>
+      </tf-title>
+      <el-row :gutter="15" type="flex" v-show="tabVisible.report">
+        <el-col :span="12">
+          <tf-title><a @click="tabVisible = { ...tabVisible, report: false }">基本信息</a></tf-title>
           <el-row>
             <el-col :span="24">
               <el-form-item label="事件类别" required prop="event.category">
@@ -33,12 +36,13 @@
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="发现日期" prop="event.findDate">
+              <el-form-item label="发现时间" prop="event.findDate">
                 <el-date-picker
                   v-model="formData.event.findDate"
                   clearable
-                  value-format="yyyy-MM-dd"
+                  value-format="yyyy-MM-dd HH:mm:ss"
                   placeholder="请选择发现日期"
+                  type="datetime"
                   style="width: 100%"
                 />
               </el-form-item>
@@ -141,12 +145,13 @@
                     action="whatever"
                     accept=".jpg,.jpeg,.png,.amr"
                     :disabled="formData.fileList.length >= 3"
+                    class="upload"
                   >
                     <el-button size="small" type="primary" :disabled="formData.fileList.length >= 3">
                       点击上传
                     </el-button>
-                    <div slot="tip" style="font-size: 12px; display: inline-block; margin-left: 1em">
-                      ⚠️ 注意：请上传.jpg、jpeg、png、pdf格式的文件，且文件大小不能超10MB，最多上传3个文件。
+                    <div slot="tip" class="text">
+                      ⚠️ 注意：请上传.jpg/.jpeg、.png、.pdf格式的文件，且大小不能超10MB，最多上传3个文件。
                     </div>
                     <template v-slot:file="{ file }">
                       <el-row type="flex" align="center" class="file-list">
@@ -163,7 +168,7 @@
             </el-col>
           </el-row>
         </el-col>
-        <el-col :span="10">
+        <el-col :span="12">
           <Map
             ref="map"
             @coordinate-change="onCoordinateChange"
@@ -174,8 +179,8 @@
           />
         </el-col>
       </el-row>
-      <tf-title><a @click="visible.assign = !visible.assign">派工信息</a></tf-title>
-      <div v-show="visible.assign">
+      <tf-title><a @click="tabVisible = { ...tabVisible, assign: !tabVisible.assign }">派工信息</a></tf-title>
+      <div v-show="tabVisible.assign">
         <el-row>
           <el-col :span="6">
             <el-form-item label="处理人" prop="assign.majorHandler">
@@ -189,7 +194,7 @@
                 :disabled="!!assign.id"
               >
                 <el-option
-                  v-for="user of usersInMyDepartment"
+                  v-for="user of assign.majorHandler ? allUsers : usersInMyDepartment"
                   :key="user.id"
                   :value="String(user.id)"
                   :label="user.realName"
@@ -223,7 +228,7 @@
                 :disabled="!!assign.id"
               >
                 <el-option
-                  v-for="user of usersInMyDepartment"
+                  v-for="user of assign.majorHandler ? allUsers : usersInMyDepartment"
                   :key="user.id"
                   :value="String(user.id)"
                   :label="user.realName"
@@ -239,9 +244,15 @@
           <el-col :span="12">
             <el-form-item prop="assign.message">
               <template v-slot:label>
-                <el-checkbox v-model="formData.assign.isPush" :true-label="1" :false-label="0" @change="onSendMsgChange"
-                  >发送短信</el-checkbox
+                <el-checkbox
+                  v-model="formData.assign.isPush"
+                  :true-label="1"
+                  :false-label="0"
+                  @change="onSendMsgChange"
+                  :disabled="!!assign.id"
                 >
+                  发送短信
+                </el-checkbox>
               </template>
               <el-input
                 v-model="formData.assign.message"
@@ -265,7 +276,7 @@
                 :disabled="!formData.assign.isPush || !!assign.id"
               >
                 <el-option
-                  v-for="user of usersInMyDepartment"
+                  v-for="user of assign.majorHandler ? allUsers : usersInMyDepartment"
                   :key="user.id"
                   :value="String(user.phone)"
                   :label="String(`${user.realName} ${user.phone}`).trim()"
@@ -279,15 +290,15 @@
         </el-row>
       </div>
     </el-form>
-    <tf-dialog :visible.sync="visible.preview" width="80vw" :footer="false">
-      <img width="100%" :src="picturePreviewUrl" alt="" />
+    <tf-dialog :visible.sync="visible" width="80vw" :footer="false" :gutter="false">
+      <img width="100%" :src="picturePreviewUrl" alt="" style="display:block" />
     </tf-dialog>
   </tf-dialog>
 </template>
 
 <script lang="ts">
 import { ElForm } from 'element-ui/types/form'
-import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
+import { Vue, Component, Prop, Watch, PropSync } from 'vue-property-decorator'
 import { IEvent, IAssign, IDepartment, assignPage } from '../../api'
 import { DICTONARY } from '../../utils'
 import { telAndMobileReg } from '@/utils/constant'
@@ -320,6 +331,8 @@ export default class ReportAndAssignForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: IEvent
   @Prop({ type: Boolean, default: false }) loading!: boolean
   @Prop({ type: Array, default: () => [] }) users!: IDepartment[]
+  @PropSync('contentVisible', { type: Object }) tabVisible!: { report: boolean; assign: boolean }
+
   $refs!: { form: ElForm; map: Map }
   DICTONARY = DICTONARY
 
@@ -327,7 +340,7 @@ export default class ReportAndAssignForm extends Vue {
   assign: Partial<IAssign> = {}
   enable = { coordinate: true, device: true }
   picturePreviewUrl: string = ''
-  visible: Partial<Record<'preview' | 'assign', boolean>> = { preview: false, assign: false }
+  visible: boolean = false
   facility = ''
   get allUsers() {
     return this.users
@@ -349,7 +362,7 @@ export default class ReportAndAssignForm extends Vue {
   rules = {
     'event.category': [{ required: true, message: '请选事件别' }],
     'event.type': [{ required: true, message: '请选择事件类型' }],
-    'event.name': [{ required: true, max: 30, message: '事件名称不能超过30个字符' }],
+    'event.name': [{ required: true, message: '请输入事件名称' }, { max: 30, message: '事件名称不能超过30个字符' }],
     'event.findPhone': [{ pattern: telAndMobileReg(), message: '请输入正确的联系方式' }],
     'event.detail': [{ max: 255, message: '详细描述不能超过255个字符' }],
     'event.handingAdvice': [{ max: 255, message: '处理建议不能超过255个字符' }],
@@ -487,7 +500,8 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   onClosed() {
-    this.visible = { assign: false, preview: false }
+    this.tabVisible = { assign: false, report: true }
+    this.assign = {}
     this.$emit('closed')
     this.clearMap()
   }
@@ -507,19 +521,19 @@ export default class ReportAndAssignForm extends Vue {
         const reader = new FileReader()
         reader.onload = (e) => {
           this.picturePreviewUrl = e.target.result.toString()
-          this.visible.preview = true
+          this.visible = true
         }
         reader.readAsDataURL(file.raw)
       } else {
         this.picturePreviewUrl = getRemoteImg(file.url)
-        this.visible.preview = true
+        this.visible = true
       }
     }
   }
 
   @Watch('data', { immediate: true })
   async setDefaultData({ id, x, y, filePathList, findDate, ...rest }: IEvent) {
-    this.facility = ''
+    console.log(this.$store)
     this.formData = getDefaultData()
     if (id) {
       this.formData = {
@@ -533,14 +547,14 @@ export default class ReportAndAssignForm extends Vue {
         }))
       }
       //@ts-ignore
-      this.facility = rest.facility.pipeid
+      // this.facility = rest.facility.pipeid
       this.onMajorHandlerChange(String(id))
       const {
-        result: { records }
+        result: { records = [] }
       } = await assignPage({ current: 1, size: 1, sourceId: id })
       this.assign = records[0] || {}
       const { collaborateHanler, isPush, id: assignId, ...assign } = this.assign
-      if (assignId) this.visible.assign = true
+      if (assignId) this.tabVisible = { ...this.tabVisible, assign: true }
       this.formData = {
         ...this.formData,
         assign: {
@@ -558,20 +572,37 @@ export default class ReportAndAssignForm extends Vue {
 
 <style lang="scss" scoped>
 .form {
-  >>> .el-upload-list {
-    .file-list {
-      font-size: 14px;
-      .name {
-        cursor: pointer;
-        &:hover {
-          color: $--color-primary;
+  .upload {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    .text {
+      font-size: $--font-size-extra-small;
+      margin-left: 1em;
+      line-height: 1.4;
+    }
+    .el-upload {
+      flex: 0 0 80px;
+    }
+    .text {
+      flex: 0 0 calc(100% - 80px - 1em);
+    }
+    .el-upload-list {
+      flex: 1 1 100%;
+      .file-list {
+        font-size: 14px;
+        .name {
+          cursor: pointer;
+          &:hover {
+            color: $--color-primary;
+          }
         }
-      }
-      .el-button {
-        color: $--color-info;
-        padding: 5px;
-        &:hover {
-          color: $--color-primary;
+        .el-button {
+          color: $--color-info;
+          padding: 5px;
+          &:hover {
+            color: $--color-primary;
+          }
         }
       }
     }

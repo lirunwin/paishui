@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     v-dialogDrag
-    class="dialog"
+    :class="{ dialog: true, 'no-gutter': !gutter }"
     :visible.sync="dialogVisible"
     v-bind="{ appendToBody: true, width: '368px', ...$attrs }"
     v-on="listeners"
@@ -34,6 +34,7 @@ export default class Dialog extends Vue {
   @Prop({ type: Boolean }) disabled!: boolean
   @Prop({ type: Boolean, default: true }) clear!: boolean
   @Prop({ type: Boolean, default: true }) footer!: boolean
+  @Prop({ type: Boolean, default: true }) gutter!: boolean
 
   get listeners() {
     const { open, closed, submit, ...rest } = this.$listeners
@@ -120,6 +121,13 @@ export default class Dialog extends Vue {
     }
     .el-dialog__body {
       padding: $gutter-medium;
+    }
+  }
+  &.no-gutter {
+    >>> .el-dialog {
+      .el-dialog__body {
+        padding: 0;
+      }
     }
   }
 }

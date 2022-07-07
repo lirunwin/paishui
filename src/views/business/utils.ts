@@ -31,15 +31,15 @@ export const eventCols: Partial<ElTableColumn>[] = [
     ...alignLeft(),
     formatter: ({ category }: IEvent) => DICTONARY.event.category[String(category)]
   },
-  { prop: 'type', label: '事件类型', minWidth: '110px', ...alignLeft() },
-  { prop: 'name', label: '事件名称', minWidth: '130px', ...alignLeft() },
-  { prop: 'address', label: '地址', minWidth: '150px', ...alignLeft() },
+  // { prop: 'type', label: '事件类型', minWidth: '110px', ...alignLeft() },
+  { prop: 'name', label: '事件名称', minWidth: '150px', ...alignLeft() },
+  { prop: 'address', label: '地址', minWidth: '130px', ...alignLeft() },
   { prop: 'facility.pipeid', label: '关联设施', minWidth: '120px', ...alignLeft() },
   { prop: 'detail', label: '详细描述', minWidth: '150px', ...alignLeft() },
   { prop: 'handingAdvice', label: '处理建议', minWidth: '150px', ...alignLeft() },
-  { prop: 'findUserVo.userName', label: '发现人员', minWidth: '100px', ...alignLeft() },
-  { prop: 'findUserVo.phone', label: '联系电话', minWidth: '100px', ...alignLeft() },
-  { prop: 'findDate', label: '发现日期', width: '170px', ...alignLeft() },
+  { prop: 'findUserName', label: '发现人员', minWidth: '100px', ...alignLeft() },
+  { prop: 'findPhone', label: '联系电话', minWidth: '120px', ...alignLeft() },
+  { prop: 'findDate', label: '发现时间', width: '170px', ...alignLeft() },
   { prop: 'createTime', label: '上报时间', width: '170px', ...alignLeft() },
   {
     prop: 'status',
@@ -72,17 +72,16 @@ export const floodCols: Partial<ElTableColumn>[] = [
 export const vehicleCols: Partial<ElTableColumn>[] = [
   { type: 'selection', width: '50px' },
   { type: 'index', label: '序号', width: '60px' },
-  { prop: 'carNo', label: '车牌号', minWidth: '120px', ...alignLeft() },
-  { prop: 'type', label: '车辆类型', width: '100px', ...alignLeft() },
-  { prop: 'model', label: '型号', width: '100px', ...alignLeft() },
-  { prop: 'department', label: '部门', width: '110px', ...alignLeft() },
-  { prop: 'chargePersonName', label: '负责人', width: '100px', ...alignLeft() },
-  { prop: 'phone', label: '联系方式', width: '120px', ...alignLeft() },
+  { prop: 'carNo', label: '车牌号', minWidth: '150px', ...alignLeft() },
+  { prop: 'type', label: '车辆类型', width: '140px', ...alignLeft() },
+  { prop: 'model', label: '型号', width: '140px', ...alignLeft() },
+  { prop: 'departmentName', label: '部门', width: '140px', ...alignLeft() },
+  { prop: 'chargePersonName', label: '负责人', width: '140px' },
+  { prop: 'phone', label: '联系方式', width: '120px' },
   {
     prop: 'status',
     label: '状态',
     width: '100px',
-    ...alignLeft(),
     formatter: ({ status }: IVehicle) => ({ '1': '在用', '2': '维修', '3': '报废' }[String(status)])
   }
 ]

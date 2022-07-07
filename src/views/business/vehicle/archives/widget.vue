@@ -13,10 +13,10 @@
     >
       >
       <template v-slot:name1="{ row }">
-        <el-button type="text">{{ row.id }}</el-button>
+        <el-button type="text" style="padding: 3px">{{ row.id }}</el-button>
       </template>
       <template v-slot:name2="{ row }">
-        <el-button type="text" @click="() => onShow(row)">{{ row.id }}</el-button>
+        <el-button type="text" style="padding: 3px" @click="() => onShow(row)">{{ row.id }}</el-button>
       </template>
     </tf-table>
     <!-- <CommonPopup

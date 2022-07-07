@@ -14,6 +14,7 @@
     />
     <ReportAndAssignForm
       :visible.sync="visible"
+      :contentVisible.sync="formContentVisible"
       :data="current"
       :loading="loading.report || loading.assign"
       :users="users"
@@ -53,7 +54,7 @@ export default class EventReport extends Vue {
   current: IEvent | {} = {}
   visible: boolean = false
   users: IDepartment[] = []
-  view = null
+  formContentVisible = { report: true, assign: false }
 
   onSelectionChange(selections) {
     this.selected = [...selections]
@@ -62,16 +63,19 @@ export default class EventReport extends Vue {
   onDblClick(row: IEvent) {
     this.current = { ...row }
     this.visible = true
+    this.formContentVisible = { report: true, assign: false }
   }
 
   onReport() {
     this.current = {}
     this.visible = true
+    this.formContentVisible = { report: true, assign: false }
   }
 
   onAssign() {
     this.current = { ...this.selected[0] }
     this.visible = true
+    this.formContentVisible = { report: false, assign: true }
   }
 
   async onSubmit({ event, assign }: { event: IEvent; assign: IAssign }) {
@@ -151,7 +155,6 @@ export default class EventReport extends Vue {
   preparing() {
     this.doQuery()
     this.getUsers()
-    this.view = (this.$attrs.data as any).mapView
   }
 
   mounted() {

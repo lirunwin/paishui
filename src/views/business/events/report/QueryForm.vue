@@ -11,7 +11,7 @@
     </el-form-item>
 
     <el-form-item label="事件类别:">
-      <el-checkbox-group v-model="formData.category" size="small">
+      <el-checkbox-group v-model="formData.category" size="small" :max="1">
         <el-checkbox v-for="(value, key) of DICTONARY.event.category" :key="key" :label="key">{{ value }}</el-checkbox>
       </el-checkbox-group>
     </el-form-item>

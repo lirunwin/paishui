@@ -37,7 +37,7 @@
         size="small"
         :loading="loading.update"
         :disabled="loading.update || ids.length !== 1"
-        @click="$emit('update')"
+        @click="$emit('update', selected[0])"
         icon="el-icon-edit"
       >
         修改
