@@ -11,7 +11,7 @@ export const mdAppVersion = { '1': '最新版本', '0': '历史版本' }
 
 export const mobileDeviceCols: ColItem[] = [
   { type: 'selection', width: '50px' },
-  { type: 'index', label: '序号' },
+  { type: 'index', label: '序号', width: '50px' },
   { prop: 'no', label: '设备编号', width: '130px' },
   { prop: 'name', label: '设备名称', width: '130px' },
   { prop: 'type', label: '设备型号', width: '110px' },

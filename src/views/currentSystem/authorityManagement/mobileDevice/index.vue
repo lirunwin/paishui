@@ -1,6 +1,6 @@
 <template>
   <tf-page>
-    <template v-slot:active>
+    <template v-slot:action>
       <QueryForm
         :selected="selected"
         @query="onQuery"
@@ -29,7 +29,6 @@
       :title="`${current.id ? '修改' : '新增'}采集设备`"
       :data="current"
       :loading="loading.addOrUpdate"
-      :disabled="query.status === '0'"
       @submit="onSubmit"
     />
   </tf-page>

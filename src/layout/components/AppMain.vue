@@ -4,49 +4,49 @@
     <transition name="fade-transform" mode="out-in">
       <keep-alive include="Monitor">
         <router-view :key="key" />
-      </keep-alive> </transition
-    >
+      </keep-alive>
+    </transition>
   </section>
 </template>
 
-<script lang='ts'>
-import { Vue, Component } from "vue-property-decorator";
+<script lang="ts">
+import { Vue, Component } from 'vue-property-decorator'
 // import { asyncRoutes } from '@/router/router.config'
-import { uploadRoute } from "@/api/user";
+import { uploadRoute } from '@/api/user'
 @Component({
-  name: "AppMain",
+  name: 'AppMain'
 })
 export default class AppMain extends Vue {
   get key() {
-    return this.$route.path;
+    return this.$route.path
   }
   get appMainPaddingTop() {
     // const path = this.$route.path
     // if (path.indexOf('dashboard') === 1 || path.indexOf('map') === 1) return '0px'
     // else return '43px'
-    const tagsViewShow = this.$store.state.settings.tagsView;
-    if (tagsViewShow) return "43px";
-    else return "0px";
+    const tagsViewShow = this.$store.state.settings.tagsView
+    if (tagsViewShow) return '43px'
+    else return '0px'
   }
   uploadRouteTable() {
     const data = {
-      "1": JSON.stringify({
-        name: "sys",
+      '1': JSON.stringify({
+        name: 'sys',
         // value: asyncRoutes,
-        type: "tofly-master",
-        notes: "使用与当前系统。",
-      }),
-    };
+        type: 'tofly-master',
+        notes: '使用与当前系统。'
+      })
+    }
     uploadRoute(JSON.stringify(data)).then((res) => {
-      this.$message.success("上传成功");
-    });
+      this.$message.success('上传成功')
+    })
   }
 }
 </script>
 
 <style scoped>
 .app-main {
-  min-height: calc(100vh - 64px);
+  height: calc(100vh - 64px);
   width: 100%;
   position: relative;
   overflow: hidden;
