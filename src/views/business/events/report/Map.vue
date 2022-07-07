@@ -12,7 +12,7 @@ import * as turf from '@turf/turf'
 import Feature from 'ol/Feature'
 import VectorSource from 'ol/source/Vector'
 import { Vector as VectorLayer } from 'ol/layer'
-import { Point, MultiPoint } from 'ol/geom'
+import { Point } from 'ol/geom'
 import { Icon, Style } from 'ol/style'
 import locationIcon from '@/assets/images/map/location.png'
 type Coordinate = number[]
@@ -136,6 +136,8 @@ export default class MapView extends Vue {
     this.timer = window.setTimeout(() => {
       this.view.getView().setCenter([lat, lng])
       this.view.getView().setZoom(19)
+      this.clearMap()
+      this.drawPoint(lat, lng)
     }, 500)
   }
 
@@ -154,10 +156,11 @@ export default class MapView extends Vue {
   mounted() {
     this.initMap()
   }
+
   clearMap() {
-   if(this.vectorLayer){
-     this.vectorLayer.getSource().clear();
-   } 
+    if (this.vectorLayer) {
+      this.vectorLayer.getSource().clear()
+    }
   }
 }
 </script>

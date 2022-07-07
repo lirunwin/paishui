@@ -44,9 +44,16 @@ export default class Title extends Vue {
     overflow: hidden;
     white-space: nowrap;
     margin-right: 3em;
+    font-weight: 600;
   }
   .append {
     flex: 0 0 auto;
+  }
+  a {
+    user-select: none;
+    &:hover {
+      color: $--color-primary;
+    }
   }
 }
 </style>

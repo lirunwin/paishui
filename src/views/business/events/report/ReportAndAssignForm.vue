@@ -1,5 +1,5 @@
 <template>
-  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading" width="1280px" @closed="closed">
+  <tf-dialog v-bind="$attrs" v-on="listeners" @submit="onSubmit" :loading="loading" width="1280px" @closed="onClosed">
     <el-form class="form" ref="form" v-bind="{ labelWidth: 'auto', size: 'small' }" :model="formData" :rules="rules">
       <el-row :gutter="20" type="flex">
         <el-col :span="14">
@@ -146,7 +146,7 @@
                       点击上传
                     </el-button>
                     <div slot="tip" style="font-size: 12px; display: inline-block; margin-left: 1em">
-                      ⚠️ 注意：请上传.jpg/.jpeg .png .amr格式的文件，且文件大小不能超10MB，最多上传3个文件
+                      ⚠️ 注意：请上传.jpg、jpeg、png、pdf格式的文件，且文件大小不能超10MB，最多上传3个文件。
                     </div>
                     <template v-slot:file="{ file }">
                       <el-row type="flex" align="center" class="file-list">
@@ -174,116 +174,112 @@
           />
         </el-col>
       </el-row>
-      <tf-title>派工信息</tf-title>
-      <el-row>
-        <el-col :span="6">
-          <el-form-item label="处理人" prop="assign.majorHandler">
-            <el-select
-              v-model="formData.assign.majorHandler"
-              size="small"
-              clearable
-              filterable
-              placeholder="请选择处理人"
-              @change="onMajorHandlerChange"
-              :disabled="!!assign.id"
-            >
-              <el-option
-                v-for="user of usersInMyDepartment"
-                :key="user.id"
-                :value="String(user.id)"
-                :label="user.realName"
-                :disabled="formData.assign.collaborateHanler.includes(String(user.id))"
+      <tf-title><a @click="visible.assign = !visible.assign">派工信息</a></tf-title>
+      <div v-show="visible.assign">
+        <el-row>
+          <el-col :span="6">
+            <el-form-item label="处理人" prop="assign.majorHandler">
+              <el-select
+                v-model="formData.assign.majorHandler"
+                size="small"
+                clearable
+                filterable
+                placeholder="请选择处理人"
+                @change="onMajorHandlerChange"
+                :disabled="!!assign.id"
+              >
+                <el-option
+                  v-for="user of usersInMyDepartment"
+                  :key="user.id"
+                  :value="String(user.id)"
+                  :label="user.realName"
+                  :disabled="formData.assign.collaborateHanler.includes(String(user.id))"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="电话" prop="assign.phone">
+              <el-input
+                v-model="formData.phone"
+                size="small"
+                placeholder="请输入联系电话"
+                clearable
+                maxlength="30"
+                :disabled="!!assign.id"
               />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="电话" prop="assign.phone">
-            <el-input
-              v-model="formData.phone"
-              size="small"
-              placeholder="请输入联系电话"
-              clearable
-              maxlength="30"
-              :disabled="!!assign.id"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="协同处理人" prop="assign.collaborateHanler">
-            <el-select
-              v-model="formData.assign.collaborateHanler"
-              size="small"
-              placeholder="请选择协同处理人"
-              clearable
-              multiple
-              filterable
-              @change="setPhones"
-              :disabled="!!assign.id"
-            >
-              <el-option
-                v-for="user of usersInMyDepartment"
-                :key="user.id"
-                :value="String(user.id)"
-                :label="user.realName"
-                :disabled="String(user.id) === formData.assign.majorHandler"
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="协同处理人" prop="assign.collaborateHanler" label-width="9em">
+              <el-select
+                v-model="formData.assign.collaborateHanler"
+                size="small"
+                placeholder="请选择协同处理人"
+                clearable
+                multiple
+                filterable
+                @change="setPhones"
+                :disabled="!!assign.id"
               >
-                <span>{{ user.realName }}</span>
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="是否发送短信" prop="assign.isPush">
-            <el-switch
-              v-model="formData.assign.isPush"
-              :active-value="1"
-              :inactive-value="0"
-              @change="onSendMsgChange"
-              :disabled="!!assign.id"
-            />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="短信内容" prop="assign.message">
-            <el-input
-              v-model="formData.assign.message"
-              type="textarea"
-              size="small"
-              placeholder="请输入短信内容"
-              clearable
-              maxlength="255"
-              :disabled="!formData.assign.isPush || !!assign.id"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="短信接收电话" prop="phones">
-            <el-select
-              v-model="formData.phones"
-              size="small"
-              clearable
-              multiple
-              placeholder="请选择短信接收电话"
-              :disabled="!formData.assign.isPush || !!assign.id"
-            >
-              <el-option
-                v-for="user of usersInMyDepartment"
-                :key="user.id"
-                :value="String(user.phone)"
-                :label="String(`${user.realName} ${user.phone}`).trim()"
-                :disabled="!user.phone"
+                <el-option
+                  v-for="user of usersInMyDepartment"
+                  :key="user.id"
+                  :value="String(user.id)"
+                  :label="user.realName"
+                  :disabled="String(user.id) === formData.assign.majorHandler"
+                >
+                  <span>{{ user.realName }}</span>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item prop="assign.message">
+              <template v-slot:label>
+                <el-checkbox v-model="formData.assign.isPush" :true-label="1" :false-label="0" @change="onSendMsgChange"
+                  >发送短信</el-checkbox
+                >
+              </template>
+              <el-input
+                v-model="formData.assign.message"
+                type="textarea"
+                size="small"
+                placeholder="请输入短信内容"
+                clearable
+                maxlength="255"
+                :disabled="!formData.assign.isPush || !!assign.id"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="短信接收电话" prop="phones" label-width="9em">
+              <el-select
+                v-model="formData.phones"
+                size="small"
+                clearable
+                multiple
+                placeholder="请选择短信接收电话"
+                :disabled="!formData.assign.isPush || !!assign.id"
               >
-                <span>{{ user.realName }} {{ user.phone }}</span>
-              </el-option>
-            </el-select>
-          </el-form-item>
-        </el-col>
-      </el-row>
+                <el-option
+                  v-for="user of usersInMyDepartment"
+                  :key="user.id"
+                  :value="String(user.phone)"
+                  :label="String(`${user.realName} ${user.phone}`).trim()"
+                  :disabled="!user.phone"
+                >
+                  <span>{{ user.realName }} {{ user.phone }}</span>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </div>
     </el-form>
-    <tf-dialog :visible.sync="visible" width="80vw" :footer="false">
+    <tf-dialog :visible.sync="visible.preview" width="80vw" :footer="false">
       <img width="100%" :src="picturePreviewUrl" alt="" />
     </tf-dialog>
   </tf-dialog>
@@ -331,7 +327,7 @@ export default class ReportAndAssignForm extends Vue {
   assign: Partial<IAssign> = {}
   enable = { coordinate: true, device: true }
   picturePreviewUrl: string = ''
-  visible: boolean = false
+  visible: Partial<Record<'preview' | 'assign', boolean>> = { preview: false, assign: false }
   facility = ''
   get allUsers() {
     return this.users
@@ -341,7 +337,7 @@ export default class ReportAndAssignForm extends Vue {
   }
 
   get usersInMyDepartment() {
-    const { users } = this.users.find((item) => String(item.id) === String(this.$store.state.user.departmentId)) || {}
+    const { users } = this.users.find((item) => String(item.id) === String(this.$store.getters['deptId'])) || {}
     return users || []
   }
 
@@ -353,7 +349,7 @@ export default class ReportAndAssignForm extends Vue {
   rules = {
     'event.category': [{ required: true, message: '请选事件别' }],
     'event.type': [{ required: true, message: '请选择事件类型' }],
-    'event.name': [{ max: 30, message: '事件名称不能超过30个字符' }],
+    'event.name': [{ required: true, max: 30, message: '事件名称不能超过30个字符' }],
     'event.findPhone': [{ pattern: telAndMobileReg(), message: '请输入正确的联系方式' }],
     'event.detail': [{ max: 255, message: '详细描述不能超过255个字符' }],
     'event.handingAdvice': [{ max: 255, message: '处理建议不能超过255个字符' }],
@@ -436,7 +432,7 @@ export default class ReportAndAssignForm extends Vue {
     this.setPhones()
   }
 
-  onCollaborateHanlerChange(ids: string[]) {
+  onCollaborateHanlerChange() {
     this.setPhones()
   }
 
@@ -473,7 +469,7 @@ export default class ReportAndAssignForm extends Vue {
       !String(file.raw.type).endsWith('.amr')
       // && !String(file.raw.type).startsWith('audio')
     ) {
-      this.$message.error('上传文件只能是 JPG/JPEG、png、amr 格式!')
+      this.$message.error('上传文件只能是 JPG/JPEG、png、pdf 格式!')
       pass = false
     }
 
@@ -489,12 +485,17 @@ export default class ReportAndAssignForm extends Vue {
 
     this.formData.fileList = pass ? [...this.formData.fileList, file] : [...this.formData.fileList]
   }
-  /**
-   * 关闭弹窗
-   */
-  closed() {
+
+  onClosed() {
+    this.visible = { assign: false, preview: false }
+    this.$emit('closed')
+    this.clearMap()
+  }
+
+  clearMap() {
     this.$refs.map.clearMap()
   }
+
   onRemovePic(file) {
     this.formData.fileList = this.formData.fileList.filter((item) => item.uid !== file.uid)
   }
@@ -506,12 +507,12 @@ export default class ReportAndAssignForm extends Vue {
         const reader = new FileReader()
         reader.onload = (e) => {
           this.picturePreviewUrl = e.target.result.toString()
-          this.visible = true
+          this.visible.preview = true
         }
         reader.readAsDataURL(file.raw)
       } else {
         this.picturePreviewUrl = getRemoteImg(file.url)
-        this.visible = true
+        this.visible.preview = true
       }
     }
   }
@@ -531,7 +532,6 @@ export default class ReportAndAssignForm extends Vue {
           uid: +new Date() + index
         }))
       }
-      this.$refs.map.drawPoint(x, y)
       //@ts-ignore
       this.facility = rest.facility.pipeid
       this.onMajorHandlerChange(String(id))
@@ -539,10 +539,12 @@ export default class ReportAndAssignForm extends Vue {
         result: { records }
       } = await assignPage({ current: 1, size: 1, sourceId: id })
       this.assign = records[0] || {}
-      const { collaborateHanler, isPush, ...assign } = this.assign
+      const { collaborateHanler, isPush, id: assignId, ...assign } = this.assign
+      if (assignId) this.visible.assign = true
       this.formData = {
         ...this.formData,
         assign: {
+          id: assignId,
           ...assign,
           collaborateHanler: collaborateHanler ? collaborateHanler.split(',') : [],
           isPush: Number(isPush)

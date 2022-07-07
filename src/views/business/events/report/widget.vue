@@ -1,5 +1,5 @@
 <template>
-  <tf-page :isActive="isActive">
+  <tf-page :isActive="isActive" :gutter="false">
     <template v-slot:action>
       <QueryForm @query="onQuery" @report="onReport" @assign="onAssign" :loading="loading" :selected="selected" />
     </template>

@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div :class="{ container: true, 'no-gutter': !gutter }">
     <div :class="{ actions: true, hidden: !$slots.action }">
       <slot name="action" />
     </div>
@@ -16,6 +16,7 @@ import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
 @Component({ name: 'TfPage', inheritAttrs: false })
 export default class Page extends Vue {
   @Prop({ type: Boolean, default: false }) isActive!: boolean
+  @Prop({ type: Boolean, default: true }) gutter!: boolean
   $parent!: Vue & { preparing?: Function }
   @Watch('isActive')
   refetchData(active: boolean) {
@@ -37,6 +38,16 @@ export default class Page extends Vue {
   flex-direction: column;
   background-color: $--background-color-base !important;
   @include base-scroll-bar();
+  &.no-gutter {
+    .actions {
+      margin-bottom: 0;
+    }
+    .content {
+      >>> .tf-table {
+        padding-top: 0;
+      }
+    }
+  }
   .actions {
     flex: 0 0 auto;
     position: relative;
@@ -44,8 +55,9 @@ export default class Page extends Vue {
     top: 0;
     z-index: 100;
     padding: $gutter $gutter 0;
-    margin-bottom: $gutter;
     background: $--color-white;
+    margin-bottom: $gutter;
+
     >>> .el-form-item {
       margin-bottom: $gutter;
     }
