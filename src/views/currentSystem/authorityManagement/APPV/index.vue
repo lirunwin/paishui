@@ -31,7 +31,7 @@
         :options="options2"
         @changeSelectValue="changeSelectValue"
       />
-      发布时间：
+      <span class="input-title">发布时间：</span>
       <!-- <el-date-picker v-model="publishTime" size="small" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd" /> -->
       <el-date-picker
         v-model="publishTime.startTime"

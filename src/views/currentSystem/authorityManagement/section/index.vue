@@ -22,7 +22,6 @@
     >
       <template slot="empty">
         <img src="@/assets/icon/null.png" alt="" />
-        <p class="empty-p">暂无数据</p>
       </template>
       <!-- <el-table-column type="selection" align='center' width="55"  /> -->
       <!-- <el-table-column type="index" width="50" label="序号" /> -->

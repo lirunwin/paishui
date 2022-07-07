@@ -9,7 +9,7 @@
               <div class="demo-input-suffix">
                 <el-row>
                   <el-col :span="8">
-                    <span>字典编码:</span>
+                    <span class="input-title">字典编码:</span>
                   </el-col>
                   <el-col :span="16">
                     <el-input v-model="dictCode" clearable placeholder="请输入内容" size="small" />
@@ -21,7 +21,7 @@
               <div class="demo-input-suffix">
                 <el-row>
                   <el-col :span="8">
-                    <span>字典名称:</span>
+                    <span class="input-title">字典名称:</span>
                   </el-col>
                   <el-col :span="16">
                     <el-input v-model="dictName" clearable placeholder="请输入内容" size="small" />
@@ -70,7 +70,6 @@
             >
               <template slot="empty">
                 <img src="@/assets/icon/null.png" alt="" />
-                <p class="empty-p">暂无数据</p>
               </template>
               <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->
               <el-table-column label="序号" width="80" align="center">

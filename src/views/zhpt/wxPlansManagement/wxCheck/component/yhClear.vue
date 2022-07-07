@@ -2,7 +2,12 @@
   <div id="hiddendangerCheckAuditAssignment" class="hiddendangerCheckAuditAssignment">
     <el-row>
       <span class="title2">管线名称</span>
-      <el-input style="display: inline-block; margin-left: 5px; width:200px;" size="small" placeholder="请输入管线名称" v-model="problems.name" />
+      <el-input
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        size="small"
+        placeholder="请输入管线名称"
+        v-model="problems.name"
+      />
       <!-- <span>上报时间</span>
       <el-date-picker v-model="problems.startTime" style="width:140px;"  size="small" type="date" placeholder="请选择开始时间" :picker-options="startOptions" value-format="yyyy-MM-dd"/> ~
         <el-date-picker v-model="problems.endTime"  style="width:140px;" size="small" type="date" placeholder="请选择结束时间" :picker-options="endOptions" value-format="yyyy-MM-dd"/>       -->
@@ -11,27 +16,62 @@
         </el-date-picker>
       </div> -->
       <span class="title2">地址</span>
-      <el-input style="display: inline-block; margin-left: 5px; width:200px;" size="small" placeholder="请输入地址" v-model="problems.address" />
+      <el-input
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        size="small"
+        placeholder="请输入地址"
+        v-model="problems.address"
+      />
       <el-button type="primary" size="small" @click="dangerCheckArrangeQuery()">查询</el-button>
     </el-row>
     <div class="datatable">
-      <el-table border ref="table1" class="mapTable" stripe style="width: 100%;margin-top: 8px;" height="100%" :data="hiddendangerData" @row-dblclick="dblclick" :header-cell-style="{'text-align':'center'}">
+      <el-table
+        border
+        ref="table1"
+        class="mapTable"
+        stripe
+        style="width: 100%;margin-top: 8px;"
+        height="100%"
+        :data="hiddendangerData"
+        @row-dblclick="dblclick"
+        :header-cell-style="{ 'text-align': 'center' }"
+      >
         <template slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+          <img src="@/assets/icon/null.png" alt="" />
         </template>
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column type="index" label="序号" width="80px" align="center">
           <template slot-scope="scope">
-            <span>{{((pageInfo.current - 1) * pageInfo.size) + (scope.$index+1) }}</span>
+            <span>{{ (pageInfo.current - 1) * pageInfo.size + (scope.$index + 1) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="pipeName" :formatter="formatter" sortable label="管线名称" width="200px" align="left" />
         <el-table-column prop="address" :formatter="formatter" sortable label="地址" align="left" />
         <el-table-column prop="typeName" :formatter="formatter" sortable label="隐患原因" width="180px" align="left" />
-        <el-table-column prop="toubleRangeName" :formatter="formatter" sortable label="隐患等级" width="180px" align="left" />
-        <el-table-column prop="submitTime" :formatter="formatter" sortable label="上报时间" width="200px" align="center" />
-        <el-table-column prop="submitUserName" :formatter="formatter" sortable label="上报人员" width="140px" align="center" />
+        <el-table-column
+          prop="toubleRangeName"
+          :formatter="formatter"
+          sortable
+          label="隐患等级"
+          width="180px"
+          align="left"
+        />
+        <el-table-column
+          prop="submitTime"
+          :formatter="formatter"
+          sortable
+          label="上报时间"
+          width="200px"
+          align="center"
+        />
+        <el-table-column
+          prop="submitUserName"
+          :formatter="formatter"
+          sortable
+          label="上报人员"
+          width="140px"
+          align="center"
+        />
         <el-table-column prop="notes" sortable :formatter="formatter" label="消除情况" width="140px" align="center" />
         <el-table-column label="操作" width="100px" align="center">
           <template slot-scope="scope">
@@ -42,7 +82,15 @@
       </el-table>
     </div>
     <div class="pagination-area">
-      <el-pagination layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10,20,30,50,100,1000]" :page-size="pageInfo.size" :current-page="pageInfo.current" :total="pageInfo.tableTotal" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <el-pagination
+        layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[10, 20, 30, 50, 100, 1000]"
+        :page-size="pageInfo.size"
+        :current-page="pageInfo.current"
+        :total="pageInfo.tableTotal"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
 
     <div style="width:100%;height:100%;display:none;" ref="cctvMap"></div>
@@ -52,7 +100,7 @@
     </el-dialog>
   </div>
 </template>
-<script lang='ts'>
+<script lang="ts">
 /**
  * @description 该功能为巡检子系统，监控中心模块中的上报审核的隐患消除审核功能
  * @author 梁罗、李顺<876330731@qq.com>
@@ -97,10 +145,10 @@ export default class HiddendangerCheckAuditAssignment extends Vue {
     address: undefined,
     startTime: '',
     endTime: '',
-    startDate:'',
-    endDate:''
+    startDate: '',
+    endDate: ''
   }
-  pageInfo = { current: 1, size: 30, tableTotal: 1,auditResult:'' } //分页数据		//分页数据
+  pageInfo = { current: 1, size: 30, tableTotal: 1, auditResult: '' } //分页数据		//分页数据
   troubleAry = {} //组件参数
   troubleTitle = '隐患详情' //组件标题
 
@@ -108,11 +156,7 @@ export default class HiddendangerCheckAuditAssignment extends Vue {
   auditRule = {}
   // 部门筛选信息
   dept_select = {
-    options: [
-      { value: 1, label: '巡检组' },
-      { value: 2, label: '抢修组' },
-      { value: 3, label: '维护组' }
-    ],
+    options: [{ value: 1, label: '巡检组' }, { value: 2, label: '抢修组' }, { value: 3, label: '维护组' }],
     value: 1
   }
   // 日期筛选信息
@@ -121,7 +165,7 @@ export default class HiddendangerCheckAuditAssignment extends Vue {
   }
   //待消除隐患审核列表
   hiddendangerData = []
-  mapV=null
+  mapV = null
   mounted() {
     var that = this
     var div = this.$refs.cctvMap
@@ -240,7 +284,8 @@ export default class HiddendangerCheckAuditAssignment extends Vue {
       spatialReference: mapV.spatialReference
     }
     const simpleMarkerSymbol = {
-      path: 'M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z',
+      path:
+        'M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z',
       color: '2D74E7',
       outline: { color: '2D74E7', width: '1px' },
       size: '30px',
@@ -344,9 +389,9 @@ export default class HiddendangerCheckAuditAssignment extends Vue {
    * @description 消除隐患审核
    */
   removeCheck(e) {
-    const that = this;
+    const that = this
     //选中行
-    (that.$refs.table1 as ElTable).toggleRowSelection(e)
+    ;(that.$refs.table1 as ElTable).toggleRowSelection(e)
     // var troubleId = scope.row.troubleId
     // console.log("选中："+rowData.toubleId+" "+rowData.pipeName+" "+rowData.id);
     that.troubleTitle = '消除隐患'
@@ -401,7 +446,7 @@ export default class HiddendangerCheckAuditAssignment extends Vue {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .hiddendangerCheckAuditAssignment {
   position: relative;
   height: 100%;

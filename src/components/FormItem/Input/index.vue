@@ -17,7 +17,6 @@
         :clearable="canClear"
       />
     </div>
-
   </div>
 </template>
 
@@ -25,44 +24,54 @@
 export default {
   name: 'Input',
   props: {
-    type: {// 输入框类型
+    type: {
+      // 输入框类型
       type: String,
       required: true,
       default: 'text'
     },
-    title: {// 标题
+    title: {
+      // 标题
       type: String,
       default: ''
     },
-    required: {// 是否必填
+    required: {
+      // 是否必填
       type: Boolean,
       default: false
     },
-    value: {// 值
+    value: {
+      // 值
       type: String,
       default: ''
     },
-    disabled: {// 是否禁用
+    disabled: {
+      // 是否禁用
       type: Boolean,
       default: false
     },
-    placeholder: {// 提示文字
+    placeholder: {
+      // 提示文字
       type: String,
       default: '请输入'
     },
-    maxLength: {//  最大长度
+    maxLength: {
+      //  最大长度
       type: Number,
       default: 50
     },
-    customStyle: {// 自定义样式
+    customStyle: {
+      // 自定义样式
       type: String,
       default: ''
     },
-    nominate: {// 字段
+    nominate: {
+      // 字段
       type: String,
       default: ''
     },
-    canClear: { // 输入框可以清除
+    canClear: {
+      // 输入框可以清除
       type: Boolean,
       default: false
     }
@@ -75,28 +84,27 @@ export default {
   }
 }
 </script>
-<style lang='scss' scoped>
-.input_item{
+<style lang="scss" scoped>
+.input_item {
   height: 34px;
-  // min-width: 242px;
-  // display: flex;
-  // align-items: center;
-  .title_box{
+  font-size: $--font-size-base;
+  .title_box {
     float: left;
     width: 30%;
     text-align: right;
+    color: $--color-text-regular;
     // line-height: 32px;
   }
 }
-.required-class{
+.required-class {
   color: red;
 }
 
-.input_box{
+.input_box {
   float: right;
   width: 70%;
 }
-.input_box_100{
+.input_box_100 {
   width: 100%;
 }
 </style>

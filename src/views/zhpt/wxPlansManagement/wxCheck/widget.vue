@@ -2,20 +2,36 @@
   <div style="width:100%;height:100%;padding:0" v-loading="loading">
     <div ref="div1" style="width:100%;height:100%; position: relative; transition: 0.3s; left: 0; ">
       <div ref="echart" style="width:0;float:left;height:100%;transition: 0.3s;padding:15px;opacity:0;">
-        <div ref="chart" style="width:100%;height:100%;padding:20px;border:1px solid rgb(232,232,232);background:rgb(248,248,248);border-radius:4px;"></div>
+        <div
+          ref="chart"
+          style="width:100%;height:100%;padding:20px;border:1px solid rgb(232,232,232);background:rgb(248,248,248);border-radius:4px;"
+        ></div>
       </div>
       <div ref="echart2" style="width:100%;float:left;height:100%;transition: 0.3s;">
         <el-row style="margin-top: 8px;">
           <span class="title2" style="margin-left:8px;">审核类型</span>
-          <el-select v-model="chooseType" style="display: inline-block; margin-left: 5px; width:200px;" size="small" placeholder="请选择审核意见" clearable>
+          <el-select
+            v-model="chooseType"
+            style="display: inline-block; margin-left: 5px; width:200px;"
+            size="small"
+            placeholder="请选择审核意见"
+            clearable
+          >
             <el-option v-for="item in types" :key="item.id" :label="item.auditTypeName" :value="item.auditTypeCode" />
           </el-select>
           <el-button size="small" type="primary" @click="pageJump(chooseType, false)">历史查看</el-button>
         </el-row>
-        <el-table class="mapTable" :data="mainTable" border @row-dblclick="pageJumpTr" style="width: 100%;margin-top: 8px;" height="calc(100% - 48px)" stripe>
+        <el-table
+          class="mapTable"
+          :data="mainTable"
+          border
+          @row-dblclick="pageJumpTr"
+          style="width: 100%;margin-top: 8px;"
+          height="calc(100% - 48px)"
+          stripe
+        >
           <template slot="empty">
-            <img src="@/assets/icon/null.png" alt="">
-            <p class="empty-p">暂无数据</p>
+            <img src="@/assets/icon/null.png" alt="" />
           </template>
           <el-table-column prop="auditTypeName" label="任务类型" />
           <el-table-column prop="number" label="任务数量" />
@@ -27,15 +43,23 @@
         </el-table>
       </div>
     </div>
-    <div ref="div2" style="width:100%;height:100%; position: relative;
-      transition: 0.3s; top: -100%; left: 110%; z-index: 3; padding:8px;">
+    <div
+      ref="div2"
+      style="width:100%;height:100%; position: relative;
+      transition: 0.3s; top: -100%; left: 110%; z-index: 3; padding:8px;"
+    >
       <el-page-header @back="backCheak" :content="typeTitle" style="overflow: hidden;"></el-page-header>
-      <component style="width:100%:height:calc(100% - 62px)" :is="component[selectCheak]" :isCheak="isCheak" :data="data"></component>
+      <component
+        style="width:100%:height:calc(100% - 62px)"
+        :is="component[selectCheak]"
+        :isCheak="isCheak"
+        :data="data"
+      ></component>
     </div>
   </div>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator'
 import Echarts from 'echarts'
 import request from '@/utils/request'
@@ -56,9 +80,9 @@ export default class wxMissionManagement extends Vue {
   isCheak = false
   loading = false
   component = component
-  chart=null
-  divs=[]
-  typeIndex=null
+  chart = null
+  divs = []
+  typeIndex = null
   mounted() {
     this.init().then(() => {
       this.getAll()
@@ -77,7 +101,7 @@ export default class wxMissionManagement extends Vue {
       if (res.code == 1) {
         //var filterConfig = this.isXj ? ['00', '01', '02', '03', '04', '05', '07', '06'] : ['08', '10', '11']
         //排水项目暂考虑隐患审核
-        const filterConfig = ['02', '03'];
+        const filterConfig = ['02', '03']
         res = res.result.filter((e) => filterConfig.indexOf(e.auditTypeCode) > -1)
         var allLength = 0
         var typeIndex = (this.typeIndex = {})
@@ -109,10 +133,7 @@ export default class wxMissionManagement extends Vue {
             this.chart.resize
           })
         }
-        var t = [
-          ['350px', '15px', '1', 'calc(100% - 350px)'],
-          ['0', '0', '0', '100%']
-        ][res.length ? 0 : 1]
+        var t = [['350px', '15px', '1', 'calc(100% - 350px)'], ['0', '0', '0', '100%']][res.length ? 0 : 1]
         //@ts-ignore
         this.$refs.echart.style.width = t[0]
         //@ts-ignore

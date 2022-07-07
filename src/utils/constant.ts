@@ -1,3 +1,5 @@
+import { nullPng } from '@/assets/images/base64'
+
 export const gisNames = ['xjxt', 'whxt', 'monitor', 'psjc', 'psxc']
 
 export const pageSizes = [10, 20, 30, 50, 100, 1000]
@@ -58,3 +60,9 @@ export const pointState = { '0': '离线', '1': '正常', '2': '报警' }
 export const monitorStatusColor = { '0': 'rgba(51,51,51,0.6)', '1': '#333333', '2': '#F65252' }
 
 export const disabledMenus = ['']
+
+export const noDataHtmlTemplate = `<div style=" display: flex;display: -webkit-flex;align-items:center;justify-content:center; width:100;height:100%;">
+  <span  style="color:#868686;font-size:14px;">
+    <img src="${nullPng}" alt="">
+  </span>
+</div>`

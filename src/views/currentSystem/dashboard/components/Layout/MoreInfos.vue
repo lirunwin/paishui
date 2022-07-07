@@ -5,9 +5,9 @@
       :data="tableData"
       border
       stripe
-      :style="{width: '100%', marginTop:'10px'}"
+      :style="{ width: '100%', marginTop: '10px' }"
       :height="tableheight + 'px'"
-      :header-cell-style="{'text-align':'center'}"
+      :header-cell-style="{ 'text-align': 'center' }"
       :max-height="tableheight"
       show-overflow-tooltip
       @select="handleSelect"
@@ -15,21 +15,49 @@
       @row-dblclick="Dbclick"
     >
       <template slot="empty">
-        <img src="@/assets/icon/null.png" alt="">
-        <p class="empty-p">暂无数据</p>
+        <img src="@/assets/icon/null.png" alt="" />
       </template>
       <template v-for="col in columns">
-        <el-table-column v-if="col.prop !== 'action'" :key="col.prop" :type="col.type" :prop="col.prop" :label="col.label" :width="col.width" :align="col.align" :formatter="col.formatter" />
-        <el-table-column v-if="col.prop === 'action'" :key="col.prop" :prop="col.prop" :label="col.label" :width="col.width">
+        <el-table-column
+          v-if="col.prop !== 'action'"
+          :key="col.prop"
+          :type="col.type"
+          :prop="col.prop"
+          :label="col.label"
+          :width="col.width"
+          :align="col.align"
+          :formatter="col.formatter"
+        />
+        <el-table-column
+          v-if="col.prop === 'action'"
+          :key="col.prop"
+          :prop="col.prop"
+          :label="col.label"
+          :width="col.width"
+        >
           <template slot-scope="data">
-            <span v-for="action in actionsShow(col.actions, data)" :key="action.key" :style="{ color: action.color, marginRight: '4%', cursor: 'pointer'}" @click="handleClick(data.row, action.key)">{{ action.label }}</span>
+            <span
+              v-for="action in actionsShow(col.actions, data)"
+              :key="action.key"
+              :style="{ color: action.color, marginRight: '4%', cursor: 'pointer' }"
+              @click="handleClick(data.row, action.key)"
+              >{{ action.label }}</span
+            >
             <!-- <span v-for="act in col.acts" :key="act.emitWay" :style="{color: act.color, cursor: 'pointer', marginRight: '10px'}" @click.stop="operation(act.emitWay, data)">{{ act.operation }}</span> -->
           </template>
         </el-table-column>
       </template>
     </el-table>
     <el-row v-if="ispagination" type="flex" justify="center" align="middle">
-      <el-pagination :current-page="pagination.current" :page-sizes="[10,20, 50, 100]" :page-size="pagination.size" layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <el-pagination
+        :current-page="pagination.current"
+        :page-sizes="[10, 20, 50, 100]"
+        :page-size="pagination.size"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </el-row>
   </div>
 </template>
@@ -69,9 +97,9 @@ export default {
       return function(param, data) {
         // console.log("参数："+JSON.stringify(data.row)+"  param:"+JSON.stringify(param))
         const { row } = data
-        return param.filter(item => {
+        return param.filter((item) => {
           if (!item.flag) return item
-          if (item.flag === '3' && !(typeof (row.routeIp) === 'undefined' || row.routeIp == null || row.routeIp == '')) {
+          if (item.flag === '3' && !(typeof row.routeIp === 'undefined' || row.routeIp == null || row.routeIp == '')) {
             return item
           }
           if (item.flag === '0' && row.isconfirm == '0') return item

@@ -26,7 +26,7 @@
         :options="options"
         @changeSelectValue="changeSelectValue"
       />
-      时间：
+      <span class="input-title">时间：</span>
       <el-date-picker
         v-model="problems.startTime"
         style="width: 140px"

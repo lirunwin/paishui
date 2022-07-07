@@ -1,16 +1,34 @@
-  <template>
+<template>
   <div style="width:100%;height:100%;">
     <el-row style="margin-top: 8px;">
       <span class="title2" style="display:inline-block;width:70px;">部门:</span>
-      <el-select v-model="department" style="display: inline-block;width:calc(100% - 100px);" @change="departmentChage" size="small" placeholder="请选择">
+      <el-select
+        v-model="department"
+        style="display: inline-block;width:calc(100% - 100px);"
+        @change="departmentChage"
+        size="small"
+        placeholder="请选择"
+      >
         <el-option v-for="item of departmentList" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
       <span class="title2" style="display:inline-block;width:70px;margin-top:5px">人员:</span>
-      <el-select v-model="group" style="display: inline-block;width:calc(50% - 80px);margin-top:5px" size="small" placeholder="请选择" @change="loadStute">
+      <el-select
+        v-model="group"
+        style="display: inline-block;width:calc(50% - 80px);margin-top:5px"
+        size="small"
+        placeholder="请选择"
+        @change="loadStute"
+      >
         <el-option v-for="item of groups" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
       <span class="title2" style="display:inline-block;width:52px;padding-left: 10px;margin-top:5px">状态:</span>
-      <el-select v-model="status" style="display: inline-block;width:calc(50% - 82px);margin-top:5px" size="small" placeholder="请选择" @change="loadStute">
+      <el-select
+        v-model="status"
+        style="display: inline-block;width:calc(50% - 82px);margin-top:5px"
+        size="small"
+        placeholder="请选择"
+        @change="loadStute"
+      >
         <el-option label="全部" value="" />
         <el-option label="上班" value="上班" />
         <el-option label="下班" value="下班" />
@@ -18,84 +36,150 @@
         <el-option label="停用" value="停用" />
       </el-select>
       <span class="title2" style="display:inline-block;width:70px">日期：</span>
-      <el-date-picker style="margin-top:5px;width:calc(100% - 100px);" v-model="time" type="date" value-format="yyyy-MM-dd" @change="loadStute" :picker-options="startOptions" placeholder="选择日期">
+      <el-date-picker
+        style="margin-top:5px;width:calc(100% - 100px);"
+        v-model="time"
+        type="date"
+        value-format="yyyy-MM-dd"
+        @change="loadStute"
+        :picker-options="startOptions"
+        placeholder="选择日期"
+      >
       </el-date-picker>
     </el-row>
-    <ul style="list-style-type: none; padding: 2px; margin: 0px; font-size: 14px; border: 1px solid #dadada; overflow-x: hidden; overflow-y: auto;
-    width:100%;height:calc(100% - 85px);margin-top:8px;">
-      <template v-if="workerTable.length>0">
-        <li v-for="(item, index) in workerTable" :key="index" style="width:100%;padding: 5px;border: 1px solid #dadada; padding: 10px 5px;margin-top:4px;">
+    <ul
+      style="list-style-type: none; padding: 2px; margin: 0px; font-size: 14px; border: 1px solid #dadada; overflow-x: hidden; overflow-y: auto;
+    width:100%;height:calc(100% - 85px);margin-top:8px;"
+    >
+      <template v-if="workerTable.length > 0">
+        <li
+          v-for="(item, index) in workerTable"
+          :key="index"
+          style="width:100%;padding: 5px;border: 1px solid #dadada; padding: 10px 5px;margin-top:4px;"
+        >
           <div style="display:flex;justify-content:space-between;align-items:center; ">
             <div style="border: 1px solid #dadada; padding: 5px 5px 2px 5px;">
-              <el-badge :value="item.signType" :type="{'下班': 'info', '上班': 'primary'}[item.signType]">
-                <el-avatar shape="square" :src="item.src"></el-avatar><!-- "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" -->
+              <el-badge :value="item.signType" :type="{ 下班: 'info', 上班: 'primary' }[item.signType]">
+                <el-avatar shape="square" :src="item.src"></el-avatar
+                ><!-- "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" -->
               </el-badge>
             </div>
-            <el-link target="_blank" class='nameList' :title="item.signUserName" @click="jump(item)">{{item.signUserName}}</el-link>
+            <el-link target="_blank" class="nameList" :title="item.signUserName" @click="jump(item)">{{
+              item.signUserName
+            }}</el-link>
             <div style="float:right;">
               <el-tooltip effect="dark" content="人员轨迹" placement="top-start">
                 <el-button size="mini" style="padding:4px;" @click="showWay(index)">
-                  <img src="./images/guiji.png" width="20px" height="20px" style="object-fit: contain">
+                  <img src="./images/guiji.png" width="20px" height="20px" style="object-fit: contain" />
                 </el-button>
               </el-tooltip>
               <el-tooltip effect="dark" content="设备日志" placement="top-start">
                 <el-button size="mini" style="padding:4px;" @click="showLog(index)">
-                  <img src="./images/sbrj.png" width="20px" height="20px" style="object-fit: contain">
+                  <img src="./images/sbrj.png" width="20px" height="20px" style="object-fit: contain" />
                 </el-button>
               </el-tooltip>
               <el-tooltip effect="dark" content="任务完成情况" placement="top-start">
                 <el-button size="mini" style="padding:4px;" @click="showDone(index)">
-                  <img src="./images/cbjhgl.png" width="20px" height="20px" style="object-fit: contain">
+                  <img src="./images/cbjhgl.png" width="20px" height="20px" style="object-fit: contain" />
                 </el-button>
               </el-tooltip>
             </div>
-            <el-tooltip effect="dark" :content="'上报隐患数量：' + (item.troubleNum || 0) + 
-            '\n已完成任务数量：' + (item.completeOrderNum || 0) + 
-            '\n总巡查任务数量：' + (item.totalOrderNum || 0)" placement="top-start">
-              <span class="titleS">{{(item.troubleNum || 0) + '/' + (item.completeOrderNum || 0) + '/' + (item.totalOrderNum || 0)}}</span>
+            <el-tooltip
+              effect="dark"
+              :content="
+                '上报隐患数量：' +
+                  (item.troubleNum || 0) +
+                  '\n已完成任务数量：' +
+                  (item.completeOrderNum || 0) +
+                  '\n总巡查任务数量：' +
+                  (item.totalOrderNum || 0)
+              "
+              placement="top-start"
+            >
+              <span class="titleS">{{
+                (item.troubleNum || 0) + '/' + (item.completeOrderNum || 0) + '/' + (item.totalOrderNum || 0)
+              }}</span>
             </el-tooltip>
           </div>
-          <div :ref="'li' + index" style="width:100%; height:0px; transition: 0.3s; overflow:hidden;">
-          </div>
+          <div :ref="'li' + index" style="width:100%; height:0px; transition: 0.3s; overflow:hidden;"></div>
         </li>
       </template>
 
       <template v-else>
-        <div style='width:100%;height:100%;text-align: center; padding-top: 10%;' slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+        <div style="width:100%;height:100%;text-align: center; padding-top: 10%;" slot="empty">
+          <img src="@/assets/icon/null.png" alt="" />
         </div>
       </template>
     </ul>
     <div v-loading="runLoading" ref="table" style="display:none;width:100%;height:100%; padding: 5px 0px;">
-      <el-table class="mapTable" :show-header="tableType === 'log'" :default-expand-all="tableType != 'log'" row-key="id" :tree-props="{children: 'children', hasChildren: 'hasChildren'}" :data="dataT" border style="width: 100%;" height="calc(100% - 40px)">
+      <el-table
+        class="mapTable"
+        :show-header="tableType === 'log'"
+        :default-expand-all="tableType != 'log'"
+        row-key="id"
+        :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+        :data="dataT"
+        border
+        style="width: 100%;"
+        height="calc(100% - 40px)"
+      >
         <el-table-column key="1" v-if="tableType === 'log'" prop="gpsTime" label="时间" show-overflow-tooltip />
         <el-table-column key="2" v-if="tableType === 'log'" prop="network" label="设备状态">
-          <template slot-scope="scope">{{ ([,'卫星', '前次',, '缓存', 'Wifi', '基站',, '离线', '最后位置'][scope.row.network] || '未知类型') + '定位' }}</template>
+          <template slot-scope="scope">{{
+            ([, '卫星', '前次', , '缓存', 'Wifi', '基站', , '离线', '最后位置'][scope.row.network] || '未知类型') +
+              '定位'
+          }}</template>
           <!-- <template slot-scope="scope">{{ (['GPS', '基站', 'WIFI'][scope.row.network] || '未知类型') + '定位' }}</template> -->
         </el-table-column>
         <el-table-column key="3" v-if="tableType === 'info'" prop="type" label="任务状态" />
         <el-table-column key="4" v-if="tableType === 'info'" prop="state" label="完成率" width="100" />
       </el-table>
       <el-row style="margin-top: 8px">
-        <el-pagination ref="paginationTable" small background layout="total, sizes, prev, next" :page-sizes="[5, 10, 50, 100]" :total="totalTable" @current-change="loadRoad(true)" @size-change="loadRoad(true)" style=" width: 250px; display: inline-block;" />
-        <span ref='pageTableLength' style="font-size: 13px;" class="el-pagination__total">1/30 页</span>
+        <el-pagination
+          ref="paginationTable"
+          small
+          background
+          layout="total, sizes, prev, next"
+          :page-sizes="[5, 10, 50, 100]"
+          :total="totalTable"
+          @current-change="loadRoad(true)"
+          @size-change="loadRoad(true)"
+          style=" width: 250px; display: inline-block;"
+        />
+        <span ref="pageTableLength" style="font-size: 13px;" class="el-pagination__total">1/30 页</span>
       </el-row>
     </div>
     <div ref="run" style="display:none;width:100%;height:100%;">
-      <ul v-loading="runLoading" style="list-style-type: none; padding: 2px; margin: 0px; font-size: 14px; border: 1px solid #dadada; overflow-x: hidden; overflow-y: auto;
-              width:100%;height:100%;margin-top:8px;">
-        <li v-for="(item, index) in logTable" :key="index" style="width:100%;padding: 5px; padding: 5px 0px;margin-top:4px;">
-          <el-button icon="el-icon-video-play" style="padding:8px;margin-right: 4px;" @click="playMove(item)"></el-button>
+      <ul
+        v-loading="runLoading"
+        style="list-style-type: none; padding: 2px; margin: 0px; font-size: 14px; border: 1px solid #dadada; overflow-x: hidden; overflow-y: auto;
+              width:100%;height:100%;margin-top:8px;"
+      >
+        <li
+          v-for="(item, index) in logTable"
+          :key="index"
+          style="width:100%;padding: 5px; padding: 5px 0px;margin-top:4px;"
+        >
+          <el-button
+            icon="el-icon-video-play"
+            style="padding:8px;margin-right: 4px;"
+            @click="playMove(item)"
+          ></el-button>
           <span class="name">{{ item.timeFrom + ' - ' + item.timeTo.split(' ')[1] }}</span>
         </li>
-        <li v-if="logTable.length == 0" class="el-link el-link--default" style="width:100%;padding: 5px; padding: 5px 0px;margin-top:4px;">暂无数据</li>
+        <li
+          v-if="logTable.length == 0"
+          class="el-link el-link--default"
+          style="width:100%;padding: 5px; padding: 5px 0px;margin-top:4px;"
+        >
+          暂无数据
+        </li>
       </ul>
     </div>
     <tf-mission ref="mission"></tf-mission>
   </div>
 </template>
-<script lang='ts'>
+<script lang="ts">
 import { Vue, Component, Watch, Prop } from 'vue-property-decorator'
 import noPointImg from './images/noWork.png'
 import onPointImg from './images/onWork.png'
@@ -140,10 +224,10 @@ export default class XjHistoryQuery extends Vue {
   groups = []
   errorVisiable = false
   selectRow = {}
-mapView:Map=null;
-features=[]
-showLi=[]
-index=null
+  mapView: Map = null
+  features = []
+  showLi = []
+  index = null
   get sidePanelOn() {
     return this.$store.state.map.P_editableTabsValue
   }
@@ -201,7 +285,7 @@ index=null
   loadStute() {
     var dDay = new Date()
     var url = '/gps/pdasign/getUserSignList'
-    let params = { time: this.time + ' 23:59:59',deptId:"" }
+    let params = { time: this.time + ' 23:59:59', deptId: '' }
     if (this.department) {
       params.deptId = this.department
     }
@@ -316,7 +400,7 @@ index=null
     }
     if (this.showLi[0] == index && this.showLi[1] != w) {
       var inLi = this.$refs['li' + index][0]
-      //@ts-ignore
+        //@ts-ignore
       ;[run, table][1 - (w > 0 ? 1 : 0)].style.display = 'none'
       inLi.appendChild([run, table, table][w])
       //@ts-ignore
@@ -339,7 +423,7 @@ index=null
     if (this.showLi[0] != index && this.showLi[1] == w) {
       this.$refs['li' + this.showLi[0]][0].style.height = '0'
       var inLi = this.$refs['li' + index][0]
-      //@ts-ignore
+        //@ts-ignore
       ;[run, table, table][this.showLi[1]].style.display = 'none'
       inLi.style.height = '400px'
       inLi.appendChild([run, table, table][w])
@@ -356,7 +440,7 @@ index=null
     var startDate = this.time + ' 00:00:00'
     var endDate = this.time + ' 23:59:59'
     var url = '/gps/gps/getSection?userId=' + use.signUser + '&startDate=' + startDate + '&endDate=' + endDate
-    request({ url: url, method: 'get' }).then((res:any) => {
+    request({ url: url, method: 'get' }).then((res: any) => {
       this.runLoading = false
       if (res.code == 1) {
         res = res.result
@@ -401,14 +485,13 @@ index=null
       (isChangePage ? pages.currentPage : (pages.currentPage = 1)) +
       '&size=' +
       pages.pageSize
-    request({ url: url, method: 'get' }).then((res:any) => {
+    request({ url: url, method: 'get' }).then((res: any) => {
       this.runLoading = false
       if (res.code == 1) {
         res = res.result
         this.totalTable = res.total
         //@ts-ignore
-        this.$refs.pageTableLength.innerHTML =
-          pages.currentPage + '/' + Math.ceil(res.total / pages.pageSize) + '页'
+        this.$refs.pageTableLength.innerHTML = pages.currentPage + '/' + Math.ceil(res.total / pages.pageSize) + '页'
         if (this.tableType == 'log') {
           this.dataT = res.records
         } else {
@@ -440,7 +523,7 @@ index=null
     var url =
       '/gps/gps/getAll?userId=' + item.useId + '&startDate=' + item.timeFrom + '&endDate=' + item.timeTo + '&isAsc=true'
     var timeTable = []
-    request({ url: url, method: 'get' }).then((res:any) => {
+    request({ url: url, method: 'get' }).then((res: any) => {
       if (res.code == 1) {
         res = res.result
         timeTable = res.map((e) => {
@@ -511,7 +594,7 @@ index=null
   }
 }
 </script>
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 /deep/.nameList span.el-link--inner {
   width: 70px !important;
   text-overflow: ellipsis !important;

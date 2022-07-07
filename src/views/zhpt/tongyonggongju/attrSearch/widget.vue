@@ -1,54 +1,85 @@
 <template>
   <div style="padding: 0 8px; height:100%; overflow: auto">
     <el-tabs v-model="activeName" style="height:100%">
-      <el-tab-pane label="属性标注" name="attQuerry" style="height:100%">        
+      <el-tab-pane label="属性标注" name="attQuerry" style="height:100%">
         <div ref="legend" id="Legend" class="Legend">
-          <div class="label" @click="openstate = !openstate">要素选择
-            <el-tooltip class="item" effect="dark" content="在地图上点击选取要素。下方将会列出所选要素的相关信息。" placement="right">
-              <i class="el-icon-info" ref="info"></i>
-            </el-tooltip><el-checkbox style="margin-left: 4px;" v-model="ractSelect" @change="isDrawRect">框选</el-checkbox>
+          <div class="label" @click="openstate = !openstate">
+            要素选择
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="在地图上点击选取要素。下方将会列出所选要素的相关信息。"
+              placement="right"
+            >
+              <i class="el-icon-info" ref="info"></i> </el-tooltip
+            ><el-checkbox style="margin-left: 4px;" v-model="ractSelect" @change="isDrawRect">框选</el-checkbox>
             <div ref="isQuery" style="display: none;"><i class="el-icon-loading" />查询中</div>
           </div>
           <div v-show="openstate" class="content">
-            <el-table highlight-current-row :data="featureData" stripe height="200px" style="width: 100%;margin-bottom: 8px" row-class-name="selectRowC" @row-click="showFea">
+            <el-table
+              highlight-current-row
+              :data="featureData"
+              stripe
+              height="200px"
+              style="width: 100%;margin-bottom: 8px"
+              row-class-name="selectRowC"
+              @row-click="showFea"
+            >
               <template slot="empty">
-                <img src="@/assets/icon/null.png" alt="">
-                <p class="empty-p">暂无数据</p>
+                <img src="@/assets/icon/null.png" alt="" />
               </template>
-              <el-table-column type="index" width="55" label="序号" align="center"/>
-              <el-table-column prop="layer" width="105" label="图层" align="center"/>
-              <el-table-column prop="name" label="编码" align="center"/>
+              <el-table-column type="index" width="55" label="序号" align="center" />
+              <el-table-column prop="layer" width="105" label="图层" align="center" />
+              <el-table-column prop="name" label="编码" align="center" />
             </el-table>
           </div>
         </div>
-        <tf-legend class="legend_dept" label="要素详细" isopen="true" title="显示标注要素字段及属性。" style="height:600px">
+        <tf-legend
+          class="legend_dept"
+          label="要素详细"
+          isopen="true"
+          title="显示标注要素字段及属性。"
+          style="height:600px"
+        >
           <el-table :data="attData" stripe height="calc(100vh - 200px)" style="width: 100%;margin-bottom: 8px">
-              <template slot="empty">
-                <img src="@/assets/icon/null.png" alt="">
-                <p class="empty-p">暂无数据</p>
-              </template>
-              <!-- <el-table-column type="index" label="序号" align="center"/> -->
-            <el-table-column prop="fix" width="150" label="字段" align="center"/>
-            <el-table-column prop="att" label="属性" align="center"/>
+            <template slot="empty">
+              <img src="@/assets/icon/null.png" alt="" />
+            </template>
+            <!-- <el-table-column type="index" label="序号" align="center"/> -->
+            <el-table-column prop="fix" width="150" label="字段" align="center" />
+            <el-table-column prop="att" label="属性" align="center" />
           </el-table>
         </tf-legend>
       </el-tab-pane>
       <el-tab-pane label="设置" name="setting" style="height:100%">
         <tf-legend class="legend_dept" label="图层名称" isopen="true" title="指定查询的图层。">
           <el-select v-model="layerName" size="small" placeholder="请选择">
-          <el-option-group v-for='group in layerGroups' :key="group.label" :label="group.label">
-             <el-option v-for="item in group.layers" :key="item.label" :label="item.label" :value="item.value"></el-option>
-          </el-option-group>
+            <el-option-group v-for="group in layerGroups" :key="group.label" :label="group.label">
+              <el-option
+                v-for="item in group.layers"
+                :key="item.label"
+                :label="item.label"
+                :value="item.value"
+              ></el-option>
+            </el-option-group>
           </el-select>
         </tf-legend>
         <tf-legend class="legend_dept" label="可见属性" isopen="true" title="指定所要查询的属性字段。">
-          <el-table ref="attTable" :data="attDatas" stripe height="800px" style="width: 100%" @select="selectChange" @select-all="selectChange">
-              <template slot="empty">
-                <img src="@/assets/icon/null.png" alt="">
-                <p class="empty-p">暂无数据</p>
-              </template>
+          <el-table
+            ref="attTable"
+            :data="attDatas"
+            stripe
+            height="800px"
+            style="width: 100%"
+            @select="selectChange"
+            @select-all="selectChange"
+          >
+            <template slot="empty">
+              <img src="@/assets/icon/null.png" alt="" />
+            </template>
             <el-table-column type="selection" width="55"/>
-            <el-table-column prop="name" label="属性" align="center"/></el-table>
+            <el-table-column prop="name" label="属性" align="center"
+          /></el-table>
         </tf-legend>
         <el-button size="mini" type="primary" style="width:100%" @click="saveLayer">保存</el-button>
       </el-tab-pane>
@@ -64,9 +95,8 @@ import iQuery from '@/views/zhpt/common/mapUtil/query'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { comSymbol } from '@/utils/comSymbol'
-import GeoJSON from 'ol/format/GeoJSON';
+import GeoJSON from 'ol/format/GeoJSON'
 import { mapUtil } from '@/views/zhpt/common/mapUtil/common'
-
 
 export default {
   name: 'QueryResult',
@@ -90,56 +120,63 @@ export default {
       activeName: 'attQuerry',
       ractSelect: false,
 
-      // 
+      //
       drawer: null,
       vectorLayer: null,
       layerName: '',
-      featureData: [],
+      featureData: []
     }
   },
-  computed: { sidePanelOn() { return this.$store.state.map.P_editableTabsValue } },
+  computed: {
+    sidePanelOn() {
+      return this.$store.state.map.P_editableTabsValue
+    }
+  },
   mounted: function() {
     this.init()
   },
-  destroyed () {
+  destroyed() {
     this.clearAll()
   },
-  watch:{
+  watch: {
     layerName(n, o) {
       console.log('管网图层', n)
-      mapUtil.getFields(n).then(res => {
+      mapUtil.getFields(n).then((res) => {
         if (res) {
           this.attDatas = res
-          this.attDatas.forEach(row => this.$refs.attTable.toggleRowSelection(row, true))
+          this.attDatas.forEach((row) => this.$refs.attTable.toggleRowSelection(row, true))
         } else this.$message.error('获取字段数据失败')
       })
     },
     sidePanelOn(newTab, oldTab) {
-      if(newTab == oldTab) return
+      if (newTab == oldTab) return
       console.log('侧边栏', newTab)
-      if(newTab !== 'attrSearch') {
+      if (newTab !== 'attrSearch') {
         this.clearAll()
       } else this.init()
     }
   },
   methods: {
-    init () {
+    init() {
       console.log('初始化')
-      this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#0ff', 7, 'rgba(0, 255, 255, 0.7)') })
+      this.vectorLayer = new VectorLayer({
+        source: new VectorSource(),
+        style: comSymbol.getAllStyle(5, '#0ff', 7, 'rgba(0, 255, 255, 0.7)')
+      })
       this.data.mapView.addLayer(this.vectorLayer)
       //
-      let [name, type] = appconfig.initLayers.split("&&")
+      let [name, type] = appconfig.initLayers.split('&&')
       let layer = mapUtil.getAllSubLayerNames(name, type)
       // 设置图层
-      this.layerGroups = layer.sublayers.map(layer => {
-        let layers = layer.sublayers.map(sub => {
+      this.layerGroups = layer.sublayers.map((layer) => {
+        let layers = layer.sublayers.map((sub) => {
           return { label: sub.title, value: sub.name.split('@')[0] }
         })
         return { label: layer.title, value: layer.name, layers }
       })
       this.data.that.setPopupSwitch(false)
     },
-    clearAll () {
+    clearAll() {
       this.vectorLayer && this.data.mapView.removeLayer(this.vectorLayer)
       this.drawer && this.drawer.end()
       this.data.that.setPopupSwitch(true)
@@ -154,17 +191,17 @@ export default {
           this.vectorLayer.getSource().clear()
           this.drawer && this.drawer.clearFea()
         },
-        endDrawCallBack: fea => {
-          this.getFacilities(fea).then(res => {
-            let data = res.map(obj => {
+        endDrawCallBack: (fea) => {
+          this.getFacilities(fea).then((res) => {
+            let data = res.map((obj) => {
               let { layerName, result, tableName } = obj
-              return result.features.features.map(fea => {
-                return { 
-                  properties: fea.properties, 
-                  tableName, 
-                  feature: fea, 
-                  name: fea.properties['LNO'] || fea.properties['EXP_NO'] || fea.properties['SID'], 
-                  layer: layerName 
+              return result.features.features.map((fea) => {
+                return {
+                  properties: fea.properties,
+                  tableName,
+                  feature: fea,
+                  name: fea.properties['LNO'] || fea.properties['EXP_NO'] || fea.properties['SID'],
+                  layer: layerName
                 }
               })
             })
@@ -176,20 +213,19 @@ export default {
       this.drawer.start()
     },
     // 空间查询 获取设施
-    getFacilities (fea) {
+    getFacilities(fea) {
       // let sources = appconfig.gisResource['iserver_resource'].layerService.layers.filter(item => item.type === 'smlayer')
       // let info = sources.map(source => source.sublayers.map(sublayer => {
       //   return { name: sublayer.name, label: sublayer.title }
       // }))
       // let dataSetInfo = info.flat()
-      return new Promise(resolve => {
-        new iQuery().spaceQuery(fea).then(res => {
+      return new Promise((resolve) => {
+        new iQuery().spaceQuery(fea).then((res) => {
           console.log('返回的数据', res)
-          let data = res.filter(item => item.type === "processCompleted")
+          let data = res.filter((item) => item.type === 'processCompleted')
           resolve(data)
         })
       })
-
     },
     showFea(row) {
       let { feature, properties, layer, tableName } = row
@@ -201,13 +237,13 @@ export default {
       view.setCenter(center)
       view.setZoom(20)
       // 要素详细信息
-      mapUtil.getFields(tableName).then(res => {
+      mapUtil.getFields(tableName).then((res) => {
         let data = []
         if (res) {
-          for(let key in properties) {
-            let obj = res.find(item => item.field == key)
+          for (let key in properties) {
+            let obj = res.find((item) => item.field == key)
             if (obj) {
-              data.push({ fix: obj.name,  att: properties[key] })
+              data.push({ fix: obj.name, att: properties[key] })
             }
           }
         }
@@ -216,14 +252,12 @@ export default {
     },
     // 保存设置
     saveLayer() {
-      if(this.layerName) {
+      if (this.layerName) {
         this.$message.success('设置属性信息成功')
       }
     },
     // 勾选属性
-    selectChange(select, row) {
-      
-    }
+    selectChange(select, row) {}
   }
 }
 </script>

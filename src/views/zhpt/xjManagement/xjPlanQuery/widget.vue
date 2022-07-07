@@ -83,7 +83,6 @@
     >
       <template slot="empty">
         <img src="@/assets/icon/null.png" alt="" />
-        <p class="empty-p">暂无数据</p>
       </template>
       <el-table-column type="index" width="50" label="序号" />
       <el-table-column prop="departmentName" :formatter="formatter" sortable label="部门" show-overflow-tooltip />
@@ -230,7 +229,6 @@
                   >
                     <template slot="empty">
                       <img src="@/assets/icon/null.png" alt="" />
-                      <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column
                       v-for="(item, index) in headerT3"
@@ -266,7 +264,6 @@
                   >
                     <template slot="empty">
                       <img src="@/assets/icon/null.png" alt="" />
-                      <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
                       <template slot-scope="props">
@@ -355,7 +352,6 @@
                   >
                     <template slot="empty">
                       <img src="@/assets/icon/null.png" alt="" />
-                      <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
                       <template slot-scope="props">
@@ -481,7 +477,6 @@
                   >
                     <template slot="empty">
                       <img src="@/assets/icon/null.png" alt="" />
-                      <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
                       <template slot-scope="props">
@@ -579,7 +574,6 @@
                   >
                     <template slot="empty">
                       <img src="@/assets/icon/null.png" alt="" />
-                      <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
                       <template slot-scope="props">
@@ -681,7 +675,6 @@
                   >
                     <template slot="empty">
                       <img src="@/assets/icon/null.png" alt="" />
-                      <p class="empty-p">暂无数据</p>
                     </template>
                     <el-table-column type="expand">
                       <template slot-scope="props">

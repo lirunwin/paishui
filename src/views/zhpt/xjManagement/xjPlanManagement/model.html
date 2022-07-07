@@ -1,352 +1,794 @@
-<div class='xjPlanForMissionDiv' style="width: 100%; height: 100%; padding:8px;">
-    <el-row>
-        <span class="title2" style="margin-left:8px;">巡查日期：</span>
-        <el-date-picker v-model="searchModel.input.startTime" style="width: 150px;"  type="date" size="small" placeholder="请选择开始时间" :picker-options="startOptions" value-format="yyyy-MM-dd"/> ~
-        <el-date-picker v-model="searchModel.input.endTime" style="width: 150px;"  type="date" size="small" placeholder="请选择结束时间" :picker-options="endOptions" value-format="yyyy-MM-dd"/> 
-        <!-- <el-date-picker v-model="searchModel.input.timeForMission" type="datetimerange" size="small" style="width:300px"
+<div class="xjPlanForMissionDiv" style="width: 100%; height: 100%; padding:8px;">
+  <el-row>
+    <span class="title2" style="margin-left:8px;">巡查日期：</span>
+    <el-date-picker
+      v-model="searchModel.input.startTime"
+      style="width: 150px;"
+      type="date"
+      size="small"
+      placeholder="请选择开始时间"
+      :picker-options="startOptions"
+      value-format="yyyy-MM-dd"
+    />
+    ~
+    <el-date-picker
+      v-model="searchModel.input.endTime"
+      style="width: 150px;"
+      type="date"
+      size="small"
+      placeholder="请选择结束时间"
+      :picker-options="endOptions"
+      value-format="yyyy-MM-dd"
+    />
+    <!-- <el-date-picker v-model="searchModel.input.timeForMission" type="datetimerange" size="small" style="width:300px"
             range-separator="至" start-placeholder="起始时间" end-placeholder="结束时间" value-format="yyyy-MM-dd HH:mm:ss" align="right" clearable/> -->
-        <span class="title2" v-if='searchModel.buttonShow.editButton'>部门分组：</span>
-        <el-select v-if='searchModel.buttonShow.editButton' v-model="searchModel.input.chooseGroup" :disabled="hasGroup" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择巡检人" clearable @change="changeGroup('search')">
-            <el-option v-for="item of searchModel.optionData.chooseGroup" :index='item.index' :key="item.id" :value="item.id" :label="item.name"></el-option>
-        </el-select>    
-        <span class="title2" v-if='searchModel.buttonShow.editButton'>人员：</span>
-        <el-select v-if='searchModel.buttonShow.editButton' v-model="searchModel.input.chooseWorker" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择巡检人" clearable>
-            <el-option v-for="item in searchModel.optionData.chooseWorker" :key="item.id" :label="item.name" :value="item.id" />
-        </el-select>
-        <span class="title2">巡检类型：</span>
-        <el-select v-model="searchModel.input.planType" style="display: inline-block; margin-left: 5px; width:150px;" size="small" placeholder="请选择计划类型" clearable>
-            <el-option v-for="item of searchModel.optionData.planType" :key="item.id" :value="item.id" :label="item.name" ></el-option>
-        </el-select>
-        <span class="title2">状态：</span>
-        <el-select v-model="searchModel.input.state" style="display: inline-block; margin-left: 5px; width:100px;" size="small" placeholder="请选择状态" clearable>
-            <el-option v-for="item of searchModel.optionData.state" :key="item.value" :value="item.value" :label="item.label"></el-option>
-        </el-select>
-        <span class="title2">是否派工：</span>
-        <el-select v-model="searchModel.input.isDispatching" style="display: inline-block; margin-left: 5px; width:100px;" size="small" placeholder="请选择状态" clearable>
-            <el-option key="" value="" label="全部"><span>全部</span></el-option>
-            <el-option key="0" value="0" label="未派工"><span>未派工</span></el-option>
-            <el-option key="1" value="1" label="派工"><span>派工</span></el-option>
-        </el-select>
-        <el-button size="small" type="primary" @click="getData">查询</el-button>
-        <el-button size="small" v-if='searchModel.buttonShow.editButton' type="primary" @click="makeMission('计划制定')" >制定</el-button>
-        <el-button size="small" v-if='searchModel.buttonShow.editButton'  type="primary" @click="makeMission('计划修改')" :disabled="buttonControl.canAlert">修改</el-button>
-        <el-button size="small" v-if='searchModel.buttonShow.editButton' type="primary" :disabled="buttonControl.canDelete" @click="taskArrangeDelete()">删除</el-button>
-    </el-row>
-    <el-table v-loading="tableLoading" class="mapTable" :data="searchModel.getData.allRow" border style="width: 100%;margin-top: 8px;" ref="table1" height="calc(100% - 88px)" stripe highlight-current-row @select="searchTableSelect" 
-        @select-all="searchTableSelect" @row-dblclick="planInfo">
-        <template slot="empty">
-        <img src="@/assets/icon/null.png" alt="">
-        <p class="empty-p">暂无数据</p>
-        </template>
-        <el-table-column v-if='searchModel.buttonShow.editButton' type="selection" width="55"  />
-        <el-table-column type="index" width="50" label="序号" />
-        <el-table-column prop="inspectType" :formatter="formatter" sortable label="巡检类型" show-overflow-tooltip/>
-        <el-table-column prop="planType" :formatter="formatter" sortable label="计划类型" show-overflow-tooltip/>
-        <el-table-column prop="createTime" :formatter="formatter" sortable width="200px" label="派发时间" show-overflow-tooltip />
-        <el-table-column prop="createUserName" :formatter="formatter" sortable label="创建人" />
-        <el-table-column prop="inspectUserList" :formatter="formatter" sortable label="巡查人" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="planBegindate" :formatter="formatter" sortable width="200px" label="起始时间" show-overflow-tooltip/>
-        <el-table-column prop="planEnddate" :formatter="formatter" sortable width="200px" label="结束时间" show-overflow-tooltip/>
-        <el-table-column prop="planState" :formatter="formatter" sortable label="执行状态" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="isDispatching" :formatter="formatter" sortable label="是否派工" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="isPlanStop" :formatter="formatter" sortable label="是否暂停" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="isPlanInvalid" :formatter="formatter" sortable label="是否作废" show-overflow-tooltip></el-table-column>
-        <!-- <el-table-column prop="planPercent" sortable label="计划完成率" show-overflow-tooltip></el-table-column> -->
-        <el-table-column label="操作" width="100">
-            <template slot-scope="scope">
-                <el-button type="text" size="small" @click="planInfo(scope.row)">详细</el-button>
-            </template>
-        </el-table-column>
-    </el-table>
-    <el-row style="margin-top: 8px;width:350px;">
-        <el-col :span="20">
-            <el-pagination small background layout="total, sizes, prev, pager, next, jumper"
-            :page-sizes="[10,20,30,50,100,1000]" :page-size="30"  :current-page="searchModel.pageInfo.current" 
-            @size-change="changeSize"
-            @current-change="changeCurrent"
-            @prev-click="changeCurrent"
-            @next-click="changeCurrent"  :total="searchModel.getData.tableTotal" />
-        </el-col>
-    </el-row>
-    <el-dialog v-dialogDrag title="任务制定" 
-    :visible.sync="pageShow.makePlan" width="100%"  
-    v-loading="pageShow.endSend" 
+    <span class="title2" v-if="searchModel.buttonShow.editButton">部门分组：</span>
+    <el-select
+      v-if="searchModel.buttonShow.editButton"
+      v-model="searchModel.input.chooseGroup"
+      :disabled="hasGroup"
+      style="display: inline-block; margin-left: 5px; width:150px;"
+      size="small"
+      placeholder="请选择巡检人"
+      clearable
+      @change="changeGroup('search')"
+    >
+      <el-option
+        v-for="item of searchModel.optionData.chooseGroup"
+        :index="item.index"
+        :key="item.id"
+        :value="item.id"
+        :label="item.name"
+      ></el-option>
+    </el-select>
+    <span class="title2" v-if="searchModel.buttonShow.editButton">人员：</span>
+    <el-select
+      v-if="searchModel.buttonShow.editButton"
+      v-model="searchModel.input.chooseWorker"
+      style="display: inline-block; margin-left: 5px; width:150px;"
+      size="small"
+      placeholder="请选择巡检人"
+      clearable
+    >
+      <el-option
+        v-for="item in searchModel.optionData.chooseWorker"
+        :key="item.id"
+        :label="item.name"
+        :value="item.id"
+      />
+    </el-select>
+    <span class="title2">巡检类型：</span>
+    <el-select
+      v-model="searchModel.input.planType"
+      style="display: inline-block; margin-left: 5px; width:150px;"
+      size="small"
+      placeholder="请选择计划类型"
+      clearable
+    >
+      <el-option
+        v-for="item of searchModel.optionData.planType"
+        :key="item.id"
+        :value="item.id"
+        :label="item.name"
+      ></el-option>
+    </el-select>
+    <span class="title2">状态：</span>
+    <el-select
+      v-model="searchModel.input.state"
+      style="display: inline-block; margin-left: 5px; width:100px;"
+      size="small"
+      placeholder="请选择状态"
+      clearable
+    >
+      <el-option
+        v-for="item of searchModel.optionData.state"
+        :key="item.value"
+        :value="item.value"
+        :label="item.label"
+      ></el-option>
+    </el-select>
+    <span class="title2">是否派工：</span>
+    <el-select
+      v-model="searchModel.input.isDispatching"
+      style="display: inline-block; margin-left: 5px; width:100px;"
+      size="small"
+      placeholder="请选择状态"
+      clearable
+    >
+      <el-option key="" value="" label="全部"><span>全部</span></el-option>
+      <el-option key="0" value="0" label="未派工"><span>未派工</span></el-option>
+      <el-option key="1" value="1" label="派工"><span>派工</span></el-option>
+    </el-select>
+    <el-button size="small" type="primary" @click="getData">查询</el-button>
+    <el-button size="small" v-if="searchModel.buttonShow.editButton" type="primary" @click="makeMission('计划制定')"
+      >制定</el-button
+    >
+    <el-button
+      size="small"
+      v-if="searchModel.buttonShow.editButton"
+      type="primary"
+      @click="makeMission('计划修改')"
+      :disabled="buttonControl.canAlert"
+      >修改</el-button
+    >
+    <el-button
+      size="small"
+      v-if="searchModel.buttonShow.editButton"
+      type="primary"
+      :disabled="buttonControl.canDelete"
+      @click="taskArrangeDelete()"
+      >删除</el-button
+    >
+  </el-row>
+  <el-table
+    v-loading="tableLoading"
+    class="mapTable"
+    :data="searchModel.getData.allRow"
+    border
+    style="width: 100%;margin-top: 8px;"
+    ref="table1"
+    height="calc(100% - 88px)"
+    stripe
+    highlight-current-row
+    @select="searchTableSelect"
+    @select-all="searchTableSelect"
+    @row-dblclick="planInfo"
+  >
+    <template slot="empty">
+      <img src="@/assets/icon/null.png" alt="" />
+    </template>
+    <el-table-column v-if="searchModel.buttonShow.editButton" type="selection" width="55" />
+    <el-table-column type="index" width="50" label="序号" />
+    <el-table-column prop="inspectType" :formatter="formatter" sortable label="巡检类型" show-overflow-tooltip />
+    <el-table-column prop="planType" :formatter="formatter" sortable label="计划类型" show-overflow-tooltip />
+    <el-table-column
+      prop="createTime"
+      :formatter="formatter"
+      sortable
+      width="200px"
+      label="派发时间"
+      show-overflow-tooltip
+    />
+    <el-table-column prop="createUserName" :formatter="formatter" sortable label="创建人" />
+    <el-table-column
+      prop="inspectUserList"
+      :formatter="formatter"
+      sortable
+      label="巡查人"
+      show-overflow-tooltip
+    ></el-table-column>
+    <el-table-column
+      prop="planBegindate"
+      :formatter="formatter"
+      sortable
+      width="200px"
+      label="起始时间"
+      show-overflow-tooltip
+    />
+    <el-table-column
+      prop="planEnddate"
+      :formatter="formatter"
+      sortable
+      width="200px"
+      label="结束时间"
+      show-overflow-tooltip
+    />
+    <el-table-column
+      prop="planState"
+      :formatter="formatter"
+      sortable
+      label="执行状态"
+      show-overflow-tooltip
+    ></el-table-column>
+    <el-table-column
+      prop="isDispatching"
+      :formatter="formatter"
+      sortable
+      label="是否派工"
+      show-overflow-tooltip
+    ></el-table-column>
+    <el-table-column
+      prop="isPlanStop"
+      :formatter="formatter"
+      sortable
+      label="是否暂停"
+      show-overflow-tooltip
+    ></el-table-column>
+    <el-table-column
+      prop="isPlanInvalid"
+      :formatter="formatter"
+      sortable
+      label="是否作废"
+      show-overflow-tooltip
+    ></el-table-column>
+    <!-- <el-table-column prop="planPercent" sortable label="计划完成率" show-overflow-tooltip></el-table-column> -->
+    <el-table-column label="操作" width="100">
+      <template slot-scope="scope">
+        <el-button type="text" size="small" @click="planInfo(scope.row)">详细</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
+  <el-row style="margin-top: 8px;width:350px;">
+    <el-col :span="20">
+      <el-pagination
+        small
+        background
+        layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[10,20,30,50,100,1000]"
+        :page-size="30"
+        :current-page="searchModel.pageInfo.current"
+        @size-change="changeSize"
+        @current-change="changeCurrent"
+        @prev-click="changeCurrent"
+        @next-click="changeCurrent"
+        :total="searchModel.getData.tableTotal"
+      />
+    </el-col>
+  </el-row>
+  <el-dialog
+    v-dialogDrag
+    title="任务制定"
+    :visible.sync="pageShow.makePlan"
+    width="100%"
+    v-loading="pageShow.endSend"
     element-loading-text="计划创建中"
     element-loading-custom-class="planMakeLoading"
     element-loading-spinner="el-icon-loading"
     element-loading-background="rgba(255, 255, 255, 0.7)"
     ref="parentDiv"
-    top="calc(50vh - 450px)"  @close="closeEvent" append-to-body>
-        <div style="width:100%;padding-right:8px;">
-            <tf-table-legend label="巡检信息" isopen="true" style="margin-top: 8px;">
-                <div style="width:100%; display: flex; flex-wrap: wrap;" ref="parentDiv">
-                    <div class="flexDiv">
-                        <span class="flexTitle">巡检类型：</span>
-                        <div class="flexInfo">
-                            <el-select v-model="planModel.input.planType" collapse-tags style="width:100%;" multiple size="small" placeholder="请选择巡检类型" clearable 
-                                @change="xjTypeChange" >
-                                <el-option v-for="item in planModel.optionData.planType" :key="item.id" :value="item.id" :label="item.name" ></el-option>
-                            </el-select></div>
-                    </div>
-                    <div class="flexDiv">
-                        <span class="flexTitle">巡检组：</span>
-                        <div class="flexInfo">
-                            <el-select v-model="planModel.input.chooseGroup" :disabled="hasGroup" style="width:100%;" size="small" placeholder="请选择巡查组" @change="changeGroup()">
-                                <el-option v-for="item of planModel.optionData.chooseGroup" :key="item.id" :value="item.id" :label="item.name"></el-option>
-                            </el-select>
-                        </div>
-                    </div>
-                    <div class="flexDiv">
-                        <span class="flexTitle">巡查人：</span>
-                        <div class="flexInfo">
-                            <el-select v-model="planModel.input.chooseWorker" collapse-tags style="width:100%;" size="small" placeholder="请选择巡查人" multiple clearable>
-                                <el-option v-for="item of planModel.optionData.chooseWorker" :key="item.id" :value="item.id" :label="item.name"></el-option>
-                            </el-select>
-                        </div>
-                    </div>
-                    <div class="flexDiv" v-show="pageShow.showPlanRound">
-                        <span class="flexTitle">巡查周期：</span>
-                        <div class="flexInfo">
-                            <el-select v-show="pageShow.showPlanRound" v-model="planModel.input.period" style="width:100%;" size="small" placeholder="请选择巡查周期" clearable @visible-change="chooseCheckPeriod()" 
-                                @focus="disposeDayPlanRound">
-                                <el-option v-for="item in planModel.optionData.period" :key="item.id" :value="item.id" :label="item.periodName"></el-option>
-                            </el-select>
-                        </div>
-                    </div>
-                    <div class="flexDiv" v-show="!pageShow.showPlanRound">
-                        <span class="flexTitle">巡查周期：</span>
-                        <div class="flexInfo" style="display: inline-flex;">
-                            <el-select v-model="planModel.input.period" style="width:100%;" size="small" placeholder="请选择巡查周期" clearable @visible-change="chooseCheckPeriod()" 
-                                @focus="disposeDayPlanRound">
-                                <el-option v-for="item in planModel.optionData.period" :key="item.id" :value="item.id" :label="item.periodName"></el-option>
-                            </el-select>
-                            <!-- <el-input v-model="planModel.input.periodDay" @change='changePeriodDay' size="small"><template slot="append">天一巡</template></el-input> -->
-                        </div>
-                    </div>
-                    <div class="flexDiv">
-                        <span class="flexTitle">起止时间：</span>
-                        <div class="flexInfo">
-                            <el-date-picker v-model="planModel.input.planBegindate" v-show="dateShow.moreDate" @change='changeCustomS' style="width: calc((100% - 20px)/2);"  type="date" size="small" placeholder="请选择开始时间" :picker-options="planModel.input.planBegindatePick" value-format="yyyy-MM-dd" clearable /><span v-show="dateShow.moreDate"> ~</span>
-                            <el-date-picker v-model="planModel.input.planEnddate" v-show="dateShow.moreDate" @change='changeCustomE' style="width: calc((100% - 20px)/2)"  type="date" size="small" placeholder="请选择结束时间" :picker-options="planModel.input.planEnddatePick" value-format="yyyy-MM-dd" clearable /> 
-                            <el-date-picker v-model="planModel.input.planBegindate2" v-show="dateShow.singeDate"  style="width: calc((100% - 20px)/2);"  type="month" :picker-options="planModel.input.planBegindate2Pick" size="small" placeholder="选择巡检月份"  value-format="yyyy-MM" clearable /> 
-                            <el-date-picker v-model="planModel.input.planEnddate2" v-show="dateShow.singeDate"  style="width: calc((100% - 20px)/2);"   type="month" :picker-options="planModel.input.planBegindate2Pick" size="small" placeholder="选择巡检月份"  value-format="yyyy-MM" clearable /> 
-                            <!-- <el-date-picker v-model="planModel.input.dayPlanTime" v-show="dateShow.moreDate" size="small" style="width:100%;" type="daterange" range-separator="至" value-format="yyyy-MM-dd HH:mm:ss"
+    top="calc(50vh - 450px)"
+    @close="closeEvent"
+    append-to-body
+  >
+    <div style="width:100%;padding-right:8px;">
+      <tf-table-legend label="巡检信息" isopen="true" style="margin-top: 8px;">
+        <div style="width:100%; display: flex; flex-wrap: wrap;" ref="parentDiv">
+          <div class="flexDiv">
+            <span class="flexTitle">巡检类型：</span>
+            <div class="flexInfo">
+              <el-select
+                v-model="planModel.input.planType"
+                collapse-tags
+                style="width:100%;"
+                multiple
+                size="small"
+                placeholder="请选择巡检类型"
+                clearable
+                @change="xjTypeChange"
+              >
+                <el-option
+                  v-for="item in planModel.optionData.planType"
+                  :key="item.id"
+                  :value="item.id"
+                  :label="item.name"
+                ></el-option>
+              </el-select>
+            </div>
+          </div>
+          <div class="flexDiv">
+            <span class="flexTitle">巡检组：</span>
+            <div class="flexInfo">
+              <el-select
+                v-model="planModel.input.chooseGroup"
+                :disabled="hasGroup"
+                style="width:100%;"
+                size="small"
+                placeholder="请选择巡查组"
+                @change="changeGroup()"
+              >
+                <el-option
+                  v-for="item of planModel.optionData.chooseGroup"
+                  :key="item.id"
+                  :value="item.id"
+                  :label="item.name"
+                ></el-option>
+              </el-select>
+            </div>
+          </div>
+          <div class="flexDiv">
+            <span class="flexTitle">巡查人：</span>
+            <div class="flexInfo">
+              <el-select
+                v-model="planModel.input.chooseWorker"
+                collapse-tags
+                style="width:100%;"
+                size="small"
+                placeholder="请选择巡查人"
+                multiple
+                clearable
+              >
+                <el-option
+                  v-for="item of planModel.optionData.chooseWorker"
+                  :key="item.id"
+                  :value="item.id"
+                  :label="item.name"
+                ></el-option>
+              </el-select>
+            </div>
+          </div>
+          <div class="flexDiv" v-show="pageShow.showPlanRound">
+            <span class="flexTitle">巡查周期：</span>
+            <div class="flexInfo">
+              <el-select
+                v-show="pageShow.showPlanRound"
+                v-model="planModel.input.period"
+                style="width:100%;"
+                size="small"
+                placeholder="请选择巡查周期"
+                clearable
+                @visible-change="chooseCheckPeriod()"
+                @focus="disposeDayPlanRound"
+              >
+                <el-option
+                  v-for="item in planModel.optionData.period"
+                  :key="item.id"
+                  :value="item.id"
+                  :label="item.periodName"
+                ></el-option>
+              </el-select>
+            </div>
+          </div>
+          <div class="flexDiv" v-show="!pageShow.showPlanRound">
+            <span class="flexTitle">巡查周期：</span>
+            <div class="flexInfo" style="display: inline-flex;">
+              <el-select
+                v-model="planModel.input.period"
+                style="width:100%;"
+                size="small"
+                placeholder="请选择巡查周期"
+                clearable
+                @visible-change="chooseCheckPeriod()"
+                @focus="disposeDayPlanRound"
+              >
+                <el-option
+                  v-for="item in planModel.optionData.period"
+                  :key="item.id"
+                  :value="item.id"
+                  :label="item.periodName"
+                ></el-option>
+              </el-select>
+              <!-- <el-input v-model="planModel.input.periodDay" @change='changePeriodDay' size="small"><template slot="append">天一巡</template></el-input> -->
+            </div>
+          </div>
+          <div class="flexDiv">
+            <span class="flexTitle">起止时间：</span>
+            <div class="flexInfo">
+              <el-date-picker
+                v-model="planModel.input.planBegindate"
+                v-show="dateShow.moreDate"
+                @change="changeCustomS"
+                style="width: calc((100% - 20px)/2);"
+                type="date"
+                size="small"
+                placeholder="请选择开始时间"
+                :picker-options="planModel.input.planBegindatePick"
+                value-format="yyyy-MM-dd"
+                clearable
+              /><span v-show="dateShow.moreDate"> ~</span>
+              <el-date-picker
+                v-model="planModel.input.planEnddate"
+                v-show="dateShow.moreDate"
+                @change="changeCustomE"
+                style="width: calc((100% - 20px)/2)"
+                type="date"
+                size="small"
+                placeholder="请选择结束时间"
+                :picker-options="planModel.input.planEnddatePick"
+                value-format="yyyy-MM-dd"
+                clearable
+              />
+              <el-date-picker
+                v-model="planModel.input.planBegindate2"
+                v-show="dateShow.singeDate"
+                style="width: calc((100% - 20px)/2);"
+                type="month"
+                :picker-options="planModel.input.planBegindate2Pick"
+                size="small"
+                placeholder="选择巡检月份"
+                value-format="yyyy-MM"
+                clearable
+              />
+              <el-date-picker
+                v-model="planModel.input.planEnddate2"
+                v-show="dateShow.singeDate"
+                style="width: calc((100% - 20px)/2);"
+                type="month"
+                :picker-options="planModel.input.planBegindate2Pick"
+                size="small"
+                placeholder="选择巡检月份"
+                value-format="yyyy-MM"
+                clearable
+              />
+              <!-- <el-date-picker v-model="planModel.input.dayPlanTime" v-show="dateShow.moreDate" size="small" style="width:100%;" type="daterange" range-separator="至" value-format="yyyy-MM-dd HH:mm:ss"
                             start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="planModel.input.pickerOptions"   clearable>
                             </el-date-picker>
                             <el-date-picker v-model="planModel.input.dayPlanTime2" v-show="dateShow.singeDate" type="month" :picker-options="planModel.input.pickerOptions2" @change='moreDateChange' size="small" style="width:100%;"  value-format="yyyy-MM" placeholder="选择巡检月份"  clearable>
                             </el-date-picker> -->
-                        </div>
-                    </div>
-                    <div class="flexDiv" v-if='!acceptData'>
-                        <span class="flexTitle">是否派工：</span>
-                        <div class="flexInfo">
-                            <el-select v-model="planModel.input.state"  size="small" placeholder="请选择状态" clearable>
-                                <el-option key="0" value="0" label="否"></el-option>
-                                <el-option key="1" value="1" label="是"></el-option>
-                            </el-select>
-                        </div>
-                    </div>
-                    <template v-if="planModel.input.planTypeInfo&&planModel.input.planTypeInfo.length>0">
-                        <template v-for="(item,index) in planModel.input.planTypeInfo">
-                            <div class="flexDiv planPercentSet" :key="index">
-                                <span class="flexTitle" :title='item.layerName+"计划完成率"'>{{item.layerName+"计划完成率"}}</span><span>：</span>
-                                <div class="flexInfo">
-                                    <el-input type='number' v-model="item.planPercent"  oninput="if(value>100)value=100;if((value+'').indexOf('0')==0)value=0;if(value<0)value=0" size="small"><template slot="append">%</template></el-input>
-                                </div>
-                            </div>
-                        </template>
-                    </template>
+            </div>
+          </div>
+          <div class="flexDiv" v-if="!acceptData">
+            <span class="flexTitle">是否派工：</span>
+            <div class="flexInfo">
+              <el-select v-model="planModel.input.state" size="small" placeholder="请选择状态" clearable>
+                <el-option key="0" value="0" label="否"></el-option>
+                <el-option key="1" value="1" label="是"></el-option>
+              </el-select>
+            </div>
+          </div>
+          <template v-if="planModel.input.planTypeInfo&&planModel.input.planTypeInfo.length>0">
+            <template v-for="(item,index) in planModel.input.planTypeInfo">
+              <div class="flexDiv planPercentSet" :key="index">
+                <span class="flexTitle" :title='item.layerName+"计划完成率"'>{{item.layerName+"计划完成率"}}</span
+                ><span>：</span>
+                <div class="flexInfo">
+                  <el-input
+                    type="number"
+                    v-model="item.planPercent"
+                    oninput="if(value>100)value=100;if((value+'').indexOf('0')==0)value=0;if(value<0)value=0"
+                    size="small"
+                    ><template slot="append"
+                      >%</template
+                    ></el-input
+                  >
+                </div>
+              </div>
+            </template>
+          </template>
 
-                    <div class="flexDiv" style="width: 100%;">
-                            <el-button size="mini" type="primary" :disabled="pageShow.userDraw" @click="drawAndQuery">绘制范围</el-button>
-                            <el-button size="mini" type="primary" :disabled="pageShow.userDraw" @click="clearDraw">清除范围</el-button>
-                            <el-checkbox v-show='pageShow.showSQLPage' style="margin-left:10px;margin-right: 0px ;" v-model="pageShow.showSQLContent" >条件查询框显示
-                            </el-checkbox>
-                    </div>
-                </div>
-            </tf-table-legend>
-            <tf-table-legend label="内容选取" isopen="true" style="margin-top: 8px;">
-                <div style="height: 545px;margin-top: 8px;">
-                    <div ref="pickContent" :style="pageShow.showSQLPage?(pageShow.showSQLContent?'width:80%; position: relative;height: 90%;float:left;':'width:100%; position: relative;height: 90%;float:left;'):'width:100%;position: relative; height: 90%;float:left;'" >
-                        <div  :style="planDataShow?(hideDataContentA?'width:100%; height: calc(100% - 200px);':'width:100%; height: calc(100% - 40px);'):'width:100%; height: 100%'" ref="mapBox"></div>
-                        <div v-if='planDataShow'>
-                            <i :class='hideDataContentA?"el-icon-arrow-down showOrHideCon":"el-icon-arrow-up showOrHideCon"' :title='hideDataContentA?"点击隐藏计划内容":"点击显示计划内容"'
-                            @click='hideDataContent' :style="hideDataContentA?('top: calc(100% - 185px); right:0px;'):('top: calc(100% - 30px); right:0px;')"></i>
-                        </div>
-                        <el-tabs type="border-card" v-if='planDataShow'   v-model="planModel.input.currentPlanTypeName" :style="hideDataContentA?'width:100%; height: 270px;':'width: 100%;height: 40px; overflow: hidden;'" > 
-                            <template  v-for="(item,index) in planModel.input.planTypeInfo">
-                                <el-tab-pane  :key="index+''" :name="index+''" :label="item.layerName">
-                                    <div style="width:100%; height: 200px;">                       
-                                        <el-table  v-show="item.planInfo.isCheckData" :data="item.planInfo.tableData" :ref="'datatable'+index" style="width: 100%;margin-top: 8px;" height="calc(100% - 40px)" stripe highlight-current-row
-                                            @select="selectPlan" @select-all="selectPlan" @row-click="rowSelectPlan">
-                                            <template slot="empty">
-                                            <img src="@/assets/icon/null.png" alt="">
-                                            <p class="empty-p">暂无数据</p>
-                                            </template>
-                                            <el-table-column  type="selection" width="55" />
-                                            <el-table-column type="index" width="50" label="序号" />
-                                            <el-table-column v-for="(value, index2) in item.planInfo.header" :key="index2" :label="value.label" align="center" :prop="value.value" 
-                                            show-overflow-tooltip/>
-                                        </el-table>
-                                        <el-table  v-show="!item.planInfo.isCheckData" :data="item.planInfo.pageInfo.currentData"  style="width: 100%;margin-top: 8px;" height="calc(100% - 40px)" stripe highlight-current-row
-                                        @row-click="rowSelectPlan">
-                                            <template slot="empty">
-                                            <img src="@/assets/icon/null.png" alt="">
-                                            <p class="empty-p">暂无数据</p>
-                                            </template>
-                                            <!-- <el-table-column type="index" width="50" label="序号" /> -->
-                                            <el-table-column v-for="(value, index2) in item.planInfo.header" :key="index2" :label="value.label" align="center" :prop="value.value" 
-                                            show-overflow-tooltip/>
-                                        </el-table>
-                                        <el-row style="margin-top: 8px;width:100%;">
-                                            <el-row style="margin-top: 8px;width:100%;">
-                                                <el-col :span="20">
-                                                    <template v-if="item.planInfo.isCheckData">
-                                                        <el-pagination v-show="item.planInfo.tableData&&item.planInfo.tableData.length>0" small background layout="total"  
-                                                        :total="item.planInfo.total"  />
-                                                    </template>
-                                                    <template v-else> 
-                                                        <el-pagination v-show="item.planInfo.tableData&&item.planInfo.tableData.length>0"   small background 
-                                                        @current-change="handleCurrentChange"
-                                                        :page-size="10"
-                                                        layout="total, prev, pager, next"
-                                                        :total="item.planInfo.total">
-                                                        </el-pagination>
-                                                    </template>
-                                                </el-col>
-                                            </el-row>
-                                        </el-row>
-                                    </div>
-                                </el-tab-pane>
-                            </template>
-                        </el-tabs>
-                    </div>
-                    <div v-show="pageShow.showSQLPage"   :style="(pageShow.showSQLPage&&pageShow.showSQLContent)?'width:20%; height: 106%;float:left;overflow-y: auto;':'width:0%; height: 106%;float:left;overflow-y: auto;'">
-                        <tf-legend class="legend_dept" label="图层字段" isopen="true" title="选择将要查询的字段。">
-                            <ul class="sqlQueryUl" style="height: 147px">
-                            <li v-for="(item, id) in serverSearch.analysisAtt" :key="id" @click="addText(item.value + ' ', item.value.length + 3, true)">{{ item.label }}</li>
-                            <span class="none" ref="noneLayer"><i class="el-icon-loading" style="display:none;"></i><span>请选择图层</span></span>
-                            </ul>
-                        </tf-legend>
-                        <tf-legend class="legend_dept" label="构造查询语句"  isopen="true" title="所选属性对应的唯一值。">
-                            <div style="width: 100%">
-                                <div style="width: 130px; float: left">
-                                    <div style="margin-bottom: 3px">
-                                    <el-button size="mini" type="primary" plain @click="addText('= ', 2)" style="width:56px">＝</el-button>
-                                    <el-button size="mini" type="primary" plain @click="addText('like \'%%\'', 7)" style="width:56px">模糊</el-button>
-                                    </div>
-                                    <div style="margin-bottom: 3px">
-                                    <el-button size="mini" type="primary" plain @click="addText('> ', 2)" style="width:56px">＞</el-button>
-                                    <el-button size="mini" type="primary" plain @click="addText('< ', 2)" style="width:56px">＜</el-button>
-                                    </div>
-                                    <div style="margin-bottom: 3px">
-                                    <el-button size="mini" type="primary" plain @click="addText('<> ', 3)" style="width:56px">≠</el-button>
-                                    <el-button size="mini" type="primary" plain @click="addText('and ', 4)" style="width:56px">或</el-button>
-                                    </div>
-                                    <div>
-                                    <el-button size="mini" type="primary" plain @click="addText('or ', 3)" style="width:56px">与</el-button>
-                                    <el-button size="mini" type="primary" plain @click="addText('% ', 2)" style="width:56px">占位</el-button>
-                                    </div>
-                                </div>
-                                <div style="width: calc(100% - 130px); float: right">
-                                    <ul class="sqlQueryUl" style="height: 120px">
-                                    <li v-for="(item, id) in serverSearch.layerFix" :key="id" @click="addText('\'' + item + '\' ', item.length + 3)">{{ item }}</li>
-                                    <span class="none" ref="noneFixed"><i class="el-icon-loading" style="display:none;"></i><span>请选择字段</span></span>
-                                    </ul>
-                                </div>
-                            </div>
-                        </tf-legend>
-                        <tf-legend class="legend_dept" label="组合查询条件" isopen="true" style="clear: both" title="所选属性对应的唯一值。">    
-                            <el-input v-model="serverSearch.queText" ref="textBox" type="textarea" :rows="4" placeholder="请输入内容 如:OBJECTID > 0"/>
-                            <el-row style='padding-top:10px'>
-                                <el-button size="mini" type="primary" @click="clearQueryCondition">清空</el-button>
-                                <el-button size="mini" type="primary" @click="getGeoData2">查询</el-button>
-                            </el-row>
-                        </tf-legend>     
-                    </div>
-                </div>
-            </tf-table-legend>
+          <div class="flexDiv" style="width: 100%;">
+            <el-button size="mini" type="primary" :disabled="pageShow.userDraw" @click="drawAndQuery"
+              >绘制范围</el-button
+            >
+            <el-button size="mini" type="primary" :disabled="pageShow.userDraw" @click="clearDraw">清除范围</el-button>
+            <el-checkbox
+              v-show="pageShow.showSQLPage"
+              style="margin-left:10px;margin-right: 0px ;"
+              v-model="pageShow.showSQLContent"
+              >条件查询框显示
+            </el-checkbox>
+          </div>
         </div>
-        <span slot="footer" class="dialog-footer">
-            <el-button v-show="pageShow.buttonShow" @click="cancelSubmit" size="small">取消</el-button>
-            <el-button v-show="pageShow.buttonShow" :disabled='pageShow.sendPlan' type="primary" size="small" @click="taskArrangeSubmit()">确定</el-button>
-        </span>
-    </el-dialog>
-    <el-dialog v-dialogDrag title="任务详细" :visible.sync="pageShow.diaVisiable" width="100%" top="calc(50vh - 450px)" @close="closeEvent" append-to-body>
-        <div style="width:100%;padding-right:8px;">
-            <tf-table-legend label="巡检信息" isopen="true" style="margin-top: 8px;">
-                <div style="width:100%; display: flex; flex-wrap: wrap;">
-                    <div class="flexDiv" ref="xjType"><span class="flexTitle" >巡查类型：</span><div class="flexInfo"></div></div>
-                    <div class="flexDiv" ref="xjGroup">
-                        <span class="flexTitle" >巡查组：</span><div class="flexInfo"></div>
-                    </div>
-                    <div class="flexDiv" ref="xjWorker">
-                        <span class="flexTitle">巡查人：</span><div class="flexInfo"></div>
-                    </div>
-                    <div class="flexDiv"  ref="xjBeginAndEndTime">
-                        <span class="flexTitle">起止时间：</span><div class="flexInfo"></div>
-                    </div>
-                    <div class="flexDiv"  ref="xjPlanNumber">
-                        <span class="flexTitle">计划完成率：</span><div class="flexInfo"></div>
-                    </div>
+      </tf-table-legend>
+      <tf-table-legend label="内容选取" isopen="true" style="margin-top: 8px;">
+        <div style="height: 545px;margin-top: 8px;">
+          <div
+            ref="pickContent"
+            :style="pageShow.showSQLPage?(pageShow.showSQLContent?'width:80%; position: relative;height: 90%;float:left;':'width:100%; position: relative;height: 90%;float:left;'):'width:100%;position: relative; height: 90%;float:left;'"
+          >
+            <div
+              :style="planDataShow?(hideDataContentA?'width:100%; height: calc(100% - 200px);':'width:100%; height: calc(100% - 40px);'):'width:100%; height: 100%'"
+              ref="mapBox"
+            ></div>
+            <div v-if="planDataShow">
+              <i
+                :class='hideDataContentA?"el-icon-arrow-down showOrHideCon":"el-icon-arrow-up showOrHideCon"'
+                :title='hideDataContentA?"点击隐藏计划内容":"点击显示计划内容"'
+                @click="hideDataContent"
+                :style="hideDataContentA?('top: calc(100% - 185px); right:0px;'):('top: calc(100% - 30px); right:0px;')"
+              ></i>
+            </div>
+            <el-tabs
+              type="border-card"
+              v-if="planDataShow"
+              v-model="planModel.input.currentPlanTypeName"
+              :style="hideDataContentA?'width:100%; height: 270px;':'width: 100%;height: 40px; overflow: hidden;'"
+            >
+              <template v-for="(item,index) in planModel.input.planTypeInfo">
+                <el-tab-pane :key="index+''" :name="index+''" :label="item.layerName">
+                  <div style="width:100%; height: 200px;">
+                    <el-table
+                      v-show="item.planInfo.isCheckData"
+                      :data="item.planInfo.tableData"
+                      :ref="'datatable'+index"
+                      style="width: 100%;margin-top: 8px;"
+                      height="calc(100% - 40px)"
+                      stripe
+                      highlight-current-row
+                      @select="selectPlan"
+                      @select-all="selectPlan"
+                      @row-click="rowSelectPlan"
+                    >
+                      <template slot="empty">
+                        <img src="@/assets/icon/null.png" alt="" />
+                      </template>
+                      <el-table-column type="selection" width="55" />
+                      <el-table-column type="index" width="50" label="序号" />
+                      <el-table-column
+                        v-for="(value, index2) in item.planInfo.header"
+                        :key="index2"
+                        :label="value.label"
+                        align="center"
+                        :prop="value.value"
+                        show-overflow-tooltip
+                      />
+                    </el-table>
+                    <el-table
+                      v-show="!item.planInfo.isCheckData"
+                      :data="item.planInfo.pageInfo.currentData"
+                      style="width: 100%;margin-top: 8px;"
+                      height="calc(100% - 40px)"
+                      stripe
+                      highlight-current-row
+                      @row-click="rowSelectPlan"
+                    >
+                      <template slot="empty">
+                        <img src="@/assets/icon/null.png" alt="" />
+                      </template>
+                      <!-- <el-table-column type="index" width="50" label="序号" /> -->
+                      <el-table-column
+                        v-for="(value, index2) in item.planInfo.header"
+                        :key="index2"
+                        :label="value.label"
+                        align="center"
+                        :prop="value.value"
+                        show-overflow-tooltip
+                      />
+                    </el-table>
+                    <el-row style="margin-top: 8px;width:100%;">
+                      <el-row style="margin-top: 8px;width:100%;">
+                        <el-col :span="20">
+                          <template v-if="item.planInfo.isCheckData">
+                            <el-pagination
+                              v-show="item.planInfo.tableData&&item.planInfo.tableData.length>0"
+                              small
+                              background
+                              layout="total"
+                              :total="item.planInfo.total"
+                            />
+                          </template>
+                          <template v-else>
+                            <el-pagination
+                              v-show="item.planInfo.tableData&&item.planInfo.tableData.length>0"
+                              small
+                              background
+                              @current-change="handleCurrentChange"
+                              :page-size="10"
+                              layout="total, prev, pager, next"
+                              :total="item.planInfo.total"
+                            >
+                            </el-pagination>
+                          </template>
+                        </el-col>
+                      </el-row>
+                    </el-row>
+                  </div>
+                </el-tab-pane>
+              </template>
+            </el-tabs>
+          </div>
+          <div
+            v-show="pageShow.showSQLPage"
+            :style="(pageShow.showSQLPage&&pageShow.showSQLContent)?'width:20%; height: 106%;float:left;overflow-y: auto;':'width:0%; height: 106%;float:left;overflow-y: auto;'"
+          >
+            <tf-legend class="legend_dept" label="图层字段" isopen="true" title="选择将要查询的字段。">
+              <ul class="sqlQueryUl" style="height: 147px">
+                <li
+                  v-for="(item, id) in serverSearch.analysisAtt"
+                  :key="id"
+                  @click="addText(item.value + ' ', item.value.length + 3, true)"
+                >
+                  {{ item.label }}
+                </li>
+                <span class="none" ref="noneLayer"
+                  ><i class="el-icon-loading" style="display:none;"></i><span>请选择图层</span></span
+                >
+              </ul>
+            </tf-legend>
+            <tf-legend class="legend_dept" label="构造查询语句" isopen="true" title="所选属性对应的唯一值。">
+              <div style="width: 100%">
+                <div style="width: 130px; float: left">
+                  <div style="margin-bottom: 3px">
+                    <el-button size="mini" type="primary" plain @click="addText('= ', 2)" style="width:56px"
+                      >＝</el-button
+                    >
+                    <el-button size="mini" type="primary" plain @click="addText('like \'%%\'', 7)" style="width:56px"
+                      >模糊</el-button
+                    >
+                  </div>
+                  <div style="margin-bottom: 3px">
+                    <el-button size="mini" type="primary" plain @click="addText('> ', 2)" style="width:56px"
+                      >＞</el-button
+                    >
+                    <el-button size="mini" type="primary" plain @click="addText('< ', 2)" style="width:56px"
+                      >＜</el-button
+                    >
+                  </div>
+                  <div style="margin-bottom: 3px">
+                    <el-button size="mini" type="primary" plain @click="addText('<> ', 3)" style="width:56px"
+                      >≠</el-button
+                    >
+                    <el-button size="mini" type="primary" plain @click="addText('and ', 4)" style="width:56px"
+                      >或</el-button
+                    >
+                  </div>
+                  <div>
+                    <el-button size="mini" type="primary" plain @click="addText('or ', 3)" style="width:56px"
+                      >与</el-button
+                    >
+                    <el-button size="mini" type="primary" plain @click="addText('% ', 2)" style="width:56px"
+                      >占位</el-button
+                    >
+                  </div>
                 </div>
-            </tf-table-legend>
-            <tf-table-legend label="内容选取" isopen="true" style="margin-top: 8px;">
-                <div style="height: 650px;margin-top: 8px;">
-                    <div ref="pickContent"  style="width:100%; height: 90%;float:left;" >
-                        <div style="width:100%; height: calc(100% - 200px);" ref="mapBox1"></div>
-                        <el-tabs type="border-card"  v-model="planModel.input.currentPlanTypeName" style="width:100%; height: 270px;" > 
-                            <template  v-for="(item,index) in planModel.input.planTypeInfo">
-                                <el-tab-pane  :key="index+''" :name="index+''" :label="item.layerName">
-                                    <div style="width:100%; height: 200px;">   
-                                        <el-table  v-show="item.planInfo.isCheckData"  :data="item.planInfo.tableData" :ref="'datatable'+index" style="width: 100%;margin-top: 8px;" height="calc(100% - 40px)" stripe highlight-current-row
-                                        @row-click="rowSelectPlan">                 
-                                            <template slot="empty">
-                                            <img src="@/assets/icon/null.png" alt="">
-                                            <p class="empty-p">暂无数据</p>
-                                            </template>
-                                            <el-table-column type="index" width="50" label="序号" />
-                                            <el-table-column v-for="(value, index2) in item.planInfo.header" :key="index2" :label="value.label" align="center" :prop="value.value" 
-                                            show-overflow-tooltip/>
-                                        </el-table>
-                                        <el-table v-show="!item.planInfo.isCheckData"  :data="item.planInfo.pageInfo.currentData"  style="width: 100%;margin-top: 8px;" height="calc(100% - 40px)" stripe highlight-current-row
-                                        @row-click="rowSelectPlan">
-                                            <template slot="empty">
-                                            <img src="@/assets/icon/null.png" alt="">
-                                            <p class="empty-p">暂无数据</p>
-                                            </template>
-                                            <el-table-column v-for="(value, index2) in item.planInfo.header" :key="index2" :label="value.label" align="center" :prop="value.value" 
-                                            show-overflow-tooltip/>
-                                        </el-table>
-                                        <el-row  style="margin-top: 8px;width:100%;">
-                                            <el-row style="margin-top: 8px;width:100%;">
-                                                <el-col :span="20">
-                                                    <template v-if="item.planInfo.isCheckData">
-                                                        <el-pagination v-show="item.planInfo.tableData&&item.planInfo.tableData.length>0" small background layout="total"  
-                                                        :total="item.planInfo.total"  />
-                                                    </template>
-                                                    <template v-else> 
-                                                        <el-pagination v-show="item.planInfo.tableData&&item.planInfo.tableData.length>0"   small background 
-                                                        @current-change="handleCurrentChange"
-                                                        :page-size="10"
-                                                        layout="total, prev, pager, next"
-                                                        :total="item.planInfo.total">
-                                                        </el-pagination>
-                                                    </template>
-                                                </el-col>
-                                            </el-row>
-                                        </el-row>
-                                    </div>
-                                </el-tab-pane>
-                            </template>
-                        </el-tabs>
-                    </div>
+                <div style="width: calc(100% - 130px); float: right">
+                  <ul class="sqlQueryUl" style="height: 120px">
+                    <li
+                      v-for="(item, id) in serverSearch.layerFix"
+                      :key="id"
+                      @click="addText('\'' + item + '\' ', item.length + 3)"
+                    >
+                      {{ item }}
+                    </li>
+                    <span class="none" ref="noneFixed"
+                      ><i class="el-icon-loading" style="display:none;"></i><span>请选择字段</span></span
+                    >
+                  </ul>
                 </div>
-            </tf-table-legend>
+              </div>
+            </tf-legend>
+            <tf-legend
+              class="legend_dept"
+              label="组合查询条件"
+              isopen="true"
+              style="clear: both"
+              title="所选属性对应的唯一值。"
+            >
+              <el-input
+                v-model="serverSearch.queText"
+                ref="textBox"
+                type="textarea"
+                :rows="4"
+                placeholder="请输入内容 如:OBJECTID > 0"
+              />
+              <el-row style="padding-top:10px">
+                <el-button size="mini" type="primary" @click="clearQueryCondition">清空</el-button>
+                <el-button size="mini" type="primary" @click="getGeoData2">查询</el-button>
+              </el-row>
+            </tf-legend>
+          </div>
         </div>
-    </el-dialog>
-    <el-dialog v-dialogDrag :visible.sync="percentageShow" append-to-body>
-        <el-progress :percentage="percentage"></el-progress>
-    </el-dialog>
-    <div style="width:100%;height:100%;display:none;" ref="cctvMap"></div>
-</div> 
+      </tf-table-legend>
+    </div>
+    <span slot="footer" class="dialog-footer">
+      <el-button v-show="pageShow.buttonShow" @click="cancelSubmit" size="small">取消</el-button>
+      <el-button
+        v-show="pageShow.buttonShow"
+        :disabled="pageShow.sendPlan"
+        type="primary"
+        size="small"
+        @click="taskArrangeSubmit()"
+        >确定</el-button
+      >
+    </span>
+  </el-dialog>
+  <el-dialog
+    v-dialogDrag
+    title="任务详细"
+    :visible.sync="pageShow.diaVisiable"
+    width="100%"
+    top="calc(50vh - 450px)"
+    @close="closeEvent"
+    append-to-body
+  >
+    <div style="width:100%;padding-right:8px;">
+      <tf-table-legend label="巡检信息" isopen="true" style="margin-top: 8px;">
+        <div style="width:100%; display: flex; flex-wrap: wrap;">
+          <div class="flexDiv" ref="xjType">
+            <span class="flexTitle">巡查类型：</span>
+            <div class="flexInfo"></div>
+          </div>
+          <div class="flexDiv" ref="xjGroup">
+            <span class="flexTitle">巡查组：</span>
+            <div class="flexInfo"></div>
+          </div>
+          <div class="flexDiv" ref="xjWorker">
+            <span class="flexTitle">巡查人：</span>
+            <div class="flexInfo"></div>
+          </div>
+          <div class="flexDiv" ref="xjBeginAndEndTime">
+            <span class="flexTitle">起止时间：</span>
+            <div class="flexInfo"></div>
+          </div>
+          <div class="flexDiv" ref="xjPlanNumber">
+            <span class="flexTitle">计划完成率：</span>
+            <div class="flexInfo"></div>
+          </div>
+        </div>
+      </tf-table-legend>
+      <tf-table-legend label="内容选取" isopen="true" style="margin-top: 8px;">
+        <div style="height: 650px;margin-top: 8px;">
+          <div ref="pickContent" style="width:100%; height: 90%;float:left;">
+            <div style="width:100%; height: calc(100% - 200px);" ref="mapBox1"></div>
+            <el-tabs
+              type="border-card"
+              v-model="planModel.input.currentPlanTypeName"
+              style="width:100%; height: 270px;"
+            >
+              <template v-for="(item,index) in planModel.input.planTypeInfo">
+                <el-tab-pane :key="index+''" :name="index+''" :label="item.layerName">
+                  <div style="width:100%; height: 200px;">
+                    <el-table
+                      v-show="item.planInfo.isCheckData"
+                      :data="item.planInfo.tableData"
+                      :ref="'datatable'+index"
+                      style="width: 100%;margin-top: 8px;"
+                      height="calc(100% - 40px)"
+                      stripe
+                      highlight-current-row
+                      @row-click="rowSelectPlan"
+                    >
+                      <template slot="empty">
+                        <img src="@/assets/icon/null.png" alt="" />
+                      </template>
+                      <el-table-column type="index" width="50" label="序号" />
+                      <el-table-column
+                        v-for="(value, index2) in item.planInfo.header"
+                        :key="index2"
+                        :label="value.label"
+                        align="center"
+                        :prop="value.value"
+                        show-overflow-tooltip
+                      />
+                    </el-table>
+                    <el-table
+                      v-show="!item.planInfo.isCheckData"
+                      :data="item.planInfo.pageInfo.currentData"
+                      style="width: 100%;margin-top: 8px;"
+                      height="calc(100% - 40px)"
+                      stripe
+                      highlight-current-row
+                      @row-click="rowSelectPlan"
+                    >
+                      <template slot="empty">
+                        <img src="@/assets/icon/null.png" alt="" />
+                      </template>
+                      <el-table-column
+                        v-for="(value, index2) in item.planInfo.header"
+                        :key="index2"
+                        :label="value.label"
+                        align="center"
+                        :prop="value.value"
+                        show-overflow-tooltip
+                      />
+                    </el-table>
+                    <el-row style="margin-top: 8px;width:100%;">
+                      <el-row style="margin-top: 8px;width:100%;">
+                        <el-col :span="20">
+                          <template v-if="item.planInfo.isCheckData">
+                            <el-pagination
+                              v-show="item.planInfo.tableData&&item.planInfo.tableData.length>0"
+                              small
+                              background
+                              layout="total"
+                              :total="item.planInfo.total"
+                            />
+                          </template>
+                          <template v-else>
+                            <el-pagination
+                              v-show="item.planInfo.tableData&&item.planInfo.tableData.length>0"
+                              small
+                              background
+                              @current-change="handleCurrentChange"
+                              :page-size="10"
+                              layout="total, prev, pager, next"
+                              :total="item.planInfo.total"
+                            >
+                            </el-pagination>
+                          </template>
+                        </el-col>
+                      </el-row>
+                    </el-row>
+                  </div>
+                </el-tab-pane>
+              </template>
+            </el-tabs>
+          </div>
+        </div>
+      </tf-table-legend>
+    </div>
+  </el-dialog>
+  <el-dialog v-dialogDrag :visible.sync="percentageShow" append-to-body>
+    <el-progress :percentage="percentage"></el-progress>
+  </el-dialog>
+  <div style="width:100%;height:100%;display:none;" ref="cctvMap"></div>
+</div>

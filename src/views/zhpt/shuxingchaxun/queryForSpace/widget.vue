@@ -1,6 +1,11 @@
 <template>
   <div style="padding: 0 8px;overflow-y:auto;" class="i-scrollbar">
-    <tf-legend class="legend_dept" label="设施统计" isopen="true" title="点击空间绘制按钮，在地图上绘制空间范围过滤查询。">
+    <tf-legend
+      class="legend_dept"
+      label="设施统计"
+      isopen="true"
+      title="点击空间绘制按钮，在地图上绘制空间范围过滤查询。"
+    >
       <el-button-group>
         <el-tooltip content="点选" placement="top" effect="light">
           <el-button size="mini" @click="spaceQuery('point')" plain>
@@ -41,8 +46,7 @@
         @row-click="showDetail"
       >
         <template slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+          <img src="@/assets/icon/null.png" alt="" />
         </template>
         <el-table-column align="center" prop="layer" label="图层名称" width="150" />
         <el-table-column align="center" prop="num" label="数量" />
@@ -70,8 +74,7 @@
         @row-click="showMoreInfo"
       >
         <template slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+          <img src="@/assets/icon/null.png" alt="" />
         </template>
         <el-table-column
           v-for="item in columns"
@@ -91,8 +94,7 @@
     >
       <el-table :data="attData" stripe max-height="400px">
         <template slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+          <img src="@/assets/icon/null.png" alt="" />
         </template>
         <el-table-column prop="att" label="属性" />
         <el-table-column prop="value" label="值" />
@@ -117,7 +119,6 @@ import { comSymbol } from '@/utils/comSymbol'
 import { fieldDoc, pointFieldDoc } from '@/views/zhpt/common/doc'
 import Feature from 'ol/Feature'
 import { mapUtil } from '../../common/mapUtil/common'
-
 
 export default {
   name: 'queryForSpace',
@@ -157,33 +158,32 @@ export default {
   },
   watch: {
     sidePanelOn(newTab, oldTab) {
-      if (newTab !== "queryForSpace") this.removeAll()
+      if (newTab !== 'queryForSpace') this.removeAll()
       else this.init()
     }
   },
   methods: {
-    init () {
+    init() {
       this.queryLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
       this.data.mapView.addLayer(this.queryLayer)
       this.lightLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle(true) })
       this.data.mapView.addLayer(this.lightLayer)
     },
     // 显示详情
-    showDetail (row) {
+    showDetail(row) {
       let features = row.features.features
       let tableName = row.tableName
-      this.featureData = features.map(fea => {
+      this.featureData = features.map((fea) => {
         return { ...fea.properties, geometry: fea.geometry, tableName }
       })
-      mapUtil.getFields(tableName).then(res => {
-        let cols = res.filter(i => {
-          return i.name.includes('唯一编号') 
-          || i.name.includes('类型')
-          || i.name.includes('类别')
-          || i.name.includes('地址')
+      mapUtil.getFields(tableName).then((res) => {
+        let cols = res.filter((i) => {
+          return (
+            i.name.includes('唯一编号') || i.name.includes('类型') || i.name.includes('类别') || i.name.includes('地址')
+          )
         })
-        this.columns = cols.map(item => {
-          return { label: item.name, prop: item.field,  }
+        this.columns = cols.map((item) => {
+          return { label: item.name, prop: item.field }
         })
       })
     },
@@ -193,31 +193,31 @@ export default {
       this.drawer && this.drawer.end()
       this.queryLayer && this.queryLayer.getSource().clear()
       this.drawer = new iDraw(this.data.mapView, type, {
-        endDrawCallBack: feature => {
+        endDrawCallBack: (feature) => {
           this.drawer.remove()
-          query(feature, res => this.addStatistic(res))
+          query(feature, (res) => this.addStatistic(res))
         },
         showCloser: false
       })
       this.drawer.start()
 
-      function query(feature, callback) { 
+      function query(feature, callback) {
         let geometry = null
         // 如果是点，缓冲距离
         if (type === 'point') {
           const dis = 1e-3
           feature = turf.buffer(turf.point(feature.getGeometry().getCoordinates()), dis, { units: 'kilometers' })
         }
-        new iQuery().spaceQuery(feature).then(resArr => {
+        new iQuery().spaceQuery(feature).then((resArr) => {
           console.log('空间查询')
           callback(resArr)
           let features = []
-          resArr.forEach(item => {
+          resArr.forEach((item) => {
             if (item && item.result.featureCount !== 0) {
               features.push(item.result.features)
             }
           })
-          features.forEach(feaJson => {
+          features.forEach((feaJson) => {
             let feas = new GeoJSON().readFeatures(feaJson)
             that.queryLayer.getSource().addFeatures(feas)
           })
@@ -225,19 +225,27 @@ export default {
       }
     },
     // 统计
-    addStatistic (dataArr) {
-      let lengthField = 'SMLENGTH', layerData = []
-      dataArr.forEach(item => {
+    addStatistic(dataArr) {
+      let lengthField = 'SMLENGTH',
+        layerData = []
+      dataArr.forEach((item) => {
         if (item && item.result.featureCount !== 0) {
-          let layer = item.layerName;
+          let layer = item.layerName
           let tableName = item.tableName
-          let num = item.result.featureCount;
-          let sumLength = item.result.features.features.reduce((prev, next) => {
-            return { properties: { "SMLENGTH": Number(prev.properties[lengthField] || 0) + Number(next.properties[lengthField] || 0) } }
-          }, { properties: { "SMLENGTH": 0 } })
+          let num = item.result.featureCount
+          let sumLength = item.result.features.features.reduce(
+            (prev, next) => {
+              return {
+                properties: {
+                  SMLENGTH: Number(prev.properties[lengthField] || 0) + Number(next.properties[lengthField] || 0)
+                }
+              }
+            },
+            { properties: { SMLENGTH: 0 } }
+          )
 
           let features = item.result.features
-          layerData.push({ layer, tableName, num, length: sumLength.properties["SMLENGTH"], features })
+          layerData.push({ layer, tableName, num, length: sumLength.properties['SMLENGTH'], features })
         }
       })
       this.layerData = layerData
@@ -252,7 +260,7 @@ export default {
     //   })
     // },
 
-    clearQuery() {  
+    clearQuery() {
       this.drawer && this.drawer.end()
       this.queryLayer && this.queryLayer.getSource().clear()
       this.drawer = null
@@ -270,28 +278,31 @@ export default {
       let view = this.data.mapView.getView()
       view.setCenter(center)
       view.setZoom(20)
-      // 
-      mapUtil.getFields(row.tableName).then(res => {
-        this.attData = res.map(item => {
+      //
+      mapUtil.getFields(row.tableName).then((res) => {
+        this.attData = res.map((item) => {
           return { value: row[item.field], att: item.name }
         })
       })
     },
-    removeAll () {
+    removeAll() {
       this.drawer && this.drawer.end()
       this.queryLayer && this.queryLayer.getSource().clear()
       this.lightLayer && this.lightLayer.getSource().clear()
       this.drawer = this.queryLayer = null
       this.$store.dispatch('map/handelClose', {
-        box:'HalfPanel',
+        box: 'HalfPanel',
         pathId: 'queryResultMore',
-        widgetid: 'HalfPanel',
-      });
+        widgetid: 'HalfPanel'
+      })
     },
-    gotoGeometry (geometry) {
+    gotoGeometry(geometry) {
       geometry = new GeoJSON().readGeometry(geometry)
       if (!this.lightLayer) {
-        this.lightLayer = new VectorLayer({ source: new VectorSource(), style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#FFFFB6') })
+        this.lightLayer = new VectorLayer({
+          source: new VectorSource(),
+          style: comSymbol.getAllStyle(5, '#FFFFB6', 5, '#FFFFB6')
+        })
         this.lightLayer.setZIndex(999)
         this.data.mapView.addLayer(this.lightLayer)
       }
@@ -307,8 +318,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "~@/styles/mixin.scss";
-  .i-scrollbar {
-    @include scrollBar;
-  }
+@import '~@/styles/mixin.scss';
+.i-scrollbar {
+  @include scrollBar;
+}
 </style>

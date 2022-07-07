@@ -19,7 +19,6 @@
         <!-- <el-table-column type="selection" width="65" align="center"></el-table-column> -->
         <template slot="empty">
           <img src="@/assets/icon/null.png" alt="" />
-          <p class="empty-p">暂无数据</p>
         </template>
         <el-table-column label="序号" width="80" align="center" type="index" />
         <el-table-column prop="notes" label="字典名称" show-overflow-tooltip align="center"></el-table-column>

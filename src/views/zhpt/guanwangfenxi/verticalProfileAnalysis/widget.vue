@@ -1,20 +1,25 @@
 <template>
   <div style="padding: 0 8px">
-    <tf-legend class="legend_dept" label="标记控制点" isopen="true" title="点击下方按钮后，在管线上依次选择两个点，系统将会分析两点间的管线。">
+    <tf-legend
+      class="legend_dept"
+      label="标记控制点"
+      isopen="true"
+      title="点击下方按钮后，在管线上依次选择两个点，系统将会分析两点间的管线。"
+    >
       <el-row style="margin-top: 8px">
         <el-button size="mini" type="primary" style="width: 100%" @click="drawPoint()" :disabled="analysisDisable">
-          <i v-if="analysisDisable" class="el-icon-loading"/>标记纵剖面控制点</el-button>
+          <i v-if="analysisDisable" class="el-icon-loading" />标记纵剖面控制点</el-button
+        >
       </el-row>
     </tf-legend>
     <tf-legend class="legend_dept" label="分析结果" isopen="true" title="分析结果。">
       <el-table :data="layerData" stripe style="width: 100%">
         <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
         <template slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+          <img src="@/assets/icon/null.png" alt="" />
         </template>
-        <el-table-column prop="name" label="图层名称" align="center"/>
-        <el-table-column prop="value" label="数量" align="center"/>
+        <el-table-column prop="name" label="图层名称" align="center" />
+        <el-table-column prop="value" label="数量" align="center" />
         <el-table-column label="操作" align="center">
           <template slot-scope="scope">
             <el-link type="primary" @click="showValue_new(scope.row)">查看</el-link>
@@ -33,16 +38,16 @@ import Echarts from 'echarts'
 import iDraw from '@/views/zhpt/common/mapUtil/draw'
 import iQuery from '@/views/zhpt/common/mapUtil/query'
 import iNetAnalysis from '@/views/zhpt/common/mapUtil/netAnalysis'
-import Overlay from 'ol/Overlay';
-import { Vector as VectorSource } from "ol/source";
-import { Vector as VectorLayer } from "ol/layer";
+import Overlay from 'ol/Overlay'
+import { Vector as VectorSource } from 'ol/source'
+import { Vector as VectorLayer } from 'ol/layer'
 import { comSymbol } from '../../../../utils/comSymbol'
-import { unByKey } from 'ol/Observable';
+import { unByKey } from 'ol/Observable'
 import { Style, Text } from 'ol/style'
 import { Feature } from 'ol'
 import * as turf from '@turf/turf'
 import GeoJSON from 'ol/format/GeoJSON'
-import * as olSphere from 'ol/sphere';
+import * as olSphere from 'ol/sphere'
 import { LineString } from 'ol/geom'
 import { fieldDoc } from '@/views/zhpt/common/doc'
 import { mapUtil } from '../../common/mapUtil/common'
@@ -50,7 +55,7 @@ import { mapUtil } from '../../common/mapUtil/common'
 export default {
   name: 'VerticalProfileAnalysis',
   components: { tfLegend },
-  props: { 
+  props: {
     param: Object,
     data: Object
   },
@@ -59,7 +64,7 @@ export default {
       analysisDisable: false,
       layerData: [],
 
-      // 
+      //
       drawStatus: false, // 绘制
       tip: null,
       moveEvent: null,
@@ -69,7 +74,11 @@ export default {
       endLine: null
     }
   },
-  computed: { sidePanelOn() { return this.$store.state.map.P_editableTabsValue } },
+  computed: {
+    sidePanelOn() {
+      return this.$store.state.map.P_editableTabsValue
+    }
+  },
   watch: {
     sidePanelOn(newTab, oldTab) {
       if (newTab !== 'verticalProfileAnalysis') this.removeAll()
@@ -80,7 +89,7 @@ export default {
     this.init()
   },
   methods: {
-    init () {
+    init() {
       this.mapView = this.data.mapView
       this.vectorLayer = new VectorLayer({ source: new VectorSource(), style: mapUtil.getCommonStyle() })
       this.mapView.addLayer(this.vectorLayer)
@@ -89,14 +98,14 @@ export default {
       // 先关闭地图点击事件
       this.data.that.setPopupSwitch(false)
     },
-    drawPoint () {
+    drawPoint() {
       console.log('纵剖面分析')
       this.drawer && this.drawer.end()
       this.startLine = this.endLine = null
       this.vectorLayer.getSource().clear()
       this.lightLayer.getSource().clear()
       this.closePanel()
-      this.addMapTip("起点")
+      this.addMapTip('起点')
 
       let startPoint, endPoint
       this.drawer = new iDraw(this.mapView, 'point', {
@@ -121,7 +130,7 @@ export default {
                 this.drawer.clear()
               }
             } else {
-              this.$message.error("该点无管线数据")
+              this.$message.error('该点无管线数据')
               this.drawer.clear()
             }
           } else {
@@ -129,10 +138,10 @@ export default {
             if (startLine) {
               startPoint = feature.getGeometry().getCoordinates()
               this.startLine = startLine
-              this.addMapTip("终点")
+              this.addMapTip('终点')
               this.vectorLayer.getSource().addFeature(new GeoJSON().readFeature(this.startLine.features[0]))
             } else {
-              this.$message.error("该点无管线数据")
+              this.$message.error('该点无管线数据')
               this.drawer.clear()
             }
           }
@@ -140,7 +149,7 @@ export default {
       })
       this.drawer.start()
     },
-    addMapTip (tipText) {
+    addMapTip(tipText) {
       this.moveEvent && unByKey(this.moveEvent)
       this.tip && this.tip.setPosition(null)
       this.moveEvent = this.tip = null
@@ -151,105 +160,140 @@ export default {
         element: element,
         autoPan: false,
         offset: [0, -10],
-        positioning: "bottom-center",
-        id: "tip",
+        positioning: 'bottom-center',
+        id: 'tip',
         stopEvent: false //停止事件传播到地图
-      });
+      })
       this.mapView.addOverlay(this.tip)
-      this.moveEvent = this.mapView.on("pointermove", evt => {
+      this.moveEvent = this.mapView.on('pointermove', (evt) => {
         this.tip.setPosition(evt.coordinate)
       })
     },
     // 点查询
-    getPipeLineByPoint (feature) {
-      let queryFeature = new GeoJSON().readFeature(turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 2e-3, { units: 'kilometers' }))
+    getPipeLineByPoint(feature) {
+      let queryFeature = new GeoJSON().readFeature(
+        turf.buffer(turf.point(feature.getGeometry().getCoordinates()), 2e-3, { units: 'kilometers' })
+      )
       let dataSetInfo = [
-        { label: "排水管道", name: "TF_PSPS_PIPE_B",},
-        { label: "给水管道", name: 'TF_JSJS_PIPE_B' },
-        { label: "燃气管道", name: 'TF_RQTQ_PIPE_B' },
-        { label: "电力路灯", name: 'TF_DLLD_PIPE_B' },
-        { label: "中国电信", name: 'TF_TXDX_PIPE_B' },
+        { label: '排水管道', name: 'TF_PSPS_PIPE_B' },
+        { label: '给水管道', name: 'TF_JSJS_PIPE_B' },
+        { label: '燃气管道', name: 'TF_RQTQ_PIPE_B' },
+        { label: '电力路灯', name: 'TF_DLLD_PIPE_B' },
+        { label: '中国电信', name: 'TF_TXDX_PIPE_B' }
       ]
-      return new Promise(resolve => {
-        new iQuery({ dataSetInfo }).spaceQuery(queryFeature).then(resArr => {
-        let featureObj = resArr.find(res => res.result.featureCount !== 0)
-        if (featureObj) {
-          featureObj.result.features.type = featureObj.layerName
-          resolve(featureObj.result.features)
-        }
-        else resolve(null)
-      })
+      return new Promise((resolve) => {
+        new iQuery({ dataSetInfo }).spaceQuery(queryFeature).then((resArr) => {
+          let featureObj = resArr.find((res) => res.result.featureCount !== 0)
+          if (featureObj) {
+            featureObj.result.features.type = featureObj.layerName
+            resolve(featureObj.result.features)
+          } else resolve(null)
+        })
       })
     },
     // 显示连通信息
-    showConnetPipe (startId, endId) {
+    showConnetPipe(startId, endId) {
       console.log('连通')
       let that = this
       if (!(startId && endId)) return this.$message.error('管线数据不完整, 无法执行分析')
 
-      new iNetAnalysis().findPath(startId, endId).then(res => {
+      new iNetAnalysis().findPath(startId, endId).then((res) => {
         if (res) {
           if (res.result.pathList.length !== 0) {
             let pathList = res.result.pathList
             let pathFeatures = []
-            pathList.forEach(item => {
+            pathList.forEach((item) => {
               this.vectorLayer.getSource().addFeatures(new GeoJSON().readFeatures(item.edgeFeatures))
-              pathFeatures = [ ...pathFeatures, ...item.edgeFeatures.features ]
+              pathFeatures = [...pathFeatures, ...item.edgeFeatures.features]
             })
             let center = pathFeatures[Math.floor(pathFeatures.length / 2)].geometry.coordinates
             this.openBox(pathFeatures, [(center[0][0] + center[1][0]) / 2, (center[0][1] + center[1][1]) / 2])
 
-            this.layerData = [{ name: "排水管道", value: pathFeatures.length, pathFeatures }]
+            this.layerData = [{ name: '排水管道', value: pathFeatures.length, pathFeatures }]
           }
-        } else this.$message.error("分析失败, 管线间不连通")  
+        } else this.$message.error('分析失败, 管线间不连通')
       })
     },
 
     openBox(features, mapCenter) {
-      let xminDistance = 0, xmaxDistance = 1, xmin = 0, xmax = 0
-      let dataYPipe = [], dataYGround = []
-      const SH = "IN_ELEV", SH2 = 'START_HEIGHT',
-            EH = 'OUT_ELEV', EH2 = 'END_HEIGHT',
-            SD = "S_DEEP", SD2 = '',
-            ED = 'E_DEEP', ED2 = ''
+      let xminDistance = 0,
+        xmaxDistance = 1,
+        xmin = 0,
+        xmax = 0
+      let dataYPipe = [],
+        dataYGround = []
+      const SH = 'IN_ELEV',
+        SH2 = 'START_HEIGHT',
+        EH = 'OUT_ELEV',
+        EH2 = 'END_HEIGHT',
+        SD = 'S_DEEP',
+        SD2 = '',
+        ED = 'E_DEEP',
+        ED2 = ''
 
-        let startX = 0
-        console.log('数据不完整')
-        for (let len = features.length, i = 0; i < len; i++) {
-          let fea = features[i], { properties, geometry } = fea
-          let sheight = properties[SH] || properties[SH2], 
-              eheight = properties[EH] || properties[EH2],
-              sdeep = properties[SD] || properties[SD2], 
-              edeep = properties[ED] || properties[ED2]
-          if (!(sheight && eheight && sdeep && edeep)) return this.$message.error("管线数据不完整")
-          
-          let length = olSphere.getLength(new LineString(geometry.coordinates), { projection: "EPSG:4326" })
-          startX = Math.round((startX + length) * 1000) / 1000
-          xmax = Math.max(startX, xmax)
+      let startX = 0
+      console.log('数据不完整')
+      for (let len = features.length, i = 0; i < len; i++) {
+        let fea = features[i],
+          { properties, geometry } = fea
+        let sheight = properties[SH] || properties[SH2],
+          eheight = properties[EH] || properties[EH2],
+          sdeep = properties[SD] || properties[SD2],
+          edeep = properties[ED] || properties[ED2]
+        if (!(sheight && eheight && sdeep && edeep)) return this.$message.error('管线数据不完整')
 
-          dataYPipe.push([Number(startX).toFixed(3), Number(eheight).toFixed(3), Number(edeep).toFixed(3)])
-          dataYGround.push([Number(startX), Math.round((Number(eheight) + Number(edeep)) * 1000) / 1000 ])
-        }
-        // 添加起点管线
-        let firstSH = features[0].properties[SH] || features[0].properties[SH2],
-            firstSD = features[0].properties[SD] || features[0].properties[SD2]
+        let length = olSphere.getLength(new LineString(geometry.coordinates), { projection: 'EPSG:4326' })
+        startX = Math.round((startX + length) * 1000) / 1000
+        xmax = Math.max(startX, xmax)
+
+        dataYPipe.push([Number(startX).toFixed(3), Number(eheight).toFixed(3), Number(edeep).toFixed(3)])
+        dataYGround.push([Number(startX), Math.round((Number(eheight) + Number(edeep)) * 1000) / 1000])
+      }
+      // 添加起点管线
+      let firstSH = features[0].properties[SH] || features[0].properties[SH2],
+        firstSD = features[0].properties[SD] || features[0].properties[SD2]
       dataYPipe.unshift([0, firstSH, firstSD])
-      dataYGround.unshift([0, Math.round((Number(firstSH) + Number(firstSD)) * 1000) / 1000 ])
+      dataYGround.unshift([0, Math.round((Number(firstSH) + Number(firstSD)) * 1000) / 1000])
 
       let chartOption = {
-        title: { text: '纵剖面分析', left: 'center' }, 
-        tooltip: { trigger: 'axis', axisPointer: { show: true, type: 'cross', lineStyle: { type: 'dashed' } }, 
+        title: { text: '纵剖面分析', left: 'center' },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { show: true, type: 'cross', lineStyle: { type: 'dashed' } },
           formatter: (params) => {
             return `距离：${params[0].data[0]}m<br/>管线高程：${params[0].data[1]}m<br/>埋深：${params[0].data[2]}m`
           }
         },
         grid: { right: 60 },
-        xAxis: { name: '距离(m)', max: parseFloat((xmax + xmaxDistance).toFixed(2)), min: parseFloat((xmin - xminDistance).toFixed(2)), scale: true, boundaryGap: false, }, dataZoom: [{ minSpan:1, type: 'slider' }], toolbox: { feature: { saveAsImage: {} } },
+        xAxis: {
+          name: '距离(m)',
+          max: parseFloat((xmax + xmaxDistance).toFixed(2)),
+          min: parseFloat((xmin - xminDistance).toFixed(2)),
+          scale: true,
+          boundaryGap: false
+        },
+        dataZoom: [{ minSpan: 1, type: 'slider' }],
+        toolbox: { feature: { saveAsImage: {} } },
         legend: { data: ['管线高程', '地面高程'], left: '0' },
         yAxis: { name: '高程(m)', type: 'value', scale: true },
         series: [
-          { name: '管线高程', smooth: false, data: dataYPipe, type: 'line', symbolSize: 6, itemStyle:{ color: '#f00', normal: { lineStyle: { width: 3 } } }},
-          { name: '地面高程', smooth: false, data: dataYGround, type: 'line', symbolSize: 4, areaStyle: { color:'#ECF2FF'}, itemStyle:{ borderColor:'#2D74E7', color: '#2D74E7' } }
+          {
+            name: '管线高程',
+            smooth: false,
+            data: dataYPipe,
+            type: 'line',
+            symbolSize: 6,
+            itemStyle: { color: '#f00', normal: { lineStyle: { width: 3 } } }
+          },
+          {
+            name: '地面高程',
+            smooth: false,
+            data: dataYGround,
+            type: 'line',
+            symbolSize: 4,
+            areaStyle: { color: '#ECF2FF' },
+            itemStyle: { borderColor: '#2D74E7', color: '#2D74E7' }
+          }
         ]
       }
 
@@ -260,46 +304,45 @@ export default {
         param: { that: this, title: '纵剖面分析', mapCenter, tabs: [{ option: chartOption, title: '纵剖面分析结果' }] }
       })
     },
-    showValue_new (row) {
+    showValue_new(row) {
       console.log('详情')
       let features = row.pathFeatures
       let tableData = row.tableName
-      mapUtil.getFields(tableData).then(res => {
-        let colsData = res.map(item => {
+      mapUtil.getFields(tableData).then((res) => {
+        let colsData = res.map((item) => {
           return { prop: item.field, label: item.name }
         })
-        let rowData = features.map(fea => {
+        let rowData = features.map((fea) => {
           return { ...fea.properties, geometry: fea.geometry }
         })
         this.$store.dispatch('map/changeMethod', {
-          pathId: 'queryResultMore', 
-          widgetid: 'HalfPanel', 
-          label: '详情', 
+          pathId: 'queryResultMore',
+          widgetid: 'HalfPanel',
+          label: '详情',
           param: { rootPage: this, data: rowData || [], colsData }
         })
       })
-
     },
-    gotoGeometry (geometry) {
+    gotoGeometry(geometry) {
       let source = this.lightLayer.getSource()
       source.clear()
       let feature = new Feature({ geometry: new LineString(geometry.coordinates) })
       source.addFeature(feature)
     },
 
-    closePanel () {
+    closePanel() {
       this.$store.dispatch('map/handelClose', {
-        box:'HalfPanel',
+        box: 'HalfPanel',
         pathId: 'queryResultMore',
-        widgetid: 'HalfPanel',
-      });
+        widgetid: 'HalfPanel'
+      })
       this.$store.dispatch('map/handelClose', {
-        box:'FloatPanel',
+        box: 'FloatPanel',
         pathId: 'analysisBox',
-        widgetid: 'FloatPanel',
+        widgetid: 'FloatPanel'
       })
     },
-    removeAll () {
+    removeAll() {
       this.drawer && this.drawer.end()
       this.mapView.removeLayer(this.vectorLayer)
       this.mapView.removeLayer(this.lightLayer)

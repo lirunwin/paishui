@@ -11,7 +11,7 @@
             <div class="demo-input-suffix">
               <el-row>
                 <el-col :span="5">
-                  <span>名称:</span>
+                  <span class="input-title">名称:</span>
                 </el-col>
                 <el-col :span="16">
                   <el-input v-model="serviceName" size="small" placeholder="请输入内容" clearable />
@@ -23,7 +23,7 @@
             <div class="demo-input-suffix">
               <el-row>
                 <el-col :span="5">
-                  <span>编码:</span>
+                  <span class="input-title">编码:</span>
                 </el-col>
                 <el-col :span="16">
                   <el-input v-model="serviceCode" placeholder="请输入内容" size="small" clearable />
@@ -78,7 +78,7 @@
             <div class="demo-input-suffix">
               <el-row>
                 <el-col :span="5">
-                  <span>名称:</span>
+                  <span class="input-title">名称:</span>
                 </el-col>
                 <el-col :span="15">
                   <el-input v-model="sourceName" size="small" placeholder="请输入内容" clearable />
@@ -90,7 +90,7 @@
             <div class="demo-input-suffix">
               <el-row>
                 <el-col :span="8">
-                  <span>资源值:</span>
+                  <span class="input-title">资源值:</span>
                 </el-col>
                 <el-col :span="15">
                   <el-input v-model="sourceValue" size="small" placeholder="请输入内容" clearable />

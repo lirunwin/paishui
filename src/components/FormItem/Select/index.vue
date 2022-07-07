@@ -84,13 +84,15 @@ export default {
   }
 }
 </script>
-<style lang='scss'>
+<style lang="scss">
 .select_item {
   height: 32px;
+  font-size: $--font-size-base;
   .title_box {
     float: left;
     width: 30%;
     text-align: right;
+    color: $--color-text-regular;
   }
 }
 .required-class {

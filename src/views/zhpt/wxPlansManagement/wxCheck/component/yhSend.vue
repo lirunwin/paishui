@@ -2,37 +2,94 @@
   <div id="hiddendangerAuditAssignment" class="hiddendangerAuditAssignment">
     <el-row>
       <span class="title2">管线名称</span>
-      <el-input style="display: inline-block; margin-left: 5px; width:200px;" size="small" placeholder="请输入管线名称" v-model="problems.pipeName" />
+      <el-input
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        size="small"
+        placeholder="请输入管线名称"
+        v-model="problems.pipeName"
+      />
       <span class="title2">上报时间</span>
-      <el-date-picker v-model="problems.startTime" style="width:140px;" size="small" type="date" placeholder="请选择开始时间" :picker-options="startOptions" value-format="yyyy-MM-dd" /> ~
-      <el-date-picker v-model="problems.endTime" style="width:140px;" size="small" type="date" placeholder="请选择结束时间" :picker-options="endOptions" value-format="yyyy-MM-dd" />
+      <el-date-picker
+        v-model="problems.startTime"
+        style="width:140px;"
+        size="small"
+        type="date"
+        placeholder="请选择开始时间"
+        :picker-options="startOptions"
+        value-format="yyyy-MM-dd"
+      />
+      ~
+      <el-date-picker
+        v-model="problems.endTime"
+        style="width:140px;"
+        size="small"
+        type="date"
+        placeholder="请选择结束时间"
+        :picker-options="endOptions"
+        value-format="yyyy-MM-dd"
+      />
       <!-- <div>
         <el-date-picker size="small" v-model="problems.reportTime" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期">
         </el-date-picker>
       </div> -->
       <span class="title2">地址</span>
-      <el-input style="display: inline-block; margin-left: 5px; width:200px;" size="small" placeholder="请输入地址" v-model="problems.address" />
+      <el-input
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        size="small"
+        placeholder="请输入地址"
+        v-model="problems.address"
+      />
       <el-button type="primary" size="small" @click="dangerCheckArrangeQuery()">查询</el-button>
       <!-- <el-button type="primary" size="small" :disabled="auditDisable" @click="reportClick()">上报审核</el-button> -->
     </el-row>
     <div class="datatable">
-      <el-table border ref="table1" class="mapTable" stripe style="width: 100%;margin-top: 8px;" height="100%" :data="hiddendangerData" @row-dblclick="dblclick" :header-cell-style="{'text-align':'center'}">
+      <el-table
+        border
+        ref="table1"
+        class="mapTable"
+        stripe
+        style="width: 100%;margin-top: 8px;"
+        height="100%"
+        :data="hiddendangerData"
+        @row-dblclick="dblclick"
+        :header-cell-style="{ 'text-align': 'center' }"
+      >
         <template slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+          <img src="@/assets/icon/null.png" alt="" />
         </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" label="序号" width="80px" align="center">
           <template slot-scope="scope">
-            <span>{{((pageInfo.current - 1) * pageInfo.size) + (scope.$index+1) }}</span>
+            <span>{{ (pageInfo.current - 1) * pageInfo.size + (scope.$index + 1) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="pipeName" :formatter="formatter" sortable label="管线名称" width="200px" align="left" />
         <el-table-column prop="address" :formatter="formatter" sortable label="地址" align="left" />
         <el-table-column prop="typeName" :formatter="formatter" sortable label="隐患原因" width="180px" align="left" />
-        <el-table-column prop="toubleRangeName" :formatter="formatter" sortable label="隐患等级" width="180px" align="left" />
-        <el-table-column prop="submitTime" :formatter="formatter" sortable label="上报时间" width="200px" align="center" />
-        <el-table-column prop="submitUserName" :formatter="formatter" sortable label="上报人员" width="140px" align="center" />
+        <el-table-column
+          prop="toubleRangeName"
+          :formatter="formatter"
+          sortable
+          label="隐患等级"
+          width="180px"
+          align="left"
+        />
+        <el-table-column
+          prop="submitTime"
+          :formatter="formatter"
+          sortable
+          label="上报时间"
+          width="200px"
+          align="center"
+        />
+        <el-table-column
+          prop="submitUserName"
+          :formatter="formatter"
+          sortable
+          label="上报人员"
+          width="140px"
+          align="center"
+        />
         <el-table-column prop="isSubmit" :formatter="formatter" sortable label="状态" width="140px" align="center" />
         <el-table-column prop="state" :formatter="formatter" sortable label="是否为隐患" width="140px" align="center" />
         <el-table-column label="操作" width="100px" align="center">
@@ -44,7 +101,15 @@
       </el-table>
     </div>
     <div class="pagination-area">
-      <el-pagination layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10,20,30,50,100,1000]" :page-size="pageInfo.size" :current-page="pageInfo.current" :total="pageInfo.tableTotal" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <el-pagination
+        layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[10, 20, 30, 50, 100, 1000]"
+        :page-size="pageInfo.size"
+        :current-page="pageInfo.current"
+        :total="pageInfo.tableTotal"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
     <el-dialog v-dialogDrag :visible.sync="auditDialog" title="上报审核" width="1400px" top="5vh" append-to-body>
       <div style="width:100%;padding-right:8px;" ref="parentDiv">
@@ -53,7 +118,14 @@
             <div class="flexDiv">
               <span class="flexTitle">审核结果：</span>
               <div class="flexInfo">
-                <el-select v-model="auditForm.auditResult" style="width:100%;" size="small" placeholder="请选择审核结果" @change="changeAuditResult" clearable>
+                <el-select
+                  v-model="auditForm.auditResult"
+                  style="width:100%;"
+                  size="small"
+                  placeholder="请选择审核结果"
+                  @change="changeAuditResult"
+                  clearable
+                >
                   <el-option v-for="item of auditStatus" :key="item.id" :value="item.id" :label="item.name"></el-option>
                 </el-select>
               </div>
@@ -61,8 +133,19 @@
             <div class="flexDiv" v-show="isrespect === true">
               <span class="flexTitle">是否需人员巡查：</span>
               <div class="flexInfo">
-                <el-select v-model="auditForm.isrespect" style="width:100%;" size="small" @change="changeIsRespect" clearable>
-                  <el-option v-for="item of respectStatus" :key="item.id" :value="item.id" :label="item.name"></el-option>
+                <el-select
+                  v-model="auditForm.isrespect"
+                  style="width:100%;"
+                  size="small"
+                  @change="changeIsRespect"
+                  clearable
+                >
+                  <el-option
+                    v-for="item of respectStatus"
+                    :key="item.id"
+                    :value="item.id"
+                    :label="item.name"
+                  ></el-option>
                 </el-select>
               </div>
             </div>
@@ -77,30 +160,65 @@
             <div class="flexDivMax">
               <span class="flexTitle">审核意见：</span>
               <div class="flexInfo">
-                <el-input v-model="auditForm.auditNotes" type="textarea" placeholder="请输入审核意见" size="small"></el-input>
+                <el-input
+                  v-model="auditForm.auditNotes"
+                  type="textarea"
+                  placeholder="请输入审核意见"
+                  size="small"
+                ></el-input>
               </div>
             </div>
             <div class="flexDiv" v-show="isxjshow === true">
               <span class="flexTitle">巡检组：</span>
               <div class="flexInfo">
                 <el-select v-model="auditForm.inspectGroupId" size="small" @change="changeGroupData" clearable>
-                  <el-option v-for="item of groupData" :key="item.groupId" :value="item.groupId" :label="item.groupName"></el-option>
+                  <el-option
+                    v-for="item of groupData"
+                    :key="item.groupId"
+                    :value="item.groupId"
+                    :label="item.groupName"
+                  ></el-option>
                 </el-select>
               </div>
             </div>
             <div class="flexDiv" v-show="isxjshow === true">
               <span class="flexTitle">巡查人：</span>
               <div class="flexInfo">
-                <el-select v-model="auditForm.inspectUsers" filterable style="width:100%;" size="small" multiple collapse-tags clearable>
-                  <el-option v-for="item of userData" :key="item.userId" :value="item.userId" :label="item.userIdName"></el-option>
+                <el-select
+                  v-model="auditForm.inspectUsers"
+                  filterable
+                  style="width:100%;"
+                  size="small"
+                  multiple
+                  collapse-tags
+                  clearable
+                >
+                  <el-option
+                    v-for="item of userData"
+                    :key="item.userId"
+                    :value="item.userId"
+                    :label="item.userIdName"
+                  ></el-option>
                 </el-select>
               </div>
             </div>
             <div class="flexDiv" v-show="isxjshow === true">
               <span class="flexTitle">巡查周期：</span>
               <div class="flexInfo" style="display: inline-flex;">
-                <el-select v-model="auditForm.periodId" style="width:100%;" size="small" placeholder="请选择巡查周期" clearable @change="changePeriodId">
-                  <el-option v-for="item of periodData" :key="item.id" :value="item.id" :label="item.periodName"></el-option>
+                <el-select
+                  v-model="auditForm.periodId"
+                  style="width:100%;"
+                  size="small"
+                  placeholder="请选择巡查周期"
+                  clearable
+                  @change="changePeriodId"
+                >
+                  <el-option
+                    v-for="item of periodData"
+                    :key="item.id"
+                    :value="item.id"
+                    :label="item.periodName"
+                  ></el-option>
                 </el-select>
                 <!-- <el-input v-if="auditForm.periodId == 4"  v-model="auditForm.intervalDay" size="small">
                       <template slot="append">天一巡</template>
@@ -110,14 +228,57 @@
             <div class="flexDiv" v-show="isxjshow === true">
               <span class="flexTitle">起止时间：</span>
               <div class="flexInfo">
-                <el-date-picker v-model="auditForm.planBegindate" v-show="dateShow.moreDate" @change='changeCustomS' style="width: 132px;" type="date" size="small" placeholder="请选择开始时间" :picker-options="auditForm.planBegindatePick" value-format="yyyy-MM-dd" clearable /><span v-show="dateShow.moreDate"> ~</span>
-                <el-date-picker v-model="auditForm.planEnddate" v-show="dateShow.moreDate" @change='changeCustomE' style="width: 132px;" type="date" size="small" placeholder="请选择结束时间" :picker-options="auditForm.planEnddatePick" value-format="yyyy-MM-dd" clearable />
-                <el-date-picker v-model="auditForm.planBegindate2" v-show="dateShow.singeDate" style="width: 132px;" type="month" :picker-options="auditForm.planBegindate2Pick" size="small" placeholder="选择巡检月份" value-format="yyyy-MM" clearable /> <span v-show="dateShow.singeDate"> ~</span>
-                <el-date-picker v-model="auditForm.planEnddate2" v-show="dateShow.singeDate" style="width: 132px;" type="month" :picker-options="auditForm.planEnddate2Pick" size="small" placeholder="选择巡检月份" value-format="yyyy-MM" clearable />
-                <!-- <el-date-picker  v-show="dateShow.moreDate"  v-model="auditForm.inspectionTime"  style="width:100%;" type="daterange" range-separator="至" 
+                <el-date-picker
+                  v-model="auditForm.planBegindate"
+                  v-show="dateShow.moreDate"
+                  @change="changeCustomS"
+                  style="width: 132px;"
+                  type="date"
+                  size="small"
+                  placeholder="请选择开始时间"
+                  :picker-options="auditForm.planBegindatePick"
+                  value-format="yyyy-MM-dd"
+                  clearable
+                /><span v-show="dateShow.moreDate"> ~</span>
+                <el-date-picker
+                  v-model="auditForm.planEnddate"
+                  v-show="dateShow.moreDate"
+                  @change="changeCustomE"
+                  style="width: 132px;"
+                  type="date"
+                  size="small"
+                  placeholder="请选择结束时间"
+                  :picker-options="auditForm.planEnddatePick"
+                  value-format="yyyy-MM-dd"
+                  clearable
+                />
+                <el-date-picker
+                  v-model="auditForm.planBegindate2"
+                  v-show="dateShow.singeDate"
+                  style="width: 132px;"
+                  type="month"
+                  :picker-options="auditForm.planBegindate2Pick"
+                  size="small"
+                  placeholder="选择巡检月份"
+                  value-format="yyyy-MM"
+                  clearable
+                />
+                <span v-show="dateShow.singeDate"> ~</span>
+                <el-date-picker
+                  v-model="auditForm.planEnddate2"
+                  v-show="dateShow.singeDate"
+                  style="width: 132px;"
+                  type="month"
+                  :picker-options="auditForm.planEnddate2Pick"
+                  size="small"
+                  placeholder="选择巡检月份"
+                  value-format="yyyy-MM"
+                  clearable
+                />
+                <!-- <el-date-picker  v-show="dateShow.moreDate"  v-model="auditForm.inspectionTime"  style="width:100%;" type="daterange" range-separator="至"
                     start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="pickerOptions" size="small"   clearable>
                   </el-date-picker>
-                  <el-date-picker v-show="dateShow.singeDate" v-model="auditForm.inspectionTime" type="month"  style="width:100%;" 
+                  <el-date-picker v-show="dateShow.singeDate" v-model="auditForm.inspectionTime" type="month"  style="width:100%;"
                       value-format="yyyy-MM" placeholder="选择巡检月份" :picker-options="pickerOptions"  size="small"  clearable>
                   </el-date-picker> -->
               </div>
@@ -125,8 +286,16 @@
             <div class="flexDiv" v-show="isxjshow === true">
               <span class="flexTitle">计划完成率：</span>
               <div class="flexInfo">
-                <el-input type='number' v-model="auditForm.planPercent" oninput="if(value>100)value=100;if((value+'').indexOf('0')==0)value=0;if(value<0)value=0" style="width:100%;" size="small">
-                  <template slot="append">%</template>
+                <el-input
+                  type="number"
+                  v-model="auditForm.planPercent"
+                  oninput="if(value>100)value=100;if((value+'').indexOf('0')==0)value=0;if(value<0)value=0"
+                  style="width:100%;"
+                  size="small"
+                >
+                  <template slot="append"
+                    >%</template
+                  >
                 </el-input>
               </div>
             </div>
@@ -138,96 +307,102 @@
             <div class="flexDiv">
               <span class="flexTitle">管线名称：</span>
               <div class="flexInfo">
-                {{reportDetailForm.pipeName}}
+                {{ reportDetailForm.pipeName }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">隐患部位：</span>
               <div class="flexInfo">
-                {{reportDetailForm.location}}
+                {{ reportDetailForm.location }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">隐患原因：</span>
               <div class="flexInfo">
-                {{reportDetailForm.typeName}}
+                {{ reportDetailForm.typeName }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">隐患等级：</span>
               <div class="flexInfo">
-                {{reportDetailForm.toubleRangeName}}
+                {{ reportDetailForm.toubleRangeName }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">隐患上报时间：</span>
               <div class="flexInfo">
-                {{reportDetailForm.submitTime}}
+                {{ reportDetailForm.submitTime }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">是否进入工地管理：</span>
               <div class="flexInfo">
-                {{reportDetailForm.isbuild}}
+                {{ reportDetailForm.isbuild }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">施工单位名称：</span>
               <div class="flexInfo">
-                {{reportDetailForm.sgdw}}
+                {{ reportDetailForm.sgdw }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">施工负责人：</span>
               <div class="flexInfo">
-                {{reportDetailForm.gdfzr}}
+                {{ reportDetailForm.gdfzr }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">联系电话：</span>
               <div class="flexInfo">
-                {{reportDetailForm.phone}}
+                {{ reportDetailForm.phone }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">隐患上报人：</span>
-              <div class='flexInfo'>
-                {{reportDetailForm.submitUserName}}
+              <div class="flexInfo">
+                {{ reportDetailForm.submitUserName }}
               </div>
             </div>
             <div class="flexDiv">
               <span class="flexTitle">隐患上报时间：</span>
-              <div class='flexInfo'>
-                {{reportDetailForm.submitTime}}
+              <div class="flexInfo">
+                {{ reportDetailForm.submitTime }}
               </div>
             </div>
             <div class="flexDivMax">
               <span class="flexTitle">地址：</span>
               <div class="flexInfo">
-                {{reportDetailForm.address}}
+                {{ reportDetailForm.address }}
               </div>
             </div>
             <div class="flexDivMax">
               <span class="flexTitle">消除隐患建议：</span>
               <div class="flexInfo">
-                {{reportDetailForm.suggest}}
+                {{ reportDetailForm.suggest }}
               </div>
             </div>
             <div class="flexDivMax">
               <span class="flexTitle">隐患原因备注：</span>
               <div class="flexInfo">
-                {{reportDetailForm.notes}}
+                {{ reportDetailForm.notes }}
               </div>
             </div>
             <div class="flexDivFile">
               <span class="flexTitle">附件：</span>
               <div class="flexInfo">
                 <div style="float:left;">
-                  <el-image v-for="(item,index) in filelist" :key="index" :src="item" :preview-src-list="filelist">
+                  <el-image v-for="(item, index) in filelist" :key="index" :src="item" :preview-src-list="filelist">
                   </el-image>
                 </div>
                 <div>
-                  <audio v-for="(item,index) in audioFileList" :key="index" controls='controls' preload='auto' :src="item" />
+                  <audio
+                    v-for="(item, index) in audioFileList"
+                    :key="index"
+                    controls="controls"
+                    preload="auto"
+                    :src="item"
+                  />
                 </div>
               </div>
             </div>
@@ -254,7 +429,7 @@
   </div>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 /**
  * @description 该功能为巡检子系统，巡检管理模块中的巡检计划审核功能
  * @author 梁罗、李顺<876330731@qq.com>
@@ -365,15 +540,9 @@ export default class HiddendangerAuditAssignment extends Vue {
   auditDialog = false
 
   //审核结果码表
-  auditStatus = [
-    { id: '1', name: '通过' },
-    { id: '2', name: '未通过' }
-  ]
+  auditStatus = [{ id: '1', name: '通过' }, { id: '2', name: '未通过' }]
   //是否需要人员巡查
-  respectStatus = [
-    { id: '0', name: '否' },
-    { id: '1', name: '是' }
-  ]
+  respectStatus = [{ id: '0', name: '否' }, { id: '1', name: '是' }]
   dispatchingtatus = [
     //码表 => 是否需要派工
     { id: '0', name: '否' },
@@ -455,8 +624,8 @@ export default class HiddendangerAuditAssignment extends Vue {
 
   //巡检日期
   pickerOptions = { disabledDate(time) {} }
-  mapV:Map=null
-  graphicsLayer:VectorLayer<VectorSource<any>>=null
+  mapV: Map = null
+  graphicsLayer: VectorLayer<VectorSource<any>> = null
   mounted() {
     this.addMap()
     //隐患审核、详情
@@ -481,9 +650,9 @@ export default class HiddendangerAuditAssignment extends Vue {
    * 在模块打开的时候预先加载地图
    */
   addMap() {
-    if(!this.$store.getters.appconfig){
+    if (!this.$store.getters.appconfig) {
       this.$message('服务加载失败 启用默认服务配置')
-      return;
+      return
     }
     let { initCenter, initZoom } = this.$store.getters.appconfig
     var div = this.$refs.cctvMap as HTMLElement
@@ -504,7 +673,7 @@ export default class HiddendangerAuditAssignment extends Vue {
       source: new VectorSource()
     })
     this.graphicsLayer = vectorLayer
-    new TF_Layer().createLayers(layerResource).then((layers:any[]) => {
+    new TF_Layer().createLayers(layerResource).then((layers: any[]) => {
       layers.forEach((layer) => {
         layer && map.addLayer(layer)
       })
@@ -538,10 +707,9 @@ export default class HiddendangerAuditAssignment extends Vue {
     this.$refs.mapBox.appendChild(this.$refs.cctvMap)
     //@ts-ignore
     this.$refs.cctvMap.style.display = ''
-    if(this.mapV){
-      this.toPoint(this.reportDetailForm.lgtd,this.reportDetailForm.lttd)
-      this.mapV.updateSize();
-      
+    if (this.mapV) {
+      this.toPoint(this.reportDetailForm.lgtd, this.reportDetailForm.lttd)
+      this.mapV.updateSize()
     }
   }
 
@@ -1139,7 +1307,7 @@ export default class HiddendangerAuditAssignment extends Vue {
   changePeriodId(periodId) {
     console.log('周期：' + periodId)
     var obj = {}
-    obj = this.periodData.find(function (item) {
+    obj = this.periodData.find(function(item) {
       return item.id == periodId
     })
     let input = this.auditForm
@@ -1403,7 +1571,7 @@ export default class HiddendangerAuditAssignment extends Vue {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .hiddendangerAuditAssignment {
   position: relative;
   height: 100%;

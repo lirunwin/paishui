@@ -2,11 +2,25 @@
   <div id="hiddendangerReport" class="hiddendangerReport">
     <el-row>
       <span class="title2">名称</span>
-      <el-input size="small" style="display: inline-block; margin-left: 5px; width:200px;" placeholder="请输入名称" v-model="problems.pipeName" />
+      <el-input
+        size="small"
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        placeholder="请输入名称"
+        v-model="problems.pipeName"
+      />
       <span class="title2">地址</span>
-      <el-input size="small" style="display: inline-block; margin-left: 5px; width:200px;" placeholder="请输入地址" v-model="problems.address" />
+      <el-input
+        size="small"
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        placeholder="请输入地址"
+        v-model="problems.address"
+      />
       <span class="title2">状态</span>
-      <el-select style="display: inline-block; margin-left: 5px; width:200px;" v-model="problems.auditResult" size="small">
+      <el-select
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        v-model="problems.auditResult"
+        size="small"
+      >
         <template v-for="item in auditStatus">
           <el-option :key="item.id" :label="item.name" :value="item.id"></el-option>
         </template>
@@ -15,26 +29,107 @@
       <el-button type="primary" :disabled="disableReport" size="small" @click="reportClick()">上报</el-button>
     </el-row>
     <div class="datatable">
-      <el-table border ref="table1" class="mapTable" stripe style="width: 100%;margin-top: 8px;" height="100%" :data="hiddendangerData" @row-click="clickHiddendangerData" @row-dblclick="showTrouble" :header-cell-style="{'text-align':'center'}">
+      <el-table
+        border
+        ref="table1"
+        class="mapTable"
+        stripe
+        style="width: 100%;margin-top: 8px;"
+        height="100%"
+        :data="hiddendangerData"
+        @row-click="clickHiddendangerData"
+        @row-dblclick="showTrouble"
+        :header-cell-style="{ 'text-align': 'center' }"
+      >
         <template slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+          <img src="@/assets/icon/null.png" alt="" />
         </template>
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" label="序号" width="80px" align="center">
           <template slot-scope="scope">
-            <span>{{((pageInfo.current - 1) * pageInfo.size) + (scope.$index+1) }}</span>
+            <span>{{ (pageInfo.current - 1) * pageInfo.size + (scope.$index + 1) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="pipeName" :formatter="formatter" show-overflow-tooltip sortable label="管线名称" width="200px" align="left" />
-        <el-table-column prop="location" :formatter="formatter" show-overflow-tooltip sortable label="隐患部位" width="140px" align="center" />
-        <el-table-column prop="typeName" :formatter="formatter" show-overflow-tooltip sortable label="隐患原因" width="180px" align="left" />
-        <el-table-column prop="toubleRangeName" :formatter="formatter" show-overflow-tooltip sortable label="隐患等级" width="140px" align="center" />
-        <el-table-column prop="address" :formatter="formatter" show-overflow-tooltip sortable label="地址" align="left" />
-        <el-table-column prop="submitUserName" :formatter="formatter" show-overflow-tooltip sortable label="上报人" width="140px" align="center" />
-        <el-table-column prop="submitTime" :formatter="formatter" show-overflow-tooltip sortable label="上报时间" width="200px" align="center" />
-        <el-table-column prop="isSubmit" :formatter="formatter" show-overflow-tooltip sortable label="状态" width="140px" align="center" />
-        <el-table-column prop="state" :formatter="formatter" show-overflow-tooltip sortable label="是否为隐患" width="140px" align="center" />
+        <el-table-column
+          prop="pipeName"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="管线名称"
+          width="200px"
+          align="left"
+        />
+        <el-table-column
+          prop="location"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="隐患部位"
+          width="140px"
+          align="center"
+        />
+        <el-table-column
+          prop="typeName"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="隐患原因"
+          width="180px"
+          align="left"
+        />
+        <el-table-column
+          prop="toubleRangeName"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="隐患等级"
+          width="140px"
+          align="center"
+        />
+        <el-table-column
+          prop="address"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="地址"
+          align="left"
+        />
+        <el-table-column
+          prop="submitUserName"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="上报人"
+          width="140px"
+          align="center"
+        />
+        <el-table-column
+          prop="submitTime"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="上报时间"
+          width="200px"
+          align="center"
+        />
+        <el-table-column
+          prop="isSubmit"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="状态"
+          width="140px"
+          align="center"
+        />
+        <el-table-column
+          prop="state"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="是否为隐患"
+          width="140px"
+          align="center"
+        />
         <el-table-column label="操作" width="100px" align="center">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="showTrouble(scope.row)">详情</el-button>
@@ -43,28 +138,52 @@
       </el-table>
     </div>
     <div class="pagination-area">
-      <el-pagination layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10,20,30,50,100,1000]" :page-size="pageInfo.size" :current-page="pageInfo.current" :total="pageInfo.tableTotal" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <el-pagination
+        layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[10, 20, 30, 50, 100, 1000]"
+        :page-size="pageInfo.size"
+        :current-page="pageInfo.current"
+        :total="pageInfo.tableTotal"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
     <el-dialog v-dialogDrag :visible.sync="reportDialog" title="隐患上报" width="1200px" top="10vh">
       <div style="width:100%; display: flex;flex-wrap: wrap; ">
         <div class="flexDiv">
           <span class="flexTitle">管线名称：</span>
           <div class="flexInfo">
-            <el-input v-model="reportForm.name" style="width: 260px;" placeholder="请输入管线名称" size="small"></el-input>
+            <el-input
+              v-model="reportForm.name"
+              style="width: 260px;"
+              placeholder="请输入管线名称"
+              size="small"
+            ></el-input>
           </div>
         </div>
         <div class="flexDiv">
           <span class="flexTitle">隐患部位：</span>
           <div class="flexInfo">
             <el-select v-model="reportForm.part" @focus="getDangerPart" size="small" style="width: 260px;" clearable>
-              <el-option v-for="item of dangerpart" :key="item.ccode" :value="item.ccode" :label="item.cname"></el-option>
+              <el-option
+                v-for="item of dangerpart"
+                :key="item.ccode"
+                :value="item.ccode"
+                :label="item.cname"
+              ></el-option>
             </el-select>
           </div>
         </div>
         <div class="flexDiv">
           <span class="flexTitle">隐患原因：</span>
           <div class="flexInfo">
-            <el-select v-model="reportForm.reason" @focus="getDangerReason" size="small" style="width: 260px;" clearable>
+            <el-select
+              v-model="reportForm.reason"
+              @focus="getDangerReason"
+              size="small"
+              style="width: 260px;"
+              clearable
+            >
               <el-option v-for="item of reasons" :key="item.id" :value="item.id" :label="item.name"></el-option>
             </el-select>
           </div>
@@ -72,7 +191,13 @@
         <div class="flexDiv">
           <span class="flexTitle">隐患等级：</span>
           <div class="flexInfo">
-            <el-select v-model="reportForm.toubleRangeId" @focus="getToubleLevel" size="small" style="width: 260px;" clearable>
+            <el-select
+              v-model="reportForm.toubleRangeId"
+              @focus="getToubleLevel"
+              size="small"
+              style="width: 260px;"
+              clearable
+            >
               <el-option v-for="item of levels" :key="item.id" :value="item.id" :label="item.name"></el-option>
             </el-select>
           </div>
@@ -110,28 +235,66 @@
         <div class="flexDivMax">
           <span class="flexTitle">附件：</span>
           <div class="flexInfo">
-            <el-upload class="upload-demo" action="https://jsonplaceholder.typicode.com/posts/" :on-preview="handlePreview" :on-remove="handleRemove" :before-remove="beforeRemove" :on-change="beforeAvatarUpload" :on-success="handleAvatarSuccess" accept=".jpg,.jpeg,.png,.amr" :file-list="fileList" :auto-upload="false" multiple :limit="3" :on-exceed="handleExceed" style="width: 50%;" size="small">
-              <el-button size="small" type="primary" style="margin-top: 3px; left:0px; float:left; ">点击上传</el-button>
-              <div slot="tip" class="el-upload__tip">⚠️注意：请上传jpg,png,jpeg,amr格式的文件，且大小不能超过10MB!最多3个文件!</div>
+            <el-upload
+              class="upload-demo"
+              action="https://jsonplaceholder.typicode.com/posts/"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              :before-remove="beforeRemove"
+              :on-change="beforeAvatarUpload"
+              :on-success="handleAvatarSuccess"
+              accept=".jpg,.jpeg,.png,.amr"
+              :file-list="fileList"
+              :auto-upload="false"
+              multiple
+              :limit="3"
+              :on-exceed="handleExceed"
+              style="width: 50%;"
+              size="small"
+            >
+              <el-button size="small" type="primary" style="margin-top: 3px; left:0px; float:left; "
+                >点击上传</el-button
+              >
+              <div slot="tip" class="el-upload__tip">
+                ⚠️注意：请上传jpg,png,jpeg,amr格式的文件，且大小不能超过10MB!最多3个文件!
+              </div>
             </el-upload>
           </div>
         </div>
         <div class="flexDivMax">
           <span class="flexTitle">地址：</span>
           <div class="flexInfo">
-            <el-input v-model="reportForm.address" type="textarea" :rows="1" placeholder="请输入地址" size="small"></el-input>
+            <el-input
+              v-model="reportForm.address"
+              type="textarea"
+              :rows="1"
+              placeholder="请输入地址"
+              size="small"
+            ></el-input>
           </div>
         </div>
         <div class="flexDivMax">
           <span class="flexTitle">隐患原因备注：</span>
           <div class="flexInfo">
-            <el-input v-model="reportForm.note" type="textarea" :rows="2" placeholder="请输入隐患原因备注" size="small"></el-input>
+            <el-input
+              v-model="reportForm.note"
+              type="textarea"
+              :rows="2"
+              placeholder="请输入隐患原因备注"
+              size="small"
+            ></el-input>
           </div>
         </div>
         <div class="flexDivMax">
           <span class="flexTitle">消除隐患建议：</span>
           <div class="flexInfo">
-            <el-input v-model="reportForm.suggest" type="textarea" :rows="2" placeholder="请输入消除隐患建议" size="small"></el-input>
+            <el-input
+              v-model="reportForm.suggest"
+              type="textarea"
+              :rows="2"
+              placeholder="请输入消除隐患建议"
+              size="small"
+            ></el-input>
           </div>
         </div>
         <div class="flexDiv">
@@ -143,8 +306,19 @@
         <div class="flexDiv">
           <span class="flexTitle">纬度：</span>
           <div class="flexInfo">
-            <el-input v-model="reportForm.pointLat" placeholder="请输入纬度" style="width: calc(100% - 60px);" size="small"></el-input>
-            <el-button icon="el-icon-map-location" style="width: 50px; margin-bottom: 5px;" type="primary" size="small" @click="chageFlagStatus()"></el-button>
+            <el-input
+              v-model="reportForm.pointLat"
+              placeholder="请输入纬度"
+              style="width: calc(100% - 60px);"
+              size="small"
+            ></el-input>
+            <el-button
+              icon="el-icon-map-location"
+              style="width: 50px; margin-bottom: 5px;"
+              type="primary"
+              size="small"
+              @click="chageFlagStatus()"
+            ></el-button>
           </div>
         </div>
         <div class="flexDivMax">
@@ -162,7 +336,7 @@
     </el-dialog>
   </div>
 </template>
-<script lang='ts'>
+<script lang="ts">
 /**
  * @description 该功能为巡检子系统，隐患管理模块中的隐患上报功能
  * @author 梁罗、李顺<876330731@qq.com>
@@ -181,11 +355,11 @@ import {
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
 import locationIcon from '@/assets/images/map/location.png'
 import { Map, View } from 'ol'
-import {unByKey} from 'ol/Observable'
+import { unByKey } from 'ol/Observable'
 import Feature from 'ol/Feature'
 import VectorSource from 'ol/source/Vector'
 import { Vector as VectorLayer } from 'ol/layer'
-import { Point,MultiPoint } from 'ol/geom'
+import { Point, MultiPoint } from 'ol/geom'
 import { Icon, Style } from 'ol/style'
 @Component({
   name: 'HiddendangerReport',
@@ -246,11 +420,11 @@ export default class HiddenDangerReport extends Vue {
   hiddendangerData = [] // 上报隐患数据
   feature = '' //存储在地图上绘制的点的信息
   layerId = 17 //片区图层id
-  mapV:Map=null
-  addMapEvent=null
-  click=null //主地图点击事件
-  graphicsLayer:VectorLayer<VectorSource<any>>=null
-  mainGraphicsLayer:VectorLayer<VectorSource<any>>=null
+  mapV: Map = null
+  addMapEvent = null
+  click = null //主地图点击事件
+  graphicsLayer: VectorLayer<VectorSource<any>> = null
+  mainGraphicsLayer: VectorLayer<VectorSource<any>> = null
   @Watch('$store.state.map.halfP_editableTabsValue')
   editableTabsValueChange() {
     console.log('进入页面:hiddendangerReport')
@@ -279,11 +453,11 @@ export default class HiddenDangerReport extends Vue {
    * 在模块打开的时候预先加载地图
    */
   addMap() {
-    if(!this.$store.getters.appconfig){
+    if (!this.$store.getters.appconfig) {
       this.$message('服务加载失败 启用默认服务配置')
-      return;
+      return
     }
-    const mainmap=this.data.mapView;
+    const mainmap = this.data.mapView
     let { initCenter, initZoom } = this.$store.getters.appconfig
     var div = this.$refs.cctvMap as HTMLElement
     let layerResource = this.$store.getters.appconfig.gisResource['iserver_resource'].layerService.layers
@@ -303,22 +477,21 @@ export default class HiddenDangerReport extends Vue {
       source: new VectorSource()
     })
     this.graphicsLayer = vectorLayer
-    new TF_Layer().createLayers(layerResource).then((layers:any[]) => {
+    new TF_Layer().createLayers(layerResource).then((layers: any[]) => {
       layers.forEach((layer) => {
         layer && map.addLayer(layer)
       })
       map.addLayer(this.graphicsLayer)
     })
-   
-    
+
     mainmap.addLayer(this.graphicsLayer)
     this.addMapEvent = map.on('singleclick', (e) => {
       if (this.flag === true) {
-          this.reportForm.pointLon = e.coordinate[0].toFixed(6) //经度
-          this.reportForm.pointLat = e.coordinate[1].toFixed(6) //纬度
-          this.drawPoint(e.coordinate[0], e.coordinate[1])
-          this.flag = false
-        }
+        this.reportForm.pointLon = e.coordinate[0].toFixed(6) //经度
+        this.reportForm.pointLat = e.coordinate[1].toFixed(6) //纬度
+        this.drawPoint(e.coordinate[0], e.coordinate[1])
+        this.flag = false
+      }
     })
   }
   /**
@@ -344,15 +517,15 @@ export default class HiddenDangerReport extends Vue {
    * @description 加载地图
    */
   loadMap() {
-	//@ts-ignore
-    this.$refs.mapBox.appendChild(this.$refs.cctvMap);
-	//@ts-ignore
+    //@ts-ignore
+    this.$refs.mapBox.appendChild(this.$refs.cctvMap)
+    //@ts-ignore
     this.$refs.cctvMap.style.display = ''
-    if(this.mapV){
-      const main=this.data.mapView as Map;
-      this.mapV.setView(main.getView());
-        this.mapV.updateSize();
-    } 
+    if (this.mapV) {
+      const main = this.data.mapView as Map
+      this.mapV.setView(main.getView())
+      this.mapV.updateSize()
+    }
   }
   /**
    * @description 绘制隐患点
@@ -395,7 +568,6 @@ export default class HiddenDangerReport extends Vue {
       this.mapV.getView().animate(options)
     }
     mapV.getView().animate(options)
-    
   }
 
   /**
@@ -457,19 +629,19 @@ export default class HiddenDangerReport extends Vue {
    */
   clearPageInfo() {
     //地图相关数据
-    let mapV = this.data.mapView as Map;
-    let map = this.mapV;
+    let mapV = this.data.mapView as Map
+    let map = this.mapV
     if (this.addMapEvent) {
-      unByKey(this.addMapEvent);
-      this.addMapEvent=null;
+      unByKey(this.addMapEvent)
+      this.addMapEvent = null
     }
     if (this.click) {
-      unByKey(this.click);
-      this.click=null;
+      unByKey(this.click)
+      this.click = null
     }
     if (this.graphicsLayer) {
-      mapV.removeLayer(this.graphicsLayer);
-      map.removeLayer(this.graphicsLayer);
+      mapV.removeLayer(this.graphicsLayer)
+      map.removeLayer(this.graphicsLayer)
     }
     //表单数据
     for (var key in this.reportForm) {
@@ -548,7 +720,7 @@ export default class HiddenDangerReport extends Vue {
     let mapView = this.data.mapView
     this.flag = true
     if ((this.flag = true)) {
-      this.click = mapView.on('singleclick', function (e) {
+      this.click = mapView.on('singleclick', function(e) {
         that.reportForm.pointLon = e.coordinate[0].toFixed(6) //经度
         that.reportForm.pointLat = e.coordinate[1].toFixed(6) //纬度
         that.drawPoint(e.coordinate[0], e.coordinate[1])
@@ -557,7 +729,6 @@ export default class HiddenDangerReport extends Vue {
         that.flag = false
       })
     }
-    
   }
 
   //获取主页面表格数据
@@ -656,7 +827,7 @@ export default class HiddenDangerReport extends Vue {
       typeId: that.reportForm.reason, //隐患原因编码
       toubleRangeId: that.reportForm.toubleRangeId, //隐患原因编码
       regionId: '', //片区编码
-      regionName:  '', //片区名称
+      regionName: '', //片区名称
       auditUser: that.reportForm.checkMan, //审核人
       address: that.reportForm.address, //隐患地址
       notes: that.reportForm.note, //隐患原因备注
@@ -795,7 +966,7 @@ export default class HiddenDangerReport extends Vue {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .hiddendangerReport {
   height: 100%;
   width: 100%;

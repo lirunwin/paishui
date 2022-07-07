@@ -61,7 +61,6 @@
     <div v-else style="width:100%;height:100%">
       <div style="position: relative;float: left;left: calc((100% - 50px)/2);top: calc((100% - 50px)/2);">
         <img src="@/assets/icon/null.png" alt="" />
-        <p class="empty-p">暂无数据</p>
       </div>
     </div>
   </form>

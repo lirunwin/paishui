@@ -18,7 +18,6 @@
       >
         <template slot="empty">
           <img src="@/assets/icon/null.png" alt="" />
-          <p class="empty-p">暂无数据</p>
         </template>
         <el-table-column
           :formatter="formatter"

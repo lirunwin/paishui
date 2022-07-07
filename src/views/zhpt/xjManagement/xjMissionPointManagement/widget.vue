@@ -5,14 +5,32 @@
       <el-input style="width: 150px;" size="small" v-model="name" placeholder="请输入名称" />
       <el-button size="small" type="primary" @click="xjPointQuery()">查询</el-button>
       <el-button size="small" type="primary" @click="addPoint">添加</el-button>
-      <el-button size="small" type="primary" :disabled="canAlter" @click="alterPoint('update'),toPoint(pointLon, pointLat)">修改</el-button>
+      <el-button
+        size="small"
+        type="primary"
+        :disabled="canAlter"
+        @click="alterPoint('update'), toPoint(pointLon, pointLat)"
+        >修改</el-button
+      >
       <el-button size="small" type="primary" :disabled="canDelete" @click="xjPointDelete()">删除</el-button>
       <el-checkbox v-model="showHistoryPoint">地图显示巡检点</el-checkbox>
     </el-row>
-    <el-table class="mapTable" :data="dataT1" border style="width: 100%;margin-top: 8px;" ref="table1" height="calc(100% - 88px)" stripe highlight-current-row @cell-click="cellSingleClick" @select="table1Select" @select-all="table1Select" @row-dblclick="alterPoint">
+    <el-table
+      class="mapTable"
+      :data="dataT1"
+      border
+      style="width: 100%;margin-top: 8px;"
+      ref="table1"
+      height="calc(100% - 88px)"
+      stripe
+      highlight-current-row
+      @cell-click="cellSingleClick"
+      @select="table1Select"
+      @select-all="table1Select"
+      @row-dblclick="alterPoint"
+    >
       <template slot="empty">
-        <img src="@/assets/icon/null.png" alt="">
-        <p class="empty-p">暂无数据</p>
+        <img src="@/assets/icon/null.png" alt="" />
       </template>
       <el-table-column type="selection" width="55" />
       <el-table-column type="index" width="55" sortable />
@@ -23,10 +41,28 @@
     </el-table>
     <el-row style="margin-top: 8px;width:350px;">
       <el-col :span="20">
-        <el-pagination v-model="pagination" small background layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10,20,30,50,100,1000]" :total="pagination.total" @size-change="changeSize" @current-change="changeCurrent" @prev-click="changeCurrent" @next-click="changeCurrent" />
+        <el-pagination
+          v-model="pagination"
+          small
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :page-sizes="[10, 20, 30, 50, 100, 1000]"
+          :total="pagination.total"
+          @size-change="changeSize"
+          @current-change="changeCurrent"
+          @prev-click="changeCurrent"
+          @next-click="changeCurrent"
+        />
       </el-col>
     </el-row>
-    <el-dialog :title="title" v-dialogDrag :visible.sync="diaVisiable" width="1200px" top="calc(50vh - 436px)" @close="closeEvent">
+    <el-dialog
+      :title="title"
+      v-dialogDrag
+      :visible.sync="diaVisiable"
+      width="1200px"
+      top="calc(50vh - 436px)"
+      @close="closeEvent"
+    >
       <tf-table-legend label="巡检点信息" isopen="true">
         <div style="width:100%;">
           <div style="width:100%; display: flex; flex-wrap: wrap;">
@@ -73,15 +109,19 @@
       <span slot="footer" class="dialog-footer">
         <el-button v-show="showAddConfirmButton" @click="clearTableData()" size="small">取消</el-button>
         <el-button v-show="showAlterConfirmButton" @click="clearTableData()" size="small">取消</el-button>
-        <el-button v-show="showAddConfirmButton" type="primary" @click="xjPointInfoSubmit()" size="small">确定</el-button>
-        <el-button v-show="showAlterConfirmButton" type="primary" @click="xjPointAlterInfoSubmit()" size="small">确定</el-button>
+        <el-button v-show="showAddConfirmButton" type="primary" @click="xjPointInfoSubmit()" size="small"
+          >确定</el-button
+        >
+        <el-button v-show="showAlterConfirmButton" type="primary" @click="xjPointAlterInfoSubmit()" size="small"
+          >确定</el-button
+        >
       </span>
     </el-dialog>
     <div style="width:100%;height:100%;display:none;" ref="cctvMap"></div>
   </div>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 /**
  * @description 该功能为巡检子系统，巡检管理模块中的巡检点功能
  * @author 梁罗、李顺<876330731@qq.com>
@@ -277,7 +317,8 @@ export default class XjMissionPointManagement extends Vue {
         spatialReference: this.data.mapView.spatialReference
       }
       const simpleMarkerSymbol = {
-        path: 'M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z',
+        path:
+          'M527.676 51c146.71 0 265.919 117.742 268.288 263.887l0.036 4.437C789.928 444.319 695.261 606.878 512 807 329.564 606.484 234.897 443.926 228 319.324 228 171.133 348.133 51 496.324 51h31.352z m-15.31 53h-0.732C390.886 104 293 201.886 293 322.634 298.319 424.162 371.319 556.617 512 720c141.318-163.062 214.318-295.518 219-397.366l-0.03-3.615C729.04 199.938 631.908 104 512.367 104z M512 171c86.709 0 157 70.291 157 157s-70.291 157-157 157-157-70.291-157-157 70.291-157 157-157z m0.5 55C455.89 226 410 271.89 410 328.5S455.89 431 512.5 431 615 385.11 615 328.5 569.11 226 512.5 226z',
         color: '#FFD700',
         outline: { color: '#FFD700', width: '1px' },
         size: '30px',

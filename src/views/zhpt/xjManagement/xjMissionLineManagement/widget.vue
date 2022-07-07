@@ -9,10 +9,22 @@
       <el-button size="small" type="primary" :disabled="canDelete" @click="xjLineDelete()">删除</el-button>
       <el-checkbox v-model="showHistoryLine">地图显示巡检线</el-checkbox>
     </el-row>
-    <el-table ref="table1" class="mapTable" :data="dataT1" border style="width: 100%;margin-top: 8px;" height="calc(100% - 88px)" stripe highlight-current-row @row-dblclick="alterLine" @select="table1Select" @select-all="table1Select" @cell-click="cellSingleClick">
+    <el-table
+      ref="table1"
+      class="mapTable"
+      :data="dataT1"
+      border
+      style="width: 100%;margin-top: 8px;"
+      height="calc(100% - 88px)"
+      stripe
+      highlight-current-row
+      @row-dblclick="alterLine"
+      @select="table1Select"
+      @select-all="table1Select"
+      @cell-click="cellSingleClick"
+    >
       <template slot="empty">
-        <img src="@/assets/icon/null.png" alt="">
-        <p class="empty-p">暂无数据</p>
+        <img src="@/assets/icon/null.png" alt="" />
       </template>
       <el-table-column type="selection" width="55" />
       <el-table-column :formatter="formatter" prop="name" sortable label="名称" />
@@ -24,10 +36,28 @@
     </el-table>
     <el-row style="margin-top: 8px;width:350px;">
       <el-col :span="20">
-        <el-pagination v-model="pagination" small background layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10,20,30,50,100,1000]" :total="pagination.total" @size-change="changeSize" @current-change="changeCurrent" @prev-click="changeCurrent" @next-click="changeCurrent" />
+        <el-pagination
+          v-model="pagination"
+          small
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :page-sizes="[10, 20, 30, 50, 100, 1000]"
+          :total="pagination.total"
+          @size-change="changeSize"
+          @current-change="changeCurrent"
+          @prev-click="changeCurrent"
+          @next-click="changeCurrent"
+        />
       </el-col>
     </el-row>
-    <el-dialog v-dialogDrag :title="title" :visible.sync="diaVisiable" width="1200px" top="calc(50vh - 436px)" @close="closeEvent">
+    <el-dialog
+      v-dialogDrag
+      :title="title"
+      :visible.sync="diaVisiable"
+      width="1200px"
+      top="calc(50vh - 436px)"
+      @close="closeEvent"
+    >
       <tf-table-legend label="巡检线信息" isopen="true">
         <div style="width:100%;">
           <div style="width:100%; display: flex; flex-wrap: wrap;">
@@ -48,7 +78,13 @@
             <div class="flexDiv">
               <span class="flexTitle">长度（m）：</span>
               <div class="flexInfo">
-                <el-input v-model="editInfo.length" style="width: 100%;" size="small" placeholder="请输入长度" :disabled="true" />
+                <el-input
+                  v-model="editInfo.length"
+                  style="width: 100%;"
+                  size="small"
+                  placeholder="请输入长度"
+                  :disabled="true"
+                />
               </div>
             </div>
             <div class="flexDiv" style="position: relative;left: 4%;">
@@ -68,8 +104,12 @@
       <span slot="footer" class="dialog-footer">
         <el-button v-show="showAddConfirmButton" size="small" @click="clearTableData()">取消</el-button>
         <el-button v-show="showAlterConfirmButton" size="small" @click="clearTableData()">取消</el-button>
-        <el-button v-show="showAddConfirmButton" type="primary" size="small" @click="xjLineInfoSubmit()">确定</el-button>
-        <el-button v-show="showAlterConfirmButton" type="primary" size="small" @click="xjLineAlterInfoSubmit()">确定</el-button>
+        <el-button v-show="showAddConfirmButton" type="primary" size="small" @click="xjLineInfoSubmit()"
+          >确定</el-button
+        >
+        <el-button v-show="showAlterConfirmButton" type="primary" size="small" @click="xjLineAlterInfoSubmit()"
+          >确定</el-button
+        >
       </span>
     </el-dialog>
     <div ref="cctvMap" style="width:100%;height:100%;display:none;" />
@@ -83,7 +123,7 @@
   </div>
 </template>
 
-<script lang='ts'>
+<script lang="ts">
 /**
  * @description 该功能为巡检子系统，巡检管理模块中的巡检线功能
  * @author 梁罗、李顺<876330731@qq.com>
@@ -100,7 +140,7 @@ import { Icon, Stroke, Style } from 'ol/style'
 import Draw from 'ol/interaction/Draw'
 import tfLegend from '@/views/zhpt/common/Legend.vue'
 import tfTableLegend from '@/views/zhpt/common/TableLegend.vue'
-import {appconfig } from 'staticPub/config'
+import { appconfig } from 'staticPub/config'
 import { queryXjLine, addXjLine, alterXjLine, deleteXjLine } from '@/api/xjDailyManageApi'
 import $ from 'jquery'
 import { TF_Layer } from '@/views/zhpt/common/mapUtil/layer'
@@ -228,8 +268,8 @@ export default class XjMissionLineManagement extends Vue {
       })
     })
     this.mapV = map
-    new TF_Layer().createLayers(layerResource).then(layers => {
-      layers.forEach((layer:any) => {
+    new TF_Layer().createLayers(layerResource).then((layers) => {
+      layers.forEach((layer: any) => {
         layer && map.addLayer(layer)
       })
     })
@@ -470,7 +510,7 @@ export default class XjMissionLineManagement extends Vue {
       this.editInfo.geometry = JSON.stringify(geometrys)
       map.removeInteraction(this.draw)
       setTimeout(() => {
-        map.addInteraction(dblclickevt);
+        map.addInteraction(dblclickevt)
       }, 100)
       this.draw = null
     })

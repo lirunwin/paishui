@@ -2,35 +2,148 @@
   <div id="hiddendangerSearch" class="hiddendangerSearch">
     <el-row>
       <span class="title2">名称</span>
-      <el-input size="small" style="display: inline-block; margin-left: 5px; width:200px;" placeholder="请输入管线名称" v-model="problems.pipeName" />
+      <el-input
+        size="small"
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        placeholder="请输入管线名称"
+        v-model="problems.pipeName"
+      />
       <span class="title2">上报时间</span>
-      <el-date-picker v-model="problems.startTime" style="width:140px;" size="small" type="date" placeholder="请选择开始时间" :picker-options="startOptions" value-format="yyyy-MM-dd" /> ~
-      <el-date-picker v-model="problems.endTime" style="width:140px;" size="small" type="date" placeholder="请选择结束时间" :picker-options="endOptions" value-format="yyyy-MM-dd" />
+      <el-date-picker
+        v-model="problems.startTime"
+        style="width:140px;"
+        size="small"
+        type="date"
+        placeholder="请选择开始时间"
+        :picker-options="startOptions"
+        value-format="yyyy-MM-dd"
+      />
+      ~
+      <el-date-picker
+        v-model="problems.endTime"
+        style="width:140px;"
+        size="small"
+        type="date"
+        placeholder="请选择结束时间"
+        :picker-options="endOptions"
+        value-format="yyyy-MM-dd"
+      />
       <span class="title2">地址</span>
-      <el-input size="small" style="display: inline-block; margin-left: 5px; width:200px;" placeholder="请输入地址" v-model="problems.address" />
+      <el-input
+        size="small"
+        style="display: inline-block; margin-left: 5px; width:200px;"
+        placeholder="请输入地址"
+        v-model="problems.address"
+      />
       <el-button type="primary" size="small" @click="searchDangerQuery()">查询</el-button>
     </el-row>
     <div class="datatable">
-      <el-table border stripe class="mapTable" style="width: 100%;margin-top: 8px;" height="100%" :header-cell-style="{'text-align':'center'}" :data="hiddendangerData" @row-dblclick="showTrouble" @row-click="clickHiddendangerData">
+      <el-table
+        border
+        stripe
+        class="mapTable"
+        style="width: 100%;margin-top: 8px;"
+        height="100%"
+        :header-cell-style="{ 'text-align': 'center' }"
+        :data="hiddendangerData"
+        @row-dblclick="showTrouble"
+        @row-click="clickHiddendangerData"
+      >
         <template slot="empty">
-          <img src="@/assets/icon/null.png" alt="">
-          <p class="empty-p">暂无数据</p>
+          <img src="@/assets/icon/null.png" alt="" />
         </template>
         <el-table-column type="index" label="序号" width="80px" align="center">
           <template slot-scope="scope">
-            <span>{{((pageInfo.current - 1) * pageInfo.size) + (scope.$index+1) }}</span>
+            <span>{{ (pageInfo.current - 1) * pageInfo.size + (scope.$index + 1) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="pipeName" :formatter="formatter" show-overflow-tooltip sortable label="管线名称" width="200px" align="left" />
-        <el-table-column prop="location" :formatter="formatter" show-overflow-tooltip sortable label="隐患部位" width="140px" align="center" />
-        <el-table-column prop="typeName" :formatter="formatter" show-overflow-tooltip sortable label="隐患原因" width="180px" align="left" />
-        <el-table-column prop="toubleRangeName" :formatter="formatter" show-overflow-tooltip sortable label="隐患等级" width="180px" align="left" />
-        <el-table-column prop="address" :formatter="formatter" show-overflow-tooltip sortable label="地址" align="left" />
-        <el-table-column prop="submitTime" :formatter="formatter" show-overflow-tooltip sortable label="上报时间" align="center" />
-        <el-table-column prop="submitUserName" :formatter="formatter" show-overflow-tooltip sortable label="上报人" width="140px" align="center" />
-        <el-table-column prop="state" :formatter="formatter" sortable show-overflow-tooltip label="状态" width="100px" align="center" />
-        <el-table-column prop="auditResult" :formatter="formatter" show-overflow-tooltip sortable label="审批状态" width="140px" align="center" />
-        <el-table-column prop="suggest" :formatter="formatter" show-overflow-tooltip sortable label="隐患消除建议" align="left" />
+        <el-table-column
+          prop="pipeName"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="管线名称"
+          width="200px"
+          align="left"
+        />
+        <el-table-column
+          prop="location"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="隐患部位"
+          width="140px"
+          align="center"
+        />
+        <el-table-column
+          prop="typeName"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="隐患原因"
+          width="180px"
+          align="left"
+        />
+        <el-table-column
+          prop="toubleRangeName"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="隐患等级"
+          width="180px"
+          align="left"
+        />
+        <el-table-column
+          prop="address"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="地址"
+          align="left"
+        />
+        <el-table-column
+          prop="submitTime"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="上报时间"
+          align="center"
+        />
+        <el-table-column
+          prop="submitUserName"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="上报人"
+          width="140px"
+          align="center"
+        />
+        <el-table-column
+          prop="state"
+          :formatter="formatter"
+          sortable
+          show-overflow-tooltip
+          label="状态"
+          width="100px"
+          align="center"
+        />
+        <el-table-column
+          prop="auditResult"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="审批状态"
+          width="140px"
+          align="center"
+        />
+        <el-table-column
+          prop="suggest"
+          :formatter="formatter"
+          show-overflow-tooltip
+          sortable
+          label="隐患消除建议"
+          align="left"
+        />
         <el-table-column label="操作" width="100px" align="center">
           <template slot-scope="scope">
             <el-button type="text" size="small" @click="showTrouble(scope.row)">详情</el-button>
@@ -39,14 +152,22 @@
       </el-table>
     </div>
     <div class="pagination-area">
-      <el-pagination layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10,20,30,50,100,1000]" :page-size="pageInfo.size" :current-page="pageInfo.current" :total="pageInfo.tableTotal" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+      <el-pagination
+        layout="total, sizes, prev, pager, next, jumper"
+        :page-sizes="[10, 20, 30, 50, 100, 1000]"
+        :page-size="pageInfo.size"
+        :current-page="pageInfo.current"
+        :total="pageInfo.tableTotal"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </div>
     <el-dialog v-dialogDrag :visible.sync="dialogDetail" title="隐患详情" width="60%" top="10vh">
       <troubleDetail :troubleAry="troubleAry" />
     </el-dialog>
   </div>
 </template>
-<script lang='ts'>
+<script lang="ts">
 /**
  * @description 该功能为巡检子系统，隐患管理模块中的隐患查询功能
  * @author 梁罗、李顺<876330731@qq.com>
@@ -99,10 +220,10 @@ export default class HiddenDangerSearch extends Vue {
     startTime: undefined,
     endTime: undefined,
     address: undefined,
-    startDate:undefined,
-    endDate:undefined
+    startDate: undefined,
+    endDate: undefined
   }
-  pageInfo = { current: 1, size: 10, tableTotal: 1,auditResult:'1' } //分页数据
+  pageInfo = { current: 1, size: 10, tableTotal: 1, auditResult: '1' } //分页数据
   troubleAry = {} //组件参数
   // 上报隐患数据
   hiddendangerData = []
@@ -263,7 +384,7 @@ export default class HiddenDangerSearch extends Vue {
 }
 </script>
 
-<style lang='scss' scoped>
+<style lang="scss" scoped>
 .hiddendangerSearch {
   height: 100%;
   width: 100%;
