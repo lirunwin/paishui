@@ -1,9 +1,9 @@
 <template>
-  <BaseDialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="768px" ref="dialog">
+  <tf-dialog v-bind="$attrs" v-on="$listeners" @submit="onSubmit" width="768px" ref="dialog">
     <el-form class="form" ref="form" v-bind="{ labelWidth: '8em', size: 'medium' }" :model="formData" :rules="rules">
       <el-row :gutter="20">
         <el-col :span="24">
-          <BaseTitle>基本信息</BaseTitle>
+          <tf-title>基本信息</tf-title>
         </el-col>
         <el-col :span="10">
           <el-form-item label="工单类型" prop="info">
@@ -26,7 +26,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="24">
-          <BaseTitle>派工信息</BaseTitle>
+          <tf-title>派工信息</tf-title>
         </el-col>
 
         <el-col :span="12">
@@ -83,15 +83,13 @@
         </el-col>
       </el-row>
     </el-form>
-  </BaseDialog>
+  </tf-dialog>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator'
-import BaseDialog from '@/views/monitoring/components/BaseDialog/index.vue'
-import BaseTitle from '@/views/monitoring/components/BaseTitle/index.vue'
 
-@Component({ name: 'IconForm', components: { BaseDialog, BaseTitle } })
+@Component({ name: 'IconForm', components: {} })
 export default class IconForm extends Vue {
   @Prop({ type: Object, default: () => ({}) }) data!: object
   formData: {
