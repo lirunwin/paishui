@@ -4,9 +4,7 @@ import Table from './Table/index.vue'
 import Dialog from './Dialog/index.vue'
 import Title from './Title/index.vue'
 
-const namePrefix = 'Tf'
-
-Vue.component(`${namePrefix}${Page.name}`, Page)
-Vue.component(`${namePrefix}${Table.name}`, Table)
-Vue.component(`${namePrefix}${Dialog.name}`, Dialog)
-Vue.component(`${namePrefix}${Title.name}`, Title)
+Vue.component('tf-page', Page)
+Vue.component(`tf-table`, Table)
+Vue.component(`tf-dialog`, Dialog)
+Vue.component(`tf-title`, Title)
